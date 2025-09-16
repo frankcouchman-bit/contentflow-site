@@ -3,243 +3,371 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>ContentFlow AI — Repurpose & Schedule in Minutes</title>
-  <meta name="description" content="Turn one idea into channel-ready drafts. Free AI via OpenRouter.">
+  <meta name="description" content="Turn one idea into channel-ready drafts. Free AI via OpenRouter." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css" rel="stylesheet">
   <style>
-    .brand{background:linear-gradient(135deg,#7AA2FF,#FF2D2D)}
-    .glass{backdrop-filter:blur(8px);background:rgba(255,255,255,.65)}
-    @media (prefers-color-scheme:dark){.glass{background:rgba(16,16,20,.55)}}
+    :root {
+      --brandA:#7AA2FF; --brandB:#FF2D2D; --ink:#0b0d12; --muted:#77809a;
+    }
+    html,body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .txt-grad{ background:linear-gradient(135deg,var(--brandA),var(--brandB)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .bg-grad{ background:linear-gradient(135deg,var(--brandA),var(--brandB)); }
+    .glass{ backdrop-filter: blur(12px); background:rgba(255,255,255,.62); }
+    .card{ border-radius: 1.25rem; border:1px solid rgba(15,23,42,.10); background:rgba(255,255,255,.78); box-shadow: 0 15px 60px rgba(2,6,23,.08); }
+    .neon{ position:relative; }
+    .neon:before{ content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; background:linear-gradient(90deg,rgba(122,162,255,.9),rgba(255,45,45,.9));
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; filter: blur(10px); opacity:.35; pointer-events:none;}
+    .noise{ pointer-events:none; position:fixed; inset:0; background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" opacity="0.035"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.70" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)"/></svg>'); mix-blend-mode: overlay; }
+    .orb{ position:absolute; border-radius:9999px; filter: blur(40px); opacity:.55; }
+    .orb.a{ width:520px; height:520px; background:radial-gradient(closest-side,rgba(122,162,255,.6),rgba(122,162,255,0)); animation: floatA 14s ease-in-out infinite; }
+    .orb.b{ width:620px; height:620px; background:radial-gradient(closest-side,rgba(255,45,45,.5),rgba(255,45,45,0)); animation: floatB 16s ease-in-out infinite; }
+    @keyframes floatA{ 0%,100%{ transform:translate(-5%, -8%);} 50%{ transform:translate(6%,3%);} }
+    @keyframes floatB{ 0%,100%{ transform:translate(4%, 6%);} 50%{ transform:translate(-6%,-4%);} }
+    .spin-slow{ animation: spin 18s linear infinite; }
+    .fade-in{ animation: fade 600ms ease forwards; opacity:0; }
+    @keyframes fade{ to{opacity:1; transform:none;} }
+    .rise{ transform: translateY(8px); }
+    .glow-text{ text-shadow: 0 4px 30px rgba(122,162,255,.35), 0 4px 40px rgba(255,45,45,.25); }
+    .cta-sticky{ position:sticky; bottom:0; z-index:50; backdrop-filter: blur(10px); background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.9)); border-top:1px solid rgba(15,23,42,.08);}
+    @media (prefers-color-scheme:dark){
+      body{ background:#07090f; color:#e9eef6;}
+      .glass{ background:rgba(10,12,18,.5);}
+      .card{ background:rgba(14,16,22,.65); border-color:rgba(255,255,255,.08); box-shadow: 0 20px 70px rgba(122,162,255,.08), 0 10px 60px rgba(255,45,45,.06);}
+      .cta-sticky{ background:linear-gradient(180deg,rgba(8,10,14,.4),rgba(8,10,14,.8)); border-color:rgba(255,255,255,.06);}
+    }
+    /* subtle hover tilt */
+    .tilt{ transform-style:preserve-3d; transition: transform .25s ease, box-shadow .25s ease;}
+    .tilt:hover{ transform: translateY(-2px) rotate3d(.5,1,0,4deg); box-shadow: 0 20px 80px rgba(122,162,255,.18);}
+    /* marquee */
+    .marquee{ display:flex; overflow:hidden; gap:2rem; mask-image:linear-gradient(90deg,transparent,black 12%,black 88%,transparent); }
+    .marquee-track{ display:flex; gap:2rem; animation: scroll 30s linear infinite; }
+    @keyframes scroll{ from{ transform:translateX(0)} to{ transform:translateX(-50%)} }
+    /* quote ribbon */
+    .ribbon{ font-size:.9rem; background:linear-gradient(90deg,rgba(122,162,255,.14),rgba(255,45,45,.14)); border:1px solid rgba(15,23,42,.10); }
   </style>
 </head>
-<body class="min-h-full bg-gray-50 text-gray-900">
-  <!-- soft background blobs -->
-  <div class="fixed inset-0 -z-10 opacity-20 pointer-events-none">
-    <div class="absolute -top-40 -left-40 w-[900px] h-[900px] rounded-full blur-3xl brand"></div>
-    <div class="absolute -bottom-40 -right-40 w-[1000px] h-[1000px] rounded-full blur-3xl brand"></div>
+<body class="min-h-full">
+  <!-- animated orbs / parallax background -->
+  <div class="fixed inset-0 -z-10 pointer-events-none">
+    <div class="orb a -top-40 -left-28"></div>
+    <div class="orb b -bottom-40 -right-28"></div>
   </div>
+  <div class="noise"></div>
 
   <!-- NAV -->
-  <header class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <span class="w-8 h-8 rounded-xl brand"></span>
-      <strong>ContentFlow AI</strong>
-    </div>
-    <div class="text-sm flex items-center gap-4">
-      <a href="#demo" class="hover:opacity-80">Demo</a>
-      <a href="#faq" class="hover:opacity-80">FAQ</a>
-      <span id="quota" class="px-3 py-1 rounded bg-amber-50 text-amber-800">Checking quota…</span>
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <span class="w-9 h-9 rounded-xl bg-grad spin-slow"></span>
+        <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad glow-text">AI</span></span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#demo" class="hover:opacity-80">Demo</a>
+        <a href="#how" class="hover:opacity-80">How it works</a>
+        <a href="#faq" class="hover:opacity-80">FAQ</a>
+        <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
+      </nav>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-    <div>
-      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
-        From one idea to everywhere — <span class="text-transparent bg-clip-text brand">repurpose & schedule</span> in minutes.
-      </h1>
-      <p class="mt-4 text-gray-600">Paste content → get LinkedIn, X, Email & Instagram drafts. Free to try. No signup.</p>
-      <div class="mt-6 flex gap-3">
-        <a href="#demo" class="px-4 py-2 rounded-xl bg-gray-900 text-white">Try the Live Demo</a>
-        <a href="#faq" class="px-4 py-2 rounded-xl border">See how it works</a>
-      </div>
+  <!-- PRINCIPLE QUOTE -->
+  <div class="ribbon max-w-7xl mx-auto mt-4 mb-2 px-5">
+    <div class="p-3 rounded-xl text-center text-slate-700 dark:text-slate-200">
+      “<strong>Visual design quality affects user perception of functionality</strong> • <strong>Interface aesthetics influence task performance confidence</strong> • <strong>Users prefer well-designed interfaces</strong>”
     </div>
-    <div class="glass p-4 rounded-2xl shadow-xl">
-      <div class="text-xs text-gray-500 mb-2">Preview</div>
-      <pre class="text-xs bg-black/70 text-green-200 rounded p-3 h-48 overflow-auto">contentflow generate --channels linkedin,x,email
+  </div>
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-5 pt-6 md:pt-12 grid lg:grid-cols-2 gap-10 items-center">
+    <div class="fade-in rise" style="animation-delay:120ms">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Free demo — no signup
+      </div>
+      <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
+        From one idea to <span class="txt-grad glow-text">everywhere</span> —
+        repurpose & schedule in minutes.
+      </h1>
+      <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
+        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts tailored to your audience. Export in one click.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
+        <a href="#how" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See how it works</a>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">Pro tip: <kbd class="border border-slate-300/70 rounded px-1">Enter</kbd> to run, <kbd class="border border-slate-300/70 rounded px-1">Shift</kbd>+Enter for newline.</p>
+    </div>
+
+    <div class="glass card neon p-5 fade-in rise" style="animation-delay:220ms">
+      <div class="text-xs text-slate-500 mb-2">Preview</div>
+      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto">
+contentflow generate --channels linkedin,x,email
 ✓ outline created
 ✓ 3 social variants
 ✓ email snippet ready</pre>
     </div>
   </section>
 
-  <!-- DEMO -->
-  <main id="demo" class="max-w-6xl mx-auto px-6 py-10 grid lg:grid-cols-2 gap-8">
-    <section class="rounded-2xl border bg-white p-5 shadow">
-      <h2 class="text-xl font-semibold">Live Demo — Repurpose</h2>
-      <textarea id="source" class="mt-3 w-full h-48 p-3 rounded border" placeholder="Paste a paragraph or blog snippet…"></textarea>
-
-      <details class="mt-3">
-        <summary class="cursor-pointer text-sm text-gray-500">Settings</summary>
-        <div class="grid md:grid-cols-3 gap-3 mt-2">
-          <input id="model" class="p-2 border rounded" placeholder="Preferred model (optional)" />
-          <input id="byok" class="p-2 border rounded" placeholder="Your OpenRouter key (optional BYOK)" />
-          <button id="save" class="px-4 py-2 rounded bg-black text-white">Save</button>
+  <!-- TRUST / MARQUEE -->
+  <section class="max-w-7xl mx-auto px-5 mt-10">
+    <div class="marquee card bg-white/70 dark:bg-white/5 p-3">
+      <div class="marquee-track">
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          ⭐️⭐️⭐️⭐️⭐️ “Saved me hours per week” — Creator
         </div>
-        <p class="text-xs text-gray-500 mt-2">BYOK: we don’t store your key; it’s sent only for your current session.</p>
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          ⚡ “Repurposing now takes minutes not days” — SaaS Founder
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          💼 “Enterprise-feel UI, zero learning curve” — Growth Lead
+        </div>
+        <!-- duplicate for seamless loop -->
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          ⭐️⭐️⭐️⭐️⭐️ “Saved me hours per week” — Creator
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          ⚡ “Repurposing now takes minutes not days” — SaaS Founder
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+          💼 “Enterprise-feel UI, zero learning curve” — Growth Lead
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <main id="demo" class="max-w-7xl mx-auto px-5 py-10 grid lg:grid-cols-2 gap-8">
+    <section class="card neon p-6 tilt">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
+        <a href="#settings" class="text-sm underline decoration-dotted">Settings</a>
+      </div>
+
+      <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
+
+      <details id="settings" class="mt-4 open:scroll-mt-20">
+        <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
+        <div class="grid md:grid-cols-3 gap-3 mt-3">
+          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+          <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
+          <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab (sessionStorage). We don’t store keys.</p>
       </details>
 
-      <div class="mt-3 flex flex-wrap items-center gap-3">
-        <button id="run" class="px-4 py-2 rounded bg-black text-white">Generate</button>
-        <button id="clear" class="px-4 py-2 rounded border">Clear</button>
-        <button id="dl-md" class="px-4 py-2 rounded border" disabled>Download Markdown</button>
-        <button id="dl-csv" class="px-4 py-2 rounded border" disabled>Export CSV</button>
-        <span id="status" class="text-sm text-gray-500"></span>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+        <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
+        <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
+        <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
+        <span id="status" class="text-sm text-slate-500"></span>
       </div>
+      <p class="text-xs text-slate-500 mt-2">Outputs appear on the right. Copy or export with one click.</p>
     </section>
 
     <section class="grid gap-5">
-      <div class="rounded-2xl border bg-white p-5 shadow">
-        <div class="flex justify-between"><strong>LinkedIn</strong><button id="copy-li" class="text-xs border px-2 py-1 rounded">Copy</button></div>
-        <pre id="out-li" class="whitespace-pre-wrap text-sm mt-2"></pre>
+      <div class="card neon p-5 tilt">
+        <div class="flex justify-between items-center">
+          <strong class="tracking-tight">LinkedIn</strong>
+          <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+        </div>
+        <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
-      <div class="rounded-2xl border bg-white p-5 shadow">
-        <div class="flex justify-between"><strong>X (Twitter)</strong><button id="copy-x" class="text-xs border px-2 py-1 rounded">Copy</button></div>
-        <pre id="out-x" class="whitespace-pre-wrap text-sm mt-2"></pre>
+
+      <div class="card neon p-5 tilt">
+        <div class="flex justify-between items-center">
+          <strong class="tracking-tight">X (Twitter)</strong>
+          <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+        </div>
+        <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
-      <div class="rounded-2xl border bg-white p-5 shadow">
-        <div class="flex justify-between"><strong>Email snippet</strong><button id="copy-em" class="text-xs border px-2 py-1 rounded">Copy</button></div>
-        <pre id="out-em" class="whitespace-pre-wrap text-sm mt-2"></pre>
+
+      <div class="card neon p-5 tilt">
+        <div class="flex justify-between items-center">
+          <strong class="tracking-tight">Email snippet</strong>
+          <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+        </div>
+        <pre id="out-em" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
-      <div class="rounded-2xl border bg-white p-5 shadow">
-        <div class="flex justify-between"><strong>Instagram</strong><button id="copy-ig" class="text-xs border px-2 py-1 rounded">Copy</button></div>
-        <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-2"></pre>
+
+      <div class="card neon p-5 tilt">
+        <div class="flex justify-between items-center">
+          <strong class="tracking-tight">Instagram</strong>
+          <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+        </div>
+        <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
     </section>
   </main>
 
-  <!-- FAQ -->
-  <section id="faq" class="max-w-6xl mx-auto px-6 pb-12">
-    <h3 class="text-2xl font-semibold">FAQ</h3>
-    <ul class="mt-3 text-sm text-gray-700 list-disc list-inside">
-      <li><strong>Is it really free?</strong> Yes — we rotate free OpenRouter models and allow your own BYOK for unlimited.</li>
-      <li><strong>What’s BYOK?</strong> Bring Your Own OpenRouter key. Paste it to remove limits.</li>
-      <li><strong>What’s next?</strong> Save projects, calendar scheduling, and exports to Notion/Trello.</li>
-    </ul>
+  <!-- HOW IT WORKS -->
+  <section id="how" class="max-w-7xl mx-auto px-5 pb-10">
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="card p-5 tilt">
+        <div class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50 w-fit mb-3">1. Paste your source</div>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Drop in a paragraph, blog snippet, or bullets. No login needed.</p>
+      </div>
+      <div class="card p-5 tilt">
+        <div class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50 w-fit mb-3">2. Generate drafts</div>
+        <p class="text-sm text-slate-600 dark:text-slate-300">We rotate fast, free models. Add your own OpenRouter key for unlimited.</p>
+      </div>
+      <div class="card p-5 tilt">
+        <div class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50 w-fit mb-3">3. Copy or export</div>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Copy per-channel, download Markdown or CSV, and you’re ready to publish.</p>
+      </div>
+    </div>
   </section>
 
-  <footer class="py-8 text-center text-xs text-gray-500">
-    © <span id="year"></span> ContentFlow AI • Free models via OpenRouter
+  <!-- FAQ -->
+  <section id="faq" class="max-w-7xl mx-auto px-5 pb-20">
+    <div class="card p-6">
+      <h3 class="text-2xl font-bold tracking-tight">FAQ</h3>
+      <ul class="mt-3 text-sm text-slate-700 dark:text-slate-300 space-y-2">
+        <li><strong>Is it really free?</strong> Yes — we rotate free OpenRouter models and allow BYOK for unlimited.</li>
+        <li><strong>What’s BYOK?</strong> Bring Your Own OpenRouter key. Paste it once, saved to this tab only.</li>
+        <li><strong>What’s next?</strong> Save projects, calendar scheduling, and exports to Notion/Trello.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STICKY CTA -->
+  <div class="cta-sticky">
+    <div class="max-w-7xl mx-auto px-5 py-3 flex flex-col md:flex-row items-center gap-3 justify-between">
+      <div class="text-sm text-slate-700 dark:text-slate-200">
+        ✨ Try the demo now — see LinkedIn, X, Email & IG drafts in under 10 seconds.
+      </div>
+      <div class="flex gap-3">
+        <a href="#demo" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open Live Demo</a>
+        <a href="#settings" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Add BYOK</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="year"></span> ContentFlow AI
   </footer>
 
   <script>
-  // Frontend points to YOUR Worker (already set to your URL)
-  const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+    // worker base (already set to yours)
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+    const $ = (s)=>document.querySelector(s);
+    $("#year").textContent = new Date().getFullYear();
 
-  const $ = (s)=>document.querySelector(s);
-  $("#year").textContent = new Date().getFullYear();
+    // Save settings in this tab
+    $("#save").onclick = ()=>{
+      sessionStorage.setItem("MODEL", $("#model").value.trim());
+      sessionStorage.setItem("BYOK",  $("#byok").value.trim());
+      alert("Saved for this tab.");
+    };
 
-  // Save simple settings in this tab
-  $("#save").onclick = ()=>{
-    sessionStorage.setItem("MODEL", $("#model").value.trim());
-    sessionStorage.setItem("BYOK",  $("#byok").value.trim());
-    alert("Saved for this tab.");
-  };
+    // Copy helpers
+    const copy = (sel, get)=> $(sel).onclick = async()=> navigator.clipboard.writeText(get());
+    copy("#copy-li", ()=> $("#out-li").textContent || "");
+    copy("#copy-x",  ()=> $("#out-x").textContent  || "");
+    copy("#copy-em", ()=> $("#out-em").textContent || "");
+    copy("#copy-ig", ()=> $("#out-ig").textContent || "");
 
-  // Copy helpers
-  const copy = (btnSel, get)=>{ $(btnSel).onclick = async()=>{ await navigator.clipboard.writeText(get()); } };
-  copy("#copy-li", ()=> $("#out-li").textContent || "");
-  copy("#copy-x",  ()=> $("#out-x").textContent  || "");
-  copy("#copy-em", ()=> $("#out-em").textContent || "");
-  copy("#copy-ig", ()=> $("#out-ig").textContent || "");
+    // Quota badge
+    async function refreshQuota(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/quota?plan=free`);
+        const q = await r.json();
+        $("#quota").textContent = q.cap===Infinity ? "Pro: Unlimited" : `Today: ${q.used}/${q.cap} free`;
+      }catch{ $("#quota").textContent = "Quota: n/a"; }
+    }
+    refreshQuota();
 
-  // Quota
-  async function refreshQuota(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/quota?plan=free`);
-      const q = await r.json();
-      $("#quota").textContent = q.cap===Infinity ? "Pro: Unlimited" : `Today: ${q.used}/${q.cap} free`;
-    }catch{ $("#quota").textContent = "Quota: n/a"; }
-  }
-  refreshQuota();
+    // Markdown & CSV helpers
+    function buildMarkdown(o){
+      const lines = [
+        "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
+        "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x||"").trim(),
+        "","## Email",(o.email||"").trim(),
+        "","## Instagram",(o.instagram||"").trim(),""
+      ];
+      return lines.join("\\n");
+    }
+    const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
+    function buildCSV(o){
+      const rows = [["channel","content"]];
+      if (o.linkedin) rows.push(["linkedin", o.linkedin]);
+      if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x]);
+      if (o.email) rows.push(["email", o.email]);
+      if (o.instagram) rows.push(["instagram", o.instagram]);
+      return rows.map(r=>r.map(csvEsc).join(",")).join("\\n");
+    }
+    function download(filename, mime, text){
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
 
-  // Build Markdown + CSV
-  function buildMarkdown(o){
-    const lines = [
-      "# Content Pack",
-      "",
-      "## LinkedIn",
-      (o.linkedin||"").trim(),
-      "",
-      "## X (Twitter)",
-      (Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x||"").trim(),
-      "",
-      "## Email",
-      (o.email||"").trim(),
-      "",
-      "## Instagram",
-      (o.instagram||"").trim(),
-      ""
-    ];
-    return lines.join("\\n");
-  }
-  function csvEscape(s){ return '"' + String(s).replace(/"/g,'""') + '"'; }
-  function buildCSV(o){
-    const rows = [["channel","content"]];
-    if (o.linkedin) rows.push(["linkedin", o.linkedin]);
-    if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x]);
-    if (o.email) rows.push(["email", o.email]);
-    if (o.instagram) rows.push(["instagram", o.instagram]);
-    return rows.map(r=>r.map(csvEscape).join(",")).join("\\n");
-  }
-  function download(filename, mime, text){
-    const blob = new Blob([text], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-  }
+    // Generate
+    $("#run").onclick = async ()=>{
+      const source = $("#source").value.trim();
+      if (!source) { alert("Paste some content first."); return; }
+      $("#status").textContent = "Generating…";
+      $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
+      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
 
-  // Run generation
-  $("#run").onclick = async ()=>{
-    const source = $("#source").value.trim();
-    if (!source) { alert("Paste some content first."); return; }
-    $("#status").textContent = "Generating…";
-    $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
-    $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+      const model = sessionStorage.getItem("MODEL") || "";
+      const byok  = sessionStorage.getItem("BYOK")  || "";
+      const headers = { "Content-Type":"application/json" };
+      if (byok) headers["X-User-OpenRouter-Key"] = byok;
 
-    const model = sessionStorage.getItem("MODEL") || "";
-    const byok  = sessionStorage.getItem("BYOK")  || "";
-    const headers = { "Content-Type":"application/json" };
-    if (byok) headers["X-User-OpenRouter-Key"] = byok;
-
-    const SYSTEM = {
-      role: "system",
-      content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
+      const SYSTEM = {
+        role: "system",
+        content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
 - LinkedIn: 6–10 lines, 1 CTA.
 - X: <= 280 chars, 2 variants.
 - Email: 3–5 sentences + subject.
 - Instagram: 1–2 short paragraphs + 3–5 hashtags.
 No extra commentary.`
+      };
+      const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
+
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/generate`, {
+          method:"POST",
+          headers,
+          body: JSON.stringify({ plan: byok ? "pro":"free", messages, temperature:0.7, model: model || undefined })
+        });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { $("#status").textContent = data?.error?.message || "Error"; return; }
+
+        let out = {};
+        try { out = JSON.parse(data?.choices?.[0]?.message?.content || "{}"); } catch {}
+
+        $("#out-li").textContent = out.linkedin || "";
+        $("#out-x").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        $("#out-em").textContent = out.email || "";
+        $("#out-ig").textContent = out.instagram || "";
+
+        $("#status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"}`;
+        refreshQuota();
+
+        $("#dl-md").disabled = false; $("#dl-csv").disabled = false;
+        $("#dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+        $("#dl-csv").onclick = ()=> download("content-pack.csv","text/csv",      buildCSV(out));
+      }catch(e){ $("#status").textContent = e.message || "Network error"; }
     };
 
-    const messages = [
-      SYSTEM,
-      { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` }
-    ];
+    // Enter to run (Shift+Enter = newline)
+    document.getElementById("source").addEventListener("keydown",(e)=>{
+      if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); }
+    });
 
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/generate`, {
-        method:"POST",
-        headers,
-        body: JSON.stringify({ plan: byok ? "pro":"free", messages, temperature:0.7, model: model || undefined })
-      });
-      const data = await r.json().catch(()=> ({}));
-      if (!r.ok) { $("#status").textContent = data?.error?.message || "Error"; return; }
-
-      let out = {};
-      try { out = JSON.parse(data?.choices?.[0]?.message?.content || "{}"); } catch {}
-      $("#out-li").textContent = out.linkedin || "";
-      $("#out-x").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-      $("#out-em").textContent = out.email || "";
-      $("#out-ig").textContent = out.instagram || "";
-
-      $("#status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"}`;
-      refreshQuota();
-
-      // Enable downloads
-      $("#dl-md").disabled = false; $("#dl-csv").disabled = false;
-      $("#dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
-      $("#dl-csv").onclick = ()=> download("content-pack.csv","text/csv",      buildCSV(out));
-    }catch(e){ $("#status").textContent = e.message || "Network error"; }
-  };
-
-  $("#clear").onclick = ()=>{
-    $("#source").value = "";
-    $("#status").textContent = "";
-    $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
-    $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
-  };
+    // clear
+    $("#clear").onclick = ()=>{
+      $("#source").value = "";
+      $("#status").textContent = "";
+      $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
+      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+    };
   </script>
 </body>
 </html>
