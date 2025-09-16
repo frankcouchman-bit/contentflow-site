@@ -4,19 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ContentFlow AI — Repurpose, Schedule & Scale SEO Content</title>
-  <meta name="description" content="Turn one idea into channel‑ready drafts for LinkedIn, X, Email and Instagram. Free runs via OpenRouter free models. BYOK supported.">
+  <meta name="description" content="Turn one idea into channel-ready drafts for LinkedIn, X, Email and Instagram. Free runs via OpenRouter free models. BYOK supported.">
   <link rel="canonical" href="https://contentflows.netlify.app/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
-  <!-- Open Graph / Twitter -->
+  <!-- OG/Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Free 5/month (no account). Signed‑in free: 5/day.">
+  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Free 5/month (no account). Signed-in free: 5/day.">
   <meta property="og:url" content="https://contentflows.netlify.app/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta name="twitter:description" content="Free 5/month demo. Signed‑in free: 5/day. BYOK supported.">
+  <meta name="twitter:description" content="Free 5/month demo. Signed-in free: 5/day. BYOK supported.">
   <meta name="twitter:image" content="/og-cover.png">
 
   <!-- Fonts + Tailwind -->
@@ -35,27 +35,15 @@
       .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
     }
     .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem}
-    .badge svg{width:16px;height:16px}
-    .tip{position:relative}
-    .tip:hover .tipcard{opacity:1;transform:translateY(0)}
-    .tipcard{position:absolute;top:110%;left:0;opacity:0;transform:translateY(6px);transition:.2s;padding:.5rem .6rem;border-radius:.5rem;background:#0b1220;color:#dbe7ff;border:1px solid rgba(255,255,255,.08);white-space:nowrap;font-size:.75rem;z-index:20}
     .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
   </style>
 
-  <!-- JSON‑LD (Organization + WebSite + SoftwareApplication + FAQPage) -->
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed‑in free: 5/day. BYOK unlimited (plan limits apply)."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}
-  </script>
+  <!-- JSON-LD -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free: 5/day. BYOK unlimited (plan limits apply)."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}</script>
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -64,8 +52,8 @@
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3">
-        <span class="w-9 h-9 rounded-xl bg-grad"></span>
+      <a href="#" class="flex items-center gap-3" aria-label="ContentFlow AI home">
+        <span class="w-9 h-9 rounded-xl bg-grad" aria-hidden="true"></span>
         <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
       </a>
       <nav class="hidden md:flex items-center gap-6 text-sm">
@@ -100,11 +88,11 @@
         <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
       </div>
       <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span class="badge">SEO‑ready</span>
+        <span class="badge">SEO-ready</span>
         <span class="badge">X</span>
         <span class="badge">Email</span>
         <span class="badge">Instagram</span>
-        <span class="badge tip">BYOK<div class="tipcard">Bring your own OpenRouter key</div></span>
+        <span class="badge" title="Bring your own OpenRouter key">BYOK</span>
       </div>
     </div>
 
@@ -118,7 +106,7 @@
     </div>
   </section>
 
-  <!-- TEMPLATES / USE‑CASES STRIP -->
+  <!-- TEMPLATES -->
   <section id="templates" class="max-w-7xl mx-auto px-5 py-10">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
@@ -155,7 +143,7 @@
         <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
         <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
         <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
-        <span id="status" class="text-sm text-slate-500"></span>
+        <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
       </div>
     </section>
 
@@ -244,13 +232,13 @@
         <a href="?plan=creator" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</a>
       </div>
       <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg:white/10 border w-fit">Team</div>
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
         <h3 class="mt-3 text-xl font-bold">Business</h3>
         <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
         <ul class="mt-4 text-sm space-y-2">
           <li>• Unlimited (fair use)</li>
           <li>• 3 seats</li>
-          <li>• White‑label export</li>
+          <li>• White-label export</li>
           <li>• Priority support</li>
         </ul>
         <a href="?plan=business" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</a>
@@ -263,7 +251,7 @@
     <div class="card p-6">
       <h3 class="text-2xl font-bold tracking-tight">FAQ</h3>
       <ul class="mt-3 text-sm text-slate-700 dark:text-slate-300 space-y-2">
-        <li><strong>Is it free?</strong> Demo: 5/month by IP. Signed‑in free: 5/day.</li>
+        <li><strong>Is it free?</strong> Demo: 5/month by IP. Signed-in free: 5/day.</li>
         <li><strong>Does it store my key?</strong> No. BYOK stays in your browser tab (sessionStorage).</li>
         <li><strong>How do plan limits work?</strong> If you upgrade and use BYOK: Starter 50/mo, Creator 250/mo, Business unlimited.</li>
       </ul>
@@ -291,7 +279,7 @@
 
   <script>
     // ===== CONFIG =====
-    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // your Worker URL
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← set to your Worker URL
 
     // === Supabase ===
     const SUPABASE_URL = "";     // e.g., https://xxxx.supabase.co
@@ -304,6 +292,27 @@
 
     // Show/hide auth buttons based on supabase availability
     if (!supabase) { $("#loginBtn").style.display = "none"; $("#logoutBtn").style.display = "none"; }
+    else {
+      document.getElementById("loginBtn")?.addEventListener("click", (e)=>{
+        e.preventDefault(); document.getElementById('auth').showModal();
+      });
+      document.getElementById("logoutBtn")?.addEventListener("click", async ()=>{
+        await supabase.auth.signOut(); paintAuth(); refreshQuota();
+      });
+      document.getElementById("googleBtn").addEventListener("click", async (e)=>{
+        e.preventDefault();
+        await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+      });
+      document.getElementById("magicBtn").addEventListener("click", async (e)=>{
+        e.preventDefault();
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email) return alert('Enter an email');
+        const { error } = await supabase.auth.signInWithOtp({ email });
+        if (error) return alert(error.message);
+        alert('Magic link sent. Check your inbox.');
+        document.getElementById('auth').close();
+      });
+    }
 
     // Plan activation from URL (?plan=starter|creator|business)
     (function(){
@@ -322,28 +331,6 @@
       badge.textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
     }
 
-    // ===== Auth flows =====
-    document.getElementById("loginBtn")?.addEventListener("click", (e)=>{
-      e.preventDefault(); if (!supabase) return; document.getElementById('auth').showModal();
-    });
-    document.getElementById("logoutBtn")?.addEventListener("click", async ()=>{
-      if (!supabase) return; await supabase.auth.signOut(); paintAuth(); refreshQuota();
-    });
-
-    document.getElementById("googleBtn").addEventListener("click", async (e)=>{
-      e.preventDefault(); if (!supabase) return;
-      await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
-    });
-    document.getElementById("magicBtn").addEventListener("click", async (e)=>{
-      e.preventDefault(); if (!supabase) return;
-      const email = document.getElementById('emailInput').value.trim();
-      if (!email) return alert('Enter an email');
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) return alert(error.message);
-      alert('Magic link sent. Check your inbox.');
-      document.getElementById('auth').close();
-    });
-
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
       const { data:{ session } } = await supabase.auth.getSession();
@@ -357,8 +344,7 @@
       if (userId){ login?.classList.add('hidden'); logout?.classList.remove('hidden'); logout.textContent = `Sign out (${email||'account'})`; }
       else { login?.classList.remove('hidden'); logout?.classList.add('hidden'); }
     }
-
-    paintAuth();
+    if (supabase) paintAuth();
 
     // ===== Quota =====
     async function refreshQuota(){
@@ -378,7 +364,7 @@
       }catch(e){ document.getElementById("quota").textContent = "Quota: n/a"; return null; }
     }
 
-    // Build exports
+    // ===== Export builders =====
     function buildMarkdown(o){
       const lines = [
         "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
@@ -406,16 +392,44 @@
       setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
     }
 
+    // ===== JSON extraction (handles ```json fences & extra prose) =====
+    function extractJSON(text){
+      if (!text) return null;
+      const raw = String(text).trim();
+      try { return JSON.parse(raw); } catch {}
+      const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (fenced){ try { return JSON.parse(fenced[1]); } catch {} }
+      const first = raw.indexOf('{');
+      const last  = raw.lastIndexOf('}');
+      if (first !== -1 && last !== -1 && last>first){
+        const slice = raw.slice(first, last+1);
+        try { return JSON.parse(slice); } catch {}
+      }
+      return null;
+    }
+
     function parseOutput(content){
-      if (!content) return {};
-      try { const j = JSON.parse(content); if (j && (j.linkedin || j.x || j.email || j.instagram)) return j; } catch {}
-      const text = String(content);
-      const out = {}; const parts = text.split(/\n{2,}/);
-      out.linkedin  = parts[0] || text;
-      out.x         = parts[1] || "";
-      out.email     = { subject:"", body: parts[2] || "" };
-      out.instagram = parts.slice(3).join("\n\n") || "";
-      return out;
+      const j = extractJSON(content);
+      if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
+
+      // Heuristic fallback so channels don’t all dump into LinkedIn
+      const text = String(content||"").trim();
+      const out = {};
+      const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
+      const xMatch  = text.match(/"x"\s*:\s*(\[[\s\S]*?\]|"[\s\S]*?")\s*(,|$)/i);
+      const emMatch = text.match(/"email"\s*:\s*(\{[\s\S]*?\}|"[\s\S]*?")\s*(,|$)/i);
+      const igMatch = text.match(/"instagram"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
+      if (liMatch) out.linkedin = liMatch[1].replace(/\\n/g,"\n");
+      if (xMatch)  out.x  = xMatch[1].startsWith('[') ? JSON.parse(xMatch[1]) : xMatch[1].replace(/\\n/g,"\n");
+      if (emMatch){
+        if (emMatch[1].startsWith('{')){ try{ out.email = JSON.parse(emMatch[1]); }catch{ out.email = { subject:"", body: emMatch[1] }; } }
+        else out.email = { subject:"", body: emMatch[1].replace(/\\n/g,"\n") };
+      }
+      if (igMatch) out.instagram = igMatch[1].replace(/\\n/g,"\n");
+      if (out.linkedin || out.x || out.email || out.instagram) return out;
+
+      // Last resort
+      return { linkedin: text };
     }
 
     function paintOutputs(out){
@@ -466,7 +480,14 @@
       const planHdr = (localStorage.getItem("plan")||"").toLowerCase();
       if (planHdr) headers["X-Plan"] = planHdr;
 
-      const SYSTEM = { role: "system", content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.\n- LinkedIn: 6–10 lines, one CTA.\n- X: <= 280 chars, provide 2 variants if possible.\n- Email: JSON with keys {subject, body} — 3–5 sentences.\n- Instagram: 1–2 short paragraphs + 3–5 hashtags.\nRespond with JSON only.` };
+      const SYSTEM = { role: "system", content: (
+        `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.\n`+
+        `- linkedin: 6–10 lines, one CTA.\n`+
+        `- x: <= 280 chars total; provide an array with 2 short variants if possible.\n`+
+        `- email: object with keys {subject, body} — 3–5 sentences.\n`+
+        `- instagram: 1–2 short paragraphs + 3–5 hashtags.\n`+
+        `STRICT: No Markdown, no triple backticks, no prose — JSON object only.`
+      ) };
       const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
       try{
@@ -482,7 +503,7 @@
         paintOutputs(out);
         document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
 
-        const q = await refreshQuota();
+        await refreshQuota();
         document.getElementById("dl-md").disabled = false; document.getElementById("dl-csv").disabled = false;
         document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
         document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
