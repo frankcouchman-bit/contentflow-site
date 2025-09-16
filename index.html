@@ -8,10 +8,11 @@
   <link rel="canonical" href="https://contentflows.netlify.app/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
+
   <!-- OG/Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Free 5/month (no account). Signed-in free: 5/day.">
+  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Demo: 5/month. Signed-in: 5/day.">
   <meta property="og:url" content="https://contentflows.netlify.app/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -37,6 +38,7 @@
     .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem}
     .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .pill{border-radius:9999px;border:1px solid rgba(255,255,255,.25);padding:.2rem .6rem}
   </style>
 
   <!-- JSON-LD -->
@@ -67,6 +69,12 @@
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
+        <!-- View switcher (for previewing UI states) -->
+        <div class="hidden md:flex items-center gap-1 ml-2">
+          <span class="text-xs text-slate-500">View:</span>
+          <button id="viewGuest" class="text-xs pill">Demo</button>
+          <button id="viewMember" class="text-xs pill">Signed-in</button>
+        </div>
       </nav>
     </div>
   </header>
@@ -75,7 +83,7 @@
   <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
     <div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Demo — <strong class="mx-1">5 runs / month</strong> (no login)
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
       </div>
       <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
         From one idea to <span class="txt-grad">everywhere</span> — repurpose & schedule in minutes.
@@ -114,6 +122,25 @@
       <div class="card p-5"><div class="text-xs text-slate-400">Blog</div><div class="mt-1 font-semibold">Problem → Solution SEO Article</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
       <div class="card p-5"><div class="text-xs text-slate-400">Email</div><div class="mt-1 font-semibold">Feature Launch / Update</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
       <div class="card p-5"><div class="text-xs text-slate-400">Social</div><div class="mt-1 font-semibold">LinkedIn Thread from Blog</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section id="use-cases" class="max-w-7xl mx-auto px-5 pb-8">
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
+    <div class="grid md:grid-cols-3 gap-5 mt-5">
+      <div class="card p-5">
+        <div class="font-semibold">Repurpose a blog to social</div>
+        <p class="text-sm text-slate-500 mt-2">Turn one article into multi-platform posts in minutes.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">Launch email updates</div>
+        <p class="text-sm text-slate-500 mt-2">Subject lines + short body copy for quick campaigns.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">Schedule to your calendar</div>
+        <p class="text-sm text-slate-500 mt-2">Export to Notion / Trello or push to Buffer (paid).</p>
+      </div>
     </div>
   </section>
 
@@ -193,13 +220,13 @@
     </main>
   </section>
 
-  <!-- ===== MEMBER VIEW (LOGGED IN) ===== -->
+  <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
     <div class="max-w-7xl mx-auto px-5 pb-12">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard</h2>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard <span class="txt-grad text-transparent">— Signed-in</span></h2>
           <p class="text-slate-500 dark:text-slate-300">Welcome back, <span id="userEmail" class="font-medium"></span></p>
         </div>
         <div class="flex items-center gap-3">
@@ -209,42 +236,8 @@
       </div>
 
       <!-- Top Cards -->
-      <div class="grid md:grid-cols-3 gap-5 mb-6">
-        <!-- Daily quota -->
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong>Today’s quota</strong>
-            <span id="dailyCount" class="text-sm text-slate-500">0/5</span>
-          </div>
-          <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
-            <div id="dailyBar" class="h-2 bg-grad" style="width:0%"></div>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">Free members can generate up to 5/day.</p>
-        </div>
-
-        <!-- BYOK -->
-        <div class="card p-5">
-          <strong>Model & BYOK</strong>
-          <div class="mt-3 grid gap-2">
-            <input id="model_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
-            <input id="byok_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
-            <div class="flex gap-2">
-              <button id="save_m" class="px-3 py-2 rounded-xl border">Save</button>
-              <span id="byokState" class="text-xs text-slate-500 self-center">BYOK: not set</span>
-            </div>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
-        </div>
-
-        <!-- Quick actions -->
-        <div class="card p-5">
-          <strong>Quick actions</strong>
-          <div class="mt-3 grid gap-2">
-            <button id="openRepurpose" class="px-3 py-2 rounded-xl border hover:bg-white/50">Repurpose a paragraph</button>
-            <button id="openEmail" class="px-3 py-2 rounded-xl border hover:bg-white/50">Write an email update</button>
-            <button id="openThread" class="px-3 py-2 rounded-xl border hover:bg-white/50">Make an X thread</button>
-          </div>
-        </div>
+      <div id="quotaCards" class="grid md:grid-cols-3 gap-5 mb-6">
+        <!-- Filled by paintQuota() -->
       </div>
 
       <!-- Member Generator -->
@@ -298,6 +291,34 @@
           <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
       </div>
+
+      <!-- Saved Presets + Growth -->
+      <div class="grid md:grid-cols-2 gap-5 mt-6">
+        <!-- Saved Presets -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Saved presets</strong>
+            <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Save prompts/settings to reuse later (plan limits apply).</p>
+          <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
+        </div>
+
+        <!-- Growth / Referrals -->
+        <div class="card p-5">
+          <strong>Grow your daily quota</strong>
+          <p class="text-sm text-slate-500 mt-2">Share your invite to unlock bonus runs (visual; enforcement requires billing/worker rules).</p>
+          <div class="mt-3 grid gap-2">
+            <input id="refLink" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" readonly value="">
+            <div class="flex flex-wrap gap-2">
+              <button id="shareLi" class="px-3 py-2 rounded-xl border">Share on LinkedIn</button>
+              <button id="shareX"  class="px-3 py-2 rounded-xl border">Share on X</button>
+              <button id="copyRef" class="px-3 py-2 rounded-xl border">Copy link</button>
+            </div>
+          </div>
+          <p id="refNote" class="text-xs text-slate-500 mt-2">Tip: Each signup via your link can grant +1/day (subject to plan).</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -319,8 +340,9 @@
         </ul>
         <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
       </div>
+
       <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg:white/10 border w-fit">Starter</div>
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
         <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
         <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
         <ul class="mt-4 text-sm space-y-2">
@@ -331,18 +353,22 @@
         </ul>
         <a href="?plan=starter" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Starter</a>
       </div>
+
       <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg:white/10 border w-fit">Best value</div>
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
         <h3 class="mt-3 text-xl font-bold">Creator</h3>
         <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
         <ul class="mt-4 text-sm space-y-2">
           <li>• 500 generations / month</li>
           <li>• Unlimited presets</li>
           <li>• Project pack export</li>
+          <li>• <strong>Notion export + Trello boards</strong></li>
+          <li>• <strong>Push drafts to Buffer</strong></li>
           <li>• New workflows early</li>
         </ul>
         <a href="?plan=creator" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</a>
       </div>
+
       <div class="card p-6">
         <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
         <h3 class="mt-3 text-xl font-bold">Business</h3>
@@ -352,8 +378,25 @@
           <li>• 3 seats</li>
           <li>• White-label export</li>
           <li>• Priority support</li>
+          <li>• All Creator integrations</li>
+          <li>• <strong>Team presets & shared calendar</strong></li>
         </ul>
         <a href="?plan=business" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-7xl mx-auto px-5 pb-12">
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">FAQ</h2>
+    <div class="mt-5 grid md:grid-cols-2 gap-5">
+      <div class="card p-5">
+        <strong>How does free work?</strong>
+        <p class="text-sm text-slate-500 mt-2">Demo is 5/month by IP. Sign-in unlocks 5/day. BYOK is unlimited (subject to plan quotas).</p>
+      </div>
+      <div class="card p-5">
+        <strong>What are integrations?</strong>
+        <p class="text-sm text-slate-500 mt-2">Creator+ can export to Notion/Trello and push to Buffer for scheduling.</p>
       </div>
     </div>
   </section>
@@ -381,7 +424,7 @@
     // ===== CONFIG =====
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← your Worker URL
 
-    // === Supabase === (your values)
+    // === Supabase ===
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase = null;
@@ -392,7 +435,7 @@
     const $ = (s)=>document.querySelector(s);
     $("#year").textContent = new Date().getFullYear();
 
-    // Plan badge (UI only)
+    // ===== PLAN (UI only badge) =====
     (function(){
       const params = new URLSearchParams(location.search);
       const incoming = params.get("plan");
@@ -404,20 +447,39 @@
       $("#planbadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
     })();
 
-    // ===== VIEW TOGGLER =====
+    // ===== VIEW TOGGLER (Preview without changing auth) =====
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const viewParam = params.get("view");
+      if (viewParam) localStorage.setItem("viewOverride", viewParam); // 'guest' | 'member'
+      $("#viewGuest")?.addEventListener("click", ()=>{ localStorage.setItem("viewOverride","guest"); applyViewOverride(); });
+      $("#viewMember")?.addEventListener("click", ()=>{ localStorage.setItem("viewOverride","member"); applyViewOverride(); });
+    })();
+
+    function applyViewOverride(){
+      const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
+      if (o === "member") { showView(true); $("#heroBadge").textContent = "Signed-in Free — 5 runs / day"; }
+      else if (o === "guest") { showView(false); $("#heroBadge").textContent = "Demo — 5 runs / month (no login)"; }
+    }
+
+    // ===== VIEW SWITCH =====
     function showView(authenticated){
       const guest = document.getElementById('guestView');
       const member = document.getElementById('memberView');
       if (authenticated){
         guest?.classList.add('hidden');
         member?.classList.remove('hidden');
+        $("#loginBtn")?.classList.add("hidden");
+        $("#heroSignIn")?.classList.add("hidden");
       } else {
         member?.classList.add('hidden');
         guest?.classList.remove('hidden');
+        $("#loginBtn")?.classList.remove("hidden");
+        $("#heroSignIn")?.classList.remove("hidden");
       }
     }
 
-    // ===== Auth helpers =====
+    // ===== AUTH =====
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
       const { data:{ session } } = await supabase.auth.getSession();
@@ -441,9 +503,9 @@
         logout2?.classList.add("hidden");
         showView(false);
       }
+      applyViewOverride(); // allow preview override to win
     }
 
-    // Listen for auth state changes (handles Google redirect)
     if (supabase?.auth) {
       supabase.auth.onAuthStateChange((_event, _session) => {
         paintAuth();
@@ -451,22 +513,11 @@
       });
     }
 
-    // ===== Auth wiring =====
+    // Auth wiring
     $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
     $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
-
-    $("#logoutBtn")?.addEventListener("click", async ()=>{
-      if (!supabase) return alert("Auth not initialized");
-      await supabase.auth.signOut();
-      paintAuth();
-      refreshQuota();
-    });
-    $("#logoutBtn2")?.addEventListener("click", async ()=>{
-      if (!supabase) return alert("Auth not initialized");
-      await supabase.auth.signOut();
-      paintAuth();
-      refreshQuota();
-    });
+    $("#logoutBtn")?.addEventListener("click", async ()=>{ if (!supabase) return alert("Auth not initialized"); await supabase.auth.signOut(); paintAuth(); refreshQuota(); });
+    $("#logoutBtn2")?.addEventListener("click", async ()=>{ if (!supabase) return alert("Auth not initialized"); await supabase.auth.signOut(); paintAuth(); refreshQuota(); });
 
     $("#googleBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
@@ -474,7 +525,6 @@
       const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
       if (error) alert(error.message || error);
     });
-
     $("#magicBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
@@ -486,60 +536,138 @@
       $("#auth").close();
     });
 
-    // ===== Quota =====
+    // ===== QUOTA + DASH REWRITER =====
     async function refreshQuota(){
       try{
-        const { token, userId } = await getAuth();
+        const { token, userId, email } = await getAuth();
         const headers = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
         if (userId) headers["X-User-Id"] = userId;
         const plan = (localStorage.getItem("plan")||"");
         if (plan) headers["X-Plan"] = plan;
-        const r = await fetch(`${WORKER_BASE}/api/quota`, { headers });
-        const q = await r.json();
-        const daily = (q.cap===Infinity? "∞": q.cap);
-        const label = q.scope==='ip' ? `Demo: ${q.monthly.used}/${q.monthly.cap} this month` : `Today: ${q.used}/${daily}`;
-        const quotaBadge = document.getElementById("quota");
-        if (quotaBadge) quotaBadge.textContent = `Quota • ${label}`;
 
-        // Member visuals
-        try {
-          const dailyUsed = (q?.scope === 'user') ? (q?.used || 0) : 0;
-          const dailyCap = (q?.scope === 'user') ? (q?.cap === Infinity ? 5 : (q?.cap || 5)) : 5;
-          const pct = Math.max(0, Math.min(100, Math.round((dailyUsed / dailyCap) * 100)));
+        const res = await fetch(`${WORKER_BASE}/api/quota`, { headers });
+        const q = await res.json();
 
-          const dailyCount = document.getElementById('dailyCount');
-          const dailyBar = document.getElementById('dailyBar');
-          const quotaMember = document.getElementById('quotaMember');
-          const memberPlanBadge = document.getElementById('memberPlanBadge');
+        // Top hero + demo badge
+        const quotaBadge = $("#quota");
+        if (quotaBadge) {
+          const daily = (q.cap===Infinity? "∞": q.cap);
+          const label = q.scope==='ip' ? `Demo: ${q.monthly.used}/${q.monthly.cap} this month` : `Today: ${q.used}/${daily}`;
+          quotaBadge.textContent = `Quota • ${label}`;
+        }
+        $("#heroBadge").textContent = (q.scope==='ip') ? "Demo — 5 runs / month (no login)" : "Signed-in Free — 5 runs / day";
 
-          if (dailyCount) dailyCount.textContent = `${dailyUsed}/${dailyCap}`;
-          if (dailyBar) dailyBar.style.width = `${pct}%`;
-          if (quotaMember) quotaMember.textContent = `Today: ${dailyUsed}/${dailyCap}`;
-          if (memberPlanBadge) {
-            const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
-            memberPlanBadge.textContent = `Plan: ${planStr.charAt(0).toUpperCase()+planStr.slice(1)}`;
-          }
+        // Switch UI by scope
+        if (q.scope === 'user') showView(true); else showView(false);
+        applyViewOverride(); // allow manual preview
 
-          const byokState = document.getElementById('byokState');
-          if (byokState) byokState.textContent = sessionStorage.getItem("BYOK") ? "BYOK: set" : "BYOK: not set";
-        } catch {}
+        // Member visuals (rewrite cards)
+        paintQuota(q, email || null);
+
         return q;
       }catch(e){
-        const quotaBadge = document.getElementById("quota");
+        const quotaBadge = $("#quota");
         if (quotaBadge) quotaBadge.textContent = "Quota: n/a";
         return null;
       }
     }
 
-    // ===== Export builders =====
+    function paintQuota(q, email){
+      // Defaults if missing
+      const used = Number(q?.used || 0);
+      const cap  = (q?.cap === Infinity) ? Infinity : Number(q?.cap || 5);
+      const pct  = cap===Infinity ? 0 : Math.max(0, Math.min(100, Math.round((used / cap) * 100)));
+
+      // Badges
+      const dailyCount = document.getElementById('dailyCount');
+      const dailyBar   = document.getElementById('dailyBar');
+      const quotaMember = document.getElementById('quotaMember');
+      const memberPlanBadge = document.getElementById('memberPlanBadge');
+
+      if (dailyCount) dailyCount.textContent = `${used}/${cap===Infinity?'∞':cap}`;
+      if (dailyBar)   dailyBar.style.width = cap===Infinity ? '100%' : `${pct}%`;
+      if (quotaMember) quotaMember.textContent = `Today: ${used}/${cap===Infinity?'∞':cap}`;
+      if (memberPlanBadge) {
+        const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
+        memberPlanBadge.textContent = `Plan: ${planStr.charAt(0).toUpperCase()+planStr.slice(1)}`;
+      }
+
+      // Rebuild Top Cards for member
+      const wrap = document.getElementById('quotaCards');
+      if (!wrap) return;
+      const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
+      const scopeTxt = q?.scope==='user' ? 'Signed-in' : 'Demo';
+      const capTxt = (cap===Infinity?'∞':cap);
+
+      wrap.innerHTML = `
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Today’s quota</strong>
+            <span class="text-sm text-slate-500">${used}/${capTxt}</span>
+          </div>
+          <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+            <div class="h-2 bg-grad" style="width:${cap===Infinity?'100':pct}%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">${scopeTxt} • ${planStr} plan</p>
+        </div>
+
+        <div class="card p-5">
+          <strong>Model & BYOK</strong>
+          <div class="mt-3 grid gap-2">
+            <input id="model_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+            <input id="byok_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
+            <div class="flex gap-2">
+              <button id="save_m" class="px-3 py-2 rounded-xl border">Save</button>
+              <span id="byokState" class="text-xs text-slate-500 self-center">BYOK: not set</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
+        </div>
+
+        <div class="card p-5">
+          <strong>Quick actions</strong>
+          <div class="mt-3 grid gap-2">
+            <button id="openRepurpose" class="px-3 py-2 rounded-xl border hover:bg-white/50">Repurpose a paragraph</button>
+            <button id="openEmail" class="px-3 py-2 rounded-xl border hover:bg-white/50">Write an email update</button>
+            <button id="openThread" class="px-3 py-2 rounded-xl border hover:bg-white/50">Make an X thread</button>
+          </div>
+        </div>
+      `;
+
+      // Re-wire controls added by rewrite
+      document.getElementById("openRepurpose")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Repurpose this paragraph into LinkedIn, X, Email and Instagram."; });
+      document.getElementById("openEmail")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Announce our new feature and invite users to try it."; });
+      document.getElementById("openThread")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Turn this idea into a 5-tweet thread."; });
+
+      document.getElementById("save_m")?.addEventListener("click", ()=>{
+        sessionStorage.setItem("MODEL", document.getElementById("model_m").value.trim());
+        sessionStorage.setItem("BYOK",  document.getElementById("byok_m").value.trim());
+        const byokState = document.getElementById('byokState');
+        if (byokState) byokState.textContent = document.getElementById("byok_m").value.trim() ? "BYOK: set" : "BYOK: not set";
+        alert("Saved for this tab.");
+      });
+
+      const byokState = document.getElementById('byokState');
+      if (byokState) byokState.textContent = sessionStorage.getItem("BYOK") ? "BYOK: set" : "BYOK: not set";
+
+      // Referral link paint
+      try{
+        const uid = q?.userId || (email || '').split('@')[0] || 'guest';
+        const code = btoa(uid).replace(/=+$/,'');
+        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
+        const refInput = document.getElementById('refLink');
+        if (refInput) refInput.value = link;
+      } catch {}
+    }
+
+    // ===== EXPORT BUILDERS =====
     function buildMarkdown(o){
       const lines = [
         "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
         "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),
         "","## Email",(o.email?.body||o.email||"").trim(),
-        "","## Instagram",(o.instagram||"").trim(),""
-      ];
+        "","## Instagram",(o.instagram||"").trim(),""];
       return lines.join("\n");
     }
     const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
@@ -552,15 +680,7 @@
       return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
     }
 
-    function download(filename, mime, text){
-      const blob = new Blob([text], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-    }
-
-    // ===== JSON extraction (handles ```json fences & extra prose) =====
+    // ===== JSON extraction =====
     function extractJSON(text){
       if (!text) return null;
       const raw = String(text).trim();
@@ -575,12 +695,9 @@
       }
       return null;
     }
-
     function parseOutput(content){
       const j = extractJSON(content);
       if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
-
-      // Heuristic fallback so channels don’t all dump into LinkedIn
       const text = String(content||"").trim();
       const out = {};
       const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
@@ -595,8 +712,6 @@
       }
       if (igMatch) out.instagram = igMatch[1].replace(/\\n/g,"\n");
       if (out.linkedin || out.x || out.email || out.instagram) return out;
-
-      // Last resort
       return { linkedin: text };
     }
 
@@ -656,8 +771,7 @@
         `- x: <= 280 chars total; provide an array with 2 short variants if possible.\n`+
         `- email: object with keys {subject, body} — 3–5 sentences.\n`+
         `- instagram: 1–2 short paragraphs + 3–5 hashtags.\n`+
-        `STRICT: No Markdown, no triple backticks, no prose — JSON object only.`
-      ) };
+        `STRICT: No Markdown, no triple backticks, no prose — JSON object only.` ) };
       const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
       try{
@@ -684,6 +798,13 @@
     document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
 
     // Utilities (guest)
+    function download(filename, mime, text){
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
     document.getElementById("save").onclick = ()=>{
       sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
       sessionStorage.setItem("BYOK",  document.getElementById("byok").value.trim());
@@ -700,20 +821,6 @@
       ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
       document.getElementById("dl-md").disabled = true; document.getElementById("dl-csv").disabled = true;
     };
-
-    // ===== Member quick-fill =====
-    document.getElementById("openRepurpose")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Repurpose this paragraph into LinkedIn, X, Email and Instagram."; });
-    document.getElementById("openEmail")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Announce our new feature and invite users to try it."; });
-    document.getElementById("openThread")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Turn this idea into a 5-tweet thread."; });
-
-    // Member BYOK/model save
-    document.getElementById("save_m")?.addEventListener("click", ()=>{
-      sessionStorage.setItem("MODEL", document.getElementById("model_m").value.trim());
-      sessionStorage.setItem("BYOK",  document.getElementById("byok_m").value.trim());
-      const byokState = document.getElementById('byokState');
-      if (byokState) byokState.textContent = document.getElementById("byok_m").value.trim() ? "BYOK: set" : "BYOK: not set";
-      alert("Saved for this tab.");
-    });
 
     // ===== RUN (member) =====
     async function runGenMember({ useBYOK=false }){
@@ -786,9 +893,71 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     document.getElementById("copy-em_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj_m').textContent}\n\n${document.getElementById('out-em-body_m').textContent}`));
     document.getElementById("copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(document.getElementById('out-ig_m').textContent||""));
 
-    // Initial paint
+    // ===== PRESETS =====
+    function loadPresets(){
+      const list = JSON.parse(localStorage.getItem("presets")||"[]");
+      const ul = document.getElementById("presetList");
+      if (!ul) return;
+      ul.innerHTML = "";
+      if (!list.length){ ul.innerHTML = `<li class="text-xs text-slate-500">No presets yet.</li>`; return; }
+      list.forEach((p, i)=>{
+        const li = document.createElement("li");
+        li.innerHTML = `<div class="flex items-center justify-between gap-2">
+          <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
+          <div class="flex gap-2">
+            <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use">Use</button>
+            <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del">Delete</button>
+          </div>
+        </div>`;
+        ul.appendChild(li);
+      });
+      ul.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click",(e)=>{
+          const i = Number(btn.getAttribute("data-i"));
+          const act = btn.getAttribute("data-act");
+          const list = JSON.parse(localStorage.getItem("presets")||"[]");
+          if (act==="use"){ const el = document.getElementById("source_m"); if (el) el.value = list[i]?.text || ""; }
+          if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
+        });
+      });
+    }
+    document.getElementById("addPreset")?.addEventListener("click", ()=>{
+      const text = (document.getElementById("source_m")?.value || "").trim();
+      if (!text) return alert("Write something first.");
+      const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
+      const list = JSON.parse(localStorage.getItem("presets")||"[]");
+      list.unshift({ title, text, t: Date.now() });
+      const plan = (localStorage.getItem("plan")||"free").toLowerCase();
+      if (plan==="starter" && list.length>10) list.splice(10); // Starter cap 10
+      localStorage.setItem("presets", JSON.stringify(list));
+      loadPresets();
+    });
+
+    // ===== REFERRAL / SHARE =====
+    function shareTo(network){
+      const link = document.getElementById("refLink")?.value || location.href;
+      const text = encodeURIComponent("I’m using ContentFlow AI to repurpose content into LinkedIn, X, Email & Instagram in minutes. Try it free:");
+      if (network==="li"){
+        const u = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`;
+        window.open(u, "_blank","noopener");
+      } else if (network==="x"){
+        const u = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(link)}`;
+        window.open(u, "_blank","noopener");
+      }
+    }
+    document.getElementById("shareLi")?.addEventListener("click", ()=> shareTo("li"));
+    document.getElementById("shareX")?.addEventListener("click",  ()=> shareTo("x"));
+    document.getElementById("copyRef")?.addEventListener("click", ()=> {
+      const v = document.getElementById("refLink")?.value || "";
+      if (!v) return;
+      navigator.clipboard.writeText(v);
+      const n = document.getElementById("refNote"); if (n) n.textContent = "Copied! Share it anywhere.";
+    });
+
+    // ===== INIT =====
     paintAuth();
     refreshQuota();
+    loadPresets();
   </script>
 </body>
 </html>
