@@ -56,7 +56,6 @@
         <span class="w-9 h-9 rounded-xl bg-grad" aria-hidden="true"></span>
         <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
       </a>
-      <!-- made nav visible on all sizes -->
       <nav class="flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
@@ -64,7 +63,7 @@
         <a href="#faq" class="hover:opacity-80">FAQ</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <div id="authControls" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
@@ -87,7 +86,6 @@
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
         <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-        <!-- extra hero Sign in for mobile/visibility -->
         <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
       </div>
       <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -119,78 +117,189 @@
     </div>
   </section>
 
-  <!-- DEMO -->
-  <main id="demo" class="max-w-7xl mx-auto px-5 pb-12 grid lg:grid-cols-2 gap-8">
-    <section class="card p-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
-        <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
+  <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
+  <section id="guestView">
+    <!-- DEMO -->
+    <main id="demo" class="max-w-7xl mx-auto px-5 pb-12 grid lg:grid-cols-2 gap-8">
+      <section class="card p-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
+          <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
+        </div>
+
+        <label for="source" class="sr-only">Source text</label>
+        <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
+
+        <details id="settings" class="mt-4 open:scroll-mt-20">
+          <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
+          <div class="grid md:grid-cols-3 gap-3 mt-3">
+            <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+            <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
+            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
+        </details>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
+          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
+          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
+          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
+          <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
+        </div>
+      </section>
+
+      <section class="grid gap-5">
+        <!-- LinkedIn -->
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
+            <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
+            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
+        <!-- X -->
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
+            <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
+            <button id="copy-x"  class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
+        <!-- Email -->
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
+            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <div class="text-xs text-slate-400">Subject:</div>
+          <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
+          <div class="text-xs text-slate-400 mt-3">Body:</div>
+          <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
+        </div>
+        <!-- Instagram -->
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
+            <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
+            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- ===== MEMBER VIEW (LOGGED IN) ===== -->
+  <section id="memberView" class="hidden">
+    <div class="max-w-7xl mx-auto px-5 pb-12">
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard</h2>
+          <p class="text-slate-500 dark:text-slate-300">Welcome back, <span id="userEmail" class="font-medium"></span></p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="memberPlanBadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
+          <button id="logoutBtn2" class="px-3 py-1 rounded-lg border">Sign out</button>
+        </div>
       </div>
 
-      <label for="source" class="sr-only">Source text</label>
-      <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
+      <!-- Top Cards -->
+      <div class="grid md:grid-cols-3 gap-5 mb-6">
+        <!-- Daily quota -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Today’s quota</strong>
+            <span id="dailyCount" class="text-sm text-slate-500">0/5</span>
+          </div>
+          <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+            <div id="dailyBar" class="h-2 bg-grad" style="width:0%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Free members can generate up to 5/day.</p>
+        </div>
 
-      <details id="settings" class="mt-4 open:scroll-mt-20">
-        <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
-        <div class="grid md:grid-cols-3 gap-3 mt-3">
-          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
-          <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
-          <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
+        <!-- BYOK -->
+        <div class="card p-5">
+          <strong>Model & BYOK</strong>
+          <div class="mt-3 grid gap-2">
+            <input id="model_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+            <input id="byok_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
+            <div class="flex gap-2">
+              <button id="save_m" class="px-3 py-2 rounded-xl border">Save</button>
+              <span id="byokState" class="text-xs text-slate-500 self-center">BYOK: not set</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
         </div>
-        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
-      </details>
 
-      <div class="mt-4 flex flex-wrap items-center gap-3">
-        <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
-        <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
-        <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
-        <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
-        <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
-        <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
+        <!-- Quick actions -->
+        <div class="card p-5">
+          <strong>Quick actions</strong>
+          <div class="mt-3 grid gap-2">
+            <button id="openRepurpose" class="px-3 py-2 rounded-xl border hover:bg-white/50">Repurpose a paragraph</button>
+            <button id="openEmail" class="px-3 py-2 rounded-xl border hover:bg-white/50">Write an email update</button>
+            <button id="openThread" class="px-3 py-2 rounded-xl border hover:bg-white/50">Make an X thread</button>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <section class="grid gap-5">
-      <!-- LinkedIn -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center">
-          <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
-          <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
-          <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+      <!-- Member Generator -->
+      <div class="card p-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold tracking-tight">Create new content</h3>
+          <span id="quotaMember" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Today: 0/5</span>
         </div>
-        <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
-      </div>
-      <!-- X -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center">
-          <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
-          <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
-          <button id="copy-x"  class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+
+        <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or idea…"></textarea>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+          <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
+          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
+          <span id="status_m" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
-        <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
-      <!-- Email -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center">
-          <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-          <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+
+      <!-- Outputs -->
+      <div class="grid lg:grid-cols-2 gap-5 mt-6">
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
+            <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
-        <div class="text-xs text-slate-400">Subject:</div>
-        <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
-        <div class="text-xs text-slate-400 mt-3">Body:</div>
-        <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
-      </div>
-      <!-- Instagram -->
-      <div class="card p-5">
-        <div class="flex justify-between items-center">
-          <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
-          <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
-          <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
+            <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
-        <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
+            <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <div class="text-xs text-slate-400">Subject:</div>
+          <pre id="out-em-subj_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
+          <div class="text-xs text-slate-400 mt-3">Body:</div>
+          <pre id="out-em-body_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
+            <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
 
   <!-- PRICING -->
   <section id="pricing" class="max-w-7xl mx-auto px-5 pb-16">
@@ -249,18 +358,6 @@
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section id="faq" class="max-w-7xl mx-auto px-5 pb-16">
-    <div class="card p-6">
-      <h3 class="text-2xl font-bold tracking-tight">FAQ</h3>
-      <ul class="mt-3 text-sm text-slate-700 dark:text-slate-300 space-y-2">
-        <li><strong>Is it free?</strong> Demo: 5/month by IP. Signed-in free: 5/day.</li>
-        <li><strong>Does it store my key?</strong> No. BYOK stays in your browser tab (sessionStorage).</li>
-        <li><strong>How do plan limits work?</strong> If you upgrade and use BYOK: Starter 50/mo, Creator 250/mo, Business unlimited.</li>
-      </ul>
-    </div>
-  </section>
-
   <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
 
   <!-- Auth Modal -->
@@ -284,7 +381,7 @@
     // ===== CONFIG =====
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← your Worker URL
 
-    // === Supabase === (INSERTED YOUR VALUES)
+    // === Supabase === (your values)
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase = null;
@@ -292,7 +389,6 @@
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     }
 
-    // Utilities
     const $ = (s)=>document.querySelector(s);
     $("#year").textContent = new Date().getFullYear();
 
@@ -308,6 +404,19 @@
       $("#planbadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
     })();
 
+    // ===== VIEW TOGGLER =====
+    function showView(authenticated){
+      const guest = document.getElementById('guestView');
+      const member = document.getElementById('memberView');
+      if (authenticated){
+        guest?.classList.add('hidden');
+        member?.classList.remove('hidden');
+      } else {
+        member?.classList.add('hidden');
+        guest?.classList.remove('hidden');
+      }
+    }
+
     // ===== Auth helpers =====
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
@@ -316,17 +425,30 @@
     }
 
     async function paintAuth(){
-      const { userId, email } = await getAuth();
+      const { token, userId, email } = await getAuth();
       const login = $("#loginBtn");
       const logout = $("#logoutBtn");
-      // Always show login; toggle logout by auth state
+      const logout2 = $("#logoutBtn2");
       login?.classList.remove("hidden");
       if (userId){
         logout?.classList.remove("hidden");
+        logout2?.classList.remove("hidden");
         if (logout) logout.textContent = `Sign out (${email || 'account'})`;
+        const ue = document.getElementById('userEmail'); if (ue) ue.textContent = email || 'member';
+        showView(true);
       } else {
         logout?.classList.add("hidden");
+        logout2?.classList.add("hidden");
+        showView(false);
       }
+    }
+
+    // Listen for auth state changes (handles Google redirect)
+    if (supabase?.auth) {
+      supabase.auth.onAuthStateChange((_event, _session) => {
+        paintAuth();
+        refreshQuota();
+      });
     }
 
     // ===== Auth wiring =====
@@ -339,11 +461,18 @@
       paintAuth();
       refreshQuota();
     });
+    $("#logoutBtn2")?.addEventListener("click", async ()=>{
+      if (!supabase) return alert("Auth not initialized");
+      await supabase.auth.signOut();
+      paintAuth();
+      refreshQuota();
+    });
 
     $("#googleBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
-      await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+      const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+      if (error) alert(error.message || error);
     });
 
     $("#magicBtn")?.addEventListener("click", async (e)=>{
@@ -370,9 +499,37 @@
         const q = await r.json();
         const daily = (q.cap===Infinity? "∞": q.cap);
         const label = q.scope==='ip' ? `Demo: ${q.monthly.used}/${q.monthly.cap} this month` : `Today: ${q.used}/${daily}`;
-        $("#quota").textContent = `Quota • ${label}`;
+        const quotaBadge = document.getElementById("quota");
+        if (quotaBadge) quotaBadge.textContent = `Quota • ${label}`;
+
+        // Member visuals
+        try {
+          const dailyUsed = (q?.scope === 'user') ? (q?.used || 0) : 0;
+          const dailyCap = (q?.scope === 'user') ? (q?.cap === Infinity ? 5 : (q?.cap || 5)) : 5;
+          const pct = Math.max(0, Math.min(100, Math.round((dailyUsed / dailyCap) * 100)));
+
+          const dailyCount = document.getElementById('dailyCount');
+          const dailyBar = document.getElementById('dailyBar');
+          const quotaMember = document.getElementById('quotaMember');
+          const memberPlanBadge = document.getElementById('memberPlanBadge');
+
+          if (dailyCount) dailyCount.textContent = `${dailyUsed}/${dailyCap}`;
+          if (dailyBar) dailyBar.style.width = `${pct}%`;
+          if (quotaMember) quotaMember.textContent = `Today: ${dailyUsed}/${dailyCap}`;
+          if (memberPlanBadge) {
+            const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
+            memberPlanBadge.textContent = `Plan: ${planStr.charAt(0).toUpperCase()+planStr.slice(1)}`;
+          }
+
+          const byokState = document.getElementById('byokState');
+          if (byokState) byokState.textContent = sessionStorage.getItem("BYOK") ? "BYOK: set" : "BYOK: not set";
+        } catch {}
         return q;
-      }catch(e){ $("#quota").textContent = "Quota: n/a"; return null; }
+      }catch(e){
+        const quotaBadge = document.getElementById("quota");
+        if (quotaBadge) quotaBadge.textContent = "Quota: n/a";
+        return null;
+      }
     }
 
     // ===== Export builders =====
@@ -455,8 +612,10 @@
       const len = xText.replace(/\n/g,' ').trim().length;
       $("#x-len").textContent = len;
       const flag = document.getElementById('x-flag');
-      flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
-      flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
+      if (flag){
+        flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
+        flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
+      }
 
       // Email
       let subj = "", body = "";
@@ -472,7 +631,7 @@
       $('#ig-tags').textContent = tags;
     }
 
-    // ===== RUN =====
+    // ===== RUN (guest) =====
     async function runGen({ useBYOK=false }){
       const source = document.getElementById("source").value.trim();
       if (!source) { alert("Paste some content first."); return; }
@@ -483,7 +642,7 @@
       const model = sessionStorage.getItem("MODEL") || "";
       const byok  = sessionStorage.getItem("BYOK")  || "";
       const headers = { "Content-Type":"application/json" };
-      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok; // user BYOK
+      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
 
       const { token, userId } = await getAuth();
       if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -524,7 +683,7 @@
     document.getElementById("run").onclick = ()=> runGen({ useBYOK:false });
     document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
 
-    // Utilities
+    // Utilities (guest)
     document.getElementById("save").onclick = ()=>{
       sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
       sessionStorage.setItem("BYOK",  document.getElementById("byok").value.trim());
@@ -534,7 +693,6 @@
     document.getElementById("copy-x").onclick  = ()=> navigator.clipboard.writeText(document.getElementById('out-x').textContent||"");
     document.getElementById("copy-em").onclick = ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj').textContent}\n\n${document.getElementById('out-em-body').textContent}`);
     document.getElementById("copy-ig").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-ig').textContent||"");
-
     document.getElementById("source").addEventListener("keydown",(e)=>{ if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); } });
     document.getElementById("clear").onclick = ()=>{
       document.getElementById("source").value = "";
@@ -542,6 +700,91 @@
       ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
       document.getElementById("dl-md").disabled = true; document.getElementById("dl-csv").disabled = true;
     };
+
+    // ===== Member quick-fill =====
+    document.getElementById("openRepurpose")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Repurpose this paragraph into LinkedIn, X, Email and Instagram."; });
+    document.getElementById("openEmail")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Announce our new feature and invite users to try it."; });
+    document.getElementById("openThread")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Turn this idea into a 5-tweet thread."; });
+
+    // Member BYOK/model save
+    document.getElementById("save_m")?.addEventListener("click", ()=>{
+      sessionStorage.setItem("MODEL", document.getElementById("model_m").value.trim());
+      sessionStorage.setItem("BYOK",  document.getElementById("byok_m").value.trim());
+      const byokState = document.getElementById('byokState');
+      if (byokState) byokState.textContent = document.getElementById("byok_m").value.trim() ? "BYOK: set" : "BYOK: not set";
+      alert("Saved for this tab.");
+    });
+
+    // ===== RUN (member) =====
+    async function runGenMember({ useBYOK=false }){
+      const src = document.getElementById("source_m").value.trim();
+      if (!src) return alert("Paste content first.");
+      document.getElementById("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
+
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+
+      const model = sessionStorage.getItem("MODEL") || "";
+      const byok  = sessionStorage.getItem("BYOK")  || "";
+      const headers = { "Content-Type":"application/json" };
+      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+
+      const { token, userId } = await getAuth();
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (userId) headers["X-User-Id"] = userId;
+      const planHdr = (localStorage.getItem("plan")||"").toLowerCase();
+      if (planHdr) headers["X-Plan"] = planHdr;
+
+      const SYSTEM = { role:"system", content:
+`You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
+- linkedin: 6–10 lines, one CTA.
+- x: <= 280 chars total; provide an array with 2 short variants if possible.
+- email: object with keys {subject, body} — 3–5 sentences.
+- instagram: 1–2 short paragraphs + 3–5 hashtags.
+STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
+
+      const messages = [ SYSTEM, { role:"user", content: `Source:\n${src}\nChannels: LinkedIn,X,Email,Instagram` } ];
+
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/generate`, {
+          method:"POST", headers,
+          body: JSON.stringify({ plan:(useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
+        });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { document.getElementById("status_m").textContent = data?.error?.message || "Error"; return; }
+
+        const content = data?.choices?.[0]?.message?.content || "";
+        const out = parseOutput(content);
+
+        document.getElementById("out-li_m").textContent = out.linkedin || "";
+        document.getElementById("out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        if (typeof out.email === 'object'){
+          document.getElementById("out-em-subj_m").textContent = out.email.subject || "";
+          document.getElementById("out-em-body_m").textContent = out.email.body || "";
+        } else {
+          document.getElementById("out-em-body_m").textContent = out.email || "";
+        }
+        document.getElementById("out-ig_m").textContent  = out.instagram || "";
+        document.getElementById("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+
+        await refreshQuota();
+      }catch(e){
+        document.getElementById("status_m").textContent = e.message || "Network error";
+      }
+    }
+
+    document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    document.getElementById("clear_m")?.addEventListener("click", ()=>{
+      document.getElementById("source_m").value = "";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("status_m").textContent = "";
+    });
+
+    // Member copy buttons
+    document.getElementById("copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(document.getElementById('out-li_m').textContent||""));
+    document.getElementById("copy-x_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText(document.getElementById('out-x_m').textContent||""));
+    document.getElementById("copy-em_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj_m').textContent}\n\n${document.getElementById('out-em-body_m').textContent}`));
+    document.getElementById("copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(document.getElementById('out-ig_m').textContent||""));
 
     // Initial paint
     paintAuth();
