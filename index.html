@@ -31,12 +31,6 @@
       .card{ background:rgba(14,16,22,.65); border-color:rgba(255,255,255,.08); box-shadow: 0 20px 70px rgba(122,162,255,.08), 0 10px 60px rgba(255,45,45,.06);}
     }
   </style>
-
-  <!-- Optional: GA4 (replace G-XXXX) -->
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXX"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXX');</script> -->
-
-  <!-- Optional: Supabase (for magic-link login). If you skip keys, login hides. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-full">
@@ -103,12 +97,15 @@ contentflow generate --channels linkedin,x,email
 
       <details id="settings" class="mt-4 open:scroll-mt-20">
         <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
-        <div class="grid md:grid-cols-3 gap-3 mt-3">
-          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+        <div class="grid md:grid-cols-4 gap-3 mt-3">
+          <select id="modelSelect" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30">
+            <option value="">Auto (rotate free lanes)</option>
+          </select>
+          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Or type a model slug" />
           <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
           <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
         </div>
-        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
+        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab (sessionStorage). We don’t store keys.</p>
       </details>
 
       <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -119,7 +116,6 @@ contentflow generate --channels linkedin,x,email
         <span id="status" class="text-sm text-slate-500"></span>
       </div>
 
-      <!-- Batch UI appears for non-free plans (client-side), still enforces caps in Worker -->
       <div id="batch-ui" class="mt-5 hidden">
         <label class="text-sm font-medium">Batch inputs (one per line)</label>
         <textarea id="batch-inputs" class="mt-2 w-full h-32 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Line 1&#10;Line 2&#10;Line 3"></textarea>
@@ -228,7 +224,7 @@ contentflow generate --channels linkedin,x,email
       <ul class="mt-3 text-sm text-slate-700 dark:text-slate-300 space-y-2">
         <li><strong>Is it free?</strong> Yes. 1/day anonymous, 10/day signed-in, BYOK unlimited.</li>
         <li><strong>Does it store my key?</strong> No. BYOK stays in your browser tab (sessionStorage).</li>
-        <li><strong>What if a model is busy?</strong> We auto-rotate free lanes and try again.</li>
+        <li><strong>What if a model is busy?</strong> We auto-rotate free lanes and retry once.</li>
       </ul>
     </div>
   </section>
@@ -249,8 +245,6 @@ contentflow generate --channels linkedin,x,email
 
     const $ = (s)=>document.querySelector(s);
     $("#year").textContent = new Date().getFullYear();
-
-    // Hide login if Supabase not configured
     if (!supabase) $("#loginBtn").style.display = "none";
 
     // Plan activation from URL (?plan=starter|creator|business)
@@ -267,12 +261,27 @@ contentflow generate --channels linkedin,x,email
       if (plan !== "free") document.getElementById("batch-ui").classList.remove("hidden");
     })();
 
+    // Load free models to dropdown (optional)
+    (async function loadModels(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/models`);
+        const j = await r.json();
+        const sel = $("#modelSelect");
+        (j.free_models || []).forEach(m=>{
+          const opt = document.createElement("option");
+          opt.value = m; opt.textContent = m;
+          sel.appendChild(opt);
+        });
+        sel.onchange = ()=> { $("#model").value = sel.value; };
+      }catch{}
+    })();
+
     // Supabase magic link login (optional)
     document.getElementById("loginBtn").onclick = async ()=>{
       if (!supabase) return;
       const email = prompt("Enter your email for a magic link:");
       if (!email) return;
-      const { data, error } = await supabase.auth.signInWithOtp({ email });
+      const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) { alert(error.message); return; }
       alert("Magic link sent. Check your inbox.");
     };
@@ -283,9 +292,9 @@ contentflow generate --channels linkedin,x,email
       return { token: session?.access_token || null, userId: session?.user?.id || null };
     }
 
-    // Save simple settings in this tab
+    // Save settings in this tab
     $("#save").onclick = ()=>{
-      sessionStorage.setItem("MODEL", $("#model").value.trim());
+      sessionStorage.setItem("MODEL", ($("#model").value || $("#modelSelect").value || "").trim());
       sessionStorage.setItem("BYOK",  $("#byok").value.trim());
       alert("Saved for this tab.");
     };
@@ -305,7 +314,6 @@ contentflow generate --channels linkedin,x,email
         if (userId) headers["X-User-Id"] = userId;
         const plan = localStorage.getItem("plan") || "";
         if (plan) headers["X-Plan"] = plan;
-
         const r = await fetch(`${WORKER_BASE}/api/quota?plan=free`, { headers });
         const q = await r.json();
         const d = q.cap===Infinity ? "Unlimited" : `${q.used}/${q.cap} today`;
@@ -340,17 +348,14 @@ contentflow generate --channels linkedin,x,email
       setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
     }
 
-    // Fallback parser: if the model returns plain text, we still show it
     function parseOutput(content){
       if (!content) return {};
       try {
         const j = JSON.parse(content);
         if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
       } catch {}
-      // Heuristic fallback: split the text into sections
       const text = String(content);
       const out = {};
-      // Try simple splits
       const parts = text.split(/\n{2,}/);
       out.linkedin  = parts[0] || text;
       out.x         = parts[1] || "";
@@ -367,7 +372,7 @@ contentflow generate --channels linkedin,x,email
       $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
       $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
 
-      const model = sessionStorage.getItem("MODEL") || "";
+      const model = sessionStorage.getItem("MODEL") || $("#modelSelect").value || "";
       const byok  = sessionStorage.getItem("BYOK")  || "";
       const headers = { "Content-Type":"application/json" };
       if (byok) headers["X-User-OpenRouter-Key"] = byok;
@@ -415,7 +420,7 @@ No extra commentary.`
       }catch(e){ $("#status").textContent = e.message || "Network error"; }
     };
 
-    // Batch (client unlock; worker still enforces monthly caps)
+    // Batch
     document.getElementById("run-batch").addEventListener("click", async ()=>{
       const plan = localStorage.getItem("plan") || "free";
       const caps = { starter:200, creator:500, business:Infinity };
@@ -429,7 +434,7 @@ No extra commentary.`
       if (userId) headers["X-User-Id"] = userId;
       headers["X-Plan"] = plan;
 
-      const model = sessionStorage.getItem("MODEL") || "";
+      const model = sessionStorage.getItem("MODEL") || $("#modelSelect").value || "";
       const SYSTEM = {
         role: "system",
         content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
@@ -441,7 +446,7 @@ No extra commentary.`
       };
 
       const lines = ($("#batch-inputs").value || "").split("\n").map(s=>s.trim()).filter(Boolean);
-      const toRun = lines.slice(0, Math.min(lines.length, 50)); // safety; worker monthly cap will still guard
+      const toRun = lines.slice(0, Math.min(lines.length, 50));
       const status = $("#batch-status"); status.textContent = `Running ${toRun.length}…`;
 
       let done=0; const packs=[];
