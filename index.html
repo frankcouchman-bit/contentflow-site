@@ -3,43 +3,72 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ContentFlow AI — Repurpose & Schedule in Minutes</title>
-  <meta name="description" content="Turn one idea into channel-ready drafts. Free AI via OpenRouter.">
+  <title>ContentFlow AI — Repurpose, Schedule & Scale SEO Content</title>
+  <meta name="description" content="Turn one idea into channel‑ready drafts for LinkedIn, X, Email and Instagram. Free runs via OpenRouter free models. BYOK supported."> 
+  <link rel="canonical" href="https://contentflows.netlify.app/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
+  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Free 5/day (no account).">
+  <meta property="og:url" content="https://contentflows.netlify.app/">
+  <meta property="og:image" content="/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
+  <meta name="twitter:description" content="Free 5/day. BYOK supported. Netlify + Cloudflare Worker.">
+  <meta name="twitter:image" content="/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
-    html,body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-    .txt-grad{ background:linear-gradient(135deg,var(--brandA),var(--brandB)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-    .bg-grad{ background:linear-gradient(135deg,var(--brandA),var(--brandB)); }
-    .glass{ backdrop-filter: blur(12px); background:rgba(255,255,255,.62); }
-    .card{ border-radius: 1.25rem; border:1px solid rgba(15,23,42,.10); background:rgba(255,255,255,.78); box-shadow: 0 15px 60px rgba(2,6,23,.08); }
-    .neon{ position:relative; }
-    .neon:before{ content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1px; background:linear-gradient(90deg,rgba(122,162,255,.9),rgba(255,45,45,.9));
-      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude; filter: blur(10px); opacity:.35; pointer-events:none;}
-    .orb{ position:absolute; border-radius:9999px; filter: blur(40px); opacity:.55; }
-    .orb.a{ width:520px; height:520px; background:radial-gradient(closest-side,rgba(122,162,255,.6),rgba(122,162,255,0)); animation: floatA 14s ease-in-out infinite; }
-    .orb.b{ width:620px; height:620px; background:radial-gradient(closest-side,rgba(255,45,45,.5),rgba(255,45,45,0)); animation: floatB 16s ease-in-out infinite; }
-    @keyframes floatA{ 0%,100%{ transform:translate(-5%, -8%);} 50%{ transform:translate(6%,3%);} }
-    @keyframes floatB{ 0%,100%{ transform:translate(4%, 6%);} 50%{ transform:translate(-6%,-4%);} }
-    .tilt{ transform-style:preserve-3d; transition: transform .25s ease, box-shadow .25s ease;}
-    .tilt:hover{ transform: translateY(-2px) rotate3d(.5,1,0,4deg); box-shadow: 0 20px 80px rgba(122,162,255,.18);}
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .bg-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB))}
+    .glass{backdrop-filter: blur(12px); background:rgba(255,255,255,.62)}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
     @media (prefers-color-scheme:dark){
-      body{ background:#07090f; color:#e9eef6;}
-      .glass{ background:rgba(10,12,18,.5);}
-      .card{ background:rgba(14,16,22,.65); border-color:rgba(255,255,255,.08); box-shadow: 0 20px 70px rgba(122,162,255,.08), 0 10px 60px rgba(255,45,45,.06);}
+      body{background:#07090f;color:#e9eef6}
+      .glass{background:rgba(10,12,18,.5)}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
     }
+    /* channel badges */
+    .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem}
+    .badge svg{width:16px;height:16px}
+    /* simple tooltip */
+    .tip{position:relative}
+    .tip:hover .tipcard{opacity:1;transform:translateY(0)}
+    .tipcard{position:absolute;top:110%;left:0;opacity:0;transform:translateY(6px);transition:.2s;padding:.5rem .6rem;border-radius:.5rem;background:#0b1220;color:#dbe7ff;border:1px solid rgba(255,255,255,.08);white-space:nowrap;font-size:.75rem;z-index:20}
   </style>
+
+  <!-- JSON‑LD (Organization + WebSite + SoftwareApplication + FAQPage) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"127"}
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. 5/day anonymous, 5/day signed‑in free, BYOK unlimited."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]
+  }
+  </script>
+
+  <!-- Optional Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-full">
-  <!-- background orbs -->
-  <div class="fixed inset-0 -z-10 pointer-events-none">
-    <div class="orb a -top-40 -left-28"></div>
-    <div class="orb b -bottom-40 -right-28"></div>
-  </div>
-
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
@@ -48,9 +77,11 @@
         <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
       </a>
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80">Demo</a>
+        <a href="#templates" class="hover:opacity-80">Templates</a>
+        <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="#faq" class="hover:opacity-80">FAQ</a>
+        <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
       </nav>
@@ -58,54 +89,70 @@
   </header>
 
   <!-- HERO -->
-  <section class="max-w-7xl mx-auto px-5 pt-8 md:pt-14 grid lg:grid-cols-2 gap-10 items-center">
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
     <div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Free demo — 1 run/day, sign in for 9 more
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Free demo — 5 runs/day (no login)
       </div>
       <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
         From one idea to <span class="txt-grad">everywhere</span> — repurpose & schedule in minutes.
       </h1>
       <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts. Export with one click.
+        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts. Export with one click. BYOK supported.
       </p>
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
         <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
       </div>
+      <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9Zm-9.82 3.33 6.3-6.3-1.41-1.41-4.89 4.88-2.12-2.12-1.41 1.41 3.53 3.54Z"/></svg>SEO‑ready</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69a4.26 4.26 0 0 0-7.26 3.88A12.09 12.09 0 0 1 3.16 5.1a4.25 4.25 0 0 0 1.32 5.68c-.65-.02-1.26-.2-1.8-.49v.05A4.26 4.26 0 0 0 5.3 14a4.3 4.3 0 0 1-1.92.07 4.27 4.27 0 0 0 3.98 2.96A8.54 8.54 0 0 1 2 18.58a12.05 12.05 0 0 0 6.53 1.91c7.84 0 12.13-6.5 12.13-12.13 0-.18-.01-.36-.02-.54A8.67 8.67 0 0 0 22.46 6Z"/></svg>X</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14l4-4h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"/></svg>Email</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 3H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm-5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.5A2.5 2.5 0 1 0 12 15a2.5 2.5 0 0 0 0-5Z"/></svg>Instagram</span>
+        <span class="badge tip">BYOK<div class="tipcard">Bring your own OpenRouter key</div></span>
+      </div>
     </div>
 
     <div class="glass card p-5">
       <div class="text-xs text-slate-500 mb-2">Preview</div>
-      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto">
-contentflow generate --channels linkedin,x,email
+      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto" aria-label="CLI Preview">
+contentflow generate --channels linkedin,x,email,instagram
 ✓ outline created
 ✓ 3 social variants
-✓ email snippet ready</pre>
+✓ email snippet ready
+✓ instagram caption + hashtags</pre>
+    </div>
+  </section>
+
+  <!-- TEMPLATES / USE‑CASES STRIP -->
+  <section id="templates" class="max-w-7xl mx-auto px-5 py-10">
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
+    <div class="grid md:grid-cols-3 gap-5 mt-5">
+      <div class="card p-5"><div class="text-xs text-slate-400">Blog</div><div class="mt-1 font-semibold">Problem → Solution SEO Article</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+      <div class="card p-5"><div class="text-xs text-slate-400">Email</div><div class="mt-1 font-semibold">Feature Launch / Update</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+      <div class="card p-5"><div class="text-xs text-slate-400">Social</div><div class="mt-1 font-semibold">LinkedIn Thread from Blog</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
     </div>
   </section>
 
   <!-- DEMO -->
-  <main id="demo" class="max-w-7xl mx-auto px-5 py-10 grid lg:grid-cols-2 gap-8">
+  <main id="demo" class="max-w-7xl mx-auto px-5 pb-12 grid lg:grid-cols-2 gap-8">
     <section class="card p-6">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
         <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
       </div>
 
+      <label for="source" class="sr-only">Source text</label>
       <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
 
       <details id="settings" class="mt-4 open:scroll-mt-20">
         <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
-        <div class="grid md:grid-cols-4 gap-3 mt-3">
-          <select id="modelSelect" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30">
-            <option value="">Auto (rotate free lanes)</option>
-          </select>
-          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Or type a model slug" />
+        <div class="grid md:grid-cols-3 gap-3 mt-3">
+          <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
           <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
           <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
         </div>
-        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab (sessionStorage). We don’t store keys.</p>
+        <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
       </details>
 
       <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -115,20 +162,12 @@ contentflow generate --channels linkedin,x,email
         <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
         <span id="status" class="text-sm text-slate-500"></span>
       </div>
-
-      <div id="batch-ui" class="mt-5 hidden">
-        <label class="text-sm font-medium">Batch inputs (one per line)</label>
-        <textarea id="batch-inputs" class="mt-2 w-full h-32 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Line 1&#10;Line 2&#10;Line 3"></textarea>
-        <div class="mt-2 text-xs text-slate-500">Starter: 200/mo • Creator: 500/mo • Business: Unlimited (BYOK always unlimited)</div>
-        <button id="run-batch" class="mt-3 px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Run Batch</button>
-        <span id="batch-status" class="text-sm text-slate-500 ml-3"></span>
-      </div>
     </section>
 
     <section class="grid gap-5">
       <div class="card p-5">
         <div class="flex justify-between items-center">
-          <strong class="tracking-tight">LinkedIn</strong>
+          <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn <span class="badge" title="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 6.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5ZM3 8.25h7v12.5H3V8.25Zm9 0h6.5a3.5 3.5 0 0 1 3.5 3.5v9h-4.25v-8.25a1.75 1.75 0 1 0-3.5 0v8.25H12V8.25Z"/></svg></span></strong>
           <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
         </div>
         <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -136,15 +175,15 @@ contentflow generate --channels linkedin,x,email
 
       <div class="card p-5">
         <div class="flex justify-between items-center">
-          <strong class="tracking-tight">X (Twitter)</strong>
-          <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter) <span class="badge" title="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h4.7l5.4 7.7L20.3 3H23l-8 10.5L23 21h-4.7l-5.7-8.2L7 21H1l8.4-10.5L3 3Z"/></svg></span></strong>
+          <button id="copy-x"  class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
         </div>
         <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
       </div>
 
       <div class="card p-5">
         <div class="flex justify-between items-center">
-          <strong class="tracking-tight">Email snippet</strong>
+          <strong class="tracking-tight inline-flex items-center gap-2">Email <span class="badge" title="Email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5v2Z"/></svg></span></strong>
           <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
         </div>
         <pre id="out-em" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -152,7 +191,7 @@ contentflow generate --channels linkedin,x,email
 
       <div class="card p-5">
         <div class="flex justify-between items-center">
-          <strong class="tracking-tight">Instagram</strong>
+          <strong class="tracking-tight inline-flex items-center gap-2">Instagram <span class="badge" title="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 3H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm-5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.5A2.5 2.5 0 1 0 12 15a2.5 2.5 0 0 0 0-5Z"/></svg></span></strong>
           <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
         </div>
         <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -172,14 +211,13 @@ contentflow generate --channels linkedin,x,email
         <h3 class="mt-3 text-xl font-bold">Demo</h3>
         <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
         <ul class="mt-4 text-sm space-y-2">
-          <li>• 1 run/day (no login)</li>
-          <li>• 10/day when signed in</li>
+          <li>• 5 runs / day (no login)</li>
           <li>• BYOK unlimited</li>
           <li>• CSV/Markdown export</li>
         </ul>
         <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Try free</a>
       </div>
-      <div class="card p-6 neon">
+      <div class="card p-6">
         <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
         <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
         <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
@@ -191,7 +229,7 @@ contentflow generate --channels linkedin,x,email
         </ul>
         <a href="?plan=starter" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Starter</a>
       </div>
-      <div class="card p-6 neon">
+      <div class="card p-6">
         <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
         <h3 class="mt-3 text-xl font-bold">Creator</h3>
         <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
@@ -209,8 +247,8 @@ contentflow generate --channels linkedin,x,email
         <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
         <ul class="mt-4 text-sm space-y-2">
           <li>• Unlimited (fair use)</li>
-          <li>• 3 seats (soft-gated)</li>
-          <li>• White-label export</li>
+          <li>• 3 seats</li>
+          <li>• White‑label export</li>
           <li>• Priority support</li>
         </ul>
         <a href="?plan=business" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</a>
@@ -218,26 +256,44 @@ contentflow generate --channels linkedin,x,email
     </div>
   </section>
 
+  <!-- FAQ -->
   <section id="faq" class="max-w-7xl mx-auto px-5 pb-16">
     <div class="card p-6">
       <h3 class="text-2xl font-bold tracking-tight">FAQ</h3>
       <ul class="mt-3 text-sm text-slate-700 dark:text-slate-300 space-y-2">
-        <li><strong>Is it free?</strong> Yes. 1/day anonymous, 10/day signed-in, BYOK unlimited.</li>
+        <li><strong>Is it free?</strong> Yes. 5/day anonymous. BYOK is unlimited.</li>
         <li><strong>Does it store my key?</strong> No. BYOK stays in your browser tab (sessionStorage).</li>
-        <li><strong>What if a model is busy?</strong> We auto-rotate free lanes and retry once.</li>
+        <li><strong>What if a model is busy?</strong> We auto‑rotate free lanes and try again.</li>
       </ul>
     </div>
   </section>
 
-  <footer class="py-10 text-center text-xs text-slate-500">
-    © <span id="year"></span> ContentFlow AI
-  </footer>
+  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+
+  <!-- Sign‑in Upsell Modal (shows at 2/5 anon uses) -->
+  <dialog id="upsell" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
+    <form method="dialog">
+      <div class="p-6">
+        <h3 class="text-xl font-bold">You’re close to your free limit</h3>
+        <p class="text-white/80 mt-1">Sign in to keep going and unlock:</p>
+        <ul class="mt-3 text-sm text-white/80 list-disc ml-5">
+          <li>Saved history & presets</li>
+          <li>Higher daily/monthly limits</li>
+          <li>Priority access to free lanes</li>
+        </ul>
+        <div class="mt-5 flex gap-2">
+          <button id="upsell-login" class="flex-1 px-4 py-2 rounded-xl bg-white text-black font-semibold">Sign in</button>
+          <button class="flex-1 px-4 py-2 rounded-xl bg-white/10">Later</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
 
   <script>
     // ===== CONFIG =====
-    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // your Worker URL
 
-    // Optional Supabase login — add your keys to enable magic link sign-in
+    // Optional Supabase login — add your keys to enable magic link sign‑in
     const SUPABASE_URL = "";     // e.g., https://xxxx.supabase.co
     const SUPABASE_ANON = "";    // e.g., public anon key
     let supabase = null;
@@ -258,22 +314,7 @@ contentflow generate --channels linkedin,x,email
       const plan = localStorage.getItem("plan") || "free";
       const badge = document.getElementById("planbadge");
       badge.textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
-      if (plan !== "free") document.getElementById("batch-ui").classList.remove("hidden");
-    })();
-
-    // Load free models to dropdown (optional)
-    (async function loadModels(){
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/models`);
-        const j = await r.json();
-        const sel = $("#modelSelect");
-        (j.free_models || []).forEach(m=>{
-          const opt = document.createElement("option");
-          opt.value = m; opt.textContent = m;
-          sel.appendChild(opt);
-        });
-        sel.onchange = ()=> { $("#model").value = sel.value; };
-      }catch{}
+      if (plan !== "free") document.getElementById("batch-ui")?.classList.remove("hidden");
     })();
 
     // Supabase magic link login (optional)
@@ -292,19 +333,19 @@ contentflow generate --channels linkedin,x,email
       return { token: session?.access_token || null, userId: session?.user?.id || null };
     }
 
-    // Save settings in this tab
-    $("#save").onclick = ()=>{
-      sessionStorage.setItem("MODEL", ($("#model").value || $("#modelSelect").value || "").trim());
-      sessionStorage.setItem("BYOK",  $("#byok").value.trim());
+    // Save settings
+    document.getElementById("save").onclick = ()=>{
+      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
+      sessionStorage.setItem("BYOK",  document.getElementById("byok").value.trim());
       alert("Saved for this tab.");
     };
 
     // Copy helpers
-    const copy = (btnSel, get)=>{ $(btnSel).onclick = async()=>{ await navigator.clipboard.writeText(get()); } };
-    copy("#copy-li", ()=> $("#out-li").textContent || "");
-    copy("#copy-x",  ()=> $("#out-x").textContent  || "");
-    copy("#copy-em", ()=> $("#out-em").textContent || "");
-    copy("#copy-ig", ()=> $("#out-ig").textContent || "");
+    async function copyText(sel){ await navigator.clipboard.writeText(document.querySelector(sel).textContent||""); }
+    document.getElementById("copy-li").onclick = ()=> copyText("#out-li");
+    document.getElementById("copy-x").onclick  = ()=> copyText("#out-x");
+    document.getElementById("copy-em").onclick = ()=> copyText("#out-em");
+    document.getElementById("copy-ig").onclick = ()=> copyText("#out-ig");
 
     async function refreshQuota(){
       try{
@@ -314,31 +355,32 @@ contentflow generate --channels linkedin,x,email
         if (userId) headers["X-User-Id"] = userId;
         const plan = localStorage.getItem("plan") || "";
         if (plan) headers["X-Plan"] = plan;
-        const r = await fetch(`${WORKER_BASE}/api/quota?plan=free`, { headers });
+
+        const r = await fetch(`${WORKER_BASE}/api/quota`, { headers });
         const q = await r.json();
         const d = q.cap===Infinity ? "Unlimited" : `${q.used}/${q.cap} today`;
-        $("#quota").textContent = `Quota: ${d}` + (q.monthly ? ` • ${q.monthly.used}/${q.monthly.cap===null? "∞":q.monthly.cap} this month` : "");
-      }catch{ $("#quota").textContent = "Quota: n/a"; }
+        document.getElementById("quota").textContent = `Quota: ${d}` + (q.monthly ? ` • ${q.monthly.used}/${q.monthly.cap===null? "∞":q.monthly.cap} this month` : "");
+        return q; // {used, cap, monthly}
+      }catch(e){ document.getElementById("quota").textContent = "Quota: n/a"; return null; }
     }
-    refreshQuota();
 
     function buildMarkdown(o){
       const lines = [
         "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
-        "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x||"").trim(),
+        "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),
         "","## Email",(o.email||"").trim(),
         "","## Instagram",(o.instagram||"").trim(),""
       ];
-      return lines.join("\\n");
+      return lines.join("\n");
     }
     const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
     function buildCSV(o){
       const rows = [["channel","content"]];
       if (o.linkedin) rows.push(["linkedin", o.linkedin]);
-      if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x]);
+      if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x]);
       if (o.email) rows.push(["email", o.email]);
       if (o.instagram) rows.push(["instagram", o.instagram]);
-      return rows.map(r=>r.map(csvEsc).join(",")).join("\\n");
+      return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
     }
     function download(filename, mime, text){
       const blob = new Blob([text], { type: mime });
@@ -350,13 +392,9 @@ contentflow generate --channels linkedin,x,email
 
     function parseOutput(content){
       if (!content) return {};
-      try {
-        const j = JSON.parse(content);
-        if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
-      } catch {}
+      try { const j = JSON.parse(content); if (j && (j.linkedin || j.x || j.email || j.instagram)) return j; } catch {}
       const text = String(content);
-      const out = {};
-      const parts = text.split(/\n{2,}/);
+      const out = {}; const parts = text.split(/\n{2,}/);
       out.linkedin  = parts[0] || text;
       out.x         = parts[1] || "";
       out.email     = parts[2] || "";
@@ -364,15 +402,15 @@ contentflow generate --channels linkedin,x,email
       return out;
     }
 
-    // Generate one
-    $("#run").onclick = async ()=>{
-      const source = $("#source").value.trim();
+    // ===== RUN SINGLE =====
+    document.getElementById("run").onclick = async ()=>{
+      const source = document.getElementById("source").value.trim();
       if (!source) { alert("Paste some content first."); return; }
-      $("#status").textContent = "Generating…";
-      $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
-      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+      document.getElementById("status").textContent = "Generating…";
+      ["#out-li","#out-x","#out-em","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("dl-md").disabled = true; document.getElementById("dl-csv").disabled = true;
 
-      const model = sessionStorage.getItem("MODEL") || $("#modelSelect").value || "";
+      const model = sessionStorage.getItem("MODEL") || "";
       const byok  = sessionStorage.getItem("BYOK")  || "";
       const headers = { "Content-Type":"application/json" };
       if (byok) headers["X-User-OpenRouter-Key"] = byok;
@@ -383,122 +421,54 @@ contentflow generate --channels linkedin,x,email
       const planHdr = localStorage.getItem("plan") || "";
       if (planHdr) headers["X-Plan"] = planHdr;
 
-      const SYSTEM = {
-        role: "system",
-        content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
-- LinkedIn: 6–10 lines, 1 CTA.
-- X: <= 280 chars, 2 variants.
-- Email: 3–5 sentences + subject.
-- Instagram: 1–2 short paragraphs + 3–5 hashtags.
-No extra commentary.`
-      };
+      const SYSTEM = { role: "system", content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.\n- LinkedIn: 6–10 lines, 1 CTA.\n- X: <= 280 chars, 2 variants.\n- Email: 3–5 sentences + subject.\n- Instagram: 1–2 short paragraphs + 3–5 hashtags.\nNo extra commentary.` };
       const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
       try{
         const r = await fetch(`${WORKER_BASE}/api/generate`, {
-          method:"POST",
-          headers,
+          method:"POST", headers,
           body: JSON.stringify({ plan: byok ? "pro":"free", messages, temperature:0.7, model: model || undefined })
         });
         const data = await r.json().catch(()=> ({}));
-        if (!r.ok) { $("#status").textContent = data?.error?.message || "Error"; return; }
+        if (!r.ok) { document.getElementById("status").textContent = data?.error?.message || "Error"; return; }
 
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
+        document.getElementById("out-li").textContent = out.linkedin || "";
+        document.getElementById("out-x").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        document.getElementById("out-em").textContent = out.email || "";
+        document.getElementById("out-ig").textContent = out.instagram || "";
+        document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"}`;
 
-        $("#out-li").textContent = out.linkedin || "";
-        $("#out-x").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-        $("#out-em").textContent = out.email || "";
-        $("#out-ig").textContent = out.instagram || "";
+        // Refresh quota and trigger upsell modal at 2/5 anon
+        const q = await refreshQuota();
+        if (q && q.scope === 'ip' && q.used === 2 && q.cap === 5) {
+          document.getElementById('upsell').showModal();
+        }
 
-        $("#status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"}`;
-        refreshQuota();
-
-        $("#dl-md").disabled = false; $("#dl-csv").disabled = false;
-        $("#dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
-        $("#dl-csv").onclick = ()=> download("content-pack.csv","text/csv",      buildCSV(out));
-      }catch(e){ $("#status").textContent = e.message || "Network error"; }
+        document.getElementById("dl-md").disabled = false; document.getElementById("dl-csv").disabled = false;
+        document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+        document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv",      buildCSV(out));
+      }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
     };
 
-    // Batch
-    document.getElementById("run-batch").addEventListener("click", async ()=>{
-      const plan = localStorage.getItem("plan") || "free";
-      const caps = { starter:200, creator:500, business:Infinity };
-      if (!caps[plan]) { alert("Upgrade to use batch."); return; }
-
-      const { token, userId } = await getAuth();
-      const byok = sessionStorage.getItem("BYOK") || "";
-      const headers = { "Content-Type":"application/json" };
-      if (byok) headers["X-User-OpenRouter-Key"] = byok;
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (userId) headers["X-User-Id"] = userId;
-      headers["X-Plan"] = plan;
-
-      const model = sessionStorage.getItem("MODEL") || $("#modelSelect").value || "";
-      const SYSTEM = {
-        role: "system",
-        content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
-- LinkedIn: 6–10 lines, 1 CTA.
-- X: <= 280 chars, 2 variants.
-- Email: 3–5 sentences + subject.
-- Instagram: 1–2 short paragraphs + 3–5 hashtags.
-No extra commentary.`
-      };
-
-      const lines = ($("#batch-inputs").value || "").split("\n").map(s=>s.trim()).filter(Boolean);
-      const toRun = lines.slice(0, Math.min(lines.length, 50));
-      const status = $("#batch-status"); status.textContent = `Running ${toRun.length}…`;
-
-      let done=0; const packs=[];
-      for (const src of toRun) {
-        try{
-          const r = await fetch(`${WORKER_BASE}/api/generate`, {
-            method:"POST", headers,
-            body: JSON.stringify({ plan: byok ? "pro":"free", messages:[SYSTEM,{role:"user",content:`Source:\n${src}\nChannels: LinkedIn,X,Email,Instagram`}], temperature:0.7, model: model || undefined })
-          });
-          const data = await r.json().catch(()=> ({}));
-          const content = data?.choices?.[0]?.message?.content || "";
-          packs.push({ source: src, ...parseOutput(content) });
-        }catch(e){}
-        done++; status.textContent = `Completed ${done}/${toRun.length}`;
-      }
-
-      const csvRows = [["source","channel","content"]];
-      const md = [];
-      const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
-      for (const p of packs) {
-        md.push(`# ${p.source}\n\n## LinkedIn\n${p.linkedin||""}\n\n## X\n${Array.isArray(p.x)?p.x.join("\n\n—\n\n"):(p.x||"")}\n\n## Email\n${p.email||""}\n\n## Instagram\n${p.instagram||""}\n`);
-        if (p.linkedin)  csvRows.push([p.source,"linkedin",p.linkedin]);
-        if (p.x)         csvRows.push([p.source,"x",Array.isArray(p.x)?p.x.join("\\n\\n—\\n\\n"):p.x]);
-        if (p.email)     csvRows.push([p.source,"email",p.email]);
-        if (p.instagram) csvRows.push([p.source,"instagram",p.instagram]);
-      }
-      const csv = csvRows.map(r=>r.map(csvEsc).join(",")).join("\n");
-      const mdAll = md.join("\n---\n\n");
-
-      const blobMD = new Blob([mdAll], {type:"text/markdown"});
-      const blobCSV = new Blob([csv], {type:"text/csv"});
-      const urlMD = URL.createObjectURL(blobMD);
-      const urlCSV = URL.createObjectURL(blobCSV);
-      const a1 = Object.assign(document.createElement("a"), { href:urlMD, download:"batch-pack.md" });
-      const a2 = Object.assign(document.createElement("a"), { href:urlCSV, download:"batch-pack.csv" });
-      a1.click(); a2.click();
-      setTimeout(()=>{ URL.revokeObjectURL(urlMD); URL.revokeObjectURL(urlCSV); }, 1000);
-      status.textContent = "Batch exports downloaded.";
-      refreshQuota();
-    });
-
-    // Enter to run
-    document.getElementById("source").addEventListener("keydown",(e)=>{
-      if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); }
-    });
-
-    $("#clear").onclick = ()=>{
-      $("#source").value = "";
-      $("#status").textContent = "";
-      $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
-      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+    document.getElementById('upsell-login').onclick = (e)=>{
+      e.preventDefault();
+      document.getElementById('upsell').close();
+      document.getElementById('loginBtn').click();
     };
+
+    // Utilities
+    document.getElementById("source").addEventListener("keydown",(e)=>{ if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); } });
+    document.getElementById("clear").onclick = ()=>{
+      document.getElementById("source").value = "";
+      document.getElementById("status").textContent = "";
+      ["#out-li","#out-x","#out-em","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("dl-md").disabled = true; document.getElementById("dl-csv").disabled = true;
+    };
+
+    // Initial quota paint
+    refreshQuota();
   </script>
 </body>
 </html>
