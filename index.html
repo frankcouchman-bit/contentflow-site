@@ -45,7 +45,7 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free: 5/day. BYOK unlimited (plan limits apply)."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}</script>
 
-  <!-- Supabase -->
+  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="min-h-full">
@@ -56,7 +56,8 @@
         <span class="w-9 h-9 rounded-xl bg-grad" aria-hidden="true"></span>
         <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
       </a>
-      <nav class="hidden md:flex items-center gap-6 text-sm">
+      <!-- made nav visible on all sizes -->
+      <nav class="flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
@@ -86,6 +87,8 @@
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
         <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+        <!-- extra hero Sign in for mobile/visibility -->
+        <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
       </div>
       <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
         <span class="badge">SEO-ready</span>
@@ -279,42 +282,21 @@
 
   <script>
     // ===== CONFIG =====
-    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← set to your Worker URL
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← your Worker URL
 
-    // === Supabase ===
-    const SUPABASE_URL = "";     // e.g., "https://ynkoavaeadlzlwylmfmu.supabase.co";
-    const SUPABASE_ANON = "";    // e.g., "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    // === Supabase === (INSERTED YOUR VALUES)
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase = null;
-    if (SUPABASE_URL && SUPABASE_ANON) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    if (SUPABASE_URL && SUPABASE_ANON && window.supabase) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    }
 
+    // Utilities
     const $ = (s)=>document.querySelector(s);
     $("#year").textContent = new Date().getFullYear();
 
-    // Show/hide auth buttons based on supabase availability
-    if (!supabase) { $("#loginBtn").style.display = "none"; $("#logoutBtn").style.display = "none"; }
-    else {
-      document.getElementById("loginBtn")?.addEventListener("click", (e)=>{
-        e.preventDefault(); document.getElementById('auth').showModal();
-      });
-      document.getElementById("logoutBtn")?.addEventListener("click", async ()=>{
-        await supabase.auth.signOut(); paintAuth(); refreshQuota();
-      });
-      document.getElementById("googleBtn").addEventListener("click", async (e)=>{
-        e.preventDefault();
-        await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
-      });
-      document.getElementById("magicBtn").addEventListener("click", async (e)=>{
-        e.preventDefault();
-        const email = document.getElementById('emailInput').value.trim();
-        if (!email) return alert('Enter an email');
-        const { error } = await supabase.auth.signInWithOtp({ email });
-        if (error) return alert(error.message);
-        alert('Magic link sent. Check your inbox.');
-        document.getElementById('auth').close();
-      });
-    }
-
-    // Plan activation from URL (?plan=starter|creator|business)
+    // Plan badge (UI only)
     (function(){
       const params = new URLSearchParams(location.search);
       const incoming = params.get("plan");
@@ -322,15 +304,11 @@
         localStorage.setItem("plan", incoming);
         history.replaceState({}, "", location.pathname);
       }
-      paintPlanBadge();
+      const plan = (localStorage.getItem("plan")||"free").toLowerCase();
+      $("#planbadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
     })();
 
-    function paintPlanBadge(){
-      const plan = (localStorage.getItem("plan")||"free").toLowerCase();
-      const badge = document.getElementById("planbadge");
-      badge.textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
-    }
-
+    // ===== Auth helpers =====
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
       const { data:{ session } } = await supabase.auth.getSession();
@@ -339,12 +317,45 @@
 
     async function paintAuth(){
       const { userId, email } = await getAuth();
-      const login = document.getElementById('loginBtn');
-      const logout = document.getElementById('logoutBtn');
-      if (userId){ login?.classList.add('hidden'); logout?.classList.remove('hidden'); logout.textContent = `Sign out (${email||'account'})`; }
-      else { login?.classList.remove('hidden'); logout?.classList.add('hidden'); }
+      const login = $("#loginBtn");
+      const logout = $("#logoutBtn");
+      // Always show login; toggle logout by auth state
+      login?.classList.remove("hidden");
+      if (userId){
+        logout?.classList.remove("hidden");
+        if (logout) logout.textContent = `Sign out (${email || 'account'})`;
+      } else {
+        logout?.classList.add("hidden");
+      }
     }
-    if (supabase) paintAuth();
+
+    // ===== Auth wiring =====
+    $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+    $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+
+    $("#logoutBtn")?.addEventListener("click", async ()=>{
+      if (!supabase) return alert("Auth not initialized");
+      await supabase.auth.signOut();
+      paintAuth();
+      refreshQuota();
+    });
+
+    $("#googleBtn")?.addEventListener("click", async (e)=>{
+      e.preventDefault();
+      if (!supabase) return alert("Auth not initialized");
+      await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+    });
+
+    $("#magicBtn")?.addEventListener("click", async (e)=>{
+      e.preventDefault();
+      if (!supabase) return alert("Auth not initialized");
+      const email = $("#emailInput").value.trim();
+      if (!email) return alert('Enter an email');
+      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+      if (error) return alert(error.message);
+      alert('Magic link sent. Check your inbox.');
+      $("#auth").close();
+    });
 
     // ===== Quota =====
     async function refreshQuota(){
@@ -359,9 +370,9 @@
         const q = await r.json();
         const daily = (q.cap===Infinity? "∞": q.cap);
         const label = q.scope==='ip' ? `Demo: ${q.monthly.used}/${q.monthly.cap} this month` : `Today: ${q.used}/${daily}`;
-        document.getElementById("quota").textContent = `Quota • ${label}`;
+        $("#quota").textContent = `Quota • ${label}`;
         return q;
-      }catch(e){ document.getElementById("quota").textContent = "Quota: n/a"; return null; }
+      }catch(e){ $("#quota").textContent = "Quota: n/a"; return null; }
     }
 
     // ===== Export builders =====
@@ -435,14 +446,14 @@
     function paintOutputs(out){
       // LinkedIn
       const li = out.linkedin || "";
-      document.getElementById("out-li").textContent = li;
-      document.getElementById("li-lines").textContent = String(li).split(/\n/).filter(Boolean).length;
+      $("#out-li").textContent = li;
+      $("#li-lines").textContent = String(li).split(/\n/).filter(Boolean).length;
 
       // X
       const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-      document.getElementById("out-x").textContent = xText;
+      $("#out-x").textContent = xText;
       const len = xText.replace(/\n/g,' ').trim().length;
-      document.getElementById("x-len").textContent = len;
+      $("#x-len").textContent = len;
       const flag = document.getElementById('x-flag');
       flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
       flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
@@ -451,14 +462,14 @@
       let subj = "", body = "";
       if (typeof out.email === 'object'){ subj = out.email.subject||""; body = out.email.body||""; }
       else { body = out.email; }
-      document.getElementById('out-em-subj').textContent = subj;
-      document.getElementById('out-em-body').textContent = body;
+      $('#out-em-subj').textContent = subj;
+      $('#out-em-body').textContent = body;
 
       // IG
       const ig = out.instagram || "";
-      document.getElementById('out-ig').textContent = ig;
+      $('#out-ig').textContent = ig;
       const tags = (ig.match(/#[\p{L}\w]+/gu) || []).length;
-      document.getElementById('ig-tags').textContent = tags;
+      $('#ig-tags').textContent = tags;
     }
 
     // ===== RUN =====
@@ -533,6 +544,7 @@
     };
 
     // Initial paint
+    paintAuth();
     refreshQuota();
   </script>
 </body>
