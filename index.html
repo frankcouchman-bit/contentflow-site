@@ -77,7 +77,7 @@
         </div>
 
         <!-- View switcher (preview UI states only) -->
-        <div class="hidden md:flex items-center gap-1 ml-2">
+        <div id="viewToggles" class="hidden md:flex items-center gap-1 ml-2">
           <span class="text-xs text-slate-500">View:</span>
           <button id="viewGuest" class="text-xs pill">Demo</button>
           <button id="viewMember" class="text-xs pill">Signed-in</button>
@@ -461,8 +461,19 @@
     try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
   }
 
+  /* ===== ENV / DEV HELPERS ===== */
+  const IS_DEV = location.hostname === 'localhost' || location.hostname.endsWith('.local') || location.hostname.endsWith('.ngrok.io');
+  const $ = (s)=>document.querySelector(s);
+  $("#year").textContent = new Date().getFullYear();
+
+  // Hide preview toggles in production
+  const togglesWrap = document.getElementById('viewToggles');
+  if (togglesWrap) togglesWrap.classList.toggle('hidden', !IS_DEV);
+  if (!IS_DEV) { try { localStorage.removeItem('viewOverride'); } catch {} }
+
+  // ===== PLAN LABELS / BADGE =====
   const PLAN_LABEL = (p)=>{
-    if (!p) return "Free";
+    if (!p || p==="free") return "Free";
     if (p==="starter") return "Solo Creator";
     if (p==="creator") return "Creator";
     if (p==="business") return "Business";
@@ -482,10 +493,7 @@
     business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
   };
 
-  const $ = (s)=>document.querySelector(s);
-  $("#year").textContent = new Date().getFullYear();
-
-  // ===== PLAN BADGE (URL param preview persists) =====
+  // Allow plan=starter|creator|business demo in URL (preview only)
   (function(){
     const params = new URLSearchParams(location.search);
     const incoming = params.get("plan");
@@ -503,44 +511,48 @@
     if (mb) mb.textContent = `Plan: ${label}`;
   }
 
-  // ===== VIEW TOGGLER (Preview without changing auth) =====
-  (function(){
-    const params = new URLSearchParams(location.search);
-    const viewParam = params.get("view");
-    if (viewParam) localStorage.setItem("viewOverride", viewParam); // 'guest' | 'member'
-
-    $("#viewGuest")?.addEventListener("click", ()=>{
-      localStorage.setItem("viewOverride","guest"); applyViewOverride();
-    });
-    $("#viewMember")?.addEventListener("click", ()=>{
-      localStorage.setItem("viewOverride","member"); applyViewOverride();
-    });
-  })();
-
-  function applyViewOverride(){
-    const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
-    if (o === "member") { showView(true); }
-    else if (o === "guest") { showView(false); }
-  }
-
-  // ===== VIEW SWITCH =====
-  function showView(authenticated){
+  /* ===== VIEW SWITCH ===== */
+  function showView(isAuthenticated){
     const guest = document.getElementById('guestView');
     const member = document.getElementById('memberView');
-    if (authenticated){
+    if (isAuthenticated){
       guest?.classList.add('hidden');
       member?.classList.remove('hidden');
       $("#loginBtn")?.classList.add("hidden");
       $("#heroSignIn")?.classList.add("hidden");
+      $("#logoutBtn")?.classList.remove("hidden");
+      $("#logoutBtn2")?.classList.remove("hidden");
     } else {
       member?.classList.add('hidden');
       guest?.classList.remove('hidden');
       $("#loginBtn")?.classList.remove("hidden");
       $("#heroSignIn")?.classList.remove("hidden");
+      $("#logoutBtn")?.classList.add("hidden");
+      $("#logoutBtn2")?.classList.add("hidden");
     }
   }
 
-  // ===== AUTH =====
+  // Preview toggler (dev only, and only when logged OUT)
+  (function(){
+    if (!IS_DEV) return;
+    $("#viewGuest")?.addEventListener("click", ()=>{
+      localStorage.setItem("viewOverride","guest");
+      applyViewOverride(false); // we don't know auth here; function checks
+    });
+    $("#viewMember")?.addEventListener("click", ()=>{
+      localStorage.setItem("viewOverride","member");
+      applyViewOverride(false);
+    });
+  })();
+
+  function applyViewOverride(isAuthenticated){
+    if (isAuthenticated) return; // never override real auth
+    const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
+    if (o === "member") showView(true);
+    else if (o === "guest") showView(false);
+  }
+
+  /* ===== AUTH ===== */
   async function getAuth(){
     if (!supabase) return { token:null, userId:null, email:null };
     const { data:{ session } } = await supabase.auth.getSession();
@@ -549,47 +561,49 @@
 
   async function paintAuth(){
     const { token, userId, email } = await getAuth();
-    const login = $("#loginBtn");
+    const isAuthed = !!userId;
+
+    // Toggle views/buttons immediately
+    showView(isAuthed);
+
+    // Never apply preview override when authenticated
+    if (!isAuthed) applyViewOverride(false);
+
+    const heroBadge = $("#heroBadge");
+    if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in Free — 5 runs / day" : "Demo — 5 runs / month (no login)";
+
     const logout = $("#logoutBtn");
     const logout2 = $("#logoutBtn2");
-    if (userId){
-      $("#heroBadge").textContent = "Signed-in Free — 5 runs / day";
-      logout?.classList.remove("hidden");
-      logout2?.classList.remove("hidden");
-      if (logout) logout.textContent = `Sign out (${email || 'account'})`;
-      const ue = document.getElementById('userEmail');
-      if (ue) ue.textContent = email || 'member';
-      showView(true);
-    } else {
-      $("#heroBadge").textContent = "Demo — 5 runs / month (no login)";
-      logout?.classList.add("hidden");
-      logout2?.classList.add("hidden");
-      showView(false);
+    if (logout) {
+      if (isAuthed) {
+        logout.textContent = `Sign out (${email || 'account'})`;
+        logout.classList.remove("hidden");
+      } else {
+        logout.classList.add("hidden");
+      }
     }
-    login?.classList.toggle("hidden", !!userId);
-    applyViewOverride(); // allow preview override
+    if (logout2) {
+      if (isAuthed) logout2.classList.remove("hidden");
+      else logout2.classList.add("hidden");
+    }
+    const login = $("#loginBtn");
+    if (login) login.classList.toggle("hidden", isAuthed);
+    $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
+
+    const ue = document.getElementById('userEmail');
+    if (ue) ue.textContent = isAuthed ? (email || 'member') : '';
   }
 
-  if (supabase?.auth) {
-    supabase.auth.onAuthStateChange((_event, _session) => {
-      paintAuth();
-      refreshAll();
-    });
-  }
-
-  // Auth wiring
-  $("#loginBtn")?.addEventListener("click", (e)=>{
-    e.preventDefault(); $("#auth").showModal();
-  });
-  $("#heroSignIn")?.addEventListener("click", (e)=>{
-    e.preventDefault(); $("#auth").showModal();
-  });
+  // Auth modal wiring
+  $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+  $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
 
   const doSignOut = async()=>{
-    if (!supabase) return alert("Auth not initialized");
+    if (!supabase?.auth) return alert("Auth not initialized");
     await supabase.auth.signOut();
-    paintAuth();
-    refreshAll();
+    try { localStorage.removeItem('viewOverride'); } catch {}
+    await paintAuth();
+    await refreshAll();
   };
   $("#logoutBtn")?.addEventListener("click", doSignOut);
   $("#logoutBtn2")?.addEventListener("click", doSignOut);
@@ -612,7 +626,7 @@
     $("#auth").close();
   });
 
-  // ===== BILLING (Subscribe / Manage) =====
+  /* ===== BILLING (Subscribe / Manage) ===== */
   async function openCheckout(priceId){
     const { token } = await getAuth();
     if (!token) { $("#auth").showModal(); return; }
@@ -645,9 +659,8 @@
   $("#manageBilling")?.addEventListener("click", openPortal);
   $("#manageBilling2")?.addEventListener("click", openPortal);
 
-  // ===== QUOTA + PLAN STATUS =====
+  /* ===== PLAN STATUS / QUOTAS ===== */
   async function getPlanStatus(){
-    // Preferred: billing/status. Fallback: quota
     const { token } = await getAuth();
     const headers = token ? { "Authorization": `Bearer ${token}` } : {};
     try{
@@ -690,20 +703,17 @@
   }
 
   function paintQuotaTiles(status){
-    // Expected (billing/status): { platform:{daily:{used,cap}, monthly:{used,cap}}, byok:{daily:{...}, monthly:{...}}, is_subscribed:boolean }
-    // Fallback (quota): single used/cap + monthly.{used,cap}
     const wrap = $("#quotaCards");
     if (!wrap) return;
 
     const pk = planKeyFromStatus(status);
 
-    // Defaults
     const pDaily   = status?.platform?.daily   || { used: status?.used ?? 0, cap: status?.cap ?? 5 };
     const pMonthly = status?.platform?.monthly || status?.monthly || { used:0, cap: pk==="business" ? Number.MAX_SAFE_INTEGER : (pk==="creator"?500:(pk==="starter"?200:Infinity)) };
 
     const bDaily   = status?.byok?.daily   || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: 0 });
-    const byokCapMonthlyMap = { free: null, starter: 50, creator: 150, business: 300 };
-    const bMonthly = status?.byok?.monthly || (pk==="free" ? { used:0, cap:5 } : { used:0, cap: byokCapMonthlyMap[pk] ?? 0 });
+    const byokCapMonthlyMap = { free: 5, starter: 50, creator: 150, business: 300 };
+    const bMonthly = status?.byok?.monthly || { used:0, cap: byokCapMonthlyMap[pk] ?? 0 };
 
     function tile(title, used, cap, sub){
       const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
@@ -727,10 +737,9 @@
       tile("Platform — Today", pDaily.used||0, pDaily.cap ?? (pk==='free'?5:Number.MAX_SAFE_INTEGER), PLAN_LABEL(pk)),
       tile("Platform — This month", pMonthly.used||0, pMonthly.cap ?? (pk==='business'?Number.MAX_SAFE_INTEGER:(pk==='creator'?500:(pk==='starter'?200:Infinity))), "Generations"),
       tile("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? 0)), "Your key only"),
-      tile("BYOK — This month", bMonthly.used||0, (pk==='free'?5:(bMonthly.cap ?? 0)), "Your key only")
+      tile("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
     ].join("");
 
-    // Member badge
     const quotaMember = $("#quotaMember");
     if (quotaMember) {
       const dailyLabel = (pDaily.cap===Infinity||pDaily.cap===Number.MAX_SAFE_INTEGER) ? '∞' : (pDaily.cap ?? (pk==='free'?5:'∞'));
@@ -741,14 +750,14 @@
   }
 
   async function refreshAll(){
-    await paintAuth();
+    await paintAuth(); // sets correct view immediately
     const status = await getPlanStatus();
     paintTopBadges(status || {});
     paintQuotaTiles(status || {});
     const isSub = !!(status?.is_subscribed || ["starter","creator","business"].includes((status?.plan||"").toLowerCase()));
     paintManageButtons(isSub);
 
-    // Fill referral link
+    // Referral link
     try{
       const email = status?.email || "";
       const uid = status?.userId || (email ? email.split('@')[0] : 'guest');
@@ -785,13 +794,13 @@
     if (!text) return null;
     const raw = String(text).trim();
     try { return JSON.parse(raw); } catch {}
-    // fenced ```json ... ```
     const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     if (fenced){
       try { return JSON.parse(fenced[1]); } catch {}
     }
     const first = raw.indexOf('{');
-    const last = raw.lastIndexOf('}');
+    theLast = raw.lastIndexOf('}');
+    const last = theLast;
     if (first !== -1 && last !== -1 && last>first){
       const slice = raw.slice(first, last+1);
       try { return JSON.parse(slice); } catch {}
@@ -803,7 +812,6 @@
     const j = extractJSON(content);
     if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
 
-    // Fallback: try to extract fields from a string that "looks" like JSON
     const text = String(content||"").trim();
     const out = {};
     const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
@@ -822,6 +830,14 @@
     if (out.linkedin || out.x || out.email || out.instagram) return out;
 
     return { linkedin: text };
+  }
+
+  async function getAuthHeaders(){
+    const { token, userId } = await getAuth();
+    const headers = { "Content-Type":"application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (userId) headers["X-User-Id"] = userId;
+    return headers;
   }
 
   function paintOutputs(out){
@@ -853,14 +869,6 @@
     $('#out-ig').textContent = ig;
     const tags = (ig.match(/#[\p{L}\w]+/gu) || []).length;
     $('#ig-tags').textContent = tags;
-  }
-
-  async function getAuthHeaders(){
-    const { token, userId } = await getAuth();
-    const headers = { "Content-Type":"application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    if (userId) headers["X-User-Id"] = userId;
-    return headers;
   }
 
   async function runGen({ useBYOK=false }){
@@ -908,7 +916,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.`
       document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
       await refreshAll();
 
-      // enable downloads
       document.getElementById("dl-md").disabled = false;
       document.getElementById("dl-csv").disabled = false;
       document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
@@ -1016,7 +1023,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.`
     }
   }
 
-  // ===== PRESETS (respect plan caps in UI) =====
+  // ===== PRESETS =====
   function maxPresetsFor(plan){
     if (plan==="starter") return 10;
     if (plan==="creator" || plan==="business") return Infinity;
@@ -1103,8 +1110,18 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.`
 
   // ===== INIT =====
   async function refreshAllOnce(){ await refreshAll(); loadPresets(); }
-  paintAuth();
-  refreshAllOnce();
+
+  // Initial paint
+  await paintAuth();
+  await refreshAllOnce();
+
+  // Live auth listener
+  if (supabase?.auth) {
+    supabase.auth.onAuthStateChange(async (_event, _session) => {
+      if (_session?.user) { try { localStorage.removeItem('viewOverride'); } catch {} }
+      await refreshAll();
+    });
+  }
   </script>
 </body>
 </html>
