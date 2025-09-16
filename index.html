@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ContentFlow AI — Repurpose & Schedule in Minutes</title>
+  <meta name="description" content="Turn one idea into channel-ready drafts. Free AI via OpenRouter.">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.10/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .brand{background:linear-gradient(135deg,#7AA2FF,#FF2D2D)}
+    .glass{backdrop-filter:blur(8px);background:rgba(255,255,255,.65)}
+    @media (prefers-color-scheme:dark){.glass{background:rgba(16,16,20,.55)}}
+  </style>
+</head>
+<body class="min-h-full bg-gray-50 text-gray-900">
+  <!-- soft background blobs -->
+  <div class="fixed inset-0 -z-10 opacity-20 pointer-events-none">
+    <div class="absolute -top-40 -left-40 w-[900px] h-[900px] rounded-full blur-3xl brand"></div>
+    <div class="absolute -bottom-40 -right-40 w-[1000px] h-[1000px] rounded-full blur-3xl brand"></div>
+  </div>
+
+  <!-- NAV -->
+  <header class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="w-8 h-8 rounded-xl brand"></span>
+      <strong>ContentFlow AI</strong>
+    </div>
+    <div class="text-sm flex items-center gap-4">
+      <a href="#demo" class="hover:opacity-80">Demo</a>
+      <a href="#faq" class="hover:opacity-80">FAQ</a>
+      <span id="quota" class="px-3 py-1 rounded bg-amber-50 text-amber-800">Checking quota…</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
+        From one idea to everywhere — <span class="text-transparent bg-clip-text brand">repurpose & schedule</span> in minutes.
+      </h1>
+      <p class="mt-4 text-gray-600">Paste content → get LinkedIn, X, Email & Instagram drafts. Free to try. No signup.</p>
+      <div class="mt-6 flex gap-3">
+        <a href="#demo" class="px-4 py-2 rounded-xl bg-gray-900 text-white">Try the Live Demo</a>
+        <a href="#faq" class="px-4 py-2 rounded-xl border">See how it works</a>
+      </div>
+    </div>
+    <div class="glass p-4 rounded-2xl shadow-xl">
+      <div class="text-xs text-gray-500 mb-2">Preview</div>
+      <pre class="text-xs bg-black/70 text-green-200 rounded p-3 h-48 overflow-auto">contentflow generate --channels linkedin,x,email
+✓ outline created
+✓ 3 social variants
+✓ email snippet ready</pre>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <main id="demo" class="max-w-6xl mx-auto px-6 py-10 grid lg:grid-cols-2 gap-8">
+    <section class="rounded-2xl border bg-white p-5 shadow">
+      <h2 class="text-xl font-semibold">Live Demo — Repurpose</h2>
+      <textarea id="source" class="mt-3 w-full h-48 p-3 rounded border" placeholder="Paste a paragraph or blog snippet…"></textarea>
+
+      <details class="mt-3">
+        <summary class="cursor-pointer text-sm text-gray-500">Settings</summary>
+        <div class="grid md:grid-cols-3 gap-3 mt-2">
+          <input id="model" class="p-2 border rounded" placeholder="Preferred model (optional)" />
+          <input id="byok" class="p-2 border rounded" placeholder="Your OpenRouter key (optional BYOK)" />
+          <button id="save" class="px-4 py-2 rounded bg-black text-white">Save</button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">BYOK: we don’t store your key; it’s sent only for your current session.</p>
+      </details>
+
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <button id="run" class="px-4 py-2 rounded bg-black text-white">Generate</button>
+        <button id="clear" class="px-4 py-2 rounded border">Clear</button>
+        <button id="dl-md" class="px-4 py-2 rounded border" disabled>Download Markdown</button>
+        <button id="dl-csv" class="px-4 py-2 rounded border" disabled>Export CSV</button>
+        <span id="status" class="text-sm text-gray-500"></span>
+      </div>
+    </section>
+
+    <section class="grid gap-5">
+      <div class="rounded-2xl border bg-white p-5 shadow">
+        <div class="flex justify-between"><strong>LinkedIn</strong><button id="copy-li" class="text-xs border px-2 py-1 rounded">Copy</button></div>
+        <pre id="out-li" class="whitespace-pre-wrap text-sm mt-2"></pre>
+      </div>
+      <div class="rounded-2xl border bg-white p-5 shadow">
+        <div class="flex justify-between"><strong>X (Twitter)</strong><button id="copy-x" class="text-xs border px-2 py-1 rounded">Copy</button></div>
+        <pre id="out-x" class="whitespace-pre-wrap text-sm mt-2"></pre>
+      </div>
+      <div class="rounded-2xl border bg-white p-5 shadow">
+        <div class="flex justify-between"><strong>Email snippet</strong><button id="copy-em" class="text-xs border px-2 py-1 rounded">Copy</button></div>
+        <pre id="out-em" class="whitespace-pre-wrap text-sm mt-2"></pre>
+      </div>
+      <div class="rounded-2xl border bg-white p-5 shadow">
+        <div class="flex justify-between"><strong>Instagram</strong><button id="copy-ig" class="text-xs border px-2 py-1 rounded">Copy</button></div>
+        <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-2"></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-6xl mx-auto px-6 pb-12">
+    <h3 class="text-2xl font-semibold">FAQ</h3>
+    <ul class="mt-3 text-sm text-gray-700 list-disc list-inside">
+      <li><strong>Is it really free?</strong> Yes — we rotate free OpenRouter models and allow your own BYOK for unlimited.</li>
+      <li><strong>What’s BYOK?</strong> Bring Your Own OpenRouter key. Paste it to remove limits.</li>
+      <li><strong>What’s next?</strong> Save projects, calendar scheduling, and exports to Notion/Trello.</li>
+    </ul>
+  </section>
+
+  <footer class="py-8 text-center text-xs text-gray-500">
+    © <span id="year"></span> ContentFlow AI • Free models via OpenRouter
+  </footer>
+
+  <script>
+  // Frontend points to YOUR Worker (already set to your URL)
+  const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+
+  const $ = (s)=>document.querySelector(s);
+  $("#year").textContent = new Date().getFullYear();
+
+  // Save simple settings in this tab
+  $("#save").onclick = ()=>{
+    sessionStorage.setItem("MODEL", $("#model").value.trim());
+    sessionStorage.setItem("BYOK",  $("#byok").value.trim());
+    alert("Saved for this tab.");
+  };
+
+  // Copy helpers
+  const copy = (btnSel, get)=>{ $(btnSel).onclick = async()=>{ await navigator.clipboard.writeText(get()); } };
+  copy("#copy-li", ()=> $("#out-li").textContent || "");
+  copy("#copy-x",  ()=> $("#out-x").textContent  || "");
+  copy("#copy-em", ()=> $("#out-em").textContent || "");
+  copy("#copy-ig", ()=> $("#out-ig").textContent || "");
+
+  // Quota
+  async function refreshQuota(){
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/quota?plan=free`);
+      const q = await r.json();
+      $("#quota").textContent = q.cap===Infinity ? "Pro: Unlimited" : `Today: ${q.used}/${q.cap} free`;
+    }catch{ $("#quota").textContent = "Quota: n/a"; }
+  }
+  refreshQuota();
+
+  // Build Markdown + CSV
+  function buildMarkdown(o){
+    const lines = [
+      "# Content Pack",
+      "",
+      "## LinkedIn",
+      (o.linkedin||"").trim(),
+      "",
+      "## X (Twitter)",
+      (Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x||"").trim(),
+      "",
+      "## Email",
+      (o.email||"").trim(),
+      "",
+      "## Instagram",
+      (o.instagram||"").trim(),
+      ""
+    ];
+    return lines.join("\\n");
+  }
+  function csvEscape(s){ return '"' + String(s).replace(/"/g,'""') + '"'; }
+  function buildCSV(o){
+    const rows = [["channel","content"]];
+    if (o.linkedin) rows.push(["linkedin", o.linkedin]);
+    if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\\n\\n—\\n\\n"):o.x]);
+    if (o.email) rows.push(["email", o.email]);
+    if (o.instagram) rows.push(["instagram", o.instagram]);
+    return rows.map(r=>r.map(csvEscape).join(",")).join("\\n");
+  }
+  function download(filename, mime, text){
+    const blob = new Blob([text], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  // Run generation
+  $("#run").onclick = async ()=>{
+    const source = $("#source").value.trim();
+    if (!source) { alert("Paste some content first."); return; }
+    $("#status").textContent = "Generating…";
+    $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
+    $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+
+    const model = sessionStorage.getItem("MODEL") || "";
+    const byok  = sessionStorage.getItem("BYOK")  || "";
+    const headers = { "Content-Type":"application/json" };
+    if (byok) headers["X-User-OpenRouter-Key"] = byok;
+
+    const SYSTEM = {
+      role: "system",
+      content: `You are a senior content strategist. Repurpose the user's source into JSON with keys: linkedin, x, email, instagram.
+- LinkedIn: 6–10 lines, 1 CTA.
+- X: <= 280 chars, 2 variants.
+- Email: 3–5 sentences + subject.
+- Instagram: 1–2 short paragraphs + 3–5 hashtags.
+No extra commentary.`
+    };
+
+    const messages = [
+      SYSTEM,
+      { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` }
+    ];
+
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/generate`, {
+        method:"POST",
+        headers,
+        body: JSON.stringify({ plan: byok ? "pro":"free", messages, temperature:0.7, model: model || undefined })
+      });
+      const data = await r.json().catch(()=> ({}));
+      if (!r.ok) { $("#status").textContent = data?.error?.message || "Error"; return; }
+
+      let out = {};
+      try { out = JSON.parse(data?.choices?.[0]?.message?.content || "{}"); } catch {}
+      $("#out-li").textContent = out.linkedin || "";
+      $("#out-x").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+      $("#out-em").textContent = out.email || "";
+      $("#out-ig").textContent = out.instagram || "";
+
+      $("#status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"}`;
+      refreshQuota();
+
+      // Enable downloads
+      $("#dl-md").disabled = false; $("#dl-csv").disabled = false;
+      $("#dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+      $("#dl-csv").onclick = ()=> download("content-pack.csv","text/csv",      buildCSV(out));
+    }catch(e){ $("#status").textContent = e.message || "Network error"; }
+  };
+
+  $("#clear").onclick = ()=>{
+    $("#source").value = "";
+    $("#status").textContent = "";
+    $("#out-li").textContent = $("#out-x").textContent = $("#out-em").textContent = $("#out-ig").textContent = "";
+    $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
+  };
+  </script>
+</body>
+</html>
