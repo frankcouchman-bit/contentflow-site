@@ -282,8 +282,8 @@
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← set to your Worker URL
 
     // === Supabase ===
-    const SUPABASE_URL = "";     // e.g., https://xxxx.supabase.co
-    const SUPABASE_ANON = "";    // e.g., public anon key
+    const SUPABASE_URL = "";     // e.g., "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "";    // e.g., "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase = null;
     if (SUPABASE_URL && SUPABASE_ANON) supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
