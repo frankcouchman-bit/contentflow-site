@@ -45,30 +45,37 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free: 5/day. BYOK unlimited (plan limits apply)."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free: 5/day. BYOK supported."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}</script>
 
-  <!-- Supabase JS SDK -->
+  <!-- SDKs -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="min-h-full">
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-3" aria-label="ContentFlow AI home">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentFlow AI home">
         <span class="w-9 h-9 rounded-xl bg-grad" aria-hidden="true"></span>
         <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
       </a>
+
       <nav class="flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="#faq" class="hover:opacity-80">FAQ</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
+
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
+
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
+
         <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
+
         <!-- View switcher (for previewing UI states) -->
         <div class="hidden md:flex items-center gap-1 ml-2">
           <span class="text-xs text-slate-500">View:</span>
@@ -83,7 +90,8 @@
   <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
     <div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
       </div>
       <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
         From one idea to <span class="txt-grad">everywhere</span> — repurpose & schedule in minutes.
@@ -231,14 +239,13 @@
         </div>
         <div class="flex items-center gap-3">
           <span id="memberPlanBadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
+          <button id="manageBilling2" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
           <button id="logoutBtn2" class="px-3 py-1 rounded-lg border">Sign out</button>
         </div>
       </div>
 
-      <!-- Top Cards -->
-      <div id="quotaCards" class="grid md:grid-cols-3 gap-5 mb-6">
-        <!-- Filled by paintQuota() -->
-      </div>
+      <!-- Top Cards (Platform + BYOK) -->
+      <div id="quotaCards" class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
 
       <!-- Member Generator -->
       <div class="card p-6">
@@ -300,7 +307,7 @@
             <strong>Saved presets</strong>
             <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Save prompts/settings to reuse later (plan limits apply).</p>
+          <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
           <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
         </div>
 
@@ -319,6 +326,12 @@
           <p id="refNote" class="text-xs text-slate-500 mt-2">Tip: Each signup via your link can grant +1/day (subject to plan).</p>
         </div>
       </div>
+
+      <!-- Plan Features (unlocks) -->
+      <div class="card p-6 mt-6">
+        <h3 class="text-lg font-bold">Your plan includes</h3>
+        <ul id="featureList" class="mt-3 text-sm space-y-1"></ul>
+      </div>
     </div>
   </section>
 
@@ -335,7 +348,8 @@
         <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
         <ul class="mt-4 text-sm space-y-2">
           <li>• 5 runs / month (no login)</li>
-          <li>• BYOK unlimited</li>
+          <li>• Signed-in free: 5 / day</li>
+          <li>• BYOK: 5 / day</li>
           <li>• CSV/Markdown export</li>
         </ul>
         <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
@@ -350,8 +364,9 @@
           <li>• Batch inputs</li>
           <li>• 10 saved presets</li>
           <li>• Priority models</li>
+          <li>• BYOK: 50 / month</li>
         </ul>
-        <a href="?plan=starter" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Starter</a>
+        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Solo Creator</button>
       </div>
 
       <div class="card p-6">
@@ -365,8 +380,9 @@
           <li>• <strong>Notion export + Trello boards</strong></li>
           <li>• <strong>Push drafts to Buffer</strong></li>
           <li>• New workflows early</li>
+          <li>• BYOK: 150 / month</li>
         </ul>
-        <a href="?plan=creator" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</a>
+        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</button>
       </div>
 
       <div class="card p-6">
@@ -380,8 +396,9 @@
           <li>• Priority support</li>
           <li>• All Creator integrations</li>
           <li>• <strong>Team presets & shared calendar</strong></li>
+          <li>• BYOK: 300 / month</li>
         </ul>
-        <a href="?plan=business" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</a>
+        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</button>
       </div>
     </div>
   </section>
@@ -392,11 +409,11 @@
     <div class="mt-5 grid md:grid-cols-2 gap-5">
       <div class="card p-5">
         <strong>How does free work?</strong>
-        <p class="text-sm text-slate-500 mt-2">Demo is 5/month by IP. Sign-in unlocks 5/day. BYOK is unlimited (subject to plan quotas).</p>
+        <p class="text-sm text-slate-500 mt-2">Demo is 5/month by IP. Signed-in free is 5/day. BYOK on Free is also 5/day.</p>
       </div>
       <div class="card p-5">
-        <strong>What are integrations?</strong>
-        <p class="text-sm text-slate-500 mt-2">Creator+ can export to Notion/Trello and push to Buffer for scheduling.</p>
+        <strong>BYOK limits by plan</strong>
+        <p class="text-sm text-slate-500 mt-2">Free: 5/day • Solo Creator: 50/month • Creator: 150/month • Business: 300/month • Business platform usage is unlimited (fair use).</p>
       </div>
     </div>
   </section>
@@ -432,10 +449,61 @@
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     }
 
+    // === Stripe (front just for redirect if Worker returns url) ===
+    let stripe = null; // Optional: use redirect URL returned by Worker
+    if (window.Stripe) { try { stripe = window.Stripe("pk_test_12345_placeholder"); } catch {} } // Not required if Worker returns URL
+
+    const PLAN_LABEL = (p)=>{
+      if (!p) return "Free";
+      if (p==="starter") return "Solo Creator";
+      if (p==="creator") return "Creator";
+      if (p==="business") return "Business";
+      return "Free";
+    };
+
+    const PLAN_FEATURES = {
+      free: [
+        "5/day platform runs (signed-in)",
+        "BYOK: 5/day",
+        "CSV/Markdown export"
+      ],
+      starter: [
+        "200 generations / month",
+        "Batch inputs",
+        "10 saved presets",
+        "Priority models",
+        "BYOK: 50 / month"
+      ],
+      creator: [
+        "500 generations / month",
+        "Unlimited presets",
+        "Project pack export",
+        "Notion export + Trello boards",
+        "Push drafts to Buffer",
+        "New workflows early",
+        "BYOK: 150 / month"
+      ],
+      business: [
+        "Unlimited (fair use)",
+        "3 seats",
+        "White-label export",
+        "Priority support",
+        "All Creator integrations",
+        "Team presets & shared calendar",
+        "BYOK: 300 / month"
+      ]
+    };
+
+    const PRICES = {
+      starter: "price_1S7y58JYjIKHzKcjzL7cIKiB",
+      creator: "price_1S7y77JYjIKHzKcjKQYjiqZH",
+      business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
+    };
+
     const $ = (s)=>document.querySelector(s);
     $("#year").textContent = new Date().getFullYear();
 
-    // ===== PLAN (UI only badge) =====
+    // ===== PLAN BADGE (URL param preview persists) =====
     (function(){
       const params = new URLSearchParams(location.search);
       const incoming = params.get("plan");
@@ -443,9 +511,15 @@
         localStorage.setItem("plan", incoming);
         history.replaceState({}, "", location.pathname);
       }
-      const plan = (localStorage.getItem("plan")||"free").toLowerCase();
-      $("#planbadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
+      paintPlanBadge(localStorage.getItem("plan")||"free");
     })();
+
+    function paintPlanBadge(plan){
+      const label = PLAN_LABEL(plan);
+      $("#planbadge").textContent = `Plan: ${label}`;
+      const mb = $("#memberPlanBadge");
+      if (mb) mb.textContent = `Plan: ${label}`;
+    }
 
     // ===== VIEW TOGGLER (Preview without changing auth) =====
     (function(){
@@ -458,8 +532,8 @@
 
     function applyViewOverride(){
       const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
-      if (o === "member") { showView(true); $("#heroBadge").textContent = "Signed-in Free — 5 runs / day"; }
-      else if (o === "guest") { showView(false); $("#heroBadge").textContent = "Demo — 5 runs / month (no login)"; }
+      if (o === "member") { showView(true); }
+      else if (o === "guest") { showView(false); }
     }
 
     // ===== VIEW SWITCH =====
@@ -488,36 +562,40 @@
 
     async function paintAuth(){
       const { token, userId, email } = await getAuth();
-      const login = $("#loginBtn");
+      const login  = $("#loginBtn");
       const logout = $("#logoutBtn");
       const logout2 = $("#logoutBtn2");
-      login?.classList.remove("hidden");
+
       if (userId){
+        $("#heroBadge").textContent = "Signed-in Free — 5 runs / day";
         logout?.classList.remove("hidden");
         logout2?.classList.remove("hidden");
         if (logout) logout.textContent = `Sign out (${email || 'account'})`;
         const ue = document.getElementById('userEmail'); if (ue) ue.textContent = email || 'member';
         showView(true);
       } else {
+        $("#heroBadge").textContent = "Demo — 5 runs / month (no login)";
         logout?.classList.add("hidden");
         logout2?.classList.add("hidden");
         showView(false);
       }
-      applyViewOverride(); // allow preview override to win
+      login?.classList.toggle("hidden", !!userId);
+      applyViewOverride(); // allow preview override
     }
 
     if (supabase?.auth) {
       supabase.auth.onAuthStateChange((_event, _session) => {
         paintAuth();
-        refreshQuota();
+        refreshAll();
       });
     }
 
     // Auth wiring
     $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
     $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
-    $("#logoutBtn")?.addEventListener("click", async ()=>{ if (!supabase) return alert("Auth not initialized"); await supabase.auth.signOut(); paintAuth(); refreshQuota(); });
-    $("#logoutBtn2")?.addEventListener("click", async ()=>{ if (!supabase) return alert("Auth not initialized"); await supabase.auth.signOut(); paintAuth(); refreshQuota(); });
+    const doSignOut = async()=>{ if (!supabase) return alert("Auth not initialized"); await supabase.auth.signOut(); paintAuth(); refreshAll(); };
+    $("#logoutBtn")?.addEventListener("click", doSignOut);
+    $("#logoutBtn2")?.addEventListener("click", doSignOut);
 
     $("#googleBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
@@ -536,140 +614,144 @@
       $("#auth").close();
     });
 
-    // ===== QUOTA + DASH REWRITER =====
-    async function refreshQuota(){
+    // ===== BILLING (Subscribe / Manage) =====
+    async function openCheckout(priceId){
+      const { token } = await getAuth();
+      if (!token) { $("#auth").showModal(); return; }
+      const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${token}` },
+        body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
+      });
+      const j = await r.json().catch(()=> ({}));
+      if (j.url) { location.href = j.url; return; }
+      alert(j?.error?.message || "Could not start checkout.");
+    }
+    async function openPortal(){
+      const { token } = await getAuth();
+      if (!token) { $("#auth").showModal(); return; }
+      const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization":`Bearer ${token}` },
+        body: JSON.stringify({ return_url: location.href })
+      });
+      const j = await r.json().catch(()=> ({}));
+      if (j.url) { location.href = j.url; return; }
+      alert(j?.error?.message || "Could not open billing portal.");
+    }
+    document.querySelectorAll(".subBtn").forEach(btn=>{
+      btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
+    });
+    $("#manageBilling")?.addEventListener("click", openPortal);
+    $("#manageBilling2")?.addEventListener("click", openPortal);
+
+    // ===== QUOTA + PLAN STATUS =====
+    async function getPlanStatus(){
+      // Preferred: billing/status. Fallback: quota
+      const { token } = await getAuth();
+      const headers = token ? { "Authorization":`Bearer ${token}` } : {};
       try{
-        const { token, userId, email } = await getAuth();
-        const headers = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        if (userId) headers["X-User-Id"] = userId;
-        const plan = (localStorage.getItem("plan")||"");
-        if (plan) headers["X-Plan"] = plan;
-
-        const res = await fetch(`${WORKER_BASE}/api/quota`, { headers });
-        const q = await res.json();
-
-        // Top hero + demo badge
-        const quotaBadge = $("#quota");
-        if (quotaBadge) {
-          const daily = (q.cap===Infinity? "∞": q.cap);
-          const label = q.scope==='ip' ? `Demo: ${q.monthly.used}/${q.monthly.cap} this month` : `Today: ${q.used}/${daily}`;
-          quotaBadge.textContent = `Quota • ${label}`;
-        }
-        $("#heroBadge").textContent = (q.scope==='ip') ? "Demo — 5 runs / month (no login)" : "Signed-in Free — 5 runs / day";
-
-        // Switch UI by scope
-        if (q.scope === 'user') showView(true); else showView(false);
-        applyViewOverride(); // allow manual preview
-
-        // Member visuals (rewrite cards)
-        paintQuota(q, email || null);
-
-        return q;
-      }catch(e){
-        const quotaBadge = $("#quota");
-        if (quotaBadge) quotaBadge.textContent = "Quota: n/a";
-        return null;
-      }
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
+        if (r.ok) return await r.json();
+      }catch{}
+      try{
+        const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers });
+        if (r2.ok) return await r2.json();
+      }catch{}
+      return null;
     }
 
-    function paintQuota(q, email){
-      // Defaults if missing
-      const used = Number(q?.used || 0);
-      const cap  = (q?.cap === Infinity) ? Infinity : Number(q?.cap || 5);
-      const pct  = cap===Infinity ? 0 : Math.max(0, Math.min(100, Math.round((used / cap) * 100)));
+    function planKeyFromStatus(s){
+      const p = (s?.plan || s?.monthly?.plan || "").toLowerCase();
+      if (["starter","creator","business"].includes(p)) return p;
+      return "free";
+    }
 
-      // Badges
-      const dailyCount = document.getElementById('dailyCount');
-      const dailyBar   = document.getElementById('dailyBar');
-      const quotaMember = document.getElementById('quotaMember');
-      const memberPlanBadge = document.getElementById('memberPlanBadge');
+    function paintFeatureList(planKey){
+      const ul = $("#featureList"); if (!ul) return;
+      const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
+      ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
+    }
 
-      if (dailyCount) dailyCount.textContent = `${used}/${cap===Infinity?'∞':cap}`;
-      if (dailyBar)   dailyBar.style.width = cap===Infinity ? '100%' : `${pct}%`;
-      if (quotaMember) quotaMember.textContent = `Today: ${used}/${cap===Infinity?'∞':cap}`;
-      if (memberPlanBadge) {
-        const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
-        memberPlanBadge.textContent = `Plan: ${planStr.charAt(0).toUpperCase()+planStr.slice(1)}`;
+    function paintManageButtons(isSubscribed){
+      $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
+      $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
+    }
+
+    function paintTopBadges(status){
+      const scope = status?.scope; // 'ip' | 'user'
+      const planKey = planKeyFromStatus(status);
+      paintPlanBadge(planKey);
+      $("#heroBadge").textContent = scope==='ip' ? "Demo — 5 runs / month (no login)" : (planKey==='free' ? "Signed-in Free — 5 runs / day" : `Signed-in — ${PLAN_LABEL(planKey)}`);
+    }
+
+    function paintQuotaTiles(status){
+      // Expected (billing/status): { platform:{daily:{used,cap}, monthly:{used,cap}}, byok:{daily:{...}, monthly:{...}}, is_subscribed:boolean }
+      // Fallback (quota): single used/cap + monthly.{used,cap}
+      const wrap = $("#quotaCards"); if (!wrap) return;
+      const pk = planKeyFromStatus(status);
+
+      // Defaults
+      const pDaily = status?.platform?.daily || { used: status?.used ?? 0, cap: status?.cap ?? 5 };
+      const pMonthly = status?.platform?.monthly || status?.monthly || { used:0, cap: pk==="business" ? Number.MAX_SAFE_INTEGER : (pk==="creator"?500:(pk==="starter"?200:Infinity)) };
+
+      const bDaily = status?.byok?.daily || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: 0 });
+      const byokCapMonthlyMap = { free: null, starter: 50, creator: 150, business: 300 };
+      const bMonthly = status?.byok?.monthly || (pk==="free" ? { used:0, cap:5 } : { used:0, cap: byokCapMonthlyMap[pk] ?? 0 });
+
+      function tile(title, used, cap, sub){
+        const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
+        const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
+        const capTxt = isInf ? '∞' : cap;
+        return `
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <strong>${title}</strong>
+              <span class="text-sm text-slate-500">${used}/${capTxt}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+              <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
+          </div>
+        `;
       }
 
-      // Rebuild Top Cards for member
-      const wrap = document.getElementById('quotaCards');
-      if (!wrap) return;
-      const planStr = (localStorage.getItem("plan")||"free").toLowerCase();
-      const scopeTxt = q?.scope==='user' ? 'Signed-in' : 'Demo';
-      const capTxt = (cap===Infinity?'∞':cap);
+      wrap.innerHTML = [
+        tile("Platform — Today", pDaily.used||0, pDaily.cap ?? (pk==='free'?5:Number.MAX_SAFE_INTEGER), PLAN_LABEL(pk)),
+        tile("Platform — This month", pMonthly.used||0, pMonthly.cap ?? (pk==='business'?Number.MAX_SAFE_INTEGER:(pk==='creator'?500:(pk==='starter'?200:Infinity))), "Generations"),
+        tile("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? 0)), "Your key only"),
+        tile("BYOK — This month", bMonthly.used||0, (pk==='free'?5:(bMonthly.cap ?? 0)), "Your key only")
+      ].join("");
 
-      wrap.innerHTML = `
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong>Today’s quota</strong>
-            <span class="text-sm text-slate-500">${used}/${capTxt}</span>
-          </div>
-          <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
-            <div class="h-2 bg-grad" style="width:${cap===Infinity?'100':pct}%"></div>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">${scopeTxt} • ${planStr} plan</p>
-        </div>
+      // Member badge
+      const quotaMember = $("#quotaMember");
+      if (quotaMember) {
+        const dailyLabel = (pDaily.cap===Infinity||pDaily.cap===Number.MAX_SAFE_INTEGER) ? '∞' : pDaily.cap ?? (pk==='free'?5:'∞');
+        quotaMember.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
+      }
 
-        <div class="card p-5">
-          <strong>Model & BYOK</strong>
-          <div class="mt-3 grid gap-2">
-            <input id="model_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
-            <input id="byok_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
-            <div class="flex gap-2">
-              <button id="save_m" class="px-3 py-2 rounded-xl border">Save</button>
-              <span id="byokState" class="text-xs text-slate-500 self-center">BYOK: not set</span>
-            </div>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
-        </div>
+      paintFeatureList(pk);
+    }
 
-        <div class="card p-5">
-          <strong>Quick actions</strong>
-          <div class="mt-3 grid gap-2">
-            <button id="openRepurpose" class="px-3 py-2 rounded-xl border hover:bg-white/50">Repurpose a paragraph</button>
-            <button id="openEmail" class="px-3 py-2 rounded-xl border hover:bg-white/50">Write an email update</button>
-            <button id="openThread" class="px-3 py-2 rounded-xl border hover:bg-white/50">Make an X thread</button>
-          </div>
-        </div>
-      `;
-
-      // Re-wire controls added by rewrite
-      document.getElementById("openRepurpose")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Repurpose this paragraph into LinkedIn, X, Email and Instagram."; });
-      document.getElementById("openEmail")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Announce our new feature and invite users to try it."; });
-      document.getElementById("openThread")?.addEventListener("click", ()=>{ const el = document.getElementById("source_m"); if (el) el.value = "Turn this idea into a 5-tweet thread."; });
-
-      document.getElementById("save_m")?.addEventListener("click", ()=>{
-        sessionStorage.setItem("MODEL", document.getElementById("model_m").value.trim());
-        sessionStorage.setItem("BYOK",  document.getElementById("byok_m").value.trim());
-        const byokState = document.getElementById('byokState');
-        if (byokState) byokState.textContent = document.getElementById("byok_m").value.trim() ? "BYOK: set" : "BYOK: not set";
-        alert("Saved for this tab.");
-      });
-
-      const byokState = document.getElementById('byokState');
-      if (byokState) byokState.textContent = sessionStorage.getItem("BYOK") ? "BYOK: set" : "BYOK: not set";
-
-      // Referral link paint
+    async function refreshAll(){
+      await paintAuth();
+      const status = await getPlanStatus();
+      paintTopBadges(status || {});
+      paintQuotaTiles(status || {});
+      const isSub = !!(status?.is_subscribed || ["starter","creator","business"].includes((status?.plan||"").toLowerCase()));
+      paintManageButtons(isSub);
+      // Fill referral link whenever possible
       try{
-        const uid = q?.userId || (email || '').split('@')[0] || 'guest';
+        const email = status?.email || "";
+        const uid = status?.userId || (email ? email.split('@')[0] : 'guest');
         const code = btoa(uid).replace(/=+$/,'');
         const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
-        const refInput = document.getElementById('refLink');
-        if (refInput) refInput.value = link;
-      } catch {}
+        const refInput = document.getElementById('refLink'); if (refInput) refInput.value = link;
+      }catch{}
     }
 
-    // ===== EXPORT BUILDERS =====
-    function buildMarkdown(o){
-      const lines = [
-        "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
-        "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),
-        "","## Email",(o.email?.body||o.email||"").trim(),
-        "","## Instagram",(o.instagram||"").trim(),""];
-      return lines.join("\n");
-    }
+    // ===== GENERATOR (guest) =====
     const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
     function buildCSV(o){
       const rows = [["channel","content"]];
@@ -679,8 +761,15 @@
       if (o.instagram) rows.push(["instagram", o.instagram]);
       return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
     }
+    function buildMarkdown(o){
+      const lines = [
+        "# Content Pack","","## LinkedIn",(o.linkedin||"").trim(),
+        "","## X (Twitter)",(Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),
+        "","## Email",(o.email?.body||o.email||"").trim(),
+        "","## Instagram",(o.instagram||"").trim(),""];
+      return lines.join("\n");
+    }
 
-    // ===== JSON extraction =====
     function extractJSON(text){
       if (!text) return null;
       const raw = String(text).trim();
@@ -714,39 +803,34 @@
       if (out.linkedin || out.x || out.email || out.instagram) return out;
       return { linkedin: text };
     }
-
     function paintOutputs(out){
-      // LinkedIn
       const li = out.linkedin || "";
       $("#out-li").textContent = li;
       $("#li-lines").textContent = String(li).split(/\n/).filter(Boolean).length;
-
-      // X
       const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
       $("#out-x").textContent = xText;
       const len = xText.replace(/\n/g,' ').trim().length;
       $("#x-len").textContent = len;
       const flag = document.getElementById('x-flag');
-      if (flag){
-        flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
-        flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
-      }
-
-      // Email
+      if (flag){ flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long'); flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err'); }
       let subj = "", body = "";
-      if (typeof out.email === 'object'){ subj = out.email.subject||""; body = out.email.body||""; }
-      else { body = out.email; }
+      if (typeof out.email === 'object'){ subj = out.email.subject||""; body = out.email.body||""; } else { body = out.email; }
       $('#out-em-subj').textContent = subj;
       $('#out-em-body').textContent = body;
-
-      // IG
       const ig = out.instagram || "";
       $('#out-ig').textContent = ig;
       const tags = (ig.match(/#[\p{L}\w]+/gu) || []).length;
       $('#ig-tags').textContent = tags;
     }
 
-    // ===== RUN (guest) =====
+    async function getAuthHeaders(){
+      const { token, userId } = await getAuth();
+      const headers = { "Content-Type":"application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (userId) headers["X-User-Id"] = userId;
+      return headers;
+    }
+
     async function runGen({ useBYOK=false }){
       const source = document.getElementById("source").value.trim();
       if (!source) { alert("Paste some content first."); return; }
@@ -756,22 +840,17 @@
 
       const model = sessionStorage.getItem("MODEL") || "";
       const byok  = sessionStorage.getItem("BYOK")  || "";
-      const headers = { "Content-Type":"application/json" };
+      const headers = await getAuthHeaders();
       if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
 
-      const { token, userId } = await getAuth();
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (userId) headers["X-User-Id"] = userId;
-      const planHdr = (localStorage.getItem("plan")||"").toLowerCase();
-      if (planHdr) headers["X-Plan"] = planHdr;
+      const SYSTEM = { role: "system", content:
+        `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
+- linkedin: 6–10 lines, one CTA.
+- x: <= 280 chars total; provide an array with 2 short variants if possible.
+- email: object with keys {subject, body} — 3–5 sentences.
+- instagram: 1–2 short paragraphs + 3–5 hashtags.
+STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
-      const SYSTEM = { role: "system", content: (
-        `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.\n`+
-        `- linkedin: 6–10 lines, one CTA.\n`+
-        `- x: <= 280 chars total; provide an array with 2 short variants if possible.\n`+
-        `- email: object with keys {subject, body} — 3–5 sentences.\n`+
-        `- instagram: 1–2 short paragraphs + 3–5 hashtags.\n`+
-        `STRICT: No Markdown, no triple backticks, no prose — JSON object only.` ) };
       const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
       try{
@@ -787,17 +866,15 @@
         paintOutputs(out);
         document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
 
-        await refreshQuota();
+        await refreshAll();
         document.getElementById("dl-md").disabled = false; document.getElementById("dl-csv").disabled = false;
         document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
         document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
       }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
     }
-
     document.getElementById("run").onclick = ()=> runGen({ useBYOK:false });
     document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
 
-    // Utilities (guest)
     function download(filename, mime, text){
       const blob = new Blob([text], { type: mime });
       const url = URL.createObjectURL(blob);
@@ -822,24 +899,23 @@
       document.getElementById("dl-md").disabled = true; document.getElementById("dl-csv").disabled = true;
     };
 
-    // ===== RUN (member) =====
+    // ===== MEMBER GENERATE =====
+    document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    document.getElementById("clear_m")?.addEventListener("click", ()=>{
+      document.getElementById("source_m").value = "";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("status_m").textContent = "";
+    });
     async function runGenMember({ useBYOK=false }){
       const src = document.getElementById("source_m").value.trim();
       if (!src) return alert("Paste content first.");
       document.getElementById("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
-
       ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-
       const model = sessionStorage.getItem("MODEL") || "";
       const byok  = sessionStorage.getItem("BYOK")  || "";
-      const headers = { "Content-Type":"application/json" };
+      const headers = await getAuthHeaders();
       if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
-
-      const { token, userId } = await getAuth();
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (userId) headers["X-User-Id"] = userId;
-      const planHdr = (localStorage.getItem("plan")||"").toLowerCase();
-      if (planHdr) headers["X-Plan"] = planHdr;
 
       const SYSTEM = { role:"system", content:
 `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
@@ -861,7 +937,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
-
         document.getElementById("out-li_m").textContent = out.linkedin || "";
         document.getElementById("out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
         if (typeof out.email === 'object'){
@@ -872,28 +947,18 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         }
         document.getElementById("out-ig_m").textContent  = out.instagram || "";
         document.getElementById("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-
-        await refreshQuota();
+        await refreshAll();
       }catch(e){
         document.getElementById("status_m").textContent = e.message || "Network error";
       }
     }
 
-    document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
-    document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
-    document.getElementById("clear_m")?.addEventListener("click", ()=>{
-      document.getElementById("source_m").value = "";
-      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-      document.getElementById("status_m").textContent = "";
-    });
-
-    // Member copy buttons
-    document.getElementById("copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(document.getElementById('out-li_m').textContent||""));
-    document.getElementById("copy-x_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText(document.getElementById('out-x_m').textContent||""));
-    document.getElementById("copy-em_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj_m').textContent}\n\n${document.getElementById('out-em-body_m').textContent}`));
-    document.getElementById("copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(document.getElementById('out-ig_m').textContent||""));
-
-    // ===== PRESETS =====
+    // ===== PRESETS (respect plan caps in UI) =====
+    function maxPresetsFor(plan){
+      if (plan==="starter") return 10;
+      if (plan==="creator" || plan==="business") return Infinity;
+      return 0; // free
+    }
     function loadPresets(){
       const list = JSON.parse(localStorage.getItem("presets")||"[]");
       const ul = document.getElementById("presetList");
@@ -921,14 +986,16 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         });
       });
     }
-    document.getElementById("addPreset")?.addEventListener("click", ()=>{
+    document.getElementById("addPreset")?.addEventListener("click", async ()=>{
       const text = (document.getElementById("source_m")?.value || "").trim();
       if (!text) return alert("Write something first.");
-      const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
+      const status = await getPlanStatus();
+      const planKey = planKeyFromStatus(status);
+      const cap = maxPresetsFor(planKey);
       const list = JSON.parse(localStorage.getItem("presets")||"[]");
+      if (cap !== Infinity && list.length >= cap) { alert(`Preset limit reached for ${PLAN_LABEL(planKey)}.`); return; }
+      const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
       list.unshift({ title, text, t: Date.now() });
-      const plan = (localStorage.getItem("plan")||"free").toLowerCase();
-      if (plan==="starter" && list.length>10) list.splice(10); // Starter cap 10
       localStorage.setItem("presets", JSON.stringify(list));
       loadPresets();
     });
@@ -955,9 +1022,10 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     });
 
     // ===== INIT =====
+    async function refreshAllOnce(){ await refreshAll(); loadPresets(); }
     paintAuth();
-    refreshQuota();
-    loadPresets();
+    refreshAllOnce();
+
   </script>
 </body>
 </html>
