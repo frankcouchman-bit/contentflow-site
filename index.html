@@ -40,8 +40,6 @@
     .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .pill{border-radius:9999px;border:1px solid rgba(255,255,255,.25);padding:.2rem .6rem}
-
-    /* Defensive: never allow a stray element to block clicks */
     #click-guard{position:fixed;inset:0;pointer-events:none}
   </style>
 
@@ -57,6 +55,7 @@
 </head>
 <body class="min-h-full">
   <div id="click-guard"></div>
+
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
@@ -76,7 +75,7 @@
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
-        <!-- View switcher (preview UI states only) -->
+        <!-- View switcher (dev only) -->
         <div id="viewToggles" class="hidden md:flex items-center gap-1 ml-2">
           <span class="text-xs text-slate-500">View:</span>
           <button id="viewGuest" class="text-xs pill">Demo</button>
@@ -188,8 +187,10 @@
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
-            <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
-            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-li" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-li" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
@@ -198,7 +199,10 @@
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
             <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
-            <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-x" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-x" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
@@ -206,7 +210,10 @@
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-em" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="edit-em" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Preview / Edit</button>
+            </div>
           </div>
           <div class="text-xs text-slate-400">Subject:</div>
           <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
@@ -218,7 +225,10 @@
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
             <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
-            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-ig" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
@@ -232,7 +242,10 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard <span class="txt-grad text-transparent">— Signed-in</span></h2>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">
+            Dashboard <span class="txt-grad text-transparent">— Signed-in</span>
+            <span id="priorityModelsChip" class="ml-2 text-xs px-2 py-0.5 rounded-full border hidden">Priority models</span>
+          </h2>
           <p class="text-slate-500 dark:text-slate-300">Welcome back, <span id="userEmail" class="font-medium"></span></p>
         </div>
         <div class="flex items-center gap-3">
@@ -242,8 +255,8 @@
         </div>
       </div>
 
-      <!-- Top Cards (Platform + BYOK) -->
-      <div id="quotaCards" class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
+      <!-- Top Cards (Platform + BYOK) — TODAY ONLY -->
+      <div id="quotaCards" class="grid md:grid-cols-2 gap-5 mb-6"></div>
 
       <!-- Member Generator -->
       <div class="card p-6">
@@ -251,12 +264,37 @@
           <h3 class="text-xl font-bold tracking-tight">Create new content</h3>
           <span id="quotaMember" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Today: 0/5</span>
         </div>
+
         <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or idea…"></textarea>
+
+        <!-- Batch (Solo+): hidden if plan lacks capability -->
+        <div id="batchWrap" class="mt-3 hidden">
+          <label class="text-sm text-slate-500">Batch inputs (one item per line or upload CSV)</label>
+          <textarea id="batch_inputs" class="mt-2 w-full h-24 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Item A&#10;Item B&#10;Item C"></textarea>
+          <div class="mt-2 flex gap-2">
+            <input id="batch_file" type="file" accept=".csv,.txt" class="text-xs">
+            <button id="batch_use" type="button" class="px-3 py-1 rounded-lg border">Queue Batch</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">We’ll generate sequentially. Uses your plan quota.</p>
+        </div>
+
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
           <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
           <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
           <span id="status_m" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
+        </div>
+
+        <!-- Creator/Business tool buttons (gated) -->
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button id="projectPackBtn" type="button" class="px-3 py-1 rounded-lg border">Project pack export</button>
+          <button id="notionBtn" type="button" class="px-3 py-1 rounded-lg border">Send to Notion</button>
+          <button id="trelloBtn" type="button" class="px-3 py-1 rounded-lg border">Send to Trello</button>
+          <button id="bufferBtn" type="button" class="px-3 py-1 rounded-lg border">Push to Buffer</button>
+          <span id="earlyWorkflowsBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">New workflows early</span>
+          <span id="whiteLabelBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">White-label</span>
+          <span id="teamCalendarBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">Team calendar</span>
+          <span id="prioritySupportBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">Priority support</span>
         </div>
       </div>
 
@@ -265,21 +303,30 @@
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
-            <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-li_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
-            <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-x_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-            <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="edit-em_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Preview / Edit</button>
+            </div>
           </div>
           <div class="text-xs text-slate-400">Subject:</div>
           <pre id="out-em-subj_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
@@ -289,37 +336,23 @@
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
-            <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+            <div class="flex items-center gap-2">
+              <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
+              <button id="share-ig_m" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
+            </div>
           </div>
           <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
       </div>
 
       <!-- Saved Presets + Growth -->
-      <div class="grid md:grid-cols-2 gap-5 mt-6">
-        <!-- Saved Presets -->
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong>Saved presets</strong>
-            <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
-          <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
+      <div class="card p-5 mt-6">
+        <div class="flex items-center justify-between">
+          <strong>Saved presets</strong>
+          <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
         </div>
-        <!-- Growth / Referrals -->
-        <div class="card p-5">
-          <strong>Grow your daily quota</strong>
-          <p class="text-sm text-slate-500 mt-2">Share your invite to unlock bonus runs (visual; enforcement requires billing/worker rules).</p>
-          <div class="mt-3 grid gap-2">
-            <input id="refLink" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" readonly value="">
-            <div class="flex flex-wrap gap-2">
-              <button id="shareLi" class="px-3 py-2 rounded-xl border">Share on LinkedIn</button>
-              <button id="shareX" class="px-3 py-2 rounded-xl border">Share on X</button>
-              <button id="copyRef" class="px-3 py-2 rounded-xl border">Copy link</button>
-            </div>
-          </div>
-          <p id="refNote" class="text-xs text-slate-500 mt-2">Tip: Each signup via your link can grant +1/day (subject to plan).</p>
-        </div>
+        <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
+        <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
       </div>
 
       <!-- Plan Features (unlocks) -->
@@ -432,11 +465,28 @@
     </form>
   </dialog>
 
+  <!-- Email Preview / Edit Modal -->
+  <dialog id="emailPreview" class="rounded-2xl p-0 w-[720px] max-w-[96vw] bg-neutral-900 text-white border border-white/10">
+    <form method="dialog">
+      <div class="p-6 space-y-3">
+        <h3 class="text-xl font-bold">Email preview</h3>
+        <input id="em_to" type="email" placeholder="to@example.com (optional)" class="w-full p-2 rounded-xl border border-white/15 bg-white/5">
+        <input id="em_subj" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Subject">
+        <textarea id="em_body" class="w-full h-48 p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Body"></textarea>
+        <div class="flex gap-2 pt-2">
+          <button id="em_open" type="button" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Open in Mail</button>
+          <button id="em_copy" type="button" class="px-4 py-2 rounded-xl bg-white/10">Copy body</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-white/10">Close</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
   <!-- APP SCRIPT (module so top-level await is valid) -->
   <script type="module">
     // ===== CONFIG =====
-    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← your Worker URL
-    const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // ← replace with real publishable key
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+    const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace with real
 
     // === Supabase ===
     const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
@@ -474,6 +524,71 @@
       return "Free";
     };
 
+    // Capabilities by plan
+    const CAPS = {
+      free: {
+        batch: false,
+        presets: 0,
+        priorityModels: false,
+        unlimitedPresets: false,
+        projectPack: false,
+        notion: false,
+        trello: false,
+        buffer: false,
+        newWorkflowsEarly: false,
+        seats: 1,
+        whiteLabel: false,
+        teamCalendar: false,
+        prioritySupport: false,
+      },
+      starter: { // Solo Creator
+        batch: true,
+        presets: 10,
+        priorityModels: true,
+        unlimitedPresets: false,
+        projectPack: false,
+        notion: false,
+        trello: false,
+        buffer: false,
+        newWorkflowsEarly: false,
+        seats: 1,
+        whiteLabel: false,
+        teamCalendar: false,
+        prioritySupport: false,
+      },
+      creator: {
+        batch: true,
+        presets: Infinity,
+        priorityModels: true,
+        unlimitedPresets: true,
+        projectPack: true,
+        notion: true,
+        trello: true,
+        buffer: true,
+        newWorkflowsEarly: true,
+        seats: 1,
+        whiteLabel: false,
+        teamCalendar: false,
+        prioritySupport: false,
+      },
+      business: {
+        batch: true,
+        presets: Infinity,
+        priorityModels: true,
+        unlimitedPresets: true,
+        projectPack: true,
+        notion: true,
+        trello: true,
+        buffer: true,
+        newWorkflowsEarly: true,
+        seats: 3,
+        whiteLabel: true,
+        teamCalendar: true,
+        prioritySupport: true,
+      }
+    };
+    function capsFor(planKey){ return CAPS[planKey] || CAPS.free; }
+
     const PLAN_FEATURES = {
       free: ["5/day platform runs (signed-in)", "BYOK: 5/day", "CSV/Markdown export"],
       starter: ["200 generations / month","Batch inputs","10 saved presets","Priority models","BYOK: 50 / month"],
@@ -487,7 +602,6 @@
       business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
     };
 
-    // Allow plan=starter|creator|business demo in URL (preview only)
     (function(){
       const params = new URLSearchParams(location.search);
       const incoming = params.get("plan");
@@ -525,26 +639,6 @@
         $("#logoutBtn2")?.classList.add("hidden");
       }
     }
-
-    // Preview toggler (dev only, and only when logged OUT)
-    (function(){
-      if (!IS_DEV) return;
-      $("#viewGuest")?.addEventListener("click", ()=>{
-        localStorage.setItem("viewOverride","guest");
-        applyViewOverride(false); // we don't know auth here; function checks
-      });
-      $("#viewMember")?.addEventListener("click", ()=>{
-        localStorage.setItem("viewOverride","member");
-        applyViewOverride(false);
-      });
-    })();
-
-    function applyViewOverride(isAuthenticated){
-      if (isAuthenticated) return; // never override real auth
-      const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
-      if (o === "member") showView(true); else if (o === "guest") showView(false);
-    }
-
     /* ===== AUTH ===== */
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
@@ -556,35 +650,19 @@
       const { token, userId, email } = await getAuth();
       const isAuthed = !!userId;
 
-      // Toggle views/buttons immediately
       showView(isAuthed);
-
-      // Never apply preview override when authenticated
-      if (!isAuthed) applyViewOverride(false);
+      if (!isAuthed) { try { localStorage.removeItem('viewOverride'); } catch {} }
 
       const heroBadge = $("#heroBadge");
       if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in Free — 5 runs / day" : "Demo — 5 runs / month (no login)";
 
-      const logout = $("#logoutBtn");
-      const logout2 = $("#logoutBtn2");
-      if (logout) {
-        if (isAuthed) {
-          logout.textContent = `Sign out (${email || 'account'})`;
-          logout.classList.remove("hidden");
-        } else {
-          logout.classList.add("hidden");
-        }
-      }
-      if (logout2) {
-        if (isAuthed) logout2.classList.remove("hidden"); else logout2.classList.add("hidden");
-      }
-
-      const login = $("#loginBtn");
-      if (login) login.classList.toggle("hidden", isAuthed);
+      $("#loginBtn")?.classList.toggle("hidden", isAuthed);
       $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
+      $("#logoutBtn")?.classList.toggle("hidden", !isAuthed);
+      $("#logoutBtn2")?.classList.toggle("hidden", !isAuthed);
 
-      const ue = document.getElementById('userEmail');
-      if (ue) ue.textContent = isAuthed ? (email || 'member') : '';
+      const ue = $("#userEmail");
+      if (ue) ue.textContent = isAuthed ? (email || "member") : "";
     }
 
     // Auth modal wiring
@@ -645,14 +723,13 @@
       if (j.url) { location.href = j.url; return; }
       alert(j?.error?.message || "Could not open billing portal.");
     }
-
     document.querySelectorAll(".subBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
     });
     $("#manageBilling")?.addEventListener("click", openPortal);
     $("#manageBilling2")?.addEventListener("click", openPortal);
 
-    /* ===== PLAN STATUS / QUOTAS ===== */
+    /* ===== PLAN STATUS / QUOTAS (TODAY-ONLY UI) ===== */
     async function getPlanStatus(){
       const { token } = await getAuth();
       const headers = token ? { "Authorization": `Bearer ${token}` } : {};
@@ -660,45 +737,42 @@
       try{ const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers }); if (r2.ok) return await r2.json(); }catch{}
       return null;
     }
-
     function planKeyFromStatus(s){
       const p = (s?.plan || s?.monthly?.plan || "").toLowerCase();
-      if (["starter","creator","business"].includes(p)) return p;
-      return "free";
+      return ["starter","creator","business"].includes(p) ? p : "free";
     }
 
     function paintFeatureList(planKey){
-      const ul = $("#featureList");
-      if (!ul) return;
       const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
-      ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
+      const ul = $("#featureList");
+      if (ul) ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
     }
-
     function paintManageButtons(isSubscribed){
       $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
       $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
     }
-
     function paintTopBadges(status){
       const scope = status?.scope; // 'ip' | 'user'
       const planKey = planKeyFromStatus(status);
       paintPlanBadge(planKey);
-      $("#heroBadge").textContent = scope==='ip' ? "Demo — 5 runs / month (no login)" : (planKey==='free' ? "Signed-in Free — 5 runs / day" : `Signed-in — ${PLAN_LABEL(planKey)}`);
+      $("#heroBadge").textContent = scope==='ip'
+        ? "Demo — 5 runs / month (no login)"
+        : (planKey==='free' ? "Signed-in Free — 5 runs / day" : `Signed-in — ${PLAN_LABEL(planKey)}`);
     }
 
+    // Show only TODAY tiles as requested
     function paintQuotaTiles(status){
       const wrap = $("#quotaCards");
       if (!wrap) return;
       const pk = planKeyFromStatus(status);
-      const pDaily = status?.platform?.daily || { used: status?.used ?? 0, cap: status?.cap ?? 5 };
-      const pMonthly = status?.platform?.monthly || status?.monthly || { used:0, cap: pk==="business" ? Number.MAX_SAFE_INTEGER : (pk==="creator"?500:(pk==="starter"?200:Infinity)) };
-      const bDaily = status?.byok?.daily || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: 0 });
-      const byokCapMonthlyMap = { free: 5, starter: 50, creator: 150, business: 300 };
-      const bMonthly = status?.byok?.monthly || { used:0, cap: byokCapMonthlyMap[pk] ?? 0 };
+
+      // Get today's counts and caps
+      const pDaily = status?.platform?.daily || { used: status?.used ?? 0, cap: status?.cap ?? (pk==='free'?5:null) };
+      const bDaily = status?.byok?.daily || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: null });
 
       function tile(title, used, cap, sub){
-        const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
-        const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
+        const isInf = cap === null || cap === undefined || cap === Infinity || cap === Number.MAX_SAFE_INTEGER;
+        const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / Math.max(1, cap)) * 100)));
         const capTxt = isInf ? '∞' : cap;
         return `
           <div class="card p-5">
@@ -714,25 +788,51 @@
       }
 
       wrap.innerHTML = [
-        tile("Platform — Today", pDaily.used||0, pDaily.cap ?? (pk==='free'?5:Number.MAX_SAFE_INTEGER), PLAN_LABEL(pk)),
-        tile("Platform — This month", pMonthly.used||0, pMonthly.cap ?? (pk==='business'?Number.MAX_SAFE_INTEGER:(pk==='creator'?500:(pk==='starter'?200:Infinity))), "Generations"),
-        tile("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? 0)), "Your key only"),
-        tile("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
+        tile("Platform — Today", pDaily.used||0, pDaily.cap ?? null, PLAN_LABEL(pk)),
+        tile("BYOK — Today", bDaily.used||0, bDaily.cap ?? null, "Your key only"),
       ].join("");
 
       const quotaMember = $("#quotaMember");
       if (quotaMember) {
-        const dailyLabel = (pDaily.cap===Infinity||pDaily.cap===Number.MAX_SAFE_INTEGER) ? '∞' : (pDaily.cap ?? (pk==='free'?5:'∞'));
+        const dailyLabel = (pDaily.cap===Infinity||pDaily.cap===Number.MAX_SAFE_INTEGER||pDaily.cap==null) ? '∞' : (pDaily.cap ?? (pk==='free'?5:'∞'));
         quotaMember.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
       }
       paintFeatureList(pk);
+
+      // Priority models chip
+      const chip = $("#priorityModelsChip");
+      chip?.classList.toggle("hidden", !capsFor(pk).priorityModels);
+    }
+
+    function gateCapabilities(status){
+      const pk = planKeyFromStatus(status);
+      const caps = capsFor(pk);
+
+      // Batch
+      $("#batchWrap")?.classList.toggle("hidden", !caps.batch);
+
+      // Tool buttons (creator/business)
+      $("#projectPackBtn")?.classList.toggle("hidden", !caps.projectPack);
+      $("#notionBtn")?.classList.toggle("hidden", !caps.notion);
+      $("#trelloBtn")?.classList.toggle("hidden", !caps.trello);
+      $("#bufferBtn")?.classList.toggle("hidden", !caps.buffer);
+
+      $("#earlyWorkflowsBadge")?.classList.toggle("hidden", !caps.newWorkflowsEarly);
+      $("#whiteLabelBadge")?.classList.toggle("hidden", !caps.whiteLabel);
+      $("#teamCalendarBadge")?.classList.toggle("hidden", !caps.teamCalendar);
+      $("#prioritySupportBadge")?.classList.toggle("hidden", !caps.prioritySupport);
+
+      // Preset banner text already reflects limits; logic enforced in addPreset handler below.
     }
 
     async function refreshAll(){
-      await paintAuth(); // sets correct view immediately
+      await paintAuth();
       const status = await getPlanStatus();
+
       paintTopBadges(status || {});
       paintQuotaTiles(status || {});
+      gateCapabilities(status || {});
+
       const isSub = !!(status?.is_subscribed || ["starter","creator","business"].includes((status?.plan||"").toLowerCase()));
       paintManageButtons(isSub);
 
@@ -742,8 +842,7 @@
         const uid = status?.userId || (email ? email.split('@')[0] : 'guest');
         const code = btoa(uid).replace(/=+$/,'');
         const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
-        const refInput = document.getElementById('refLink');
-        if (refInput) refInput.value = link;
+        $("#refLink") && ($("#refLink").value = link);
       }catch{}
     }
 
@@ -757,7 +856,6 @@
       if (o.instagram) rows.push(["instagram", o.instagram]);
       return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
     }
-
     function buildMarkdown(o){
       const lines = [
         "# Content Pack","",
@@ -768,13 +866,10 @@
       ];
       return lines.join("\n");
     }
-
     function extractJSON(text){
       if (!text) return null;
       const raw = String(text).trim();
-      // 1) try direct parse
       try { return JSON.parse(raw); } catch {}
-      // 2) try to find the first {...} block (balanced naive)
       const first = raw.indexOf('{');
       const last = raw.lastIndexOf('}');
       if (first !== -1 && last !== -1 && last>first){
@@ -783,7 +878,6 @@
       }
       return null;
     }
-
     function parseOutput(content){
       const j = extractJSON(content);
       if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
@@ -804,7 +898,6 @@
       if (out.linkedin || out.x || out.email || out.instagram) return out;
       return { linkedin: text };
     }
-
     async function getAuthHeaders(){
       const { token, userId } = await getAuth();
       const headers = { "Content-Type":"application/json" };
@@ -812,29 +905,23 @@
       if (userId) headers["X-User-Id"] = userId;
       return headers;
     }
-
     function paintOutputs(out){
       const li = out.linkedin || "";
       $("#out-li").textContent = li;
-      $("#li-lines").textContent = String(li).split(/\n/).filter(Boolean).length;
 
       const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
       $("#out-x").textContent = xText;
       const len = xText.replace(/\n/g,' ').trim().length;
       $("#x-len").textContent = len;
-      const flag = document.getElementById('x-flag');
+      const flag = $("#x-flag");
       if (flag){
         flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
         flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
       }
 
       let subj = "", body = "";
-      if (typeof out.email === 'object'){
-        subj = out.email.subject||"";
-        body = out.email.body||"";
-      } else {
-        body = out.email || "";
-      }
+      if (typeof out.email === 'object'){ subj = out.email.subject||""; body = out.email.body||""; }
+      else { body = out.email || ""; }
       $('#out-em-subj').textContent = subj;
       $('#out-em-body').textContent = body;
 
@@ -845,12 +932,11 @@
     }
 
     async function runGen({ useBYOK=false }){
-      const source = document.getElementById("source").value.trim();
+      const source = $("#source").value.trim();
       if (!source) { alert("Paste some content first."); return; }
-      document.getElementById("status").textContent = useBYOK? "Generating with your key…" : "Generating…";
-      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
-      document.getElementById("dl-md").disabled = true;
-      document.getElementById("dl-csv").disabled = true;
+      $("#status").textContent = useBYOK? "Generating with your key…" : "Generating…";
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> $(sel).textContent = "");
+      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
 
       const model = sessionStorage.getItem("MODEL") || "";
       const byok = sessionStorage.getItem("BYOK") || "";
@@ -863,7 +949,6 @@
 - email: object with keys {subject, body} — 3–5 sentences.
 - instagram: 1–2 short paragraphs + 3–5 hashtags.
 STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
-
       const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
       try{
@@ -873,21 +958,19 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
         });
         const data = await r.json().catch(()=> ({}));
-        if (!r.ok) { document.getElementById("status").textContent = data?.error?.message || "Error"; return; }
+        if (!r.ok) { $("#status").textContent = data?.error?.message || "Error"; return; }
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
         paintOutputs(out);
-        document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+        $("#status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
         await refreshAll();
-        document.getElementById("dl-md").disabled = false;
-        document.getElementById("dl-csv").disabled = false;
-        document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
-        document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
-      }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
+        $("#dl-md").disabled = false; $("#dl-csv").disabled = false;
+        $("#dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+        $("#dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
+      }catch(e){ $("#status").textContent = e.message || "Network error"; }
     }
-
-    document.getElementById("run").onclick = ()=> runGen({ useBYOK:false });
-    document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
+    $("#run").onclick = ()=> runGen({ useBYOK:false });
+    $("#run-byok").onclick = ()=> runGen({ useBYOK:true });
 
     function download(filename, mime, text){
       const blob = new Blob([text], { type: mime });
@@ -896,42 +979,72 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       a.href = url; a.download = filename; document.body.appendChild(a); a.click();
       setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
     }
-
-    document.getElementById("save").onclick = ()=>{
-      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
-      sessionStorage.setItem("BYOK", document.getElementById("byok").value.trim());
+    $("#save").onclick = ()=>{
+      sessionStorage.setItem("MODEL", $("#model").value.trim());
+      sessionStorage.setItem("BYOK", $("#byok").value.trim());
       alert("Saved for this tab.");
     };
 
-    document.getElementById("copy-li").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-li').textContent||"");
-    document.getElementById("copy-x").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-x').textContent||"");
-    document.getElementById("copy-em").onclick = ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj').textContent}\n\n${document.getElementById('out-em-body').textContent}`);
-    document.getElementById("copy-ig").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-ig').textContent||"");
+    // Copies + Shares (guest)
+    $("#copy-li").onclick = ()=> navigator.clipboard.writeText($("#out-li").textContent||"");
+    $("#copy-x").onclick  = ()=> navigator.clipboard.writeText($("#out-x").textContent||"");
+    $("#copy-em").onclick = ()=> navigator.clipboard.writeText(`Subject: ${$('#out-em-subj').textContent}\n\n${$('#out-em-body').textContent}`);
+    $("#copy-ig").onclick = ()=> navigator.clipboard.writeText($("#out-ig").textContent||"");
 
-    document.getElementById("source").addEventListener("keydown",(e)=>{ if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); } });
+    $("#share-li").onclick = ()=>{
+      const text = encodeURIComponent($("#out-li").textContent||"");
+      const url = `https://www.linkedin.com/sharing/share-offsite/?mini=true&summary=${text}`;
+      window.open(url,"_blank","noopener");
+    };
+    $("#share-x").onclick = ()=>{
+      const text = encodeURIComponent($("#out-x").textContent||"");
+      const url = `https://twitter.com/intent/tweet?text=${text}`;
+      window.open(url,"_blank","noopener");
+    };
+    $("#share-ig").onclick = ()=>{
+      alert("Instagram doesn’t allow web posting. Copy and paste this into your Instagram app.");
+    };
 
-    document.getElementById("clear").onclick = ()=>{
-      document.getElementById("source").value = "";
-      document.getElementById("status").textContent = "";
-      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
-      document.getElementById("dl-md").disabled = true;
-      document.getElementById("dl-csv").disabled = true;
+    // Email modal (guest)
+    const emDlg = $("#emailPreview");
+    $("#edit-em").onclick = ()=>{
+      $("#em_subj").value = $("#out-em-subj").textContent || "";
+      $("#em_body").value = $("#out-em-body").textContent || "";
+      $("#em_to").value = "";
+      emDlg.showModal();
+    };
+    $("#em_copy").onclick = ()=> navigator.clipboard.writeText($("#em_body").value||"");
+    $("#em_open").onclick = ()=>{
+      const to = encodeURIComponent($("#em_to").value||"");
+      const subj = encodeURIComponent($("#em_subj").value||"");
+      const body = encodeURIComponent($("#em_body").value||"");
+      const uri = `mailto:${to}?subject=${subj}&body=${body}`;
+      window.location.href = uri;
+    };
+
+    // Clear (guest)
+    $("#clear").onclick = ()=>{
+      $("#source").value = "";
+      $("#status").textContent = "";
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> $(sel).textContent = "");
+      $("#dl-md").disabled = true; $("#dl-csv").disabled = true;
     };
 
     // ===== MEMBER GENERATE =====
-    document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
-    document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
-    document.getElementById("clear_m")?.addEventListener("click", ()=>{
-      document.getElementById("source_m").value = "";
-      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-      document.getElementById("status_m").textContent = "";
+    $("#run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    $("#run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    $("#clear_m")?.addEventListener("click", ()=>{
+      $("#source_m").value = "";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> $(sel).textContent = "");
+      $("#status_m").textContent = "";
     });
 
     async function runGenMember({ useBYOK=false }){
-      const src = document.getElementById("source_m").value.trim();
+      const src = $("#source_m").value.trim();
       if (!src) return alert("Paste content first.");
-      document.getElementById("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
-      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      $("#status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> $(sel).textContent = "");
+
       const model = sessionStorage.getItem("MODEL") || "";
       const byok = sessionStorage.getItem("BYOK") || "";
       const headers = await getAuthHeaders();
@@ -948,29 +1061,57 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       try{
         const r = await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify({ plan:(useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined }) });
         const data = await r.json().catch(()=> ({}));
-        if (!r.ok) { document.getElementById("status_m").textContent = data?.error?.message || "Error"; return; }
+        if (!r.ok) { $("#status_m").textContent = data?.error?.message || "Error"; return; }
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
-        document.getElementById("out-li_m").textContent = out.linkedin || "";
-        document.getElementById("out-x_m").textContent = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+
+        $("#out-li_m").textContent = out.linkedin || "";
+        $("#out-x_m").textContent = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
         if (typeof out.email === 'object'){
-          document.getElementById("out-em-subj_m").textContent = out.email.subject || "";
-          document.getElementById("out-em-body_m").textContent = out.email.body || "";
+          $("#out-em-subj_m").textContent = out.email.subject || "";
+          $("#out-em-body_m").textContent = out.email.body || "";
         } else {
-          document.getElementById("out-em-body_m").textContent = out.email || "";
+          $("#out-em-body_m").textContent = out.email || "";
         }
-        document.getElementById("out-ig_m").textContent = out.instagram || "";
-        document.getElementById("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+        $("#out-ig_m").textContent = out.instagram || "";
+        $("#status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
         await refreshAll();
-      }catch(e){ document.getElementById("status_m").textContent = e.message || "Network error"; }
+      }catch(e){ $("#status_m").textContent = e.message || "Network error"; }
     }
+
+    // Member share + email edit
+    $("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m").textContent||""));
+    $("#copy-x_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-x_m").textContent||""));
+    $("#copy-em_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${$('#out-em-subj_m').textContent}\n\n${$('#out-em-body_m').textContent}`));
+    $("#copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig_m").textContent||""));
+
+    $("#share-li_m")?.addEventListener("click", ()=>{
+      const text = encodeURIComponent($("#out-li_m").textContent||"");
+      const url = `https://www.linkedin.com/sharing/share-offsite/?mini=true&summary=${text}`;
+      window.open(url,"_blank","noopener");
+    });
+    $("#share-x_m")?.addEventListener("click", ()=>{
+      const text = encodeURIComponent($("#out-x_m").textContent||"");
+      const url = `https://twitter.com/intent/tweet?text=${text}`;
+      window.open(url,"_blank","noopener");
+    });
+    $("#share-ig_m")?.addEventListener("click", ()=>{
+      alert("Instagram doesn’t allow web posting. Copy and paste this into your Instagram app.");
+    });
+
+    // Email modal (member)
+    $("#edit-em_m")?.addEventListener("click", ()=>{
+      $("#em_subj").value = $("#out-em-subj_m").textContent || "";
+      $("#em_body").value = $("#out-em-body_m").textContent || "";
+      $("#em_to").value = "";
+      emDlg.showModal();
+    });
 
     // ===== PRESETS =====
     function maxPresetsFor(plan){ if (plan==="starter") return 10; if (plan==="creator" || plan==="business") return Infinity; return 0; }
-
     function loadPresets(){
       const list = JSON.parse(localStorage.getItem("presets")||"[]");
-      const ul = document.getElementById("presetList");
+      const ul = $("#presetList");
       if (!ul) return;
       ul.innerHTML = "";
       if (!list.length){ ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>'; return; }
@@ -991,14 +1132,13 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           const i = Number(btn.getAttribute("data-i"));
           const act = btn.getAttribute("data-act");
           const list = JSON.parse(localStorage.getItem("presets")||"[]");
-          if (act==="use"){ const el = document.getElementById("source_m"); if (el) el.value = list[i]?.text || ""; }
+          if (act==="use"){ const el = $("#source_m"); if (el) el.value = list[i]?.text || ""; }
           if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
         });
       });
     }
-
-    document.getElementById("addPreset")?.addEventListener("click", async ()=>{
-      const text = (document.getElementById("source_m")?.value || "").trim();
+    $("#addPreset")?.addEventListener("click", async ()=>{
+      const text = ($("#source_m")?.value || "").trim();
       if (!text) return alert("Write something first.");
       const status = await getPlanStatus();
       const planKey = planKeyFromStatus(status);
@@ -1013,29 +1153,27 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
     // ===== REFERRAL / SHARE =====
     function shareTo(network){
-      const link = document.getElementById("refLink")?.value || location.href;
+      const link = $("#refLink")?.value || location.href;
       const text = encodeURIComponent("I’m using ContentFlow AI to repurpose content into LinkedIn, X, Email & Instagram in minutes. Try it free:");
       if (network==="li"){ const u = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`; window.open(u, "_blank","noopener"); }
       else if (network==="x"){ const u = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(link)}`; window.open(u, "_blank","noopener"); }
     }
-    document.getElementById("shareLi")?.addEventListener("click", ()=> shareTo("li"));
-    document.getElementById("shareX")?.addEventListener("click", ()=> shareTo("x"));
-    document.getElementById("copyRef")?.addEventListener("click", ()=>{
-      const v = document.getElementById("refLink")?.value || "";
+    $("#shareLi")?.addEventListener("click", ()=> shareTo("li"));
+    $("#shareX")?.addEventListener("click", ()=> shareTo("x"));
+    $("#copyRef")?.addEventListener("click", ()=>{
+      const v = $("#refLink")?.value || "";
       if (!v) return;
       navigator.clipboard.writeText(v);
-      const n = document.getElementById("refNote");
+      const n = $("#refNote");
       if (n) n.textContent = "Copied! Share it anywhere.";
     });
 
     // ===== INIT =====
     async function refreshAllOnce(){ await refreshAll(); loadPresets(); }
 
-    // Initial paint (now valid because type="module")
     await paintAuth();
     await refreshAllOnce();
 
-    // Live auth listener
     if (supabase?.auth) {
       supabase.auth.onAuthStateChange(async (_event, _session) => {
         if (_session?.user) { try { localStorage.removeItem('viewOverride'); } catch {} }
