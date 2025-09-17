@@ -616,14 +616,21 @@
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace in prod
 
-    // === Supabase (Auth) ===
-    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+// --- Supabase via ESM (works inside type="module") ---
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    let supabase = null;
-    if (SUPABASE_URL && SUPABASE_ANON && window.supabase) {
-      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); } catch {}
-    }
+const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// (optional but nice) react to login/logout without reload:
+supabase.auth.onAuthStateChange(() => {
+  // your existing functions:
+  paintAuth();
+  refreshAll();
+});
+
 
     // === Stripe (Customer Portal / Checkout redirects) ===
     let stripe = null;
