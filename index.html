@@ -12,17 +12,17 @@
   <!-- OG/Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Demo: 5/month. Signed-in: daily caps by plan.">
+  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Demo: 5/month. Signed-in: 5/day.">
   <meta property="og:url" content="https://contentflows.netlify.app/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta name="twitter:description" content="Free demo + paid plans. BYOK supported.">
+  <meta name="twitter:description" content="Free 5/month demo. Signed-in free: 5/day. BYOK supported.">
   <meta name="twitter:image" content="/og-cover.png">
 
   <!-- Fonts + Tailwind -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
@@ -40,29 +40,23 @@
     .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .pill{border-radius:9999px;border:1px solid rgba(255,255,255,.25);padding:.2rem .6rem}
+
+    /* Defensive: never allow a stray element to block clicks */
+    #click-guard{position:fixed;inset:0;pointer-events:none}
   </style>
 
   <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
-  <script type="application/ld+json">{
-    "@context":"https://schema.org","@type":"FAQPage",
-    "mainEntity":[
-      {"@type":"Question","name":"How does AI content repurposing work?","acceptedAnswer":{"@type":"Answer","text":"Paste a paragraph or blog post and ContentFlow AI generates drafts for LinkedIn, X (Twitter), Email and Instagram. You can export, edit, or schedule content. Bring Your Own Key (BYOK) is supported via OpenRouter."}},
-      {"@type":"Question","name":"What are daily limits by plan?","acceptedAnswer":{"@type":"Answer","text":"Free: 5/day platform. Solo Creator: Platform 50/day, BYOK 200/day. Creator: Platform 150/day, BYOK 500/day. Business: Platform 300/day, BYOK unlimited. Anonymous demo is 5/month."}},
-      {"@type":"Question","name":"What is BYOK (Bring Your Own Key)?","acceptedAnswer":{"@type":"Answer","text":"BYOK lets you use your own OpenRouter API key. When enabled, your key is used exclusively for generation and never falls back to our platform keys."}},
-      {"@type":"Question","name":"Can I batch content and export project packs?","acceptedAnswer":{"@type":"Answer","text":"Batch inputs are available on Solo Creator and above. Project pack export, Notion and Trello exports, and Buffer pushes unlock on Creator and Business."}},
-      {"@type":"Question","name":"Is ContentFlow AI good for SEO content marketing?","acceptedAnswer":{"@type":"Answer","text":"Yes. Templates help convert a long-form idea into multi-channel posts optimized for engagement and discoverability. You can iterate quickly and keep consistent brand voice."}}
-    ]
-  }</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free: 5/day. BYOK supported."}},{"@type":"Question","name":"Which channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X, Email and Instagram out of the box; more soon."}}]}</script>
 
-  <!-- SDKs (defer so rendering is fast; app.js checks existence) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="https://js.stripe.com/v3/" defer></script>
-
+  <!-- SDKs -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body class="min-h-full">
+  <div id="click-guard"></div>
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
@@ -77,10 +71,16 @@
         <a href="#faq" class="hover:opacity-80">FAQ</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn" class="px-3 py-1 rounded-lg border" type="button">Sign in</button>
-          <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden" type="button">Sign out</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
+          <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
+        </div>
+        <!-- View switcher (preview UI states only) -->
+        <div id="viewToggles" class="hidden md:flex items-center gap-1 ml-2">
+          <span class="text-xs text-slate-500">View:</span>
+          <button id="viewGuest" class="text-xs pill">Demo</button>
+          <button id="viewMember" class="text-xs pill">Signed-in</button>
         </div>
       </nav>
     </div>
@@ -102,11 +102,14 @@
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
         <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-        <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60" type="button">Sign in</button>
+        <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
       </div>
       <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span class="badge">SEO-ready</span><span class="badge">X</span><span class="badge">Email</span>
-        <span class="badge">Instagram</span><span class="badge" title="Bring your own OpenRouter key">BYOK</span>
+        <span class="badge">SEO-ready</span>
+        <span class="badge">X</span>
+        <span class="badge">Email</span>
+        <span class="badge">Instagram</span>
+        <span class="badge" title="Bring your own OpenRouter key">BYOK</span>
       </div>
     </div>
     <div class="glass card p-5">
@@ -123,9 +126,9 @@
   <section id="templates" class="max-w-7xl mx-auto px-5 py-10">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
-      <div class="card p-5"><div class="text-xs text-slate-400">Blog</div><div class="mt-1 font-semibold">Problem → Solution SEO Article</div><button class="mt-4 px-3 py-2 rounded-xl border" type="button">Use template</button></div>
-      <div class="card p-5"><div class="text-xs text-slate-400">Email</div><div class="mt-1 font-semibold">Feature Launch / Update</div><button class="mt-4 px-3 py-2 rounded-xl border" type="button">Use template</button></div>
-      <div class="card p-5"><div class="text-xs text-slate-400">Social</div><div class="mt-1 font-semibold">LinkedIn Thread from Blog</div><button class="mt-4 px-3 py-2 rounded-xl border" type="button">Use template</button></div>
+      <div class="card p-5"><div class="text-xs text-slate-400">Blog</div><div class="mt-1 font-semibold">Problem → Solution SEO Article</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+      <div class="card p-5"><div class="text-xs text-slate-400">Email</div><div class="mt-1 font-semibold">Feature Launch / Update</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+      <div class="card p-5"><div class="text-xs text-slate-400">Social</div><div class="mt-1 font-semibold">LinkedIn Thread from Blog</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
     </div>
   </section>
 
@@ -133,14 +136,24 @@
   <section id="use-cases" class="max-w-7xl mx-auto px-5 pb-8">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
-      <div class="card p-5"><div class="font-semibold">Repurpose a blog to social</div><p class="text-sm text-slate-500 mt-2">Turn one article into multi-platform posts in minutes.</p></div>
-      <div class="card p-5"><div class="font-semibold">Launch email updates</div><p class="text-sm text-slate-500 mt-2">Subject lines + short body copy for quick campaigns.</p></div>
-      <div class="card p-5"><div class="font-semibold">Schedule to your calendar</div><p class="text-sm text-slate-500 mt-2">Export to Notion / Trello or push to Buffer (paid).</p></div>
+      <div class="card p-5">
+        <div class="font-semibold">Repurpose a blog to social</div>
+        <p class="text-sm text-slate-500 mt-2">Turn one article into multi-platform posts in minutes.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">Launch email updates</div>
+        <p class="text-sm text-slate-500 mt-2">Subject lines + short body copy for quick campaigns.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">Schedule to your calendar</div>
+        <p class="text-sm text-slate-500 mt-2">Export to Notion / Trello or push to Buffer (paid).</p>
+      </div>
     </div>
   </section>
 
-  <!-- ===== GUEST VIEW ===== -->
+  <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
   <section id="guestView">
+    <!-- DEMO -->
     <main id="demo" class="max-w-7xl mx-auto px-5 pb-12 grid lg:grid-cols-2 gap-8">
       <section class="card p-6">
         <div class="flex items-center justify-between">
@@ -149,71 +162,63 @@
         </div>
         <label for="source" class="sr-only">Source text</label>
         <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
+
         <details id="settings" class="mt-4 open:scroll-mt-20">
           <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
           <div class="grid md:grid-cols-3 gap-3 mt-3">
             <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
             <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
-            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save</button>
+            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
           </div>
           <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
         </details>
+
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
-          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your key</button>
-          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Clear</button>
-          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Download Markdown</button>
-          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Export CSV</button>
+          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
+          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
+          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
+          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
           <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
       </section>
 
       <section class="grid gap-5">
+        <!-- LinkedIn -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
-            <div class="flex items-center gap-2">
-              <button id="copy-li" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
-              <button id="share-li" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
-            </div>
+            <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
+            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
           </div>
           <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
-
+        <!-- X -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
             <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
-            <div class="flex items-center gap-2">
-              <button id="copy-x" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
-              <button id="share-x" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
-            </div>
+            <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
           </div>
           <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
-
+        <!-- Email -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-            <div class="flex items-center gap-2">
-              <button id="copy-em" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
-              <button id="edit-em" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Preview / Edit</button>
-            </div>
+            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
           </div>
           <div class="text-xs text-slate-400">Subject:</div>
           <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
           <div class="text-xs text-slate-400 mt-3">Body:</div>
           <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
         </div>
-
+        <!-- Instagram -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
             <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
-            <div class="flex items-center gap-2">
-              <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Copy</button>
-              <button id="share-ig" class="px-3 py-1 rounded-full text-xs border hover:bg-white/50" type="button">Share</button>
-            </div>
+            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
           </div>
           <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
@@ -221,76 +226,103 @@
     </main>
   </section>
 
-  <!-- ===== MEMBER VIEW ===== -->
+  <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
     <div class="max-w-7xl mx-auto px-5 pb-12">
+      <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">
-            Dashboard <span class="txt-grad text-transparent">— Signed-in</span>
-            <span id="priorityModelsChip" class="ml-2 text-xs px-2 py-0.5 rounded-full border hidden">Priority models</span>
-          </h2>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Dashboard <span class="txt-grad text-transparent">— Signed-in</span></h2>
           <p class="text-slate-500 dark:text-slate-300">Welcome back, <span id="userEmail" class="font-medium"></span></p>
         </div>
         <div class="flex items-center gap-3">
           <span id="memberPlanBadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-          <button id="manageBilling2" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
-          <button id="logoutBtn2" class="px-3 py-1 rounded-lg border" type="button">Sign out</button>
+          <button id="manageBilling2" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
+          <button id="logoutBtn2" class="px-3 py-1 rounded-lg border">Sign out</button>
         </div>
       </div>
 
-      <div id="quotaCards" class="grid md:grid-cols-2 gap-5 mb-6"></div>
+      <!-- Top Cards (Platform + BYOK) -->
+      <div id="quotaCards" class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
 
+      <!-- Member Generator -->
       <div class="card p-6">
         <div class="flex items-center justify-between">
           <h3 class="text-xl font-bold tracking-tight">Create new content</h3>
           <span id="quotaMember" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Today: 0/5</span>
         </div>
-
         <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or idea…"></textarea>
-
-        <div id="batchWrap" class="mt-3 hidden">
-          <label class="text-sm text-slate-500">Batch inputs (one item per line or upload CSV)</label>
-          <textarea id="batch_inputs" class="mt-2 w-full h-24 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Item A&#10;Item B&#10;Item C"></textarea>
-          <div class="mt-2 flex gap-2">
-            <input id="batch_file" type="file" accept=".csv,.txt" class="text-xs">
-            <button id="batch_use" type="button" class="px-3 py-1 rounded-lg border">Queue Batch</button>
-          </div>
-          <p class="text-xs text-slate-500 mt-1">We’ll generate sequentially. Uses your plan quota.</p>
-        </div>
-
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
-          <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your key</button>
-          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Clear</button>
+          <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+          <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
+          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
           <span id="status_m" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
+      </div>
 
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <button id="projectPackBtn" type="button" class="px-3 py-1 rounded-lg border">Project pack export</button>
-          <button id="notionBtn" type="button" class="px-3 py-1 rounded-lg border">Send to Notion</button>
-          <button id="trelloBtn" type="button" class="px-3 py-1 rounded-lg border">Send to Trello</button>
-          <button id="bufferBtn" type="button" class="px-3 py-1 rounded-lg border">Push to Buffer</button>
-          <span id="earlyWorkflowsBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">New workflows early</span>
-          <span id="whiteLabelBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">White-label</span>
-          <span id="teamCalendarBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">Team calendar</span>
-          <span id="prioritySupportBadge" class="text-xs px-2 py-0.5 rounded-full border hidden">Priority support</span>
+      <!-- Outputs -->
+      <div class="grid lg:grid-cols-2 gap-5 mt-6">
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
+            <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
+            <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
+            <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <div class="text-xs text-slate-400">Subject:</div>
+          <pre id="out-em-subj_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
+          <div class="text-xs text-slate-400 mt-3">Body:</div>
+          <pre id="out-em-body_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
+        </div>
+        <div class="card p-5">
+          <div class="flex justify-between items-center">
+            <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
+            <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg-white/50">Copy</button>
+          </div>
+          <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
       </div>
 
-      <div class="grid lg:grid-cols-2 gap-5 mt-6">
-        <div class="card p-5"><div class="flex justify-between items-center"><strong>LinkedIn</strong><div class="flex items-center gap-2"><button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button><button id="share-li_m" class="px-3 py-1 rounded-full text-xs border" type="button">Share</button></div></div><pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre></div>
-        <div class="card p-5"><div class="flex justify-between items-center"><strong>X (Twitter)</strong><div class="flex items-center gap-2"><button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button><button id="share-x_m" class="px-3 py-1 rounded-full text-xs border" type="button">Share</button></div></div><pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre></div>
-        <div class="card p-5"><div class="flex justify-between items-center"><strong>Email</strong><div class="flex items-center gap-2"><button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button><button id="edit-em_m" class="px-3 py-1 rounded-full text-xs border" type="button">Preview / Edit</button></div></div><div class="text-xs text-slate-400">Subject:</div><pre id="out-em-subj_m" class="whitespace-pre-wrap text-sm mt-1"></pre><div class="text-xs text-slate-400 mt-3">Body:</div><pre id="out-em-body_m" class="whitespace-pre-wrap text-sm mt-1"></pre></div>
-        <div class="card p-5"><div class="flex justify-between items-center"><strong>Instagram</strong><div class="flex items-center gap-2"><button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button><button id="share-ig_m" class="px-3 py-1 rounded-full text-xs border" type="button">Share</button></div></div><pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre></div>
+      <!-- Saved Presets + Growth -->
+      <div class="grid md:grid-cols-2 gap-5 mt-6">
+        <!-- Saved Presets -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Saved presets</strong>
+            <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
+          <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
+        </div>
+        <!-- Growth / Referrals -->
+        <div class="card p-5">
+          <strong>Grow your daily quota</strong>
+          <p class="text-sm text-slate-500 mt-2">Share your invite to unlock bonus runs (visual; enforcement requires billing/worker rules).</p>
+          <div class="mt-3 grid gap-2">
+            <input id="refLink" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" readonly value="">
+            <div class="flex flex-wrap gap-2">
+              <button id="shareLi" class="px-3 py-2 rounded-xl border">Share on LinkedIn</button>
+              <button id="shareX" class="px-3 py-2 rounded-xl border">Share on X</button>
+              <button id="copyRef" class="px-3 py-2 rounded-xl border">Copy link</button>
+            </div>
+          </div>
+          <p id="refNote" class="text-xs text-slate-500 mt-2">Tip: Each signup via your link can grant +1/day (subject to plan).</p>
+        </div>
       </div>
 
-      <div class="card p-5 mt-6">
-        <div class="flex items-center justify-between"><strong>Saved presets</strong><button id="addPreset" class="px-3 py-1 rounded-xl border" type="button">Save current</button></div>
-        <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
-        <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
-      </div>
-
+      <!-- Plan Features (unlocks) -->
       <div class="card p-6 mt-6">
         <h3 class="text-lg font-bold">Your plan includes</h3>
         <ul id="featureList" class="mt-3 text-sm space-y-1"></ul>
@@ -298,593 +330,718 @@
     </div>
   </section>
 
+  <!-- PRICING -->
   <section id="pricing" class="max-w-7xl mx-auto px-5 pb-16">
     <div class="text-center mb-8">
       <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
       <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
     </div>
     <div class="grid lg:grid-cols-4 gap-6">
-      <div class="card p-6"><div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div><h3 class="mt-3 text-xl font-bold">Demo</h3><div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div><ul class="mt-4 text-sm space-y-2"><li>• 5 runs / month (no login)</li><li>• Signed-in free platform: 5 / day</li><li>• BYOK: 5 / day</li><li>• CSV/Markdown export</li></ul><a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a></div>
-      <div class="card p-6"><div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div><h3 class="mt-3 text-xl font-bold">Solo Creator</h3><div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div><ul class="mt-4 text-sm space-y-2"><li>• Platform: 50 / day (soft throttle after ~20)</li><li>• BYOK: 200 / day</li><li>• Batch inputs</li><li>• 10 saved presets</li><li>• Priority models</li></ul><button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button></div>
-      <div class="card p-6"><div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div><h3 class="mt-3 text-xl font-bold">Creator</h3><div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div><ul class="mt-4 text-sm space-y-2"><li>• Platform: 150 / day (soft throttle after ~50)</li><li>• BYOK: 500 / day</li><li>• Unlimited presets</li><li>• Project pack export</li><li>• Notion export + Trello boards</li><li>• Push drafts to Buffer</li><li>• New workflows early</li></ul><button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button></div>
-      <div class="card p-6"><div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div><h3 class="mt-3 text-xl font-bold">Business</h3><div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div><ul class="mt-4 text-sm space-y-2"><li>• Platform: 300 / day (soft throttle after ~80)</li><li>• BYOK: Unlimited</li><li>• 3 seats</li><li>• White-label export</li><li>• Priority support</li><li>• All Creator integrations</li><li>• Team presets & shared calendar</li></ul><button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50" type="button">Get Business</button></div>
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
+        <h3 class="mt-3 text-xl font-bold">Demo</h3>
+        <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 5 runs / month (no login)</li>
+          <li>• Signed-in free: 5 / day</li>
+          <li>• BYOK: 5 / day</li>
+          <li>• CSV/Markdown export</li>
+        </ul>
+        <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
+      </div>
+
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
+        <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
+        <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 200 generations / month</li>
+          <li>• Batch inputs</li>
+          <li>• 10 saved presets</li>
+          <li>• Priority models</li>
+          <li>• BYOK: 50 / month</li>
+        </ul>
+        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Solo Creator</button>
+      </div>
+
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
+        <h3 class="mt-3 text-xl font-bold">Creator</h3>
+        <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 500 generations / month</li>
+          <li>• Unlimited presets</li>
+          <li>• Project pack export</li>
+          <li>• <strong>Notion export + Trello boards</strong></li>
+          <li>• <strong>Push drafts to Buffer</strong></li>
+          <li>• New workflows early</li>
+          <li>• BYOK: 150 / month</li>
+        </ul>
+        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</button>
+      </div>
+
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
+        <h3 class="mt-3 text-xl font-bold">Business</h3>
+        <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• Unlimited (fair use)</li>
+          <li>• 3 seats</li>
+          <li>• White-label export</li>
+          <li>• Priority support</li>
+          <li>• All Creator integrations</li>
+          <li>• <strong>Team presets & shared calendar</strong></li>
+          <li>• BYOK: 300 / month</li>
+        </ul>
+        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Get Business</button>
+      </div>
     </div>
   </section>
 
+  <!-- FAQ -->
   <section id="faq" class="max-w-7xl mx-auto px-5 pb-12">
-    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Frequently asked questions</h2>
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">FAQ</h2>
     <div class="mt-5 grid md:grid-cols-2 gap-5">
-      <div class="card p-5"><strong>How does AI content repurposing work?</strong><p class="text-sm text-slate-500 mt-2">Paste a paragraph or blog and we generate drafts for LinkedIn, X, Email & Instagram. Edit, export, and share in one place.</p></div>
-      <div class="card p-5"><strong>What are the plan limits?</strong><p class="text-sm text-slate-500 mt-2">Free: platform 5/day & BYOK 5/day. Solo Creator: Platform 50/day + BYOK 200/day. Creator: Platform 150/day + BYOK 500/day. Business: Platform 300/day + BYOK unlimited. Demo (no login): 5/month.</p></div>
-      <div class="card p-5"><strong>What is BYOK?</strong><p class="text-sm text-slate-500 mt-2">Bring your own OpenRouter API key. When you click “Generate with your key,” we use your key only and never fallback to our pool.</p></div>
-      <div class="card p-5"><strong>Which integrations are included?</strong><p class="text-sm text-slate-500 mt-2">Creator+: Notion & Trello export, Buffer push, and early workflows. Business adds white-label and team calendar.</p></div>
+      <div class="card p-5">
+        <strong>How does free work?</strong>
+        <p class="text-sm text-slate-500 mt-2">Demo is 5/month by IP. Signed-in free is 5/day. BYOK on Free is also 5/day.</p>
+      </div>
+      <div class="card p-5">
+        <strong>BYOK limits by plan</strong>
+        <p class="text-sm text-slate-500 mt-2">Free: 5/day • Solo Creator: 50/month • Creator: 150/month • Business: 300/month • Business platform usage is unlimited (fair use).</p>
+      </div>
     </div>
   </section>
 
   <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
 
-  <!-- Modals -->
+  <!-- Auth Modal -->
   <dialog id="auth" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
     <form method="dialog">
       <div class="p-6 space-y-3">
         <h3 class="text-xl font-bold">Sign in</h3>
         <p class="text-white/70 text-sm">Use Google or request a magic link.</p>
-        <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Continue with Google</button>
+        <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Continue with Google</button>
         <div class="flex items-center gap-3 text-xs text-white/50"><span class="flex-1 h-px bg-white/10"></span>or<span class="flex-1 h-px bg-white/10"></span></div>
         <div class="grid gap-2">
           <input id="emailInput" type="email" placeholder="you@company.com" class="p-2 rounded-xl border border-white/15 bg-white/5">
-          <button id="magicBtn" class="px-4 py-2 rounded-xl bg-white/10" type="button">Send magic link</button>
+          <button id="magicBtn" class="px-4 py-2 rounded-xl bg-white/10">Send magic link</button>
         </div>
         <div class="text-xs text-white/50">We never store your BYOK.</div>
       </div>
     </form>
   </dialog>
 
-  <dialog id="emailPreview" class="rounded-2xl p-0 w-[720px] max-w-[96vw] bg-neutral-900 text-white border border-white/10">
-    <form method="dialog">
-      <div class="p-6 space-y-3">
-        <h3 class="text-xl font-bold">Email preview</h3>
-        <input id="em_to" type="email" placeholder="to@example.com (optional)" class="w-full p-2 rounded-xl border border-white/15 bg-white/5">
-        <input id="em_subj" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Subject">
-        <textarea id="em_body" class="w-full h-48 p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Body"></textarea>
-        <div class="flex gap-2 pt-2">
-          <button id="em_open" type="button" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Open in Mail</button>
-          <button id="em_copy" type="button" class="px-4 py-2 rounded-xl bg-white/10">Copy body</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-white/10">Close</button>
-        </div>
-      </div>
-    </form>
-  </dialog>
+  <!-- APP SCRIPT (module so top-level await is valid) -->
+  <script type="module">
+    // ===== CONFIG =====
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // ← your Worker URL
+    const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // ← replace with real publishable key
 
-  <!-- Your app logic (externalized for CSP) -->
-  <script type="module" src="/app.js" defer></script>
-</body>
-</html>
-/* ======= Config ======= */
-const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
-// TODO: replace with your live publishable key
-const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder";
-const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-// TIP: you don't need SUPABASE_ANON on the client if you only use OAuth/Magic Link;
-// but we’ll pass it for completeness—public anon key is fine client-side.
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    // === Supabase ===
+    const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-/* ======= Helpers ======= */
-const $ = (s)=>document.querySelector(s);
-const on = (el, ev, fn)=> el && el.addEventListener(ev, fn);
-
-function safeText(el, text){ if (el) el.textContent = text; }
-function toggle(el, show){ if (!el) return; el.classList.toggle('hidden', !show); }
-
-/* ======= Global state (late-initialized) ======= */
-let supabase = null;
-let stripe = null;
-
-/* ======= Init ======= */
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    // Year
-    safeText($("#year"), String(new Date().getFullYear()));
-
-    // Supabase
-    if (window.supabase) {
+    let supabase = null;
+    if (SUPABASE_URL && SUPABASE_ANON && window.supabase) {
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     }
 
-    // Stripe (optional on front end)
+    // === Stripe (front just for potential redirects) ===
+    let stripe = null;
     if (window.Stripe) {
-      try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch { /* ignore */ }
+      try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
     }
 
-    wireUI();
-    await paintAuth();
-    await refreshAll();
-    loadPresets();
+    /* ===== ENV / DEV HELPERS ===== */
+    const IS_DEV = location.hostname === 'localhost' || location.hostname.endsWith('.local') || location.hostname.endsWith('.ngrok.io');
+    const $ = (s)=>document.querySelector(s);
+    $("#year").textContent = new Date().getFullYear();
 
-    // Track auth changes to update UI/quotas
+    // Hide preview toggles in production
+    const togglesWrap = document.getElementById('viewToggles');
+    if (togglesWrap) togglesWrap.classList.toggle('hidden', !IS_DEV);
+    if (!IS_DEV) {
+      try { localStorage.removeItem('viewOverride'); } catch {}
+    }
+
+    // ===== PLAN LABELS / BADGE =====
+    const PLAN_LABEL = (p)=>{
+      if (!p || p==="free") return "Free";
+      if (p==="starter") return "Solo Creator";
+      if (p==="creator") return "Creator";
+      if (p==="business") return "Business";
+      return "Free";
+    };
+
+    const PLAN_FEATURES = {
+      free: ["5/day platform runs (signed-in)", "BYOK: 5/day", "CSV/Markdown export"],
+      starter: ["200 generations / month","Batch inputs","10 saved presets","Priority models","BYOK: 50 / month"],
+      creator: ["500 generations / month","Unlimited presets","Project pack export","Notion export + Trello boards","Push drafts to Buffer","New workflows early","BYOK: 150 / month"],
+      business: ["Unlimited (fair use)","3 seats","White-label export","Priority support","All Creator integrations","Team presets & shared calendar","BYOK: 300 / month"]
+    };
+
+    const PRICES = {
+      starter: "price_1S7y58JYjIKHzKcjzL7cIKiB",
+      creator: "price_1S7y77JYjIKHzKcjKQYjiqZH",
+      business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
+    };
+
+    // Allow plan=starter|creator|business demo in URL (preview only)
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const incoming = params.get("plan");
+      if (incoming && ["starter","creator","business"].includes(incoming)) {
+        localStorage.setItem("plan", incoming);
+        history.replaceState({}, "", location.pathname);
+      }
+      paintPlanBadge(localStorage.getItem("plan")||"free");
+    })();
+
+    function paintPlanBadge(plan){
+      const label = PLAN_LABEL(plan);
+      $("#planbadge").textContent = `Plan: ${label}`;
+      const mb = $("#memberPlanBadge");
+      if (mb) mb.textContent = `Plan: ${label}`;
+    }
+
+    /* ===== VIEW SWITCH ===== */
+    function showView(isAuthenticated){
+      const guest = document.getElementById('guestView');
+      const member = document.getElementById('memberView');
+      if (isAuthenticated){
+        guest?.classList.add('hidden');
+        member?.classList.remove('hidden');
+        $("#loginBtn")?.classList.add("hidden");
+        $("#heroSignIn")?.classList.add("hidden");
+        $("#logoutBtn")?.classList.remove("hidden");
+        $("#logoutBtn2")?.classList.remove("hidden");
+      } else {
+        member?.classList.add('hidden');
+        guest?.classList.remove('hidden');
+        $("#loginBtn")?.classList.remove("hidden");
+        $("#heroSignIn")?.classList.remove("hidden");
+        $("#logoutBtn")?.classList.add("hidden");
+        $("#logoutBtn2")?.classList.add("hidden");
+      }
+    }
+
+    // Preview toggler (dev only, and only when logged OUT)
+    (function(){
+      if (!IS_DEV) return;
+      $("#viewGuest")?.addEventListener("click", ()=>{
+        localStorage.setItem("viewOverride","guest");
+        applyViewOverride(false); // we don't know auth here; function checks
+      });
+      $("#viewMember")?.addEventListener("click", ()=>{
+        localStorage.setItem("viewOverride","member");
+        applyViewOverride(false);
+      });
+    })();
+
+    function applyViewOverride(isAuthenticated){
+      if (isAuthenticated) return; // never override real auth
+      const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
+      if (o === "member") showView(true); else if (o === "guest") showView(false);
+    }
+
+    /* ===== AUTH ===== */
+    async function getAuth(){
+      if (!supabase) return { token:null, userId:null, email:null };
+      const { data:{ session } } = await supabase.auth.getSession();
+      return { token: session?.access_token || null, userId: session?.user?.id || null, email: session?.user?.email || null };
+    }
+
+    async function paintAuth(){
+      const { token, userId, email } = await getAuth();
+      const isAuthed = !!userId;
+
+      // Toggle views/buttons immediately
+      showView(isAuthed);
+
+      // Never apply preview override when authenticated
+      if (!isAuthed) applyViewOverride(false);
+
+      const heroBadge = $("#heroBadge");
+      if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in Free — 5 runs / day" : "Demo — 5 runs / month (no login)";
+
+      const logout = $("#logoutBtn");
+      const logout2 = $("#logoutBtn2");
+      if (logout) {
+        if (isAuthed) {
+          logout.textContent = `Sign out (${email || 'account'})`;
+          logout.classList.remove("hidden");
+        } else {
+          logout.classList.add("hidden");
+        }
+      }
+      if (logout2) {
+        if (isAuthed) logout2.classList.remove("hidden"); else logout2.classList.add("hidden");
+      }
+
+      const login = $("#loginBtn");
+      if (login) login.classList.toggle("hidden", isAuthed);
+      $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
+
+      const ue = document.getElementById('userEmail');
+      if (ue) ue.textContent = isAuthed ? (email || 'member') : '';
+    }
+
+    // Auth modal wiring
+    $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+    $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+
+    const doSignOut = async()=>{
+      if (!supabase?.auth) return alert("Auth not initialized");
+      await supabase.auth.signOut();
+      try { localStorage.removeItem('viewOverride'); } catch {}
+      await paintAuth();
+      await refreshAll();
+    };
+    $("#logoutBtn")?.addEventListener("click", doSignOut);
+    $("#logoutBtn2")?.addEventListener("click", doSignOut);
+
+    $("#googleBtn")?.addEventListener("click", async (e)=>{
+      e.preventDefault();
+      if (!supabase) return alert("Auth not initialized");
+      const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+      if (error) alert(error.message || error);
+    });
+
+    $("#magicBtn")?.addEventListener("click", async (e)=>{
+      e.preventDefault();
+      if (!supabase) return alert("Auth not initialized");
+      const email = $("#emailInput").value.trim();
+      if (!email) return alert('Enter an email');
+      const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+      if (error) return alert(error.message);
+      alert('Magic link sent. Check your inbox.');
+      $("#auth").close();
+    });
+
+    /* ===== BILLING (Subscribe / Manage) ===== */
+    async function openCheckout(priceId){
+      const { token } = await getAuth();
+      if (!token) { $("#auth").showModal(); return; }
+      const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
+      });
+      const j = await r.json().catch(()=> ({}));
+      if (j.url) { location.href = j.url; return; }
+      alert(j?.error?.message || "Could not start checkout.");
+    }
+
+    async function openPortal(){
+      const { token } = await getAuth();
+      if (!token) { $("#auth").showModal(); return; }
+      const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ return_url: location.href })
+      });
+      const j = await r.json().catch(()=> ({}));
+      if (j.url) { location.href = j.url; return; }
+      alert(j?.error?.message || "Could not open billing portal.");
+    }
+
+    document.querySelectorAll(".subBtn").forEach(btn=>{
+      btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
+    });
+    $("#manageBilling")?.addEventListener("click", openPortal);
+    $("#manageBilling2")?.addEventListener("click", openPortal);
+
+    /* ===== PLAN STATUS / QUOTAS ===== */
+    async function getPlanStatus(){
+      const { token } = await getAuth();
+      const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+      try{ const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers }); if (r.ok) return await r.json(); }catch{}
+      try{ const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers }); if (r2.ok) return await r2.json(); }catch{}
+      return null;
+    }
+
+    function planKeyFromStatus(s){
+      const p = (s?.plan || s?.monthly?.plan || "").toLowerCase();
+      if (["starter","creator","business"].includes(p)) return p;
+      return "free";
+    }
+
+    function paintFeatureList(planKey){
+      const ul = $("#featureList");
+      if (!ul) return;
+      const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
+      ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
+    }
+
+    function paintManageButtons(isSubscribed){
+      $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
+      $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
+    }
+
+    function paintTopBadges(status){
+      const scope = status?.scope; // 'ip' | 'user'
+      const planKey = planKeyFromStatus(status);
+      paintPlanBadge(planKey);
+      $("#heroBadge").textContent = scope==='ip' ? "Demo — 5 runs / month (no login)" : (planKey==='free' ? "Signed-in Free — 5 runs / day" : `Signed-in — ${PLAN_LABEL(planKey)}`);
+    }
+
+    function paintQuotaTiles(status){
+      const wrap = $("#quotaCards");
+      if (!wrap) return;
+      const pk = planKeyFromStatus(status);
+      const pDaily = status?.platform?.daily || { used: status?.used ?? 0, cap: status?.cap ?? 5 };
+      const pMonthly = status?.platform?.monthly || status?.monthly || { used:0, cap: pk==="business" ? Number.MAX_SAFE_INTEGER : (pk==="creator"?500:(pk==="starter"?200:Infinity)) };
+      const bDaily = status?.byok?.daily || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: 0 });
+      const byokCapMonthlyMap = { free: 5, starter: 50, creator: 150, business: 300 };
+      const bMonthly = status?.byok?.monthly || { used:0, cap: byokCapMonthlyMap[pk] ?? 0 };
+
+      function tile(title, used, cap, sub){
+        const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
+        const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
+        const capTxt = isInf ? '∞' : cap;
+        return `
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <strong>${title}</strong>
+              <span class="text-sm text-slate-500">${used}/${capTxt}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+              <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
+          </div>`;
+      }
+
+      wrap.innerHTML = [
+        tile("Platform — Today", pDaily.used||0, pDaily.cap ?? (pk==='free'?5:Number.MAX_SAFE_INTEGER), PLAN_LABEL(pk)),
+        tile("Platform — This month", pMonthly.used||0, pMonthly.cap ?? (pk==='business'?Number.MAX_SAFE_INTEGER:(pk==='creator'?500:(pk==='starter'?200:Infinity))), "Generations"),
+        tile("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? 0)), "Your key only"),
+        tile("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
+      ].join("");
+
+      const quotaMember = $("#quotaMember");
+      if (quotaMember) {
+        const dailyLabel = (pDaily.cap===Infinity||pDaily.cap===Number.MAX_SAFE_INTEGER) ? '∞' : (pDaily.cap ?? (pk==='free'?5:'∞'));
+        quotaMember.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
+      }
+      paintFeatureList(pk);
+    }
+
+    async function refreshAll(){
+      await paintAuth(); // sets correct view immediately
+      const status = await getPlanStatus();
+      paintTopBadges(status || {});
+      paintQuotaTiles(status || {});
+      const isSub = !!(status?.is_subscribed || ["starter","creator","business"].includes((status?.plan||"").toLowerCase()));
+      paintManageButtons(isSub);
+
+      // Referral link
+      try{
+        const email = status?.email || "";
+        const uid = status?.userId || (email ? email.split('@')[0] : 'guest');
+        const code = btoa(uid).replace(/=+$/,'');
+        const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
+        const refInput = document.getElementById('refLink');
+        if (refInput) refInput.value = link;
+      }catch{}
+    }
+
+    // ===== GENERATOR (guest) =====
+    const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
+    function buildCSV(o){
+      const rows = [["channel","content"]];
+      if (o.linkedin) rows.push(["linkedin", o.linkedin]);
+      if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x]);
+      if (o.email) rows.push(["email", typeof o.email==='object'?`Subject: ${o.email.subject || ''}\n\n${o.email.body || ''}`: o.email]);
+      if (o.instagram) rows.push(["instagram", o.instagram]);
+      return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
+    }
+
+    function buildMarkdown(o){
+      const lines = [
+        "# Content Pack","",
+        "## LinkedIn",(o.linkedin||"").trim(),"",
+        "## X (Twitter)", (Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),"",
+        "## Email", (o.email?.body||o.email||"").trim(),"",
+        "## Instagram", (o.instagram||"").trim(),""
+      ];
+      return lines.join("\n");
+    }
+
+    function extractJSON(text){
+      if (!text) return null;
+      const raw = String(text).trim();
+      // 1) try direct parse
+      try { return JSON.parse(raw); } catch {}
+      // 2) try to find the first {...} block (balanced naive)
+      const first = raw.indexOf('{');
+      const last = raw.lastIndexOf('}');
+      if (first !== -1 && last !== -1 && last>first){
+        const slice = raw.slice(first, last+1);
+        try { return JSON.parse(slice); } catch {}
+      }
+      return null;
+    }
+
+    function parseOutput(content){
+      const j = extractJSON(content);
+      if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
+      const text = String(content||"").trim();
+      const out = {};
+      const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
+      const xMatch  = text.match(/"x"\s*:\s*(\[[\s\S]*?\]|"[\s\S]*?")\s*(,|$)/i);
+      const emMatch = text.match(/"email"\s*:\s*(\{[\s\S]*?\}|"[\s\S]*?")\s*(,|$)/i);
+      const igMatch = text.match(/"instagram"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
+      if (liMatch) out.linkedin = liMatch[1].replace(/\\n/g,"\n");
+      if (xMatch)  out.x = xMatch[1].startsWith('[') ? JSON.parse(xMatch[1]) : xMatch[1].replace(/\\n/g,"\n");
+      if (emMatch){
+        if (emMatch[1].startsWith('{')){
+          try{ out.email = JSON.parse(emMatch[1]); } catch{ out.email = { subject:"", body: emMatch[1] }; }
+        } else out.email = { subject:"", body: emMatch[1].replace(/\\n/g,"\n") };
+      }
+      if (igMatch) out.instagram = igMatch[1].replace(/\\n/g,"\n");
+      if (out.linkedin || out.x || out.email || out.instagram) return out;
+      return { linkedin: text };
+    }
+
+    async function getAuthHeaders(){
+      const { token, userId } = await getAuth();
+      const headers = { "Content-Type":"application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (userId) headers["X-User-Id"] = userId;
+      return headers;
+    }
+
+    function paintOutputs(out){
+      const li = out.linkedin || "";
+      $("#out-li").textContent = li;
+      $("#li-lines").textContent = String(li).split(/\n/).filter(Boolean).length;
+
+      const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+      $("#out-x").textContent = xText;
+      const len = xText.replace(/\n/g,' ').trim().length;
+      $("#x-len").textContent = len;
+      const flag = document.getElementById('x-flag');
+      if (flag){
+        flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
+        flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
+      }
+
+      let subj = "", body = "";
+      if (typeof out.email === 'object'){
+        subj = out.email.subject||"";
+        body = out.email.body||"";
+      } else {
+        body = out.email || "";
+      }
+      $('#out-em-subj').textContent = subj;
+      $('#out-em-body').textContent = body;
+
+      const ig = out.instagram || "";
+      $('#out-ig').textContent = ig;
+      const tags = (ig.match(/#[\p{L}\w]+/gu) || []).length;
+      $('#ig-tags').textContent = tags;
+    }
+
+    async function runGen({ useBYOK=false }){
+      const source = document.getElementById("source").value.trim();
+      if (!source) { alert("Paste some content first."); return; }
+      document.getElementById("status").textContent = useBYOK? "Generating with your key…" : "Generating…";
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("dl-md").disabled = true;
+      document.getElementById("dl-csv").disabled = true;
+
+      const model = sessionStorage.getItem("MODEL") || "";
+      const byok = sessionStorage.getItem("BYOK") || "";
+      const headers = await getAuthHeaders();
+      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+
+      const SYSTEM = { role: "system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
+- linkedin: 6–10 lines, one CTA.
+- x: <= 280 chars total; provide an array with 2 short variants if possible.
+- email: object with keys {subject, body} — 3–5 sentences.
+- instagram: 1–2 short paragraphs + 3–5 hashtags.
+STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
+
+      const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
+
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/generate`, {
+          method:"POST",
+          headers,
+          body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
+        });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { document.getElementById("status").textContent = data?.error?.message || "Error"; return; }
+        const content = data?.choices?.[0]?.message?.content || "";
+        const out = parseOutput(content);
+        paintOutputs(out);
+        document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+        await refreshAll();
+        document.getElementById("dl-md").disabled = false;
+        document.getElementById("dl-csv").disabled = false;
+        document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+        document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
+      }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
+    }
+
+    document.getElementById("run").onclick = ()=> runGen({ useBYOK:false });
+    document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
+
+    function download(filename, mime, text){
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
+
+    document.getElementById("save").onclick = ()=>{
+      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
+      sessionStorage.setItem("BYOK", document.getElementById("byok").value.trim());
+      alert("Saved for this tab.");
+    };
+
+    document.getElementById("copy-li").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-li').textContent||"");
+    document.getElementById("copy-x").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-x').textContent||"");
+    document.getElementById("copy-em").onclick = ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj').textContent}\n\n${document.getElementById('out-em-body').textContent}`);
+    document.getElementById("copy-ig").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-ig').textContent||"");
+
+    document.getElementById("source").addEventListener("keydown",(e)=>{ if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); } });
+
+    document.getElementById("clear").onclick = ()=>{
+      document.getElementById("source").value = "";
+      document.getElementById("status").textContent = "";
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("dl-md").disabled = true;
+      document.getElementById("dl-csv").disabled = true;
+    };
+
+    // ===== MEMBER GENERATE =====
+    document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    document.getElementById("clear_m")?.addEventListener("click", ()=>{
+      document.getElementById("source_m").value = "";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      document.getElementById("status_m").textContent = "";
+    });
+
+    async function runGenMember({ useBYOK=false }){
+      const src = document.getElementById("source_m").value.trim();
+      if (!src) return alert("Paste content first.");
+      document.getElementById("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      const model = sessionStorage.getItem("MODEL") || "";
+      const byok = sessionStorage.getItem("BYOK") || "";
+      const headers = await getAuthHeaders();
+      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+
+      const SYSTEM = { role:"system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
+- linkedin: 6–10 lines, one CTA.
+- x: <= 280 chars total; provide an array with 2 short variants if possible.
+- email: object with keys {subject, body} — 3–5 sentences.
+- instagram: 1–2 short paragraphs + 3–5 hashtags.
+STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
+      const messages = [ SYSTEM, { role:"user", content: `Source:\n${src}\nChannels: LinkedIn,X,Email,Instagram` } ];
+
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify({ plan:(useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined }) });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { document.getElementById("status_m").textContent = data?.error?.message || "Error"; return; }
+        const content = data?.choices?.[0]?.message?.content || "";
+        const out = parseOutput(content);
+        document.getElementById("out-li_m").textContent = out.linkedin || "";
+        document.getElementById("out-x_m").textContent = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        if (typeof out.email === 'object'){
+          document.getElementById("out-em-subj_m").textContent = out.email.subject || "";
+          document.getElementById("out-em-body_m").textContent = out.email.body || "";
+        } else {
+          document.getElementById("out-em-body_m").textContent = out.email || "";
+        }
+        document.getElementById("out-ig_m").textContent = out.instagram || "";
+        document.getElementById("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+        await refreshAll();
+      }catch(e){ document.getElementById("status_m").textContent = e.message || "Network error"; }
+    }
+
+    // ===== PRESETS =====
+    function maxPresetsFor(plan){ if (plan==="starter") return 10; if (plan==="creator" || plan==="business") return Infinity; return 0; }
+
+    function loadPresets(){
+      const list = JSON.parse(localStorage.getItem("presets")||"[]");
+      const ul = document.getElementById("presetList");
+      if (!ul) return;
+      ul.innerHTML = "";
+      if (!list.length){ ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>'; return; }
+      list.forEach((p, i)=>{
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
+            <div class="flex gap-2">
+              <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use">Use</button>
+              <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del">Delete</button>
+            </div>
+          </div>`;
+        ul.appendChild(li);
+      });
+      ul.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          const i = Number(btn.getAttribute("data-i"));
+          const act = btn.getAttribute("data-act");
+          const list = JSON.parse(localStorage.getItem("presets")||"[]");
+          if (act==="use"){ const el = document.getElementById("source_m"); if (el) el.value = list[i]?.text || ""; }
+          if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
+        });
+      });
+    }
+
+    document.getElementById("addPreset")?.addEventListener("click", async ()=>{
+      const text = (document.getElementById("source_m")?.value || "").trim();
+      if (!text) return alert("Write something first.");
+      const status = await getPlanStatus();
+      const planKey = planKeyFromStatus(status);
+      const cap = maxPresetsFor(planKey);
+      const list = JSON.parse(localStorage.getItem("presets")||"[]");
+      if (cap !== Infinity && list.length >= cap) { alert(`Preset limit reached for ${PLAN_LABEL(planKey)}.`); return; }
+      const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
+      list.unshift({ title, text, t: Date.now() });
+      localStorage.setItem("presets", JSON.stringify(list));
+      loadPresets();
+    });
+
+    // ===== REFERRAL / SHARE =====
+    function shareTo(network){
+      const link = document.getElementById("refLink")?.value || location.href;
+      const text = encodeURIComponent("I’m using ContentFlow AI to repurpose content into LinkedIn, X, Email & Instagram in minutes. Try it free:");
+      if (network==="li"){ const u = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`; window.open(u, "_blank","noopener"); }
+      else if (network==="x"){ const u = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(link)}`; window.open(u, "_blank","noopener"); }
+    }
+    document.getElementById("shareLi")?.addEventListener("click", ()=> shareTo("li"));
+    document.getElementById("shareX")?.addEventListener("click", ()=> shareTo("x"));
+    document.getElementById("copyRef")?.addEventListener("click", ()=>{
+      const v = document.getElementById("refLink")?.value || "";
+      if (!v) return;
+      navigator.clipboard.writeText(v);
+      const n = document.getElementById("refNote");
+      if (n) n.textContent = "Copied! Share it anywhere.";
+    });
+
+    // ===== INIT =====
+    async function refreshAllOnce(){ await refreshAll(); loadPresets(); }
+
+    // Initial paint (now valid because type="module")
+    await paintAuth();
+    await refreshAllOnce();
+
+    // Live auth listener
     if (supabase?.auth) {
-      supabase.auth.onAuthStateChange(async () => {
-        await paintAuth();
+      supabase.auth.onAuthStateChange(async (_event, _session) => {
+        if (_session?.user) { try { localStorage.removeItem('viewOverride'); } catch {} }
         await refreshAll();
       });
     }
-  } catch (e) {
-    console.error("Init error:", e);
-    alert("App failed to initialize: " + (e?.message||e));
-  }
-});
-
-/* ======= UI: auth + view switch ======= */
-function showView(isAuthenticated){
-  const guest = $('#guestView');
-  const member = $('#memberView');
-  if (isAuthenticated){
-    guest?.classList.add('hidden');
-    member?.classList.remove('hidden');
-    toggle($("#loginBtn"), false);
-    toggle($("#heroSignIn"), false);
-    toggle($("#logoutBtn"), true);
-    toggle($("#logoutBtn2"), true);
-  } else {
-    member?.classList.add('hidden');
-    guest?.classList.remove('hidden');
-    toggle($("#loginBtn"), true);
-    toggle($("#heroSignIn"), true);
-    toggle($("#logoutBtn"), false);
-    toggle($("#logoutBtn2"), false);
-  }
-}
-
-async function getAuth(){
-  if (!supabase) return { token:null, userId:null, email:null };
-  const { data:{ session } } = await supabase.auth.getSession();
-  return { token: session?.access_token || null, userId: session?.user?.id || null, email: session?.user?.email || null };
-}
-
-const PLAN_LABEL = (p)=>{
-  if (!p || p==="free") return "Free";
-  if (p==="starter") return "Solo Creator";
-  if (p==="creator") return "Creator";
-  if (p==="business") return "Business";
-  return "Free";
-};
-function paintPlanBadge(plan){
-  const label = PLAN_LABEL(plan);
-  safeText($("#planbadge"), `Plan: ${label}`);
-  safeText($("#memberPlanBadge"), `Plan: ${label}`);
-}
-
-async function paintAuth(){
-  const { token, userId, email } = await getAuth();
-  const isAuthed = !!userId;
-  showView(isAuthed);
-  const heroBadge = $("#heroBadge");
-  if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — daily caps by plan" : "Demo — 5 runs / month (no login)";
-  const logout = $("#logoutBtn");
-  const logout2 = $("#logoutBtn2");
-  if (logout) {
-    logout.textContent = isAuthed ? `Sign out (${email||'account'})` : 'Sign out';
-    toggle(logout, isAuthed);
-  }
-  toggle(logout2, isAuthed);
-  $("#loginBtn")?.classList.toggle("hidden", isAuthed);
-  $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
-  safeText($("#userEmail"), isAuthed ? (email||'member') : '');
-}
-
-/* ======= Wire basic listeners ======= */
-function wireUI(){
-  // Auth modal open
-  on($("#loginBtn"), "click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
-  on($("#heroSignIn"), "click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
-
-  // Sign out
-  const doSignOut = async()=>{ if (!supabase?.auth) return; await supabase.auth.signOut(); await paintAuth(); await refreshAll(); };
-  on($("#logoutBtn"), "click", doSignOut);
-  on($("#logoutBtn2"), "click", doSignOut);
-
-  // OAuth
-  on($("#googleBtn"), "click", async (e)=>{
-    e.preventDefault();
-    if (!supabase) return alert("Auth not initialized");
-    const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
-    if (error) alert(error.message || String(error));
-  });
-
-  // Magic link
-  on($("#magicBtn"), "click", async (e)=>{
-    e.preventDefault();
-    if (!supabase) return alert("Auth not initialized");
-    const email = $("#emailInput")?.value?.trim();
-    if (!email) return alert('Enter an email');
-    const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
-    if (error) return alert(error.message);
-    alert('Magic link sent. Check your inbox.');
-    $("#auth")?.close();
-  });
-
-  // Billing
-  on($("#manageBilling"), "click", openPortal);
-  on($("#manageBilling2"), "click", openPortal);
-  document.querySelectorAll(".subBtn").forEach(btn=>{
-    btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
-  });
-
-  // Generate (guest)
-  on($("#run"), "click", ()=> runGen({ useBYOK:false, suffix:"" }));
-  on($("#run-byok"), "click", ()=> runGen({ useBYOK:true, suffix:"" }));
-  on($("#clear"), "click", ()=>{
-    const s = $("#source"); if (s) s.value = "";
-    const st = $("#status"); if (st) st.textContent = "";
-    ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(id=> document.getElementById(id)?.textContent = "");
-    const d1 = $("#dl-md"); if (d1) d1.disabled = true;
-    const d2 = $("#dl-csv"); if (d2) d2.disabled = true;
-  });
-
-  // Generate (member)
-  on($("#run_m"), "click", ()=> runGen({ useBYOK:false, suffix:"m" }));
-  on($("#run-byok_m"), "click", ()=> runGen({ useBYOK:true, suffix:"m" }));
-  on($("#clear_m"), "click", ()=>{
-    const s = $("#source_m"); if (s) s.value = "";
-    ["out-li_m","out-x_m","out-em-subj_m","out-em-body_m","out-ig_m"].forEach(id=> document.getElementById(id)?.textContent = "");
-    const st = $("#status_m"); if (st) st.textContent = "";
-  });
-
-  // Save settings
-  on($("#save"), "click", ()=>{
-    sessionStorage.setItem("MODEL", $("#model")?.value?.trim() || "");
-    sessionStorage.setItem("BYOK", $("#byok")?.value?.trim() || "");
-    alert("Saved for this tab.");
-  });
-
-  // Copy
-  on($("#copy-li"), "click", ()=> navigator.clipboard.writeText($("#out-li")?.textContent||""));
-  on($("#copy-x"), "click",  ()=> navigator.clipboard.writeText($("#out-x")?.textContent||""));
-  on($("#copy-em"), "click", ()=> {
-    const a = $("#out-em-subj")?.textContent || "";
-    const b = $("#out-em-body")?.textContent || "";
-    navigator.clipboard.writeText(`Subject: ${a}\n\n${b}`);
-  });
-  on($("#copy-ig"), "click", ()=> navigator.clipboard.writeText($("#out-ig")?.textContent||""));
-  on($("#copy-li_m"), "click", ()=> navigator.clipboard.writeText($("#out-li_m")?.textContent||""));
-  on($("#copy-x_m"), "click",  ()=> navigator.clipboard.writeText($("#out-x_m")?.textContent||""));
-  on($("#copy-em_m"), "click", ()=> {
-    const a = $("#out-em-subj_m")?.textContent || "";
-    const b = $("#out-em-body_m")?.textContent || "";
-    navigator.clipboard.writeText(`Subject: ${a}\n\n${b}`);
-  });
-  on($("#copy-ig_m"), "click", ()=> navigator.clipboard.writeText($("#out-ig_m")?.textContent||""));
-
-  // Share
-  const share = (network, text)=>{
-    const u = encodeURIComponent(location.href);
-    const t = encodeURIComponent(text);
-    if (network==="li") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${u}`,"_blank","noopener");
-    if (network==="x")  window.open(`https://twitter.com/intent/tweet?text=${t}&url=${u}`,"_blank","noopener");
-  };
-  on($("#share-li"), () => share("li", "Draft from ContentFlow AI"));
-  on($("#share-x"),  () => share("x", ($("#out-x")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
-  on($("#share-ig"), () => alert("Copy the caption and paste into Instagram."));
-  on($("#share-li_m"), () => share("li", "Draft from ContentFlow AI"));
-  on($("#share-x_m"),  () => share("x", ($("#out-x_m")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
-  on($("#share-ig_m"), () => alert("Copy the caption and paste into Instagram."));
-
-  // Email modal
-  function openEmailModal(subjElId, bodyElId){
-    const subj = document.getElementById(subjElId)?.textContent || "";
-    const body = document.getElementById(bodyElId)?.textContent || "";
-    $("#em_subj").value = subj;
-    $("#em_body").value = body;
-    $("#emailPreview").showModal();
-  }
-  on($("#edit-em"), () => openEmailModal("out-em-subj","out-em-body"));
-  on($("#edit-em_m"), () => openEmailModal("out-em-subj_m","out-em-body_m"));
-  on($("#em_copy"), "click", ()=> navigator.clipboard.writeText($("#em_body").value||""));
-  on($("#em_open"), "click", ()=>{
-    const to = encodeURIComponent($("#em_to").value||"");
-    const subject = encodeURIComponent($("#em_subj").value||"");
-    const body = encodeURIComponent($("#em_body").value||"");
-    location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-  });
-}
-
-/* ======= Billing ======= */
-async function openCheckout(priceId){
-  const { token } = await getAuth();
-  if (!token) { $("#auth")?.showModal(); return; }
-  const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-    method: "POST",
-    headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
-    body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if (j.url) { location.href = j.url; return; }
-  alert(j?.error?.message || "Could not start checkout.");
-}
-async function openPortal(){
-  const { token } = await getAuth();
-  if (!token) { $("#auth")?.showModal(); return; }
-  const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
-    method: "POST",
-    headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
-    body: JSON.stringify({ return_url: location.href })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if (j.url) { location.href = j.url; return; }
-  alert(j?.error?.message || "Could not open billing portal.");
-}
-
-/* ======= Status / Quotas ======= */
-async function getPlanStatus(){
-  const { token } = await getAuth();
-  const headers = token ? { "Authorization": `Bearer ${token}` } : {};
-  try{
-    const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
-    if (r.ok) return await r.json();
-  }catch{}
-  try{
-    const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers });
-    if (r2.ok) return await r2.json();
-  }catch{}
-  return null;
-}
-const PLAN_KEY = (s)=> {
-  const p = (s?.plan || "").toLowerCase();
-  return ['starter','creator','business'].includes(p) ? p : 'free';
-};
-function paintFeatureList(planKey){
-  const PLAN_FEATURES = {
-    free:     ["5/day platform (signed-in)", "BYOK: 5/day", "CSV/Markdown export"],
-    starter:  ["Platform: 50/day (soft throttle ~20)","BYOK: 200/day","Batch inputs","10 saved presets","Priority models"],
-    creator:  ["Platform: 150/day (soft throttle ~50)","BYOK: 500/day","Unlimited presets","Project pack export","Notion + Trello","Push drafts to Buffer","New workflows early"],
-    business: ["Platform: 300/day (soft throttle ~80)","BYOK: Unlimited","3 seats","White-label export","Priority support","All Creator integrations","Team presets & shared calendar"]
-  };
-  const ul = $("#featureList");
-  if (!ul) return;
-  const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
-  ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
-}
-function paintManageButtons(isSubscribed){
-  toggle($("#manageBilling"), isSubscribed);
-  toggle($("#manageBilling2"), isSubscribed);
-}
-function paintTopBadges(status){
-  const planKey = PLAN_KEY(status);
-  paintPlanBadge(planKey);
-  const hb = $("#heroBadge");
-  if (hb) hb.textContent = status?.scope==='ip'
-    ? "Demo — 5 runs / month (no login)"
-    : `Signed-in — ${PLAN_LABEL(planKey)}`;
-}
-function tile(title, used, cap, sub){
-  const isInf = cap === null || cap === undefined;
-  const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
-  const capTxt = isInf ? '∞' : cap;
-  return `
-    <div class="card p-5">
-      <div class="flex items-center justify-between">
-        <strong>${title}</strong>
-        <span class="text-sm text-slate-500">${used}/${capTxt}</span>
-      </div>
-      <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden">
-        <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
-      </div>
-      <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
-    </div>`;
-}
-function paintQuotaTiles(status){
-  const wrap = $("#quotaCards");
-  if (!wrap) return;
-
-  if (status?.scope==='ip') {
-    wrap.innerHTML = tile("Demo — This month", status?.platform?.monthly?.used||0, status?.platform?.monthly?.cap ?? 5, "No login");
-    const qm = $("#quotaMember"); if (qm) qm.textContent = "Today: 0/0";
-    paintFeatureList('free');
-    return;
-  }
-
-  const pk = PLAN_KEY(status);
-  const pDaily = status?.platform?.daily || { used:0, cap:null };
-  const defaultByokCap = pk==='business' ? null : (pk==='creator'?500:(pk==='starter'?200:(pk==='free'?5:0)));
-  const bDaily = status?.byok?.daily || { used:0, cap: defaultByokCap };
-
-  wrap.innerHTML = [
-    tile("Platform — Today", pDaily.used||0, pDaily.cap, PLAN_LABEL(pk)),
-    tile("BYOK — Today", bDaily.used||0, bDaily.cap, "Your key only")
-  ].join("");
-
-  const dailyLabel = pDaily.cap==null ? '∞' : pDaily.cap;
-  const qm = $("#quotaMember");
-  if (qm) qm.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
-  paintFeatureList(pk);
-}
-async function refreshAll(){
-  const status = await getPlanStatus();
-  paintTopBadges(status || {});
-  paintQuotaTiles(status || {});
-  const isSub = !!(status?.plan && status.plan!=="free");
-  paintManageButtons(isSub);
-}
-
-/* ======= Generator ======= */
-const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
-const buildCSV = (o)=>{
-  const rows = [["channel","content"]];
-  if (o.linkedin) rows.push(["linkedin", o.linkedin]);
-  if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x]);
-  if (o.email) rows.push(["email", typeof o.email==='object'?`Subject: ${o.email.subject || ''}\n\n${o.email.body || ''}`: o.email]);
-  if (o.instagram) rows.push(["instagram", o.instagram]);
-  return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
-};
-const buildMarkdown = (o)=>[
-  "# Content Pack","",
-  "## LinkedIn",(o.linkedin||"").trim(),"",
-  "## X (Twitter)", (Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),"",
-  "## Email", (o.email?.body||o.email||"").trim(),"",
-  "## Instagram", (o.instagram||"").trim(),""
-].join("\n");
-
-const extractJSON = (text)=>{
-  if (!text) return null;
-  const raw = String(text).trim();
-  try { return JSON.parse(raw); } catch {}
-  const first = raw.indexOf('{');
-  const last = raw.lastIndexOf('}');
-  if (first !== -1 && last !== -1 && last>first){
-    const slice = raw.slice(first, last+1);
-    try { return JSON.parse(slice); } catch {}
-  }
-  return null;
-};
-const parseOutput = (content)=>{
-  const j = extractJSON(content);
-  if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
-  const text = String(content||"").trim();
-  return { linkedin: text };
-};
-
-async function getAuthHeaders(){
-  const { token, userId } = await getAuth();
-  const headers = { "Content-Type":"application/json" };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  if (userId) headers["X-User-Id"] = userId;
-  return headers;
-}
-
-function paintOutputs(out, suffix=""){
-  const scope = suffix ? `_${suffix}` : "";
-  const setText = (id,val)=>{ const el = document.getElementById(id+scope); if (el) el.textContent = val || ""; };
-  const li = out.linkedin || "";
-  setText("out-li", li);
-
-  const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-  setText("out-x", xText);
-
-  const subj = typeof out.email==='object' ? (out.email.subject||"") : "";
-  const body = typeof out.email==='object' ? (out.email.body||"") : (out.email||"");
-  setText("out-em-subj", subj);
-  setText("out-em-body", body);
-
-  setText("out-ig", out.instagram || "");
-
-  if (!suffix){
-    // helper badges
-    const len = xText.replace(/\n/g,' ').trim().length;
-    const flag = document.getElementById('x-flag');
-    if (flag){
-      flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
-      flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
-    }
-    const tags = ((out.instagram||"").match(/#[\p{L}\w]+/gu) || []).length;
-    const tagsEl = document.getElementById('ig-tags');
-    if (tagsEl) tagsEl.textContent = String(tags);
-  }
-}
-
-async function runGen({ useBYOK=false, suffix="" }){
-  const sourceId = suffix ? `source_${suffix}` : "source";
-  const statusId = suffix ? `status_${suffix}` : "status";
-  const dlMdId   = suffix ? `dl-md_${suffix}` : "dl-md";
-  const dlCsvId  = suffix ? `dl-csv_${suffix}`: "dl-csv";
-
-  const source = document.getElementById(sourceId)?.value.trim() || "";
-  if (!source) { alert("Paste some content first."); return; }
-
-  const statusEl = document.getElementById(statusId);
-  if (statusEl) statusEl.textContent = useBYOK? "Generating with your key…" : "Generating…";
-
-  ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(sel=>{
-    const el = document.getElementById(sel + (suffix?`_${suffix}`:""));
-    if (el) el.textContent = "";
-  });
-
-  const dlMdEl = document.getElementById(dlMdId);
-  const dlCsvEl = document.getElementById(dlCsvId);
-  if (dlMdEl) dlMdEl.disabled = true;
-  if (dlCsvEl) dlCsvEl.disabled = true;
-
-  const model = sessionStorage.getItem("MODEL") || "";
-  const byok = sessionStorage.getItem("BYOK") || "";
-
-  const headers = await getAuthHeaders();
-  if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
-
-  const SYSTEM = {
-    role: "system",
-    content: "You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram. - linkedin: 6–10 lines, one CTA. - x: <= 280 chars total; provide an array with 2 short variants if possible. - email: object with keys {subject, body} — 3–5 sentences. - instagram: 1–2 short paragraphs + 3–5 hashtags. STRICT: No Markdown, no triple backticks, no prose — JSON object only."
-  };
-  const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
-
-  try{
-    const r = await fetch(`${WORKER_BASE}/api/generate`, {
-      method:"POST", headers, body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
-    });
-    const data = await r.json().catch(()=> ({}));
-    if (!r.ok) {
-      const msg = data?.error?.message || "Error";
-      if (statusEl) statusEl.textContent = msg;
-      return;
-    }
-    const content = data?.choices?.[0]?.message?.content || "";
-    const out = parseOutput(content);
-    paintOutputs(out, suffix);
-    if (statusEl) statusEl.textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-    await refreshAll();
-
-    if (dlMdEl) { dlMdEl.disabled = false; dlMdEl.onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out)); }
-    if (dlCsvEl){ dlCsvEl.disabled = false; dlCsvEl.onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out)); }
-  }catch(e){
-    if (statusEl) statusEl.textContent = e?.message || "Network error";
-  }
-}
-function download(filename, mime, text){
-  const blob = new Blob([text], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-}
-
-/* ======= Presets (local) ======= */
-function maxPresetsFor(plan){ if (plan==="starter") return 10; if (plan==="creator" || plan==="business") return Infinity; return 0; }
-function loadPresets(){
-  const list = JSON.parse(localStorage.getItem("presets")||"[]");
-  const ul = $("#presetList"); if (!ul) return;
-  ul.innerHTML = "";
-  if (!list.length){ ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>'; return; }
-  list.forEach((p, i)=>{
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <div class="flex items-center justify-between gap-2">
-        <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
-        <div class="flex gap-2">
-          <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use" type="button">Use</button>
-          <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del" type="button">Delete</button>
-        </div>
-      </div>`;
-    ul.appendChild(li);
-  });
-  ul.querySelectorAll("button").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const i = Number(btn.getAttribute("data-i"));
-      const act = btn.getAttribute("data-act");
-      const list = JSON.parse(localStorage.getItem("presets")||"[]");
-      if (act==="use"){ const s = $("#source_m"); if (s) s.value = list[i]?.text || ""; }
-      if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
-    });
-  });
-}
-on($("#addPreset"), "click", async ()=>{
-  const text = ($("#source_m")?.value || "").trim();
-  if (!text) return alert("Write something first.");
-  const status = await getPlanStatus();
-  const planKey = PLAN_KEY(status);
-  const cap = maxPresetsFor(planKey);
-  const list = JSON.parse(localStorage.getItem("presets")||"[]");
-  if (cap !== Infinity && list.length >= cap) { alert(`Preset limit reached for ${PLAN_LABEL(planKey)}.`); return; }
-  const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
-  list.unshift({ title, text, t: Date.now() });
-  localStorage.setItem("presets", JSON.stringify(list));
-  loadPresets();
-});
+  </script>
+</body>
+</html>
