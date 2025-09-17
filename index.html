@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ContentFlow AI — Repurpose, Schedule & Scale SEO Content</title>
-  <meta name="description" content="Turn one idea into channel-ready drafts for LinkedIn, X, Email and Instagram. Free runs via OpenRouter free models. BYOK supported.">
-  <link rel="canonical" href="https://contentflows.netlify.app/">
+  <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
+  <meta name="description" content="Repurpose blogs, emails, and posts into LinkedIn, X, Instagram and more. AI-powered content repurposing tool & generator. Export to Notion, Trello, Buffer. BYOK supported.">
+  <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
 
   <!-- OG/Twitter -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta property="og:description" content="Paste a paragraph → get LinkedIn, X, Email & Instagram drafts. Demo: 5/month. Signed-in free: 5/day.">
-  <meta property="og:url" content="https://contentflows.netlify.app/">
+  <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
+  <meta property="og:description" content="Turn one idea into posts for LinkedIn, X, Instagram, and Email. Export with one click. BYOK supported.">
+  <meta property="og:url" content="https://contentrepurpose.pro/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ContentFlow AI — Repurpose & Scale SEO Content">
-  <meta name="twitter:description" content="Free 5/month demo. Signed-in free: 5/day. BYOK supported.">
+  <meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
+  <meta name="twitter:description" content="Repurpose your content into multi-channel drafts. Export to Notion, Trello & Buffer. BYOK supported.">
   <meta name="twitter:image" content="/og-cover.png">
 
   <!-- Fonts + Tailwind -->
@@ -40,10 +40,7 @@
     .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .pill{border-radius:9999px;border:1px solid rgba(255,255,255,.25);padding:.2rem .6rem}
-    .sr-only-important{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;border:0!important}
     #click-guard{position:fixed;inset:0;pointer-events:none}
-    body[data-auth="member"] #seo-faq,
-    body[data-auth="member"] nav a[href="#faq"]{display:none}
     dialog{border:1px solid rgba(255,255,255,.1)}
     .btn{padding:.5rem .75rem;border-radius:.75rem;border:1px solid rgba(148,163,184,.35)}
     .btn-primary{background:black;color:white}
@@ -52,27 +49,24 @@
   </style>
 
   <!-- JSON-LD: Organization + Site -->
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}</script>
-
-  <!-- JSON-LD: SEO FAQ (rich; we keep it even if hidden in UI) -->
-  <script id="faq-jsonld" type="application/ld+json">
-  {
+  <script type="application/ld+json">{
     "@context":"https://schema.org",
-    "@type":"FAQPage",
-    "mainEntity":[
-      {"@type":"Question","name":"What is ContentFlow AI?","acceptedAnswer":{"@type":"Answer","text":"ContentFlow AI repurposes one idea into channel-ready drafts for LinkedIn, X (Twitter), Email and Instagram. It generates SEO-friendly copy, hashtags, subject lines, and captions, then lets you export or publish."}},
-      {"@type":"Question","name":"How does ContentFlow AI help with SEO content repurposing?","acceptedAnswer":{"@type":"Answer","text":"Paste a paragraph or blog excerpt and ContentFlow AI creates multi-channel, SEO-aware drafts—LinkedIn posts, X tweets, email subject/body, and Instagram captions—optimized for readability, engagement, and relevant keywords."}},
-      {"@type":"Question","name":"Can I publish directly to social media?","acceptedAnswer":{"@type":"Answer","text":"Yes. Signed-in users get quick-publish actions: open the X composer with prefilled text, copy-and-open for LinkedIn, and an Email preview with mailto send. Business/Creator plans can optionally connect Buffer for scheduling."}},
-      {"@type":"Question","name":"What are the free and paid limits?","acceptedAnswer":{"@type":"Answer","text":"Demo is 5 runs/month by IP. Signed-in free is 5/day. Paid plans add higher monthly caps and BYOK (Bring Your Own OpenRouter key) monthly caps. Creator and Business include integrations like Notion export, Trello, and Buffer."}},
-      {"@type":"Question","name":"Does ContentFlow AI support BYOK (Bring Your Own Key)?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can include your OpenRouter API key to run generations on your quota. BYOK limits scale by plan: Free 5/day, Solo Creator 50/month (+5 daily headroom), Creator 150/month (+10 daily counted), Business 300/month (+30 daily)."}}
-    ]
-  }
-  </script>
-
-  <!-- SDKs -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://js.stripe.com/v3/"></script>
+    "@type":"Organization",
+    "name":"ContentRepurpose.pro",
+    "url":"https://contentrepurpose.pro/",
+    "logo":"https://contentrepurpose.pro/logo.png",
+    "sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]
+  }</script>
+  <script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "url":"https://contentrepurpose.pro/",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://contentrepurpose.pro/search?q={q}",
+      "query-input":"required name=q"
+    }
+  }</script>
 </head>
 <body class="min-h-full" data-auth="guest">
   <div id="click-guard"></div>
@@ -80,9 +74,9 @@
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3" aria-label="ContentFlow AI home">
-        <span class="w-9 h-9 rounded-xl bg-grad" aria-hidden="true"></span>
-        <span class="font-semibold tracking-tight">ContentFlow <span class="txt-grad">AI</span></span>
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl bg-grad" />
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
       </a>
       <nav class="flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
@@ -96,12 +90,6 @@
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
-        <!-- View switcher (preview UI states only) -->
-        <div id="viewToggles" class="hidden md:flex items-center gap-1 ml-2">
-          <span class="text-xs text-slate-500">View:</span>
-          <button id="viewGuest" class="text-xs pill">Demo</button>
-          <button id="viewMember" class="text-xs pill">Signed-in</button>
-        </div>
       </nav>
     </div>
   </header>
@@ -109,16 +97,16 @@
   <!-- HERO -->
   <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
     <div>
-      <!-- Hidden when signed in -->
       <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
         <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
         <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
       </div>
       <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
-        From one idea to <span class="txt-grad">everywhere</span> — repurpose & schedule in minutes.
+        AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
       </h1>
       <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts. Export with one click. BYOK supported.
+        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts. 
+        Export to Notion, Trello, or Buffer with one click. BYOK supported.
       </p>
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
@@ -126,30 +114,40 @@
         <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
       </div>
       <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <span class="badge">Content Generator</span>
+        <span class="badge">Repurposing Tool</span>
         <span class="badge">SEO-ready</span>
-        <span class="badge">X</span>
-        <span class="badge">Email</span>
-        <span class="badge">Instagram</span>
-        <span class="badge" title="Bring your own OpenRouter key">BYOK</span>
+        <span class="badge">BYOK</span>
       </div>
     </div>
     <div class="glass card p-5">
       <div class="text-xs text-slate-500 mb-2">Preview</div>
-      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto mono" aria-label="CLI Preview">contentflow generate --channels linkedin,x,email,instagram
+      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto mono" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
 ✓ outline created
 ✓ 3 social variants
 ✓ email subject + body ready
 ✓ instagram caption + hashtags</pre>
     </div>
   </section>
-
   <!-- TEMPLATES -->
   <section id="templates" class="max-w-7xl mx-auto px-5 py-10">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
-      <div class="card p-5"><div class="text-xs text-slate-400">Blog</div><div class="mt-1 font-semibold">Problem → Solution SEO Article</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
-      <div class="card p-5"><div class="text-xs text-slate-400">Email</div><div class="mt-1 font-semibold">Feature Launch / Update</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
-      <div class="card p-5"><div class="text-xs text-slate-400">Social</div><div class="mt-1 font-semibold">LinkedIn Thread from Blog</div><button class="mt-4 px-3 py-2 rounded-xl border">Use template</button></div>
+      <div class="card p-5">
+        <div class="text-xs text-slate-400">Blog</div>
+        <div class="mt-1 font-semibold">Problem → Solution SEO Article</div>
+        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
+      </div>
+      <div class="card p-5">
+        <div class="text-xs text-slate-400">Email</div>
+        <div class="mt-1 font-semibold">Feature Launch / Update</div>
+        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
+      </div>
+      <div class="card p-5">
+        <div class="text-xs text-slate-400">Social</div>
+        <div class="mt-1 font-semibold">LinkedIn Thread from Blog</div>
+        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
+      </div>
     </div>
   </section>
 
@@ -171,6 +169,7 @@
       </div>
     </div>
   </section>
+
   <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
   <section id="guestView">
     <!-- DEMO -->
@@ -245,7 +244,6 @@
       </section>
     </main>
   </section>
-
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
     <div class="max-w-7xl mx-auto px-5 pb-12">
@@ -299,12 +297,13 @@
 
       <!-- Outputs + Publish -->
       <div class="grid lg:grid-cols-2 gap-5 mt-6">
+        <!-- LinkedIn -->
         <div class="card p-5">
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
             <div class="flex items-center gap-2">
-              <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Copy</button>
-              <button id="publish-li_m" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Publish</button>
+              <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border">Copy</button>
+              <button id="publish-li_m" class="px-3 py-1 rounded-full text-xs border">Publish</button>
               <button id="li-notion" class="px-3 py-1 rounded-full text-xs border hidden">Export to Notion</button>
               <button id="li-trello" class="px-3 py-1 rounded-full text-xs border hidden">Send to Trello</button>
               <button id="li-buffer" class="px-3 py-1 rounded-full text-xs border hidden">Queue in Buffer</button>
@@ -313,6 +312,7 @@
           <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
 
+        <!-- X -->
         <div class="card p-5">
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
@@ -327,6 +327,7 @@
           <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
 
+        <!-- Email -->
         <div class="card p-5">
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
@@ -344,6 +345,7 @@
           <pre id="out-em-body_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
         </div>
 
+        <!-- Instagram -->
         <div class="card p-5">
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
@@ -359,7 +361,7 @@
         </div>
       </div>
 
-      <!-- Saved Presets + Growth (kept from original) -->
+      <!-- Saved Presets + Growth -->
       <div class="grid md:grid-cols-2 gap-5 mt-6">
         <!-- Saved Presets -->
         <div class="card p-5">
@@ -386,7 +388,7 @@
         </div>
       </div>
 
-      <!-- Plan Features (unlocks) -->
+      <!-- Plan Features -->
       <div class="card p-6 mt-6">
         <h3 class="text-lg font-bold">Your plan includes</h3>
         <ul id="featureList" class="mt-3 text-sm space-y-1"></ul>
@@ -397,7 +399,9 @@
         <h3 class="text-lg font-bold">Integrations</h3>
         <div class="grid md:grid-cols-3 gap-4 mt-3">
           <div class="p-4 rounded-xl border">
-            <div class="flex items-center justify-between"><strong>Notion</strong><span id="notionState" class="chip">Disconnected</span></div>
+            <div class="flex items-center justify-between">
+              <strong>Notion</strong><span id="notionState" class="chip">Disconnected</span>
+            </div>
             <p class="text-xs text-slate-500 mt-1">Export pages to your workspace.</p>
             <div class="mt-3 flex gap-2">
               <button id="connectNotion" class="btn">Connect</button>
@@ -405,7 +409,9 @@
             </div>
           </div>
           <div class="p-4 rounded-xl border">
-            <div class="flex items-center justify-between"><strong>Trello</strong><span id="trelloState" class="chip">Disconnected</span></div>
+            <div class="flex items-center justify-between">
+              <strong>Trello</strong><span id="trelloState" class="chip">Disconnected</span>
+            </div>
             <p class="text-xs text-slate-500 mt-1">Send drafts as cards.</p>
             <div class="mt-3 flex gap-2">
               <button id="connectTrello" class="btn">Connect</button>
@@ -413,7 +419,9 @@
             </div>
           </div>
           <div class="p-4 rounded-xl border">
-            <div class="flex items-center justify-between"><strong>Buffer</strong><span id="bufferState" class="chip">Disconnected</span></div>
+            <div class="flex items-center justify-between">
+              <strong>Buffer</strong><span id="bufferState" class="chip">Disconnected</span>
+            </div>
             <p class="text-xs text-slate-500 mt-1">Queue posts to social profiles.</p>
             <div class="mt-3 flex gap-2">
               <button id="connectBuffer" class="btn">Connect</button>
@@ -506,7 +514,7 @@
 
   <!-- SEO FAQ (hidden when signed in; still rendered for crawlers) -->
   <section id="seo-faq" class="max-w-7xl mx-auto px-5 pb-12">
-    <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">ContentFlow AI — FAQs</h2>
+    <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
     <div class="mt-5 grid md:grid-cols-2 gap-5">
       <div class="card p-5">
         <strong>Is it free?</strong>
@@ -574,7 +582,10 @@
   <!-- Trello Picker Modal -->
   <dialog id="trelloModal" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
     <form method="dialog" class="p-6 space-y-3">
-      <div class="flex items-center justify-between"><h3 class="text-lg font-bold">Send to Trello</h3><button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button></div>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold">Send to Trello</h3>
+        <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
+      </div>
       <input id="trelloBoardId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Board ID (paste for now)" />
       <input id="trelloListId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="List ID" />
       <button id="trelloConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Send</button>
@@ -584,50 +595,69 @@
   <!-- Buffer Picker Modal -->
   <dialog id="bufferModal" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
     <form method="dialog" class="p-6 space-y-3">
-      <div class="flex items-center justify-between"><h3 class="text-lg font-bold">Queue in Buffer</h3><button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button></div>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold">Queue in Buffer</h3>
+        <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
+      </div>
       <select id="bufferProfile" class="w-full p-2 rounded-xl border border-white/15 bg-white/5"></select>
       <button id="bufferConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Queue</button>
     </form>
   </dialog>
 
-  <div id="toast" class="toast hidden"><div id="toastMsg" class="px-3 py-2 rounded-lg bg-black text-white text-sm"></div></div>
+  <!-- Toast -->
+  <div id="toast" class="toast hidden">
+    <div id="toastMsg" class="px-3 py-2 rounded-lg bg-black text-white text-sm"></div>
+  </div>
   <!-- APP SCRIPT (module so top-level await is valid) -->
   <script type="module">
-    // ===== CONFIG =====
+    /* =========================
+       CONFIG & GLOBAL HELPERS
+    ========================== */
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace in prod
 
-    // === Supabase ===
-    const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    // === Supabase (Auth) ===
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
     let supabase = null;
     if (SUPABASE_URL && SUPABASE_ANON && window.supabase) {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON); } catch {}
     }
 
-    // === Stripe (front for redirects) ===
+    // === Stripe (Customer Portal / Checkout redirects) ===
     let stripe = null;
     if (window.Stripe) {
       try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
     }
 
-    /* ===== ENV / HELPERS ===== */
-    const IS_DEV = location.hostname === 'localhost' || location.hostname.endsWith('.local') || location.hostname.endsWith('.ngrok.io');
-    const $ = (s)=>document.querySelector(s);
+    // === Small helpers ===
+    const $  = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
     $("#year").textContent = new Date().getFullYear();
-    const todayStr = ()=> new Date().toISOString().slice(0,10);
-    const showToast=(msg)=>{ const t=$("#toast"),m=$("#toastMsg"); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),1800); };
+    const IS_DEV   = location.hostname === "localhost" || location.hostname.endsWith(".local") || location.hostname.endsWith(".ngrok.io");
+    const todayStr = () => new Date().toISOString().slice(0,10);
+    const showToast = (msg) => {
+      const t = $("#toast"), m = $("#toastMsg");
+      if (!t || !m) return;
+      m.textContent = msg;
+      t.classList.remove("hidden");
+      setTimeout(()=>t.classList.add("hidden"), 1800);
+    };
+    const PLAN_LABEL = (p)=>{
+      if (!p || p==="free") return "Free";
+      if (p==="starter") return "Solo Creator";
+      if (p==="creator") return "Creator";
+      if (p==="business") return "Business";
+      return "Free";
+    };
 
-    // Hide preview toggles in production
-    const togglesWrap = document.getElementById('viewToggles');
-    if (togglesWrap) togglesWrap.classList.toggle('hidden', !IS_DEV);
-    if (!IS_DEV) { try { localStorage.removeItem('viewOverride'); } catch {} }
+    // Dev-only UI preview toggles
+    const togglesWrap = $("#viewToggles");
+    if (togglesWrap) togglesWrap.classList.toggle("hidden", !IS_DEV);
+    if (!IS_DEV) { try { localStorage.removeItem("viewOverride"); } catch {} }
 
-    // ===== PRICING + LIMITS (UI) =====
-    const PLAN_LABEL = (p)=>{ if (!p || p==="free") return "Free"; if (p==="starter") return "Solo Creator"; if (p==="creator") return "Creator"; if (p==="business") return "Business"; return "Free"; };
-
-    // New marketing bullets reflect plan changes
+    // Marketing features used by dashboard list
     const PLAN_FEATURES = {
       free: [
         "5/day platform runs (signed-in)",
@@ -638,7 +668,7 @@
         "200 generations / month",
         "Batch inputs",
         "10 saved presets",
-        "Priority models",
+        "Priority models"
       ],
       creator: [
         "500 generations / month",
@@ -646,7 +676,7 @@
         "Project pack export",
         "Notion export + Trello boards",
         "Push drafts to Buffer",
-        "New workflows early",
+        "New workflows early"
       ],
       business: [
         "Unlimited (fair use)",
@@ -654,24 +684,22 @@
         "White-label export",
         "Priority support",
         "All Creator integrations",
-        "Team presets & shared calendar",
+        "Team presets & shared calendar"
       ]
     };
-
-    // Soft daily throttle (client-side UX; hard enforcement is on Worker)
     const SOFT_DAILY_PLATFORM = { free:5, starter:10, creator:30, business:80 };
     const PRICES = {
-      starter: "price_1S7y58JYjIKHzKcjzL7cIKiB",
-      creator: "price_1S7y77JYjIKHzKcjKQYjiqZH",
-      business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
+      starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
+      creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
+      business: "price_1S7y8OJYjIKHzKcjqA9uJdyh"
     };
 
     // Allow plan override preview via URL (dev/marketing preview)
-    (function(){
+    (function planOverrideFromURL(){
       const params = new URLSearchParams(location.search);
-      const incoming = params.get("plan");
+      const incoming = (params.get("plan")||"").toLowerCase();
       if (incoming && ["starter","creator","business"].includes(incoming)) {
-        localStorage.setItem("plan", incoming);
+        try { localStorage.setItem("plan", incoming); } catch {}
         history.replaceState({}, "", location.pathname);
       }
     })();
@@ -683,24 +711,25 @@
       if (mb) mb.textContent = `Plan: ${label}`;
     }
 
-    /* ===== VIEW SWITCH ===== */
+    /* =========================
+       VIEW SWITCHING
+    ========================== */
     function showView(isAuthenticated){
-      const guest = document.getElementById('guestView');
-      const member = document.getElementById('memberView');
+      const guest  = $("#guestView");
+      const member = $("#memberView");
       if (isAuthenticated){
         document.body.setAttribute("data-auth","member");
-        guest?.classList.add('hidden');
-        member?.classList.remove('hidden');
+        guest?.classList.add("hidden");
+        member?.classList.remove("hidden");
         $("#loginBtn")?.classList.add("hidden");
         $("#heroSignIn")?.classList.add("hidden");
         $("#logoutBtn")?.classList.remove("hidden");
         $("#logoutBtn2")?.classList.remove("hidden");
-        // hide demo badge row entirely
         $("#heroBadgeWrap")?.classList.add("hidden");
       } else {
         document.body.setAttribute("data-auth","guest");
-        member?.classList.add('hidden');
-        guest?.classList.remove('hidden');
+        member?.classList.add("hidden");
+        guest?.classList.remove("hidden");
         $("#loginBtn")?.classList.remove("hidden");
         $("#heroSignIn")?.classList.remove("hidden");
         $("#logoutBtn")?.classList.add("hidden");
@@ -709,30 +738,37 @@
       }
     }
 
-    // Preview toggler (dev only, and only when logged OUT)
-    (function(){
+    (function devViewToggles(){
       if (!IS_DEV) return;
       $("#viewGuest")?.addEventListener("click", ()=>{
-        localStorage.setItem("viewOverride","guest");
+        try { localStorage.setItem("viewOverride","guest"); } catch {}
         applyViewOverride(false);
       });
       $("#viewMember")?.addEventListener("click", ()=>{
-        localStorage.setItem("viewOverride","member");
+        try { localStorage.setItem("viewOverride","member"); } catch {}
         applyViewOverride(false);
       });
     })();
 
     function applyViewOverride(isAuthenticated){
       if (isAuthenticated) return; // never override real auth
-      const o = (localStorage.getItem("viewOverride")||"").toLowerCase();
-      if (o === "member") showView(true); else if (o === "guest") showView(false);
+      let o = "";
+      try { o = (localStorage.getItem("viewOverride")||"").toLowerCase(); } catch {}
+      if (o === "member") showView(true);
+      else if (o === "guest") showView(false);
     }
 
-    /* ===== AUTH ===== */
+    /* =========================
+       AUTH
+    ========================== */
     async function getAuth(){
       if (!supabase) return { token:null, userId:null, email:null };
       const { data:{ session } } = await supabase.auth.getSession();
-      return { token: session?.access_token || null, userId: session?.user?.id || null, email: session?.user?.email || null };
+      return {
+        token:  session?.access_token || null,
+        userId: session?.user?.id || null,
+        email:  session?.user?.email || null
+      };
     }
 
     async function paintAuth(){
@@ -742,37 +778,31 @@
       showView(isAuthed);
       if (!isAuthed) applyViewOverride(false);
 
-      // Replace hero badge string based on scope
       const heroBadge = $("#heroBadge");
       if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — welcome back" : "Demo — 5 runs / month (no login)";
 
-      const logout = $("#logoutBtn");
+      const logout  = $("#logoutBtn");
       const logout2 = $("#logoutBtn2");
-      if (logout) {
-        if (isAuthed) {
-          logout.textContent = `Sign out`;
-          logout.classList.remove("hidden");
-        } else {
-          logout.classList.add("hidden");
-        }
-      }
-      if (logout2) { if (isAuthed) logout2.classList.remove("hidden"); else logout2.classList.add("hidden"); }
+      if (logout)  logout.classList.toggle("hidden", !isAuthed);
+      if (logout2) logout2.classList.toggle("hidden", !isAuthed);
 
       $("#loginBtn")?.classList.toggle("hidden", isAuthed);
       $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
 
-      const ue = document.getElementById('userEmail');
-      if (ue) ue.textContent = isAuthed ? (email || 'member') : '';
+      const ue = $("#userEmail");
+      if (ue) ue.textContent = isAuthed ? (email || "member") : "";
+
+      return { token, userId, email };
     }
 
     // Auth modal wiring
-    $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
-    $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth").showModal(); });
+    $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
+    $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
 
     const doSignOut = async()=>{
-      if (!supabase?.auth) return alert("Auth not initialized");
+      if (!supabase?.auth) { showToast("Auth not initialized"); return; }
       await supabase.auth.signOut();
-      try { localStorage.removeItem('viewOverride'); } catch {}
+      try { localStorage.removeItem("viewOverride"); } catch {}
       await paintAuth();
       await refreshAll();
     };
@@ -782,66 +812,82 @@
     $("#googleBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
-      const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
-      if (error) alert(error.message || error);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: location.href }
+      });
+      if (error) alert(error.message || String(error));
     });
 
     $("#magicBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
-      const email = $("#emailInput").value.trim();
-      if (!email) return alert('Enter an email');
+      const email = ($("#emailInput")?.value||"").trim();
+      if (!email) return alert("Enter an email");
       const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-      if (error) return alert(error.message);
-      alert('Magic link sent. Check your inbox.');
-      $("#auth").close();
+      if (error) return alert(error.message || String(error));
+      alert("Magic link sent. Check your inbox.");
+      $("#auth")?.close();
     });
 
-    /* ===== BILLING (Subscribe / Manage) ===== */
+    /* =========================
+       BILLING (Subscribe / Portal)
+    ========================== */
     async function openCheckout(priceId){
       const { token } = await getAuth();
-      if (!token) { $("#auth").showModal(); return; }
+      if (!token) { $("#auth")?.showModal(); return; }
       const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
         method: "POST",
         headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
-      });
-      const j = await r.json().catch(()=> ({}));
-      if (j.url) { location.href = j.url; return; }
+      }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) { location.href = j.url; return; }
       alert(j?.error?.message || "Could not start checkout.");
     }
 
     async function openPortal(){
       const { token } = await getAuth();
-      if (!token) { $("#auth").showModal(); return; }
+      if (!token) { $("#auth")?.showModal(); return; }
       const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
         method: "POST",
         headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ return_url: location.href })
-      });
-      const j = await r.json().catch(()=> ({}));
-      if (j.url) { location.href = j.url; return; }
+      }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) { location.href = j.url; return; }
       alert(j?.error?.message || "Could not open billing portal.");
     }
 
-    document.querySelectorAll(".subBtn").forEach(btn=>{
+    $$(".subBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
     });
     $("#manageBilling")?.addEventListener("click", openPortal);
     $("#manageBilling2")?.addEventListener("click", openPortal);
 
-    /* ===== PLAN STATUS / QUOTAS ===== */
+    /* =========================
+       PLAN STATUS / QUOTAS
+    ========================== */
     let LAST_STATUS = null;
 
     async function getPlanStatus(){
       const { token } = await getAuth();
       const headers = token ? { "Authorization": `Bearer ${token}` } : {};
-      try{ const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers }); if (r.ok) return await r.json(); }catch{}
-      try{ const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers }); if (r2.ok) return await r2.json(); }catch{}
+      try {
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
+        if (r.ok) return await r.json();
+      } catch {}
+      try {
+        const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers });
+        if (r2.ok) return await r2.json();
+      } catch {}
       return null;
     }
 
-    const planKeyFromStatus = (s)=>{ const p=(s?.plan||s?.monthly?.plan||"free").toLowerCase(); return ["starter","creator","business"].includes(p)?p:"free"; };
+    const planKeyFromStatus = (s)=>{
+      const p = (s?.plan || s?.monthly?.plan || "free").toLowerCase();
+      return ["starter","creator","business"].includes(p) ? p : "free";
+    };
 
     function paintFeatureList(planKey){
       const ul = $("#featureList");
@@ -863,7 +909,7 @@
     function tileHtml(title, used, cap, sub){
       const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
       const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
-      const capTxt = isInf ? '∞' : cap;
+      const capTxt = isInf ? "∞" : cap;
       return `
         <div class="card p-5">
           <div class="flex items-center justify-between">
@@ -871,7 +917,7 @@
             <span class="text-sm text-slate-500">${used}/${capTxt}</span>
           </div>
           <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
-            <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
+            <div class="h-2 bg-grad" style="width:${isInf ? "100" : pct}%"></div>
           </div>
           <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
         </div>`;
@@ -884,19 +930,21 @@
       const pk = planKeyFromStatus(status);
       const softDaily = SOFT_DAILY_PLATFORM[pk] ?? 5;
 
-      // Normalize
       const pDailyUsed = status?.platform?.daily?.used ?? status?.used ?? 0;
-      const pDailyCap  = (pk==='free') ? 5 : softDaily;
+      const pDailyCap  = (pk === "free") ? 5 : softDaily;
 
-      const pMonthly = status?.platform?.monthly || status?.monthly || { used:0, cap: (pk==='business'? Infinity : (pk==='creator'?500:(pk==='starter'?200:Infinity))) };
+      const pMonthly = status?.platform?.monthly || status?.monthly || {
+        used: 0,
+        cap: (pk==='business'? Infinity : (pk==='creator'?500:(pk==='starter'?200:Infinity)))
+      };
 
-      const bDaily = status?.byok?.daily || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: null });
+      const bDaily   = status?.byok?.daily   || (pk==="free" ? { used: 0, cap: 5 } : { used: 0, cap: null });
       const bMonthly = status?.byok?.monthly || { used:0, cap: (pk==='free'?5:(pk==='starter'?50:(pk==='creator'?150:(pk==='business'?300:0)))) };
 
       wrap.innerHTML = [
         tileHtml("Platform — Today", pDailyUsed||0, pDailyCap, PLAN_LABEL(pk)),
         tileHtml("Platform — This month", pMonthly.used||0, (pMonthly.cap ?? (pk==='business'?Infinity:(pk==='creator'?500:(pk==='starter'?200:Infinity)))), "Generations"),
-        tileHtml("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? '∞')), "Your key only"),
+        tileHtml("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? "∞")), "Your key only"),
         tileHtml("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
       ].join("");
 
@@ -914,24 +962,32 @@
       $("#teamCard")?.classList.toggle("hidden", !isBiz);                           // Team: Business
       ["li","x","em","ig"].forEach(p=>{
         ["-notion","-trello","-buffer"].forEach(s=>{
-          const el=document.querySelector(`#${p}${s}`);
+          const el = document.querySelector(`#${p}${s}`);
           if (el) el.classList.toggle("hidden", !(isCreator||isBiz));
         });
       });
-      const note=$("#batchNote");
-      if (note) note.textContent = isBiz ? "Business: up to 50 lines/run" : isCreator ? "Creator: up to 20 lines/run" : isStarter ? "Starter: up to 5 lines/run" : "Upgrade to enable batch runs.";
+      const note = $("#batchNote");
+      if (note) note.textContent =
+        isBiz ? "Business: up to 50 lines/run" :
+        isCreator ? "Creator: up to 20 lines/run" :
+        isStarter ? "Starter: up to 5 lines/run" :
+        "Upgrade to enable batch runs.";
       $("#run_batch")?.classList.toggle("hidden", !(isStarter||isCreator||isBiz));
-      $("#batch_inputs")?.toggleAttribute("disabled", !(isStarter||isCreator||isBiz));
+      const bi = $("#batch_inputs");
+      if (bi) {
+        if (isStarter||isCreator||isBiz) bi.removeAttribute("disabled");
+        else bi.setAttribute("disabled","true");
+      }
     }
 
     // Referral apply (MVP)
     async function applyReferralIfPresent(){
-      const u=new URL(location.href);
-      const ref=u.searchParams.get("ref");
+      const u = new URL(location.href);
+      const ref = u.searchParams.get("ref");
       if (!ref) return;
       const { token } = await getAuth();
-      const headers = token?{Authorization:`Bearer ${token}`}:{};
-      try{ await fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`,{ headers }); }catch{}
+      const headers = token ? { Authorization:`Bearer ${token}` } : {};
+      try { await fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`, { headers }); } catch {}
       u.searchParams.delete("ref");
       history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):""));
     }
@@ -952,15 +1008,20 @@
         const uid = LAST_STATUS?.userId || (email ? email.split('@')[0] : 'guest');
         const code = btoa(uid).replace(/=+$/,'');
         const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
-        const refInput = document.getElementById('refLink');
+        const refInput = $("#refLink");
         if (refInput) refInput.value = link;
-        const refCount = document.getElementById('refCount');
-        if (refCount && typeof LAST_STATUS?.referrals_this_month === 'number') refCount.textContent = String(LAST_STATUS.referrals_this_month);
+        const refCount = $("#refCount");
+        if (refCount && typeof LAST_STATUS?.referrals_this_month === "number") refCount.textContent = String(LAST_STATUS.referrals_this_month);
       }catch{}
     }
 
-    /* ===== GENERATOR - helpers (kept) ===== */
-    const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
+    // Boot
+    await applyReferralIfPresent();
+    await refreshAll();
+    /* =========================
+       GENERATOR HELPERS
+    ========================== */
+    const csvEsc = s => '"' + String(s ?? "").replace(/"/g,'""') + '"';
     function buildCSV(o){
       const rows = [["channel","content"]];
       if (o.linkedin) rows.push(["linkedin", o.linkedin]);
@@ -969,7 +1030,6 @@
       if (o.instagram) rows.push(["instagram", o.instagram]);
       return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
     }
-
     function buildMarkdown(o){
       const lines = [
         "# Content Pack","",
@@ -980,7 +1040,6 @@
       ];
       return lines.join("\n");
     }
-
     function extractJSON(text){
       if (!text) return null;
       const raw = String(text).trim();
@@ -993,7 +1052,6 @@
       }
       return null;
     }
-
     function parseOutput(content){
       const j = extractJSON(content);
       if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
@@ -1014,7 +1072,6 @@
       if (out.linkedin || out.x || out.email || out.instagram) return out;
       return { linkedin: text };
     }
-
     async function getAuthHeaders(){
       const { token, userId } = await getAuth();
       const headers = { "Content-Type":"application/json" };
@@ -1022,13 +1079,57 @@
       if (userId) headers["X-User-Id"] = userId;
       return headers;
     }
+    function download(filename, mime, text){
+      const blob = new Blob([text], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
 
-    /* ===== GUEST GENERATE ===== */
-    document.getElementById("run").onclick = ()=> runGen({ useBYOK:false });
-    document.getElementById("run-byok").onclick = ()=> runGen({ useBYOK:true });
+    /* =========================
+       GUEST: GENERATE / COPY
+    ========================== */
+    const guestRunBtn    = document.getElementById("run");
+    const guestRunByok   = document.getElementById("run-byok");
+    const guestClearBtn  = document.getElementById("clear");
+    const guestSaveBtn   = document.getElementById("save");
+
+    if (guestRunBtn)  guestRunBtn.addEventListener("click", ()=> runGen({ useBYOK:false }));
+    if (guestRunByok) guestRunByok.addEventListener("click", ()=> runGen({ useBYOK:true }));
+    if (guestClearBtn) guestClearBtn.addEventListener("click", ()=>{
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
+      $("#source").value = "";
+      $("#status").textContent = "";
+      $("#dl-md").disabled = true;
+      $("#dl-csv").disabled = true;
+    });
+    if (guestSaveBtn) guestSaveBtn.addEventListener("click", ()=>{
+      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
+      sessionStorage.setItem("BYOK", document.getElementById("byok").value.trim());
+      alert("Saved for this tab.");
+    });
+
+    // Copy buttons (Guest)
+    document.getElementById("copy-li")?.addEventListener("click", ()=> {
+      navigator.clipboard.writeText(document.getElementById("out-li").textContent || "");
+    });
+    document.getElementById("copy-x")?.addEventListener("click", ()=> {
+      navigator.clipboard.writeText(document.getElementById("out-x").textContent || "");
+    });
+    document.getElementById("copy-em")?.addEventListener("click", ()=> {
+      const subj = document.getElementById("out-em-subj").textContent;
+      const body = document.getElementById("out-em-body").textContent;
+      navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
+    });
+    document.getElementById("copy-ig")?.addEventListener("click", ()=> {
+      navigator.clipboard.writeText(document.getElementById("out-ig").textContent || "");
+    });
 
     async function runGen({ useBYOK=false }){
-      const source = document.getElementById("source").value.trim();
+      const sourceEl = document.getElementById("source");
+      if (!sourceEl) return;
+      const source = sourceEl.value.trim();
       if (!source) { alert("Paste some content first."); return; }
 
       document.getElementById("status").textContent = useBYOK? "Generating with your key…" : "Generating…";
@@ -1088,379 +1189,451 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
     }
 
-    function download(filename, mime, text){
-      const blob = new Blob([text], { type: mime });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-    }
+    /* =========================
+       MEMBER: GENERATE / PUBLISH / COPY
+    ========================== */
+    const mRunBtn     = document.getElementById("run_m");
+    const mRunByokBtn = document.getElementById("run-byok_m");
+    const mClearBtn   = document.getElementById("clear_m");
 
-    document.getElementById("save").onclick = ()=>{
-      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
-      sessionStorage.setItem("BYOK", document.getElementById("byok").value.trim());
-      alert("Saved for this tab.");
-    };
+    if (mRunBtn)     mRunBtn.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    if (mRunByokBtn) mRunByokBtn.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    if (mClearBtn)   mClearBtn.addEventListener("click", ()=>{
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      $("#source_m").value = "";
+      $("#status_m").textContent = "";
+    });
 
-    document.getElementById("copy-li").onclick = ()=> navigator.clipboard.writeText(document.getElementBy
-document.getElementById('out-li').textContent||"") };
-document.getElementById("copy-x").onclick  = ()=> navigator.clipboard.writeText(document.getElementById('out-x').textContent||"");
-document.getElementById("copy-em").onclick = ()=> navigator.clipboard.writeText(`Subject: ${document.getElementById('out-em-subj').textContent}\n\n${document.getElementById('out-em-body').textContent}`);
-document.getElementById("copy-ig").onclick = ()=> navigator.clipboard.writeText(document.getElementById('out-ig').textContent||"");
+    // Copy buttons (Member)
+    $("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m").textContent||""));
+    $("#copy-x_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-x_m").textContent||""));
+    $("#copy-em_m")?.addEventListener("click", ()=> {
+      const subj = $("#out-em-subj_m").textContent;
+      const body = $("#out-em-body_m").textContent;
+      navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
+    });
+    $("#copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig_m").textContent||""));
 
-document.getElementById("source").addEventListener("keydown",(e)=>{ if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("run").click(); } });
+    async function runGenMember({ useBYOK=false }){
+      const sourceEl = $("#source_m");
+      if (!sourceEl) return;
+      const source = sourceEl.value.trim();
+      if (!source) { alert("Paste some content first."); return; }
 
-document.getElementById("clear").onclick = ()=>{
-  document.getElementById("source").value = "";
-  document.getElementById("status").textContent = "";
-  ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
-  document.getElementById("dl-md").disabled = true;
-  document.getElementById("dl-csv").disabled = true;
-};
+      $("#status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
 
-/* ===== MEMBER GENERATE ===== */
-document.getElementById("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
-document.getElementById("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
-document.getElementById("clear_m")?.addEventListener("click", ()=>{
-  document.getElementById("source_m").value = "";
-  ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-  document.getElementById("status_m").textContent = "";
-});
+      const model = sessionStorage.getItem("MODEL") || "";
+      const byok = sessionStorage.getItem("BYOK") || "";
+      const headers = await getAuthHeaders();
+      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
 
-async function runGenMember({ useBYOK=false }){
-  const src = document.getElementById("source_m").value.trim();
-  if (!src) return alert("Paste content first.");
-
-  document.getElementById("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
-  ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-  const model = sessionStorage.getItem("MODEL") || "";
-  const byok = sessionStorage.getItem("BYOK") || "";
-  const headers = await getAuthHeaders();
-  if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
-
-  const SYSTEM = { role:"system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
+      const SYSTEM = { role: "system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
 - linkedin: 6–10 lines, one CTA.
 - x: <= 280 chars total; provide an array with 2 short variants if possible.
 - email: object with keys {subject, body} — 3–5 sentences.
 - instagram: 1–2 short paragraphs + 3–5 hashtags.
 STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
-  const messages = [ SYSTEM, { role:"user", content: `Source:\n${src}\nChannels: LinkedIn,X,Email,Instagram` } ];
+      const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
 
-  try{
-    const r = await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify({ plan:(useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined }) });
-    const data = await r.json().catch(()=> ({}));
-    if (!r.ok) { document.getElementById("status_m").textContent = data?.error?.message || "Error"; return; }
-    const content = data?.choices?.[0]?.message?.content || "";
-    const out = parseOutput(content);
-    document.getElementById("out-li_m").textContent = out.linkedin || "";
-    document.getElementById("out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-    if (typeof out.email === 'object'){
-      document.getElementById("out-em-subj_m").textContent = out.email.subject || "";
-      document.getElementById("out-em-body_m").textContent = out.email.body || "";
-    } else {
-      document.getElementById("out-em-body_m").textContent = out.email || "";
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/generate`, {
+          method:"POST",
+          headers,
+          body: JSON.stringify({ plan: (useBYOK? "pro":"member"), messages, temperature:0.7, model: model || undefined })
+        });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { $("#status_m").textContent = data?.error?.message || "Error"; return; }
+        const content = data?.choices?.[0]?.message?.content || "";
+        const out = parseOutput(content);
+
+        $("#out-li_m").textContent = out.linkedin || "";
+        $("#out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        $("#out-em-subj_m").textContent = out.email?.subject || "";
+        $("#out-em-body_m").textContent = out.email?.body || (typeof out.email==='string'? out.email : "");
+        $("#out-ig_m").textContent = out.instagram || "";
+
+        $("#status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+      }catch(e){ $("#status_m").textContent = e.message || "Network error"; }
     }
-    document.getElementById("out-ig_m").textContent = out.instagram || "";
-    document.getElementById("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-    await refreshAll();
-  }catch(e){ document.getElementById("status_m").textContent = e.message || "Network error"; }
-}
 
-/* ===== BATCH (Starter+/Creator/Business) ===== */
-function planBatchCap(plan){ if(plan==="business") return 50; if(plan==="creator") return 20; if(plan==="starter") return 5; return 0; }
-document.getElementById("run_batch")?.addEventListener("click", async ()=>{
-  const plan = (LAST_STATUS?.plan||"free").toLowerCase();
-  const cap = planBatchCap(plan);
-  if (!cap) return alert("Upgrade to Starter to run batch.");
-  const raw = (document.getElementById("batch_inputs").value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-  const items = raw.slice(0, cap);
-  if (!items.length) return alert("Add one input per line.");
-  const ul = document.getElementById("batch_progress"); ul.innerHTML="";
-  const addLine = (t)=>{ const li=document.createElement("li"); li.textContent=t; ul.appendChild(li); };
-  for (let i=0;i<items.length;i++){
-    addLine(`Running ${i+1}/${items.length}…`);
-    try{
+    // Quick publish actions (open composer / mailto / meta studio)
+    $("#publish-li_m")?.addEventListener("click", ()=>{
+      const txt = encodeURIComponent($("#out-li_m").textContent||"");
+      window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${txt}`, "_blank");
+    });
+    $("#publish-x_m")?.addEventListener("click", ()=>{
+      const txt = encodeURIComponent($("#out-x_m").textContent||"");
+      window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
+    });
+    $("#publish-em_m")?.addEventListener("click", ()=>{
+      // open the preview modal to edit before mailto
+      const subj = $("#out-em-subj_m").textContent||"";
+      const body = $("#out-em-body_m").textContent||"";
+      $("#emailSubjEdit").value = subj;
+      $("#emailBodyEdit").value = body;
+      $("#emailPreview").showModal();
+    });
+    $("#emailSendBtn")?.addEventListener("click", (e)=>{
+      e.preventDefault();
+      const subj = encodeURIComponent($("#emailSubjEdit").value||"");
+      const body = encodeURIComponent($("#emailBodyEdit").value||"");
+      window.location.href = `mailto:?subject=${subj}&body=${body}`;
+    });
+    $("#publish-ig_m")?.addEventListener("click", ()=>{
+      window.open("https://business.facebook.com/creatorstudio/home", "_blank");
+    });
+
+    /* =========================
+       BATCH INPUTS (Starter+)
+    ========================== */
+    $("#run_batch")?.addEventListener("click", async ()=>{
+      const src = ($("#batch_inputs")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+      if (!src.length) { alert("Add lines to run in batch."); return; }
+      const plan = (LAST_STATUS?.plan||"free").toLowerCase();
+      const cap = plan==="business"?50 : plan==="creator"?20 : plan==="starter"?5 : 0;
+      if (!cap) { alert("Upgrade to Starter to use batch runs."); return; }
+      if (src.length > cap) { alert(`Your plan allows ${cap} lines/run. You entered ${src.length}.`); return; }
+
+      const ul = $("#batch_progress"); ul.innerHTML = "";
+      const pushItem = (txt)=>{ const li=document.createElement("li"); li.textContent = txt; ul.appendChild(li); return li; };
+
+      for (let i=0;i<src.length;i++){
+        const li = pushItem(`(${i+1}/${src.length}) Generating…`);
+        try{
+          $("#source_m").value = src[i];
+          await runGenMember({ useBYOK:false });
+          li.textContent = `(${i+1}/${src.length}) Done`;
+          await new Promise(r=>setTimeout(r, 600)); // brief delay
+        }catch(e){
+          li.textContent = `(${i+1}/${src.length}) Error: ${e?.message||e}`;
+        }
+      }
+      showToast("Batch complete ✓");
+    });
+
+    /* =========================
+       INTEGRATIONS (Creator+)
+    ========================== */
+    function paintIntegrations(status){
+      const integ = status?.integrations || {};
+      // Notion
+      const notionConnected = !!integ?.notion?.access_token;
+      $("#notionState")?.classList?.remove("chip");
+      $("#notionState")?.classList?.add("chip");
+      $("#notionState").textContent = notionConnected? "Connected" : "Disconnected";
+      $("#connectNotion")?.classList.toggle("hidden", notionConnected);
+      $("#disconnectNotion")?.classList.toggle("hidden", !notionConnected);
+      // Trello
+      const trelloConnected = !!integ?.trello?.token;
+      $("#trelloState")?.classList?.add("chip");
+      $("#trelloState").textContent = trelloConnected? "Connected" : "Disconnected";
+      $("#connectTrello")?.classList.toggle("hidden", trelloConnected);
+      $("#disconnectTrello")?.classList.toggle("hidden", !trelloConnected);
+      // Buffer
+      const bufferConnected = !!integ?.buffer?.access_token;
+      $("#bufferState")?.classList?.add("chip");
+      $("#bufferState").textContent = bufferConnected? "Connected" : "Disconnected";
+      $("#connectBuffer")?.classList.toggle("hidden", bufferConnected);
+      $("#disconnectBuffer")?.classList.toggle("hidden", !bufferConnected);
+      // Fill Buffer profiles into modal select
+      const sel = $("#bufferProfile");
+      if (sel){
+        sel.innerHTML = "";
+        (integ?.buffer?.profiles||[]).forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.service}: ${p.handle||p.id}`;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    // Connect/Disconnect handlers
+    $("#connectNotion")?.addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
-      const model = sessionStorage.getItem("MODEL") || "";
-      const messages = [
-        { role:"system", content:`Return JSON {linkedin,x,email,instagram}. Keep X <= 280 chars total.`},
-        { role:"user", content:`Source:\n${items[i]}\nChannels: LinkedIn,X,Email,Instagram` }
-      ];
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers, body: JSON.stringify({ plan:"free", messages, temperature:0.7, model: model || undefined }) });
-      const j = await r.json();
-      if (!r.ok) { addLine(`• Error: ${j?.error?.message||r.status}`); continue; }
-      const content = j?.choices?.[0]?.message?.content || "";
-      const out = parseOutput(content);
-      addLine(`• Done: LI ${Math.min(60, (out.linkedin||"").length)} chars, X ${(Array.isArray(out.x)? out.x.join(" ").length : (out.x||"").length)} chars`);
-      await new Promise(r=>setTimeout(r, 250)); // gentle
-    }catch(e){ addLine(`• Error: ${(e?.message)||"network"}`); }
-  }
-});
-
-/* ===== PUBLISH QUICK-ACTIONS ===== */
-function openTweet(text){ const u = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text||"")}`; window.open(u, "_blank", "noopener"); }
-function openLinkedInCompose(text){ if (text) navigator.clipboard.writeText(text); window.open("https://www.linkedin.com/feed/", "_blank", "noopener"); alert("Your LinkedIn post is copied. Paste into the composer."); }
-function openCreatorStudio(){ window.open("https://business.facebook.com/creatorstudio/", "_blank", "noopener"); }
-function openEmailClient(subj, body){ const u = `mailto:?subject=${encodeURIComponent(subj||"")}&body=${encodeURIComponent(body||"")}`; window.location.href = u; }
-
-$("#publish-x_m")?.addEventListener("click", ()=> openTweet($("#out-x_m")?.textContent || ""));
-$("#publish-li_m")?.addEventListener("click", ()=> openLinkedInCompose($("#out-li_m")?.textContent || ""));
-$("#publish-ig_m")?.addEventListener("click", ()=>{ const text=$("#out-ig_m")?.textContent||""; if (text) navigator.clipboard.writeText(text); openCreatorStudio(); });
-$("#publish-em_m")?.addEventListener("click", ()=>{
-  const subj = $("#out-em-subj_m")?.textContent || "";
-  const body = $("#out-em-body_m")?.textContent || "";
-  const dlg  = $("#emailPreview");
-  $("#emailSubjEdit").value = subj;
-  $("#emailBodyEdit").value = body;
-  dlg.showModal();
-});
-$("#emailSendBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); openEmailClient($("#emailSubjEdit").value||"", $("#emailBodyEdit").value||""); });
-
-/* ===== COPY (Member) ===== */
-$("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m")?.textContent || ""));
-$("#copy-x_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText($("#out-x_m")?.textContent  || ""));
-$("#copy-em_m")?.addEventListener("click", ()=>{ const subj=$("#out-em-subj_m")?.textContent||""; const body=$("#out-em-body_m")?.textContent||""; navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`); });
-$("#copy-ig_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText($("#out-ig_m")?.textContent  || ""));
-
-/* ===== PROJECT PACK EXPORT (Creator+) ===== */
-async function exportPack({ whiteLabel=false }){
-  const linkedin = $("#out-li_m")?.textContent||"";
-  const xText    = $("#out-x_m")?.textContent||"";
-  const email    = { subject: $("#out-em-subj_m")?.textContent||"", body: $("#out-em-body_m")?.textContent||"" };
-  const instagram= $("#out-ig_m")?.textContent||"";
-  if (!(linkedin||xText||email.body||instagram)) return alert("Generate content first.");
-  const headers = await getAuthHeaders();
-  const qs = whiteLabel ? "?white_label=1" : "";
-  const r = await fetch(`${WORKER_BASE}/api/export/pack${qs}`,{
-    method:"POST",
-    headers,
-    body: JSON.stringify({ linkedin, x: xText.split(/\n\s*—\s*\n/g), email, instagram })
-  });
-  if (!r.ok){ const j = await r.json().catch(()=>({})); return alert(j?.error?.message||"Export failed"); }
-  const blob = await r.blob();
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "content-pack.zip"; document.body.appendChild(a); a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-  showToast("Project pack downloaded ✓");
-}
-$("#exportPack")?.addEventListener("click", ()=> exportPack({ whiteLabel: $("#whitelabel")?.checked||false }));
-
-/* ===== INTEGRATIONS (Creator+) ===== */
-async function ensurePlanCreator(){
-  const plan = (LAST_STATUS?.plan||"free").toLowerCase();
-  if (!["creator","business"].includes(plan)){ alert("Upgrade to Creator to use integrations."); return false; }
-  return true;
-}
-
-// Notion
-$("#connectNotion")?.addEventListener("click", async ()=>{
-  if (!await ensurePlanCreator()) return;
-  const { token } = await getAuth(); if (!token) return $("#auth").showModal();
-  const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`,{ headers:{Authorization:`Bearer ${token}` }});
-  const j = await r.json().catch(()=> ({}));
-  if (j?.url) location.href = j.url; else alert(j?.error?.message||"Could not start Notion auth");
-});
-$("#disconnectNotion")?.addEventListener("click", async ()=>{
-  const headers = await getAuthHeaders();
-  await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers });
-  showToast("Notion disconnected");
-  await refreshAll();
-});
-
-async function exportToNotion({ title, blocks, parent_page_id }){
-  if (!await ensurePlanCreator()) return;
-  const headers = await getAuthHeaders();
-  const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-    method:"POST", headers, body: JSON.stringify({ blocks, parent_page_id, title })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if (!r.ok){ alert(j?.error?.message || "Export failed"); return; }
-  showToast("Exported to Notion ✓");
-  if (j?.url) window.open(j.url,"_blank");
-}
-
-// Trello
-$("#connectTrello")?.addEventListener("click", async ()=>{
-  if (!await ensurePlanCreator()) return;
-  const { token } = await getAuth(); if (!token) return $("#auth").showModal();
-  const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`,{ headers:{Authorization:`Bearer ${token}` }});
-  const j = await r.json().catch(()=> ({}));
-  if (j?.url) location.href = j.url; else alert(j?.error?.message||"Could not start Trello auth");
-});
-$("#disconnectTrello")?.addEventListener("click", async ()=>{
-  const headers = await getAuthHeaders();
-  await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`,{ method:"POST", headers });
-  showToast("Trello disconnected");
-  await refreshAll();
-});
-
-function openTrelloModal({ title, description }){
-  const dlg = $("#trelloModal");
-  dlg.returnValue = "";
-  dlg.showModal();
-  const onConfirm = async (e)=>{
-    e.preventDefault();
-    const headers = await getAuthHeaders();
-    const board_id = $("#trelloBoardId").value.trim();
-    const list_id  = $("#trelloListId").value.trim();
-    if (!board_id || !list_id){ alert("Enter Board ID and List ID."); return; }
-    const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-      method:"POST", headers, body: JSON.stringify({ board_id, list_id, title, description })
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Notion connect.");
     });
-    const j = await r.json().catch(()=> ({}));
-    if (!r.ok){ alert(j?.error?.message || "Trello export failed"); return; }
-    dlg.close();
-    showToast("Card created on Trello ✓");
-    if (j?.url) window.open(j.url,"_blank");
-  };
-  $("#trelloConfirm").onclick = onConfirm;
-}
-
-// Buffer
-$("#connectBuffer")?.addEventListener("click", async ()=>{
-  if (!await ensurePlanCreator()) return;
-  const { token } = await getAuth(); if (!token) return $("#auth").showModal();
-  const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/oauth/start`,{ headers:{Authorization:`Bearer ${token}` }});
-  const j = await r.json().catch(()=> ({}));
-  if (j?.url) location.href = j.url; else alert(j?.error?.message||"Could not start Buffer auth");
-});
-$("#disconnectBuffer")?.addEventListener("click", async ()=>{
-  const headers = await getAuthHeaders();
-  await fetch(`${WORKER_BASE}/api/integrations/buffer/disconnect`,{ method:"POST", headers });
-  showToast("Buffer disconnected");
-  await refreshAll();
-});
-
-async function queueInBuffer({ text }){
-  if (!await ensurePlanCreator()) return;
-  const headers = await getAuthHeaders();
-  // Fetch profiles (from status so we don't add a new endpoint)
-  const status = LAST_STATUS || await getPlanStatus();
-  const profiles = status?.integrations?.buffer?.profiles || [];
-  if (!profiles.length) return alert("Connect Buffer first.");
-  const sel = $("#bufferProfile");
-  sel.innerHTML = profiles.map(p=> `<option value="${p.id}">${p.service||"profile"} — ${p.handle||p.id}</option>`).join("");
-  const dlg = $("#bufferModal"); dlg.showModal();
-  $("#bufferConfirm").onclick = async (e)=>{
-    e.preventDefault();
-    const profile_id = $("#bufferProfile").value;
-    const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/publish`,{
-      method:"POST", headers, body: JSON.stringify({ profile_id, text })
+    $("#disconnectNotion")?.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.ok) { showToast("Notion disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
     });
-    const j = await r.json().catch(()=> ({}));
-    if (!r.ok){ alert(j?.error?.message || "Buffer queue failed"); return; }
-    dlg.close();
-    showToast("Queued in Buffer ✓");
-    if (j?.url) window.open(j.url,"_blank");
-  };
-}
 
-/* ===== PER-CHANNEL INTEGRATION BUTTONS ===== */
-const readCurrent = {
-  linkedin: ()=>($("#out-li_m")?.textContent||""),
-  x: ()=>($("#out-x_m")?.textContent||""),
-  email: ()=>({ subject: $("#out-em-subj_m")?.textContent||"", body: $("#out-em-body_m")?.textContent||"" }),
-  instagram: ()=>($("#out-ig_m")?.textContent||"")
-};
-
-function blocksFromText(title, text){
-  const lines = String(text||"").split(/\r?\n/);
-  const bodyBlocks = lines.filter(Boolean).map(t=>({type:"paragraph", text:t}));
-  return [{type:"heading", text:title}, ...bodyBlocks];
-}
-
-["li","x","em","ig"].forEach(key=>{
-  const notionBtn = document.getElementById(`${key}-notion`);
-  const trelloBtn = document.getElementById(`${key}-trello`);
-  const bufferBtn = document.getElementById(`${key}-buffer`);
-
-  notionBtn && (notionBtn.onclick = async ()=>{
-    const plan = (LAST_STATUS?.plan||"free").toLowerCase();
-    if (!["creator","business"].includes(plan)) return alert("Upgrade to Creator for Notion export.");
-    const title = key==="em" ? (readCurrent.email().subject||"Email Draft") :
-                 key==="x"  ? "X Draft" :
-                 key==="ig" ? "Instagram Draft" : (readCurrent.linkedin().split(/\n/)[0]||"LinkedIn Draft");
-    const text  = key==="em" ? readCurrent.email().body : (key==="li" ? readCurrent.linkedin() : key==="x"?readCurrent.x():readCurrent.instagram());
-    if (!text) return alert("Generate content first.");
-    await exportToNotion({ title, blocks: blocksFromText(title, text) });
-  });
-
-  trelloBtn && (trelloBtn.onclick = ()=>{
-    const title = key==="em" ? (readCurrent.email().subject||"Email Draft") :
-                 key==="x"  ? "X Draft" :
-                 key==="ig" ? "Instagram Draft" : (readCurrent.linkedin().split(/\n/)[0]||"LinkedIn Draft");
-    const desc  = key==="em" ? readCurrent.email().body : (key==="li" ? readCurrent.linkedin() : key==="x"?readCurrent.x():readCurrent.instagram());
-    if (!desc) return alert("Generate content first.");
-    openTrelloModal({ title, description: desc });
-  });
-
-  bufferBtn && (bufferBtn.onclick = ()=>{
-    const text = key==="em" ? `${readCurrent.email().subject}\n\n${readCurrent.email().body}` :
-                (key==="li" ? readCurrent.linkedin() : key==="x"?readCurrent.x():readCurrent.instagram());
-    if (!text) return alert("Generate content first.");
-    queueInBuffer({ text });
-  });
-});
-
-/* ===== TEAM (Business) ===== */
-$("#inviteBtn")?.addEventListener("click", async ()=>{
-  const plan = (LAST_STATUS?.plan||"free").toLowerCase();
-  if (plan!=="business") return alert("Business plan required.");
-  const email = $("#inviteEmail")?.value.trim();
-  if (!email) return alert("Enter an email.");
-  const headers = await getAuthHeaders();
-  const r = await fetch(`${WORKER_BASE}/api/org/invite`,{ method:"POST", headers, body: JSON.stringify({ email }) });
-  const j = await r.json().catch(()=> ({}));
-  if (!r.ok){ return alert(j?.error?.message || "Could not create invite"); }
-  showToast("Invite created ✓");
-  await refreshAll();
-});
-
-/* ===== REFERRALS (MVP) ===== */
-applyReferralIfPresent();
-
-/* ===== INIT ===== */
-async function refreshAllOnce(){ await refreshAll(); loadPresets(); }
-
-function loadPresets(){
-  const list = JSON.parse(localStorage.getItem("presets")||"[]");
-  const ul = document.getElementById("presetList");
-  if (!ul) return;
-  ul.innerHTML = "";
-  if (!list.length){ ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>'; return; }
-  list.forEach((p, i)=>{
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <div class="flex items-center justify-between gap-2">
-        <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
-        <div class="flex gap-2">
-          <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use">Use</button>
-          <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del">Delete</button>
-        </div>
-      </div>`;
-    ul.appendChild(li);
-  });
-  ul.querySelectorAll("button").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const i = Number(btn.getAttribute("data-i"));
-      const act = btn.getAttribute("data-act");
-      const list = JSON.parse(localStorage.getItem("presets")||"[]");
-      if (act==="use"){ const el = document.getElementById("source_m"); if (el) el.value = list[i]?.text || ""; }
-      if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
+    $("#connectTrello")?.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Trello connect.");
     });
-  });
-}
+    $("#disconnectTrello")?.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.ok) { showToast("Trello disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
+    });
 
-await paintAuth();
-await refreshAllOnce();
+    $("#connectBuffer")?.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/oauth/start`, { headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Buffer connect.");
+    });
+    $("#disconnectBuffer")?.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/disconnect`, { method:"POST", headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.ok) { showToast("Buffer disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
+    });
 
-if (supabase?.auth) {
-  supabase.auth.onAuthStateChange(async (_event, _session) => {
-    if (_session?.user) { try { localStorage.removeItem('viewOverride'); } catch {} }
-    await refreshAll();
-  });
-}
+    // Export helpers to collect current outputs (Member)
+    function currentOutputsMember(){
+      return {
+        linkedin:  $("#out-li_m")?.textContent || "",
+        x:          ($("#out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
+        email:     { subject: $("#out-em-subj_m")?.textContent || "", body: $("#out-em-body_m")?.textContent || "" },
+        instagram: $("#out-ig_m")?.textContent || ""
+      };
+    }
+
+    // Per-channel Notion export
+    async function exportNotionFrom(text, title){
+      const headers = await getAuthHeaders();
+      const blocks = [];
+      const lines = (text||"").split(/\r?\n/);
+      lines.forEach((ln,i)=>{
+        const t = (ln||"").trim();
+        if (!t) return;
+        if (i === 0 || /^#{1,3}\s/.test(t)) blocks.push({ type:"heading", text: t.replace(/^#{1,3}\s*/,"") });
+        else blocks.push({ type:"paragraph", text: t });
+      });
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`, {
+        method:"POST", headers, body: JSON.stringify({ blocks, parent_page_id: undefined, title: title||lines[0]||"Untitled" })
+      }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.url) { showToast("Exported to Notion ✓"); window.open(j.url, "_blank"); }
+      else alert(j?.error?.message || "Failed to export to Notion.");
+    }
+
+    // Per-channel Trello export (uses modal)
+    function openTrelloModal(defaultTitle, defaultDesc){
+      $("#trelloBoardId").value = localStorage.getItem("trello_board") || "";
+      $("#trelloListId").value  = localStorage.getItem("trello_list") || "";
+      $("#trelloModal").showModal();
+      const confirm = $("#trelloConfirm");
+      const handler = async (e)=>{
+        e.preventDefault();
+        const board_id = $("#trelloBoardId").value.trim();
+        const list_id  = $("#trelloListId").value.trim();
+        if (!board_id || !list_id) { alert("Enter Board ID and List ID"); return; }
+        localStorage.setItem("trello_board", board_id);
+        localStorage.setItem("trello_list", list_id);
+        const headers = await getAuthHeaders();
+        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`, {
+          method:"POST", headers, body: JSON.stringify({ board_id, list_id, title: defaultTitle, description: defaultDesc })
+        }).catch(()=>null);
+        const j = await r?.json().catch(()=> ({}));
+        $("#trelloModal").close();
+        confirm.removeEventListener("click", handler);
+        if (j?.url) { showToast("Sent to Trello ✓"); window.open(j.url, "_blank"); }
+        else alert(j?.error?.message || "Failed to send to Trello.");
+      };
+      confirm.addEventListener("click", handler);
+    }
+
+    // Buffer queue (uses modal)
+    function openBufferModal(defaultText){
+      const modal = $("#bufferModal");
+      $("#bufferProfile").value = ($("#bufferProfile").querySelector("option")?.value)||"";
+      modal.showModal();
+      const confirm = $("#bufferConfirm");
+      const handler = async (e)=>{
+        e.preventDefault();
+        const profile_id = $("#bufferProfile").value;
+        if (!profile_id) { alert("Choose a profile"); return; }
+        const headers = await getAuthHeaders();
+        const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/publish`, {
+          method:"POST", headers, body: JSON.stringify({ profile_id, text: defaultText })
+        }).catch(()=>null);
+        const j = await r?.json().catch(()=> ({}));
+        modal.close();
+        confirm.removeEventListener("click", handler);
+        if (j?.id || j?.update_id) { showToast("Queued in Buffer ✓"); }
+        else alert(j?.error?.message || "Failed to queue in Buffer.");
+      };
+      confirm.addEventListener("click", handler);
+    }
+
+    // Channel action bindings (Member)
+    $("#li-notion")?.addEventListener("click", ()=>{
+      const t = $("#out-li_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      exportNotionFrom(t, t.split("\n").find(Boolean) || "LinkedIn");
+    });
+    $("#x-notion")?.addEventListener("click", ()=>{
+      const t = $("#out-x_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      exportNotionFrom(t, "X (Twitter)");
+    });
+    $("#em-notion")?.addEventListener("click", ()=>{
+      const subj = $("#out-em-subj_m").textContent||"";
+      const body = $("#out-em-body_m").textContent||"";
+      if (!subj && !body) return alert("Generate content first.");
+      exportNotionFrom(`Subject: ${subj}\n\n${body}`, subj||"Email");
+    });
+    $("#ig-notion")?.addEventListener("click", ()=>{
+      const t = $("#out-ig_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      exportNotionFrom(t, "Instagram");
+    });
+
+    $("#li-trello")?.addEventListener("click", ()=>{
+      const t = $("#out-li_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openTrelloModal("LinkedIn Draft", t);
+    });
+    $("#x-trello")?.addEventListener("click", ()=>{
+      const t = $("#out-x_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openTrelloModal("X Draft", t);
+    });
+    $("#em-trello")?.addEventListener("click", ()=>{
+      const subj = $("#out-em-subj_m").textContent||"";
+      const body = $("#out-em-body_m").textContent||"";
+      if (!subj && !body) return alert("Generate content first.");
+      openTrelloModal(subj||"Email Draft", body);
+    });
+    $("#ig-trello")?.addEventListener("click", ()=>{
+      const t = $("#out-ig_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openTrelloModal("Instagram Draft", t);
+    });
+
+    $("#li-buffer")?.addEventListener("click", ()=>{
+      const t = $("#out-li_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openBufferModal(t);
+    });
+    $("#x-buffer")?.addEventListener("click", ()=>{
+      const t = $("#out-x_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openBufferModal(t);
+    });
+    $("#em-buffer")?.addEventListener("click", ()=>{
+      const subj = $("#out-em-subj_m").textContent||"";
+      const body = $("#out-em-body_m").textContent||"";
+      if (!subj && !body) return alert("Generate content first.");
+      openBufferModal(`${subj}\n\n${body}`);
+    });
+    $("#ig-buffer")?.addEventListener("click", ()=>{
+      const t = $("#out-ig_m").textContent||"";
+      if (!t) return alert("Generate content first.");
+      openBufferModal(t);
+    });
+
+    /* =========================
+       PACK EXPORT (Creator+)
+    ========================== */
+    $("#exportPack")?.addEventListener("click", async ()=>{
+      const plan = (LAST_STATUS?.plan||"free").toLowerCase();
+      if (!["creator","business"].includes(plan)) return alert("Upgrade to Creator to use pack export.");
+      const out = currentOutputsMember();
+      if (!out.linkedin && !out.x?.length && !out.email?.body && !out.instagram) { alert("Generate content first."); return; }
+      const headers = await getAuthHeaders();
+      const u = new URL(`${WORKER_BASE}/api/export/pack`);
+      if ($("#whitelabel")?.checked) u.searchParams.set("white_label","1");
+      const r = await fetch(u.toString(), { method:"POST", headers, body: JSON.stringify({
+        linkedin: out.linkedin, x: out.x, email: out.email, instagram: out.instagram
+      })}).catch(()=>null);
+      if (!r || !r.ok) {
+        const j = await r?.json().catch(()=> ({}));
+        alert(j?.error?.message || "Could not create pack.");
+        return;
+      }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "content-pack.zip"; document.body.appendChild(a); a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+      showToast("Pack downloaded ✓");
+    });
+
+    /* =========================
+       TEAM SEATS (Business)
+    ========================== */
+    $("#inviteBtn")?.addEventListener("click", async ()=>{
+      const plan = (LAST_STATUS?.plan||"free").toLowerCase();
+      if (plan!=="business") return alert("Team seats are for Business plan.");
+      const email = ($("#inviteEmail")?.value||"").trim();
+      if (!email) return alert("Enter an email to invite.");
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/org/invite`, {
+        method:"POST", headers, body: JSON.stringify({ email })
+      }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      if (j?.token) {
+        showToast("Invite created ✓ (share token)");
+        await refreshAll();
+      } else alert(j?.error?.message || "Failed to create invite.");
+    });
+
+    /* =========================
+       REFERRAL SHARE BUTTONS
+    ========================== */
+    $("#copyRef")?.addEventListener("click", ()=>{
+      const val = $("#refLink")?.value || "";
+      if (!val) return;
+      navigator.clipboard.writeText(val);
+      showToast("Referral link copied ✓");
+    });
+    $("#shareLi")?.addEventListener("click", ()=>{
+      const link = $("#refLink")?.value || location.href;
+      const txt = encodeURIComponent(`I’m using ContentFlow to repurpose one idea into ready-to-post drafts for LinkedIn, X, Email & IG. Try it → ${link}`);
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}&title=${txt}`, "_blank");
+    });
+    $("#shareX")?.addEventListener("click", ()=>{
+      const link = $("#refLink")?.value || location.href;
+      const txt = encodeURIComponent(`Repurpose your content across LinkedIn/X/Email/IG in minutes. My go-to: ContentFlow → ${link}`);
+      window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
+    });
+
+    /* Paint integrations on first load (if status includes them) */
+    paintIntegrations(LAST_STATUS||{});
+    /* =========================
+       OAUTH RETURN (toast + cleanup)
+    ========================== */
+    (function handleOAuthReturn(){
+      const u = new URL(location.href);
+      const connected = u.searchParams.get("connected");
+      const error = u.searchParams.get("error");
+      if (connected) {
+        const svc = connected.toLowerCase();
+        const nice = svc === "notion" ? "Notion" : svc === "trello" ? "Trello" : svc === "buffer" ? "Buffer" : connected;
+        showToast(`${nice} connected ✓`);
+        try { u.searchParams.delete("connected"); history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):"")); } catch {}
+        refreshAll().then(()=> paintIntegrations(LAST_STATUS||{}));
+      } else if (error) {
+        showToast(`Connect error: ${decodeURIComponent(error)}`);
+        try { u.searchParams.delete("error"); history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):"")); } catch {}
+      }
+    })();
+
+    /* Repaint integrations on visibility change/focus */
+    window.addEventListener("focus", ()=> paintIntegrations(LAST_STATUS||{}));
+    document.addEventListener("visibilitychange", ()=>{
+      if (!document.hidden) paintIntegrations(LAST_STATUS||{});
+    });
+
+    /* Safety: if Supabase script didn’t load, disable auth buttons gracefully */
+    if (!supabase) {
+      ["loginBtn","heroSignIn","googleBtn","magicBtn"].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", (e)=>{ e.preventDefault(); alert("Auth isn’t available right now. Please refresh or try again soon."); });
+      });
+    }
   </script>
 </body>
 </html>
