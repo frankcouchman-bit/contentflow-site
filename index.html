@@ -23,7 +23,6 @@
   <!-- Fonts + Tailwind -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
     :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
     html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -46,10 +45,10 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentFlow AI","url":"https://contentflows.netlify.app/","logo":"https://contentflows.netlify.app/logo.png","sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentflows.netlify.app/","potentialAction":{"@type":"SearchAction","target":"https://contentflows.netlify.app/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentFlow AI","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+
   <!-- SEO-oriented FAQ with relevant keywords -->
   <script type="application/ld+json">{
-    "@context":"https://schema.org",
-    "@type":"FAQPage",
+    "@context":"https://schema.org","@type":"FAQPage",
     "mainEntity":[
       {"@type":"Question","name":"How does AI content repurposing work?","acceptedAnswer":{"@type":"Answer","text":"Paste a paragraph or blog post and ContentFlow AI generates drafts for LinkedIn, X (Twitter), Email and Instagram. You can export, edit, or schedule content. Bring Your Own Key (BYOK) is supported via OpenRouter."}},
       {"@type":"Question","name":"What are daily limits by plan?","acceptedAnswer":{"@type":"Answer","text":"Free: 5/day platform. Solo Creator: Platform 50/day, BYOK 200/day. Creator: Platform 150/day, BYOK 500/day. Business: Platform 300/day, BYOK unlimited. Anonymous demo is 5/month."}},
@@ -63,8 +62,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://js.stripe.com/v3/"></script>
 </head>
-<body class="min-h-full">
 
+<body class="min-h-full">
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
@@ -162,6 +161,7 @@
           <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
           <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
         </div>
+
         <label for="source" class="sr-only">Source text</label>
         <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
 
@@ -197,6 +197,7 @@
           </div>
           <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
+
         <!-- X -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
@@ -209,6 +210,7 @@
           </div>
           <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
+
         <!-- Email -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
@@ -223,6 +225,7 @@
           <div class="text-xs text-slate-400 mt-3">Body:</div>
           <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
         </div>
+
         <!-- Instagram -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
@@ -238,6 +241,7 @@
       </section>
     </main>
   </section>
+
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
     <div class="max-w-7xl mx-auto px-5 pb-12">
@@ -371,6 +375,7 @@
       <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
       <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
     </div>
+
     <div class="grid lg:grid-cols-4 gap-6">
       <div class="card p-6">
         <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
@@ -491,480 +496,589 @@
       </div>
     </form>
   </dialog>
-
   <!-- APP SCRIPT -->
   <script type="module">
-    (async function init(){
-      try {
-        // ===== CONFIG =====
-        const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
-        const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace with real
+  (async function init(){
+    try {
+      // ===== CONFIG =====
+      const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+      const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace with real
 
-        // === Supabase ===
-        const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-        const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+      // === Supabase ===
+      const SUPABASE_URL = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+      const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-        const $ = (s)=>document.querySelector(s);
-        $("#year").textContent = new Date().getFullYear();
+      const $ = (s)=>document.querySelector(s);
+      $("#year").textContent = new Date().getFullYear();
 
-        let supabase = null;
-        if (window.supabase) {
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      let supabase = null;
+      if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+      }
+
+      // === Stripe (front just for potential redirects) ===
+      let stripe = null;
+      if (window.Stripe) {
+        try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
+      }
+
+      // ===== PLAN LABELS / BADGE =====
+      const PLAN_LABEL = (p)=>{
+        if (!p || p==="free") return "Free";
+        if (p==="starter") return "Solo Creator";
+        if (p==="creator") return "Creator";
+        if (p==="business") return "Business";
+        return "Free";
+      };
+
+      // Capabilities by plan
+      const CAPS = {
+        free:      { batch:false, presets:0,  priorityModels:false, seats:1, projectPack:false, notion:false, trello:false, buffer:false, early:false, whiteLabel:false, teamCalendar:false, prioritySupport:false },
+        starter:   { batch:true,  presets:10, priorityModels:true,  seats:1, projectPack:false, notion:false, trello:false, buffer:false, early:false, whiteLabel:false, teamCalendar:false, prioritySupport:false },
+        creator:   { batch:true,  presets:Infinity, priorityModels:true, seats:1, projectPack:true, notion:true, trello:true, buffer:true, early:true, whiteLabel:false, teamCalendar:false, prioritySupport:false },
+        business:  { batch:true,  presets:Infinity, priorityModels:true, seats:3, projectPack:true, notion:true, trello:true, buffer:true, early:true, whiteLabel:true, teamCalendar:true, prioritySupport:true }
+      };
+
+      const PLAN_FEATURES = {
+        free:     ["5/day platform (signed-in)", "BYOK: 5/day", "CSV/Markdown export"],
+        starter:  ["Platform: 50/day (soft throttle ~20)","BYOK: 200/day","Batch inputs","10 saved presets","Priority models"],
+        creator:  ["Platform: 150/day (soft throttle ~50)","BYOK: 500/day","Unlimited presets","Project pack export","Notion + Trello","Push drafts to Buffer","New workflows early"],
+        business: ["Platform: 300/day (soft throttle ~80)","BYOK: Unlimited","3 seats","White-label export","Priority support","All Creator integrations","Team presets & shared calendar"]
+      };
+
+      function paintPlanBadge(plan){
+        const label = PLAN_LABEL(plan);
+        $("#planbadge").textContent = `Plan: ${label}`;
+        const mb = $("#memberPlanBadge");
+        if (mb) mb.textContent = `Plan: ${label}`;
+      }
+
+      /* ===== VIEW SWITCH ===== */
+      function showView(isAuthenticated){
+        const guest = $('#guestView');
+        const member = $('#memberView');
+        if (isAuthenticated){
+          guest?.classList.add('hidden');
+          member?.classList.remove('hidden');
+          $("#loginBtn")?.classList.add("hidden");
+          $("#heroSignIn")?.classList.add("hidden");
+          $("#logoutBtn")?.classList.remove("hidden");
+          $("#logoutBtn2")?.classList.remove("hidden");
+        } else {
+          member?.classList.add('hidden');
+          guest?.classList.remove('hidden');
+          $("#loginBtn")?.classList.remove("hidden");
+          $("#heroSignIn")?.classList.remove("hidden");
+          $("#logoutBtn")?.classList.add("hidden");
+          $("#logoutBtn2")?.classList.add("hidden");
         }
+      }
 
-        // === Stripe (front just for potential redirects) ===
-        let stripe = null;
-        if (window.Stripe) {
-          try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
+      /* ===== AUTH ===== */
+      async function getAuth(){
+        if (!supabase) return { token:null, userId:null, email:null };
+        const { data:{ session } } = await supabase.auth.getSession();
+        return { token: session?.access_token || null, userId: session?.user?.id || null, email: session?.user?.email || null };
+      }
+
+      async function paintAuth(){
+        const { token, userId, email } = await getAuth();
+        const isAuthed = !!userId;
+        showView(isAuthed);
+
+        const heroBadge = $("#heroBadge");
+        if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — daily caps by plan" : "Demo — 5 runs / month (no login)";
+
+        const logout = $("#logoutBtn");
+        const logout2 = $("#logoutBtn2");
+        if (logout) {
+          logout.textContent = isAuthed ? `Sign out (${email||'account'})` : 'Sign out';
+          logout.classList.toggle("hidden", !isAuthed);
         }
+        if (logout2) logout2.classList.toggle("hidden", !isAuthed);
 
-        // ===== PLAN LABELS / BADGE =====
-        const PLAN_LABEL = (p)=>{
-          if (!p || p==="free") return "Free";
-          if (p==="starter") return "Solo Creator";
-          if (p==="creator") return "Creator";
-          if (p==="business") return "Business";
-          return "Free";
-        };
+        $("#loginBtn")?.classList.toggle("hidden", isAuthed);
+        $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
 
-        // Capabilities by plan
-        const CAPS = {
-          free: { batch:false, presets:0, priorityModels:false, seats:1, projectPack:false, notion:false, trello:false, buffer:false, early:false, whiteLabel:false, teamCalendar:false, prioritySupport:false },
-          starter: { batch:true, presets:10, priorityModels:true, seats:1, projectPack:false, notion:false, trello:false, buffer:false, early:false, whiteLabel:false, teamCalendar:false, prioritySupport:false },
-          creator: { batch:true, presets:Infinity, priorityModels:true, seats:1, projectPack:true, notion:true, trello:true, buffer:true, early:true, whiteLabel:false, teamCalendar:false, prioritySupport:false },
-          business:{ batch:true, presets:Infinity, priorityModels:true, seats:3, projectPack:true, notion:true, trello:true, buffer:true, early:true, whiteLabel:true, teamCalendar:true, prioritySupport:true }
-        };
-        const PLAN_FEATURES = {
-          free: ["5/day platform (signed-in)", "BYOK: 5/day", "CSV/Markdown export"],
-          starter: ["Platform: 50/day (soft throttle ~20)","BYOK: 200/day","Batch inputs","10 saved presets","Priority models"],
-          creator: ["Platform: 150/day (soft throttle ~50)","BYOK: 500/day","Unlimited presets","Project pack export","Notion + Trello","Push drafts to Buffer","New workflows early"],
-          business:["Platform: 300/day (soft throttle ~80)","BYOK: Unlimited","3 seats","White-label export","Priority support","All Creator integrations","Team presets & shared calendar"]
-        };
+        const ue = $("#userEmail");
+        if (ue) ue.textContent = isAuthed ? (email||'member') : '';
+      }
 
-        function paintPlanBadge(plan){
-          const label = PLAN_LABEL(plan);
-          $("#planbadge").textContent = `Plan: ${label}`;
-          const mb = $("#memberPlanBadge");
-          if (mb) mb.textContent = `Plan: ${label}`;
-        }
+      // Auth modal wiring
+      $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
+      $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
 
-        /* ===== VIEW SWITCH ===== */
-        function showView(isAuthenticated){
-          const guest = $('#guestView');
-          const member = $('#memberView');
-          if (isAuthenticated){
-            guest?.classList.add('hidden');
-            member?.classList.remove('hidden');
-            $("#loginBtn")?.classList.add("hidden");
-            $("#heroSignIn")?.classList.add("hidden");
-            $("#logoutBtn")?.classList.remove("hidden");
-            $("#logoutBtn2")?.classList.remove("hidden");
-          } else {
-            member?.classList.add('hidden');
-            guest?.classList.remove('hidden');
-            $("#loginBtn")?.classList.remove("hidden");
-            $("#heroSignIn")?.classList.remove("hidden");
-            $("#logoutBtn")?.classList.add("hidden");
-            $("#logoutBtn2")?.classList.add("hidden");
-          }
-        }
-
-        /* ===== AUTH ===== */
-        async function getAuth(){
-          if (!supabase) return { token:null, userId:null, email:null };
-          const { data:{ session } } = await supabase.auth.getSession();
-          return { token: session?.access_token || null, userId: session?.user?.id || null, email: session?.user?.email || null };
-        }
-        async function paintAuth(){
-          const { token, userId, email } = await getAuth();
-          const isAuthed = !!userId;
-          showView(isAuthed);
-          const heroBadge = $("#heroBadge");
-          if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — daily caps by plan" : "Demo — 5 runs / month (no login)";
-          const logout = $("#logoutBtn");
-          const logout2 = $("#logoutBtn2");
-          if (logout) { logout.textContent = isAuthed ? `Sign out (${email||'account'})` : 'Sign out'; logout.classList.toggle("hidden", !isAuthed); }
-          if (logout2) logout2.classList.toggle("hidden", !isAuthed);
-          $("#loginBtn")?.classList.toggle("hidden", isAuthed);
-          $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
-          const ue = $("#userEmail"); if (ue) ue.textContent = isAuthed ? (email||'member') : '';
-        }
-
-        // Auth modal wiring
-        $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
-        $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
-        const doSignOut = async()=>{
-          if (!supabase?.auth) return;
-          await supabase.auth.signOut();
-          await paintAuth();
-          await refreshAll();
-        };
-        $("#logoutBtn")?.addEventListener("click", doSignOut);
-        $("#logoutBtn2")?.addEventListener("click", doSignOut);
-
-        $("#googleBtn")?.addEventListener("click", async (e)=>{
-          e.preventDefault();
-          if (!supabase) return alert("Auth not initialized");
-          const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
-          if (error) alert(error.message || error);
-        });
-        $("#magicBtn")?.addEventListener("click", async (e)=>{
-          e.preventDefault();
-          if (!supabase) return alert("Auth not initialized");
-          const email = $("#emailInput").value.trim();
-          if (!email) return alert('Enter an email');
-          const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
-          if (error) return alert(error.message);
-          alert('Magic link sent. Check your inbox.');
-          $("#auth")?.close();
-        });
-
-        /* ===== BILLING (Subscribe / Manage) ===== */
-        async function openCheckout(priceId){
-          const { token } = await getAuth();
-          if (!token) { $("#auth")?.showModal(); return; }
-          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-            method: "POST",
-            headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
-          });
-          const j = await r.json().catch(()=> ({}));
-          if (j.url) { location.href = j.url; return; }
-          alert(j?.error?.message || "Could not start checkout.");
-        }
-        async function openPortal(){
-          const { token } = await getAuth();
-          if (!token) { $("#auth")?.showModal(); return; }
-          const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
-            method: "POST",
-            headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ return_url: location.href })
-          });
-          const j = await r.json().catch(()=> ({}));
-          if (j.url) { location.href = j.url; return; }
-          alert(j?.error?.message || "Could not open billing portal.");
-        }
-        document.querySelectorAll(".subBtn").forEach(btn=>{
-          btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
-        });
-        $("#manageBilling")?.addEventListener("click", openPortal);
-        $("#manageBilling2")?.addEventListener("click", openPortal);
-
-        /* ===== STATUS / QUOTAS (today-only) ===== */
-        async function getPlanStatus(){
-          const { token } = await getAuth();
-          const headers = token ? { "Authorization": `Bearer ${token}` } : {};
-          try{ const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers }); if (r.ok) return await r.json(); }catch{}
-          try{ const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers }); if (r2.ok) return await r2.json(); }catch{}
-          return null;
-        }
-        const PLAN_KEY = (s)=>{
-          const p = (s?.plan || "").toLowerCase(); return ['starter','creator','business'].includes(p) ? p : 'free';
-        };
-        function paintFeatureList(planKey){
-          const ul = $("#featureList"); if (!ul) return;
-          const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
-          ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
-        }
-        function paintManageButtons(isSubscribed){
-          $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
-          $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
-        }
-        function paintTopBadges(status){
-          const planKey = PLAN_KEY(status);
-          paintPlanBadge(planKey);
-          $("#heroBadge").textContent = status?.scope==='ip' ? "Demo — 5 runs / month (no login)" : `Signed-in — ${PLAN_LABEL(planKey)}`;
-        }
-        function tile(title, used, cap, sub){
-          const isInf = cap === null || cap === undefined;
-          const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
-          const capTxt = isInf ? '∞' : cap;
-          return `
-            <div class="card p-5">
-              <div class="flex items-center justify-between">
-                <strong>${title}</strong>
-                <span class="text-sm text-slate-500">${used}/${capTxt}</span>
-              </div>
-              <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
-                <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
-              </div>
-              <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
-            </div>`;
-        }
-        function paintQuotaTiles(status){
-          const wrap = $("#quotaCards"); if (!wrap) return;
-          if (status?.scope==='ip') {
-            wrap.innerHTML = tile("Demo — This month", status?.platform?.monthly?.used||0, status?.platform?.monthly?.cap ?? 5, "No login");
-            $("#quotaMember")?.textContent = `Today: 0/0`;
-            paintFeatureList('free');
-            return;
-          }
-          const pk = PLAN_KEY(status);
-          const pDaily = status?.platform?.daily || { used:0, cap:null };
-          const bDaily = status?.byok?.daily     || { used:0, cap: pk==='business' ? null : (pk==='creator'?500:(pk==='starter'?200:(pk==='free'?5:0))) };
-          wrap.innerHTML = [
-            tile("Platform — Today", pDaily.used||0, pDaily.cap, PLAN_LABEL(pk)),
-            tile("BYOK — Today", bDaily.used||0, bDaily.cap, "Your key only")
-          ].join("");
-          const dailyLabel = pDaily.cap==null ? '∞' : pDaily.cap;
-          $("#quotaMember")?.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
-          paintFeatureList(pk);
-        }
-
-        async function refreshAll(){
-          await paintAuth();
-          const status = await getPlanStatus();
-          paintTopBadges(status || {});
-          paintQuotaTiles(status || {});
-          const isSub = !!(status?.plan && status.plan!=="free");
-          paintManageButtons(isSub);
-        }
-
-        // ===== GENERATOR COMMON =====
-        const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
-        const buildCSV = (o)=>{
-          const rows = [["channel","content"]];
-          if (o.linkedin) rows.push(["linkedin", o.linkedin]);
-          if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x]);
-          if (o.email) rows.push(["email", typeof o.email==='object'?`Subject: ${o.email.subject || ''}\n\n${o.email.body || ''}`: o.email]);
-          if (o.instagram) rows.push(["instagram", o.instagram]);
-          return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
-        };
-        const buildMarkdown = (o)=>{
-          const lines = [
-            "# Content Pack","",
-            "## LinkedIn",(o.linkedin||"").trim(),"",
-            "## X (Twitter)", (Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),"",
-            "## Email", (o.email?.body||o.email||"").trim(),"",
-            "## Instagram", (o.instagram||"").trim(),""
-          ];
-          return lines.join("\n");
-        };
-        const extractJSON = (text)=>{
-          if (!text) return null;
-          const raw = String(text).trim();
-          try { return JSON.parse(raw); } catch {}
-          const first = raw.indexOf('{'); const last = raw.lastIndexOf('}');
-          if (first !== -1 && last !== -1 && last>first){
-            const slice = raw.slice(first, last+1);
-            try { return JSON.parse(slice); } catch {}
-          }
-          return null;
-        };
-        const parseOutput = (content)=>{
-          const j = extractJSON(content);
-          if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
-          const text = String(content||"").trim();
-          return { linkedin: text };
-        };
-        async function getAuthHeaders(){
-          const { token, userId } = await getAuth();
-          const headers = { "Content-Type":"application/json" };
-          if (token) headers["Authorization"] = `Bearer ${token}`;
-          if (userId) headers["X-User-Id"] = userId;
-          return headers;
-        }
-        function paintOutputs(out, suffix=""){
-          const scope = suffix ? `_${suffix}` : "";
-          const setText = (id,val)=>{ const el = document.getElementById(id+scope); if (el) el.textContent = val || ""; };
-          const li = out.linkedin || "";
-          setText("out-li", li);
-          const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-          setText("out-x", xText);
-          const subj = typeof out.email==='object' ? (out.email.subject||"") : "";
-          const body = typeof out.email==='object' ? (out.email.body||"") : (out.email||"");
-          setText("out-em-subj", subj);
-          setText("out-em-body", body);
-          setText("out-ig", out.instagram || "");
-          // helpers (only on guest)
-          if (!suffix){
-            const len = xText.replace(/\n/g,' ').trim().length;
-            const flag = document.getElementById('x-flag');
-            if (flag){ flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long'); flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err'); }
-            const tags = ((out.instagram||"").match(/#[\p{L}\w]+/gu) || []).length;
-            const tagsEl = document.getElementById('ig-tags'); if (tagsEl) tagsEl.textContent = tags;
-          }
-        }
-
-        async function runGen({ useBYOK=false, suffix="" }){
-          const sourceId = suffix ? `source_${suffix}` : "source";
-          const statusId = suffix ? `status_${suffix}` : "status";
-          const dlMdId = suffix ? `dl-md_${suffix}` : "dl-md";
-          const dlCsvId= suffix ? `dl-csv_${suffix}`: "dl-csv";
-          const source = document.getElementById(sourceId)?.value.trim() || "";
-          if (!source) { alert("Paste some content first."); return; }
-          const statusEl = document.getElementById(statusId);
-          if (statusEl) statusEl.textContent = useBYOK? "Generating with your key…" : "Generating…";
-          ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(sel=> document.getElementById(sel + (suffix?`_${suffix}`:""))?.textContent = "");
-          const dlMdEl = document.getElementById(dlMdId); const dlCsvEl = document.getElementById(dlCsvId);
-          if (dlMdEl) dlMdEl.disabled = true; if (dlCsvEl) dlCsvEl.disabled = true;
-
-          const model = sessionStorage.getItem("MODEL") || "";
-          const byok = sessionStorage.getItem("BYOK") || "";
-          const headers = await getAuthHeaders();
-          if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
-
-          const SYSTEM = { role: "system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
-- linkedin: 6–10 lines, one CTA.
-- x: <= 280 chars total; provide an array with 2 short variants if possible.
-- email: object with keys {subject, body} — 3–5 sentences.
-- instagram: 1–2 short paragraphs + 3–5 hashtags.
-STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
-          const messages = [ SYSTEM, { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` } ];
-
-          try{
-            const r = await fetch(`${WORKER_BASE}/api/generate`, {
-              method:"POST",
-              headers,
-              body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
-            });
-            const data = await r.json().catch(()=> ({}));
-            if (!r.ok) {
-              const msg = data?.error?.message || "Error";
-              if (statusEl) statusEl.textContent = msg;
-              return;
-            }
-            const content = data?.choices?.[0]?.message?.content || "";
-            const out = parseOutput(content);
-            paintOutputs(out, suffix);
-            if (statusEl) statusEl.textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-            await refreshAll();
-            if (dlMdEl) { dlMdEl.disabled = false; dlMdEl.onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out)); }
-            if (dlCsvEl){ dlCsvEl.disabled = false; dlCsvEl.onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out)); }
-          }catch(e){ if (statusEl) statusEl.textContent = e.message || "Network error"; }
-        }
-
-        // Guest buttons
-        $("#run")?.addEventListener("click", ()=> runGen({ useBYOK:false, suffix:"" }));
-        $("#run-byok")?.addEventListener("click", ()=> runGen({ useBYOK:true,  suffix:""  }));
-        $("#clear")?.addEventListener("click", ()=>{
-          $("#source")?.value = "";
-          $("#status") && ($("#status").textContent = "");
-          ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(id=> document.getElementById(id)?.textContent = "");
-          $("#dl-md") && ($("#dl-md").disabled = true);
-          $("#dl-csv") && ($("#dl-csv").disabled = true);
-        });
-
-        // Member buttons
-        $("#run_m")?.addEventListener("click", ()=> runGen({ useBYOK:false, suffix:"m" }));
-        $("#run-byok_m")?.addEventListener("click", ()=> runGen({ useBYOK:true,  suffix:"m" }));
-        $("#clear_m")?.addEventListener("click", ()=>{
-          $("#source_m")?.value = "";
-          ["out-li_m","out-x_m","out-em-subj_m","out-em-body_m","out-ig_m"].forEach(id=> document.getElementById(id)?.textContent = "");
-          $("#status_m") && ($("#status_m").textContent = "");
-        });
-
-        function download(filename, mime, text){
-          const blob = new Blob([text], { type: mime });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-          setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-        }
-
-        // Settings save
-        $("#save")?.addEventListener("click", ()=>{
-          sessionStorage.setItem("MODEL", $("#model")?.value.trim() || "");
-          sessionStorage.setItem("BYOK", $("#byok")?.value.trim() || "");
-          alert("Saved for this tab.");
-        });
-
-        // Copy / Share
-        $("#copy-li")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li")?.textContent||""));
-        $("#copy-x")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-x")?.textContent||""));
-        $("#copy-em")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${$("#out-em-subj")?.textContent}\n\n${$("#out-em-body")?.textContent}`));
-        $("#copy-ig")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig")?.textContent||""));
-        $("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m")?.textContent||""));
-        $("#copy-x_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-x_m")?.textContent||""));
-        $("#copy-em_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(`Subject: ${$("#out-em-subj_m")?.textContent}\n\n${$("#out-em-body_m")?.textContent}`));
-        $("#copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig_m")?.textContent||""));
-
-        // Share
-        const share = (network, text)=>{ const u = encodeURIComponent(location.href); const t = encodeURIComponent(text); if (network==="li") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${u}`,"_blank","noopener"); if (network==="x") window.open(`https://twitter.com/intent/tweet?text=${t}&url=${u}`,"_blank","noopener"); };
-        $("#share-li")?.addEventListener("click", ()=> share("li", "Draft from ContentFlow AI"));
-        $("#share-x")?.addEventListener("click",  ()=> share("x",  ($("#out-x")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
-        $("#share-ig")?.addEventListener("click", ()=> alert("Copy the caption and paste into Instagram."));
-        $("#share-li_m")?.addEventListener("click", ()=> share("li", "Draft from ContentFlow AI"));
-        $("#share-x_m")?.addEventListener("click",  ()=> share("x",  ($("#out-x_m")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
-        $("#share-ig_m")?.addEventListener("click", ()=> alert("Copy the caption and paste into Instagram."));
-
-        // Email preview/edit
-        function openEmailModal(subjElId, bodyElId){
-          const subj = document.getElementById(subjElId)?.textContent || "";
-          const body = document.getElementById(bodyElId)?.textContent || "";
-          $("#em_subj").value = subj;
-          $("#em_body").value = body;
-          $("#emailPreview").showModal();
-        }
-        $("#edit-em")?.addEventListener("click", ()=> openEmailModal("out-em-subj","out-em-body"));
-        $("#edit-em_m")?.addEventListener("click", ()=> openEmailModal("out-em-subj_m","out-em-body_m"));
-        $("#em_copy")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#em_body").value||""));
-        $("#em_open")?.addEventListener("click", ()=>{
-          const to = encodeURIComponent($("#em_to").value||"");
-          const subject = encodeURIComponent($("#em_subj").value||"");
-          const body = encodeURIComponent($("#em_body").value||"");
-          location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-        });
-
-        // Presets (local)
-        function maxPresetsFor(plan){ if (plan==="starter") return 10; if (plan==="creator" || plan==="business") return Infinity; return 0; }
-        function loadPresets(){
-          const list = JSON.parse(localStorage.getItem("presets")||"[]");
-          const ul = $("#presetList");
-          if (!ul) return;
-          ul.innerHTML = "";
-          if (!list.length){ ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>'; return; }
-          list.forEach((p, i)=>{
-            const li = document.createElement("li");
-            li.innerHTML = `
-              <div class="flex items-center justify-between gap-2">
-                <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
-                <div class="flex gap-2">
-                  <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use" type="button">Use</button>
-                  <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del" type="button">Delete</button>
-                </div>
-              </div>`;
-            ul.appendChild(li);
-          });
-          ul.querySelectorAll("button").forEach(btn=>{
-            btn.addEventListener("click",()=>{
-              const i = Number(btn.getAttribute("data-i"));
-              const act = btn.getAttribute("data-act");
-              const list = JSON.parse(localStorage.getItem("presets")||"[]");
-              if (act==="use"){ $("#source_m") && ($("#source_m").value = list[i]?.text || ""); }
-              if (act==="del"){ list.splice(i,1); localStorage.setItem("presets", JSON.stringify(list)); loadPresets(); }
-            });
-          });
-        }
-        $("#addPreset")?.addEventListener("click", async ()=>{
-          const text = ($("#source_m")?.value || "").trim();
-          if (!text) return alert("Write something first.");
-          const status = await getPlanStatus();
-          const planKey = PLAN_KEY(status);
-          const cap = maxPresetsFor(planKey);
-          const list = JSON.parse(localStorage.getItem("presets")||"[]");
-          if (cap !== Infinity && list.length >= cap) { alert(`Preset limit reached for ${PLAN_LABEL(planKey)}.`); return; }
-          const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
-          list.unshift({ title, text, t: Date.now() });
-          localStorage.setItem("presets", JSON.stringify(list));
-          loadPresets();
-        });
-
-        // INIT
+      const doSignOut = async()=>{
+        if (!supabase?.auth) return;
+        await supabase.auth.signOut();
         await paintAuth();
         await refreshAll();
-        loadPresets();
+      };
+      $("#logoutBtn")?.addEventListener("click", doSignOut);
+      $("#logoutBtn2")?.addEventListener("click", doSignOut);
 
-        if (supabase?.auth) {
-          supabase.auth.onAuthStateChange(async (_event, _session) => {
-            await refreshAll();
-          });
-        }
-      } catch (e) {
-        console.error("Init error:", e);
-        alert("App failed to initialize: " + (e?.message||e));
+      $("#googleBtn")?.addEventListener("click", async (e)=>{
+        e.preventDefault();
+        if (!supabase) return alert("Auth not initialized");
+        const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href } });
+        if (error) alert(error.message || String(error));
+      });
+
+      $("#magicBtn")?.addEventListener("click", async (e)=>{
+        e.preventDefault();
+        if (!supabase) return alert("Auth not initialized");
+        const email = $("#emailInput")?.value?.trim();
+        if (!email) return alert('Enter an email');
+        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
+        if (error) return alert(error.message);
+        alert('Magic link sent. Check your inbox.');
+        $("#auth")?.close();
+      });
+
+      /* ===== BILLING (Subscribe / Manage) ===== */
+      async function openCheckout(priceId){
+        const { token } = await getAuth();
+        if (!token) { $("#auth")?.showModal(); return; }
+        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
+          method: "POST",
+          headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
+        });
+        const j = await r.json().catch(()=> ({}));
+        if (j.url) { location.href = j.url; return; }
+        alert(j?.error?.message || "Could not start checkout.");
       }
-    })();
+
+      async function openPortal(){
+        const { token } = await getAuth();
+        if (!token) { $("#auth")?.showModal(); return; }
+        const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
+          method: "POST",
+          headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ return_url: location.href })
+        });
+        const j = await r.json().catch(()=> ({}));
+        if (j.url) { location.href = j.url; return; }
+        alert(j?.error?.message || "Could not open billing portal.");
+      }
+
+      document.querySelectorAll(".subBtn").forEach(btn=>{
+        btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
+      });
+      $("#manageBilling")?.addEventListener("click", openPortal);
+      $("#manageBilling2")?.addEventListener("click", openPortal);
+
+      /* ===== STATUS / QUOTAS (today-only) ===== */
+      async function getPlanStatus(){
+        const { token } = await getAuth();
+        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
+          if (r.ok) return await r.json();
+        }catch{}
+        try{
+          const r2 = await fetch(`${WORKER_BASE}/api/quota`, { headers });
+          if (r2.ok) return await r2.json();
+        }catch{}
+        return null;
+      }
+
+      const PLAN_KEY = (s)=>{
+        const p = (s?.plan || "").toLowerCase();
+        return ['starter','creator','business'].includes(p) ? p : 'free';
+      };
+
+      function paintFeatureList(planKey){
+        const ul = $("#featureList");
+        if (!ul) return;
+        const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
+        ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
+      }
+
+      function paintManageButtons(isSubscribed){
+        $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
+        $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
+      }
+
+      function paintTopBadges(status){
+        const planKey = PLAN_KEY(status);
+        paintPlanBadge(planKey);
+        $("#heroBadge").textContent = status?.scope==='ip'
+          ? "Demo — 5 runs / month (no login)"
+          : `Signed-in — ${PLAN_LABEL(planKey)}`;
+      }
+
+      function tile(title, used, cap, sub){
+        const isInf = cap === null || cap === undefined;
+        const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
+        const capTxt = isInf ? '∞' : cap;
+        return `
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <strong>${title}</strong>
+              <span class="text-sm text-slate-500">${used}/${capTxt}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-slate-200/60 dark:bg-white/10 overflow-hidden" aria-hidden="true">
+              <div class="h-2 bg-grad" style="width:${isInf ? '100' : pct}%"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">${sub||""}</p>
+          </div>
+        `;
+      }
+
+      function paintQuotaTiles(status){
+        const wrap = $("#quotaCards");
+        if (!wrap) return;
+
+        if (status?.scope==='ip') {
+          wrap.innerHTML = tile("Demo — This month", status?.platform?.monthly?.used||0, status?.platform?.monthly?.cap ?? 5, "No login");
+          const qm = $("#quotaMember");
+          if (qm) qm.textContent = "Today: 0/0";
+          paintFeatureList('free');
+          return;
+        }
+
+        const pk = PLAN_KEY(status);
+        const pDaily = status?.platform?.daily || { used:0, cap:null };
+        const defaultByokCap = pk==='business' ? null : (pk==='creator'?500:(pk==='starter'?200:(pk==='free'?5:0)));
+        const bDaily = status?.byok?.daily || { used:0, cap: defaultByokCap };
+
+        wrap.innerHTML = [
+          tile("Platform — Today", pDaily.used||0, pDaily.cap, PLAN_LABEL(pk)),
+          tile("BYOK — Today", bDaily.used||0, bDaily.cap, "Your key only")
+        ].join("");
+
+        const dailyLabel = pDaily.cap==null ? '∞' : pDaily.cap;
+        const qm = $("#quotaMember");
+        if (qm) qm.textContent = `Today: ${pDaily.used||0}/${dailyLabel}`;
+        paintFeatureList(pk);
+      }
+
+      async function refreshAll(){
+        await paintAuth();
+        const status = await getPlanStatus();
+        paintTopBadges(status || {});
+        paintQuotaTiles(status || {});
+        const isSub = !!(status?.plan && status.plan!=="free");
+        paintManageButtons(isSub);
+      }
+
+      // ===== GENERATOR COMMON =====
+      const csvEsc = s => '"' + String(s).replace(/"/g,'""') + '"';
+      const buildCSV = (o)=>{
+        const rows = [["channel","content"]];
+        if (o.linkedin) rows.push(["linkedin", o.linkedin]);
+        if (o.x) rows.push(["x", Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x]);
+        if (o.email) rows.push(["email", typeof o.email==='object'?`Subject: ${o.email.subject || ''}\n\n${o.email.body || ''}`: o.email]);
+        if (o.instagram) rows.push(["instagram", o.instagram]);
+        return rows.map(r=>r.map(csvEsc).join(",")).join("\n");
+      };
+
+      const buildMarkdown = (o)=>{
+        const lines = [
+          "# Content Pack","",
+          "## LinkedIn",(o.linkedin||"").trim(),"",
+          "## X (Twitter)", (Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),"",
+          "## Email", (o.email?.body||o.email||"").trim(),"",
+          "## Instagram", (o.instagram||"").trim(),""
+        ];
+        return lines.join("\n");
+      };
+
+      const extractJSON = (text)=>{
+        if (!text) return null;
+        const raw = String(text).trim();
+        try { return JSON.parse(raw); } catch {}
+        const first = raw.indexOf('{');
+        const last = raw.lastIndexOf('}');
+        if (first !== -1 && last !== -1 && last>first){
+          const slice = raw.slice(first, last+1);
+          try { return JSON.parse(slice); } catch {}
+        }
+        return null;
+      };
+
+      const parseOutput = (content)=>{
+        const j = extractJSON(content);
+        if (j && (j.linkedin || j.x || j.email || j.instagram)) return j;
+        const text = String(content||"").trim();
+        return { linkedin: text };
+      };
+
+      async function getAuthHeaders(){
+        const { token, userId } = await getAuth();
+        const headers = { "Content-Type":"application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        if (userId) headers["X-User-Id"] = userId;
+        return headers;
+      }
+
+      function paintOutputs(out, suffix=""){
+        const scope = suffix ? `_${suffix}` : "";
+        const setText = (id,val)=>{
+          const el = document.getElementById(id+scope);
+          if (el) el.textContent = val || "";
+        };
+        const li = out.linkedin || "";
+        setText("out-li", li);
+
+        const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
+        setText("out-x", xText);
+
+        const subj = typeof out.email==='object' ? (out.email.subject||"") : "";
+        const body = typeof out.email==='object' ? (out.email.body||"") : (out.email||"");
+        setText("out-em-subj", subj);
+        setText("out-em-body", body);
+
+        setText("out-ig", out.instagram || "");
+
+        // helpers (only on guest)
+        if (!suffix){
+          const len = xText.replace(/\n/g,' ').trim().length;
+          const flag = document.getElementById('x-flag');
+          if (flag){
+            flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
+            flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
+          }
+          const tags = ((out.instagram||"").match(/#[\p{L}\w]+/gu) || []).length;
+          const tagsEl = document.getElementById('ig-tags');
+          if (tagsEl) tagsEl.textContent = String(tags);
+        }
+      }
+
+      async function runGen({ useBYOK=false, suffix="" }){
+        const sourceId = suffix ? `source_${suffix}` : "source";
+        const statusId = suffix ? `status_${suffix}` : "status";
+        const dlMdId = suffix ? `dl-md_${suffix}` : "dl-md";
+        const dlCsvId= suffix ? `dl-csv_${suffix}`: "dl-csv";
+
+        const source = document.getElementById(sourceId)?.value.trim() || "";
+        if (!source) { alert("Paste some content first."); return; }
+
+        const statusEl = document.getElementById(statusId);
+        if (statusEl) statusEl.textContent = useBYOK? "Generating with your key…" : "Generating…";
+
+        ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(sel=>{
+          const el = document.getElementById(sel + (suffix?`_${suffix}`:""));
+          if (el) el.textContent = "";
+        });
+
+        const dlMdEl = document.getElementById(dlMdId);
+        const dlCsvEl = document.getElementById(dlCsvId);
+        if (dlMdEl) dlMdEl.disabled = true;
+        if (dlCsvEl) dlCsvEl.disabled = true;
+
+        const model = sessionStorage.getItem("MODEL") || "";
+        const byok = sessionStorage.getItem("BYOK") || "";
+
+        const headers = await getAuthHeaders();
+        if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+
+        const SYSTEM = {
+          role: "system",
+          content:
+            "You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram. - linkedin: 6–10 lines, one CTA. - x: <= 280 chars total; provide an array with 2 short variants if possible. - email: object with keys {subject, body} — 3–5 sentences. - instagram: 1–2 short paragraphs + 3–5 hashtags. STRICT: No Markdown, no triple backticks, no prose — JSON object only."
+        };
+        const messages = [
+          SYSTEM,
+          { role:"user", content: `Source:\n${source}\nChannels: LinkedIn,X,Email,Instagram` }
+        ];
+
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/generate`, {
+            method:"POST",
+            headers,
+            body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
+          });
+          const data = await r.json().catch(()=> ({}));
+          if (!r.ok) {
+            const msg = data?.error?.message || "Error";
+            if (statusEl) statusEl.textContent = msg;
+            return;
+          }
+          const content = data?.choices?.[0]?.message?.content || "";
+          const out = parseOutput(content);
+          paintOutputs(out, suffix);
+          if (statusEl) statusEl.textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
+          await refreshAll();
+
+          if (dlMdEl) {
+            dlMdEl.disabled = false;
+            dlMdEl.onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
+          }
+          if (dlCsvEl){
+            dlCsvEl.disabled = false;
+            dlCsvEl.onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
+          }
+        }catch(e){
+          if (statusEl) statusEl.textContent = e?.message || "Network error";
+        }
+      }
+
+      // Guest buttons
+      $("#run")?.addEventListener("click", ()=> runGen({ useBYOK:false, suffix:"" }));
+      $("#run-byok")?.addEventListener("click", ()=> runGen({ useBYOK:true, suffix:"" }));
+      $("#clear")?.addEventListener("click", ()=>{
+        const s = $("#source"); if (s) s.value = "";
+        const st = $("#status"); if (st) st.textContent = "";
+        ["out-li","out-x","out-em-subj","out-em-body","out-ig"].forEach(id=> document.getElementById(id)?.textContent = "");
+        const d1 = $("#dl-md"); if (d1) d1.disabled = true;
+        const d2 = $("#dl-csv"); if (d2) d2.disabled = true;
+      });
+
+      // Member buttons
+      $("#run_m")?.addEventListener("click", ()=> runGen({ useBYOK:false, suffix:"m" }));
+      $("#run-byok_m")?.addEventListener("click", ()=> runGen({ useBYOK:true, suffix:"m" }));
+      $("#clear_m")?.addEventListener("click", ()=>{
+        const s = $("#source_m"); if (s) s.value = "";
+        ["out-li_m","out-x_m","out-em-subj_m","out-em-body_m","out-ig_m"].forEach(id=> document.getElementById(id)?.textContent = "");
+        const st = $("#status_m"); if (st) st.textContent = "";
+      });
+
+      function download(filename, mime, text){
+        const blob = new Blob([text], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+      }
+
+      // Settings save
+      $("#save")?.addEventListener("click", ()=>{
+        sessionStorage.setItem("MODEL", $("#model")?.value?.trim() || "");
+        sessionStorage.setItem("BYOK", $("#byok")?.value?.trim() || "");
+        alert("Saved for this tab.");
+      });
+
+      // Copy / Share
+      $("#copy-li")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li")?.textContent||""));
+      $("#copy-x")?.addEventListener("click",  ()=> navigator.clipboard.writeText($("#out-x")?.textContent||""));
+      $("#copy-em")?.addEventListener("click", ()=> {
+        const a = $("#out-em-subj")?.textContent || "";
+        const b = $("#out-em-body")?.textContent || "";
+        navigator.clipboard.writeText(`Subject: ${a}\n\n${b}`);
+      });
+      $("#copy-ig")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig")?.textContent||""));
+
+      $("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m")?.textContent||""));
+      $("#copy-x_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText($("#out-x_m")?.textContent||""));
+      $("#copy-em_m")?.addEventListener("click", ()=> {
+        const a = $("#out-em-subj_m")?.textContent || "";
+        const b = $("#out-em-body_m")?.textContent || "";
+        navigator.clipboard.writeText(`Subject: ${a}\n\n${b}`);
+      });
+      $("#copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig_m")?.textContent||""));
+
+      // Share
+      const share = (network, text)=>{
+        const u = encodeURIComponent(location.href);
+        const t = encodeURIComponent(text);
+        if (network==="li") window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${u}`,"_blank","noopener");
+        if (network==="x")  window.open(`https://twitter.com/intent/tweet?text=${t}&url=${u}`,"_blank","noopener");
+      };
+      $("#share-li")?.addEventListener("click", ()=> share("li", "Draft from ContentFlow AI"));
+      $("#share-x") ?.addEventListener("click", ()=> share("x", ($("#out-x")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
+      $("#share-ig")?.addEventListener("click", ()=> alert("Copy the caption and paste into Instagram."));
+      $("#share-li_m")?.addEventListener("click", ()=> share("li", "Draft from ContentFlow AI"));
+      $("#share-x_m") ?.addEventListener("click", ()=> share("x", ($("#out-x_m")?.textContent || "Posting via ContentFlow AI").slice(0,240)));
+      $("#share-ig_m")?.addEventListener("click", ()=> alert("Copy the caption and paste into Instagram."));
+
+      // Email preview/edit
+      function openEmailModal(subjElId, bodyElId){
+        const subj = document.getElementById(subjElId)?.textContent || "";
+        const body = document.getElementById(bodyElId)?.textContent || "";
+        $("#em_subj").value = subj;
+        $("#em_body").value = body;
+        $("#emailPreview").showModal();
+      }
+      $("#edit-em")?.addEventListener("click", ()=> openEmailModal("out-em-subj","out-em-body"));
+      $("#edit-em_m")?.addEventListener("click", ()=> openEmailModal("out-em-subj_m","out-em-body_m"));
+      $("#em_copy")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#em_body").value||""));
+      $("#em_open")?.addEventListener("click", ()=>{
+        const to = encodeURIComponent($("#em_to").value||"");
+        const subject = encodeURIComponent($("#em_subj").value||"");
+        const body = encodeURIComponent($("#em_body").value||"");
+        location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+      });
+
+      // Presets (local)
+      function maxPresetsFor(plan){
+        if (plan==="starter") return 10;
+        if (plan==="creator" || plan==="business") return Infinity;
+        return 0;
+      }
+
+      function loadPresets(){
+        const list = JSON.parse(localStorage.getItem("presets")||"[]");
+        const ul = $("#presetList");
+        if (!ul) return;
+        ul.innerHTML = "";
+        if (!list.length){
+          ul.innerHTML = '<li class="text-xs text-slate-500">No presets yet.</li>';
+          return;
+        }
+        list.forEach((p, i)=>{
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate">${p.title || 'Preset '+(i+1)}</span>
+              <div class="flex gap-2">
+                <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="use" type="button">Use</button>
+                <button class="px-2 py-1 text-xs rounded-lg border" data-i="${i}" data-act="del" type="button">Delete</button>
+              </div>
+            </div>`;
+          ul.appendChild(li);
+        });
+        ul.querySelectorAll("button").forEach(btn=>{
+          btn.addEventListener("click",()=>{
+            const i = Number(btn.getAttribute("data-i"));
+            const act = btn.getAttribute("data-act");
+            const list = JSON.parse(localStorage.getItem("presets")||"[]");
+            if (act==="use"){
+              const s = $("#source_m"); if (s) s.value = list[i]?.text || "";
+            }
+            if (act==="del"){
+              list.splice(i,1);
+              localStorage.setItem("presets", JSON.stringify(list));
+              loadPresets();
+            }
+          });
+        });
+      }
+
+      $("#addPreset")?.addEventListener("click", async ()=>{
+        const text = ($("#source_m")?.value || "").trim();
+        if (!text) return alert("Write something first.");
+        const status = await getPlanStatus();
+        const planKey = PLAN_KEY(status);
+        const cap = maxPresetsFor(planKey);
+        const list = JSON.parse(localStorage.getItem("presets")||"[]");
+        if (cap !== Infinity && list.length >= cap) {
+          alert(`Preset limit reached for ${PLAN_LABEL(planKey)}.`);
+          return;
+        }
+        const title = prompt("Preset name:", text.slice(0, 40)) || "Preset";
+        list.unshift({ title, text, t: Date.now() });
+        localStorage.setItem("presets", JSON.stringify(list));
+        loadPresets();
+      });
+
+      // INIT
+      await paintAuth();
+      await refreshAll();
+      loadPresets();
+
+      if (supabase?.auth) {
+        supabase.auth.onAuthStateChange(async (_event, _session) => {
+          await refreshAll();
+        });
+      }
+    } catch (e) {
+      console.error("Init error:", e);
+      alert("App failed to initialize: " + (e?.message||e));
+    }
+  })();
   </script>
 </body>
 </html>
