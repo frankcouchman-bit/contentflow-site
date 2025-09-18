@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Paste Once → LinkedIn/X/Email/IG in 15 Minutes (Step-by-Step + Templates)</title>
+  <meta name="description" content="Turn a single paragraph into LinkedIn, X (Twitter), Email, and Instagram drafts in 15 minutes. Exact prompts, checklists, and exports to Notion/Trello. Includes FAQs, templates, and a free demo." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+  <meta name="keywords" content="content repurposing tool, repurpose blog to LinkedIn, repurpose content for social media, AI content repurposing, LinkedIn post generator, X Twitter thread generator, Instagram caption generator, email announcement template, Notion export, Trello export, BYOK OpenRouter">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Paste Once → LinkedIn/X/Email/IG in 15 Minutes (Step-by-Step + Templates)">
+  <meta property="og:description" content="Exact workflow to repurpose one idea into channel-ready drafts. Includes templates, prompts, checklists, Notion/Trello export, and FAQs.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/paste-once-multi-channel/">
+  <meta property="og:image" content="https://contentrepurpose.pro/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Paste Once → LinkedIn/X/Email/IG in 15 Minutes">
+  <meta name="twitter:description" content="Step-by-step to repurpose your content into LinkedIn, X, Email & IG. Templates + exports to Notion/Trello.">
+  <meta name="twitter:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Styles -->
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+    .prose h2{font-weight:800;margin-top:1.5rem}
+    .prose h3{font-weight:700;margin-top:1rem}
+    .prose p{margin:.9rem 0}
+    .kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+    @media (min-width:768px){ .kpi{grid-template-columns:repeat(4,minmax(0,1fr));} }
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);padding:.1rem .4rem;border-radius:.4rem}
+    .toc a:hover{opacity:.8}
+    .pill{border:1px solid rgba(148,163,184,.35);padding:.2rem .55rem;border-radius:9999px;font-size:.75rem}
+  </style>
+
+  <!-- Schema: Article + FAQ + Breadcrumbs -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Paste Once → LinkedIn/X/Email/IG in 15 Minutes (Step-by-Step + Templates)",
+    "description": "Turn a single paragraph into LinkedIn, X (Twitter), Email, and Instagram drafts in 15 minutes. Exact prompts, checklists, and exports to Notion/Trello.",
+    "image": ["https://contentrepurpose.pro/og-cover.png"],
+    "author": { "@type": "Organization", "name": "ContentRepurpose.pro" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ContentFlow AI",
+      "logo": { "@type": "ImageObject", "url": "https://contentrepurpose.pro/logo.png" }
+    },
+    "mainEntityOfPage": "https://contentrepurpose.pro/blog/paste-once-multi-channel/",
+    "datePublished": "2025-09-18",
+    "dateModified": "2025-09-18"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":"https://contentrepurpose.pro/"},
+      {"@type":"ListItem","position":2,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":3,"name":"Paste Once Workflow","item":"https://contentrepurpose.pro/blog/paste-once-multi-channel/"}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" class="w-9 h-9 rounded-xl" alt="ContentRepurpose logo"/>
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80 opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-14">
+    <div class="grid lg:grid-cols-3 gap-8 items-center">
+      <div class="lg:col-span-2">
+        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight">
+          Paste once → <span class="txt-grad">LinkedIn, X, Email & IG</span> in 15 minutes
+        </h1>
+        <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-2xl">
+          A field-tested workflow to turn one idea into channel-ready drafts—fast. Includes prompts, templates,
+          checklists, and one-click exports to Notion & Trello. Optional BYOK for model control.
+        </p>
+        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+          <span class="pill">Playbook</span>
+          <span class="pill">Templates</span>
+          <span class="pill">SEO-ready</span>
+          <span class="pill">BYOK</span>
+        </div>
+      </div>
+      <!-- Inline SVG Illustration (no broken images) -->
+      <figure class="card p-0 overflow-hidden">
+        <svg viewBox="0 0 600 360" role="img" aria-label="Workflow illustration" class="w-full h-full">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1">
+              <stop offset="0%" stop-color="#7AA2FF"/>
+              <stop offset="100%" stop-color="#FF2D2D"/>
+            </linearGradient>
+          </defs>
+          <rect width="600" height="360" fill="#0b0e17"/>
+          <g transform="translate(24,24)">
+            <rect x="0" y="0" width="552" height="72" rx="14" fill="url(#g1)" opacity="0.15" stroke="#2b2f45" />
+            <text x="18" y="45" fill="#e9eef6" font-size="18" font-family="Inter,system-ui">Paste once: “How we cut onboarding churn by 23%”</text>
+          </g>
+          <g transform="translate(24,120)">
+            <rect x="0" y="0" width="264" height="192" rx="14" fill="#101523" stroke="#2b2f45"/>
+            <text x="16" y="32" fill="#7AA2FF" font-size="14">LinkedIn</text>
+            <text x="16" y="60" fill="#cdd5e1" font-size="12">• Hook • Problem • Lesson • CTA</text>
+          </g>
+          <g transform="translate(312,120)">
+            <rect x="0" y="0" width="264" height="192" rx="14" fill="#101523" stroke="#2b2f45"/>
+            <text x="16" y="32" fill="#7AA2FF" font-size="14">X (Twitter)</text>
+            <text x="16" y="60" fill="#cdd5e1" font-size="12">≤ 280 chars • 2 variants</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+
+    <!-- KPIs / Proof points -->
+    <div class="kpi mt-6">
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-extrabold">6–10</div>
+        <div class="text-xs text-slate-500">LinkedIn lines that convert</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-extrabold">≤280</div>
+        <div class="text-xs text-slate-500">X character safe zone</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-extrabold">3–5</div>
+        <div class="text-xs text-slate-500">Email sentences, max</div>
+      </div>
+      <div class="card p-4 text-center">
+        <div class="text-2xl font-extrabold">3–5</div>
+        <div class="text-xs text-slate-500">Smart IG hashtags</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOC -->
+  <nav class="max-w-7xl mx-auto px-5 mt-8">
+    <div class="card p-5">
+      <strong>Contents</strong>
+      <ol class="mt-3 grid md:grid-cols-2 gap-2 text-sm toc">
+        <li><a href="#who">Who this is for</a></li>
+        <li><a href="#overview">The 15-minute overview</a></li>
+        <li><a href="#step1">Step 1 — Prepare your source</a></li>
+        <li><a href="#step2">Step 2 — Generate JSON-clean drafts</a></li>
+        <li><a href="#step3">Step 3 — Edit for voice & proof</a></li>
+        <li><a href="#step4">Step 4 — Export to Notion & Trello</a></li>
+        <li><a href="#step5">Step 5 — Publish & measure</a></li>
+        <li><a href="#templates">Ready-to-use templates</a></li>
+        <li><a href="#faq">FAQs</a></li>
+        <li><a href="#cta">Try the live demo</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <main class="max-w-3xl mx-auto px-5 py-10">
+    <article class="prose prose-invert max-w-none">
+
+      <h2 id="who">Who this is for (and not for)</h2>
+      <p>
+        This workflow is for solo creators, small teams, and founder-led startups who already produce
+        <em>some</em> original content (blog posts, emails, podcast notes, research) but struggle to keep up with
+        the mechanics of posting consistently across channels. If you want to repurpose without sounding robotic
+        and keep your examples/data intact, you’re in the right place.
+      </p>
+      <p>
+        If you’re looking for one-click firehose content with zero editing, that’s not us. We optimize for quality,
+        brand voice, and fast iteration—not spam.
+      </p>
+
+      <h2 id="overview">The 15-minute overview</h2>
+      <ol>
+        <li><strong>Paste once.</strong> Drop a paragraph (or outline) into the editor.</li>
+        <li><strong>Generate structured drafts.</strong> We return a strict JSON shape with <code>linkedin</code>, <code>x</code>, <code>email</code>, <code>instagram</code>.</li>
+        <li><strong>Light edits.</strong> Swap in examples, numbers, and voice. Our length guards keep you within limits.</li>
+        <li><strong>Export.</strong> One-click to Notion pages or Trello cards. Assign, schedule, done.</li>
+        <li><strong>Publish & measure.</strong> Optional: connect Buffer (Creator+) or BYOK for model control.</li>
+      </ol>
+
+      <h2 id="step1">Step 1 — Prepare your source</h2>
+      <p>
+        Great repurposing starts with a tight source. You need: <strong>a single claim</strong>, <strong>one example</strong>, and
+        <strong>a simple CTA</strong>. Keep it factual and conversational. Trim anything that doesn’t serve the point.
+      </p>
+      <div class="card p-4">
+        <strong>Good source (example):</strong>
+        <p class="mt-2">“We cut onboarding churn by 23% in 60 days by replacing a 7-field signup with a 2-step flow. The unlock was sending a usage-based welcome email on day 1. Here’s the flow and the email.”</p>
+      </div>
+
+      <h2 id="step2">Step 2 — Generate JSON-clean drafts (why structure matters)</h2>
+      <p>
+        ContentRepurpose returns a clean JSON object so you can copy/paste without fighting formatting:
+      </p>
+      <pre class="card p-4 overflow-auto text-xs"><code>{
+  "linkedin": "6–10 lines with a clear hook and CTA...",
+  "x": ["<=280 char variant 1", "<=280 char variant 2"],
+  "email": { "subject": "Short subject", "body": "3–5 sentence body" },
+  "instagram": "Caption + 3–5 hashtags"
+}</code></pre>
+      <p>
+        This structure powers length checks (<span class="kbd">≤280</span> on X), line counts on LinkedIn, and IG hashtag
+        hints. It also ensures our Notion/Trello exports are readable out-of-the-box.
+      </p>
+
+      <h3>System prompt we use (simplified)</h3>
+      <pre class="card p-4 overflow-auto text-xs"><code>Return pure JSON only with keys: linkedin, x, email, instagram.
+- linkedin: 6–10 lines, one CTA.
+- x: &lt;= 280 chars total; provide an array with 2 short variants.
+- email: object {subject, body} — 3–5 sentences.
+- instagram: 1–2 short paragraphs + 3–5 hashtags.
+STRICT: No Markdown, no triple backticks, no prose — JSON object only.</code></pre>
+
+      <h2 id="step3">Step 3 — Edit for voice & proof (2–3 minutes)</h2>
+      <ul>
+        <li><strong>Add one number.</strong> % change, time saved, or cost reduced.</li>
+        <li><strong>Name the noun.</strong> “We reduced <em>onboarding steps</em> from 7 to 2” is stronger than “we simplified onboarding.”</li>
+        <li><strong>Keep hooks honest.</strong> Avoid over-promise; people smell it a mile away.</li>
+        <li><strong>One CTA.</strong> Comment, DM, link, or “reply ‘template’ and I’ll send it.” Don’t stack three asks.</li>
+      </ul>
+
+      <h3>Channel guardrails you can steal</h3>
+      <ul>
+        <li><strong>LinkedIn:</strong> 6–10 lines, line breaks after 1–2 sentences, 1 CTA, no walls of text.</li>
+        <li><strong>X (Twitter):</strong> ≤280 characters (our counter helps), two variants to A/B manually.</li>
+        <li><strong>Email:</strong> subject ≤55 chars; 3–5 sentences. Put the “why now” in sentence one.</li>
+        <li><strong>Instagram:</strong> 1–2 punchy paragraphs, 3–5 relevant hashtags, avoid hashtag stuffing.</li>
+      </ul>
+
+      <h2 id="step4">Step 4 — Export to Notion & Trello (one click)</h2>
+      <p>
+        Exports are opinionated so your team can move without reformatting. Notion creates a page with your LinkedIn/X/Email/IG
+        blocks separated by headings. Trello makes a card using your channel title + body in the description.
+      </p>
+      <div class="card p-4">
+        <strong>Tip:</strong> Use Trello labels for “Channel: LinkedIn/X/Email/IG” and lists for “Draft → Ready → Scheduled.”
+      </div>
+
+      <h2 id="step5">Step 5 — Publish & measure (simple beats perfect)</h2>
+      <p>
+        Our goal is weekly consistency. Start with a single input every Monday. Repurpose, export, assign, and ship by Thursday.
+        If you’re on Creator+, connect Buffer to queue directly. Otherwise, the “Open Composer” buttons get you 90% of the way.
+      </p>
+      <ul>
+        <li><strong>LinkedIn:</strong> CTR on “See more,” comments, profile visits.</li>
+        <li><strong>X:</strong> Profile clicks, replies, bookmarks.</li>
+        <li><strong>Email:</strong> Opens are noisy—watch replies and CTR.</li>
+        <li><strong>IG:</strong> Saves > likes. Track saves/comments.</li>
+      </ul>
+
+      <h2 id="templates">Ready-to-use templates (copy/paste)</h2>
+
+      <h3>1) LinkedIn “Problem → Lesson → CTA”</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code>[Hook — 1 line. Be specific.]
+
+We [did X] to solve [specific problem].
+It wasn’t pretty, but here’s what worked:
+
+• Step 1 — [short]
+• Step 2 — [short]
+• Step 3 — [short]
+
+Result: [one number] in [time window].
+
+Want the checklist? Comment “checklist” and I’ll send it.</code></pre>
+
+      <h3>2) X (Twitter) ≤280 chars (2 variants)</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code>V1: We cut onboarding churn by 23% in 60 days by replacing a 7-field signup with a 2-step flow + day-1 usage email. DM “flow” and I’ll send our checklist. #SaaS #growth
+
+V2: 7 → 2 steps at signup. Day-1 usage email. 23% less churn in 60 days. Want the template? Reply “onboarding”.</code></pre>
+
+      <h3>3) Email announcement (subject + body)</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code>Subject: We cut onboarding churn by 23%—here’s the flow
+
+Body:
+Quick one. We replaced a 7-field signup with a 2-step flow and added a day-1 “first action” email. In 60 days, onboarding churn dropped 23%.
+
+Happy to share the doc/checklist. Reply “flow” and I’ll send it.</code></pre>
+
+      <h3>4) Instagram caption</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code>Onboarding went from “pls fill 7 fields 😅” to “2 steps & you’re in.”
+
+In 60 days, churn dropped 23%. The unlock was a simple day-1 email that nudges the first action.
+
+#saas #productgrowth #onboardingdesign</code></pre>
+
+      <h2>Why teams pick ContentRepurpose over ad-hoc prompting</h2>
+      <ul>
+        <li><strong>Speed to draft:</strong> Paste once, get all four channels in one structured response.</li>
+        <li><strong>Fewer edits:</strong> Length guards + channel rules reduce rework.</li>
+        <li><strong>Exports:</strong> Notion/Trello with clean headings and card descriptions.</li>
+        <li><strong>BYOK:</strong> Bring your OpenRouter key; we don’t store it. Control models/costs.</li>
+        <li><strong>Batch inputs (Starter+):</strong> Run multiple inputs in one go (great for content sprints).</li>
+        <li><strong>Integrations (Creator+):</strong> Buffer queueing, Project Pack export, early workflows.</li>
+      </ul>
+
+      <h2>Common mistakes (and quick fixes)</h2>
+      <ul>
+        <li><strong>Wall of text on LinkedIn.</strong> Fix: line breaks every 1–2 sentences; 6–10 lines total.</li>
+        <li><strong>Overstuffed IG hashtags.</strong> Fix: 3–5 specific tags; remove generic spammy ones.</li>
+        <li><strong>Vague CTAs.</strong> Fix: “Reply ‘template’” or “DM ‘flow’”—one verb, one action.</li>
+        <li><strong>Rewriting the source each time.</strong> Fix: reuse the same paragraph across channels; only edit examples/tone.</li>
+      </ul>
+
+      <h2>What you can do next—today</h2>
+      <ol>
+        <li>Pick one paragraph from your last blog/email.</li>
+        <li>Paste into the <a href="/">live demo</a> (no login required).</li>
+        <li>Generate, edit lightly, export to Notion/Trello.</li>
+        <li>Ship one post on LinkedIn + X this week.</li>
+      </ol>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2 id="faq">FAQs</h2>
+      <h3>Is there a free version?</h3>
+      <p>Yes—demo is 5 runs/month by IP. Signed-in free is 5/day. BYOK is supported.</p>
+
+      <h3>Which channels are included?</h3>
+      <p>LinkedIn, X (Twitter), Email, and Instagram. Creator+ adds Notion/Trello exports and Buffer queueing.</p>
+
+      <h3>Do you store my BYOK (OpenRouter) key?</h3>
+      <p>No. Your key lives only in the current browser tab. We never store it.</p>
+
+      <h3>What plans exist?</h3>
+      <p>Free, Starter (Solo Creator), Creator, and Business. See <a href="/#pricing">pricing</a> for details.</p>
+
+      <h3>How do exports work?</h3>
+      <p>Notion creates a page with each channel in a clear block. Trello creates a card with channel title and formatted description.</p>
+
+      <h3>Can I batch inputs?</h3>
+      <p>Yes—Starter+ supports batch runs (e.g., 5–50 lines depending on plan) so you can sprint content for the month.</p>
+
+      <h3>Does it support white-label exports?</h3>
+      <p>Business includes white-label project pack exports.</p>
+
+      <!-- FAQ Schema -->
+      <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"FAQPage",
+        "mainEntity":[
+          {"@type":"Question","name":"Is there a free version?","acceptedAnswer":{"@type":"Answer","text":"Yes—demo is 5 runs/month by IP. Signed-in free is 5/day. BYOK is supported."}},
+          {"@type":"Question","name":"Which channels are included?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email, and Instagram. Creator+ adds Notion/Trello exports and Buffer queueing."}},
+          {"@type":"Question","name":"Do you store my BYOK (OpenRouter) key?","acceptedAnswer":{"@type":"Answer","text":"No. Your key lives only in the current browser tab. We never store it."}},
+          {"@type":"Question","name":"What plans exist?","acceptedAnswer":{"@type":"Answer","text":"Free, Starter (Solo Creator), Creator, and Business. See pricing for details."}},
+          {"@type":"Question","name":"How do exports work?","acceptedAnswer":{"@type":"Answer","text":"Notion creates a page with each channel in a clear block. Trello creates a card with channel title and formatted description."}},
+          {"@type":"Question","name":"Can I batch inputs?","acceptedAnswer":{"@type":"Answer","text":"Yes—Starter+ supports batch runs (e.g., 5–50 lines depending on plan)."}},
+          {"@type":"Question","name":"Does it support white-label exports?","acceptedAnswer":{"@type":"Answer","text":"Business includes white-label project pack exports."}}
+        ]
+      }
+      </script>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2>Implementation checklist (quick copy)</h2>
+      <ul>
+        <li>✅ One paragraph source with 1 claim, 1 example, 1 CTA.</li>
+        <li>✅ Generate JSON-clean drafts for 4 channels.</li>
+        <li>✅ Line/length checks: LinkedIn lines, X ≤280 chars.</li>
+        <li>✅ Export to Notion/Trello for scheduling.</li>
+        <li>✅ Ship weekly; measure replies, saves, profile visits.</li>
+      </ul>
+
+      <h2>Backlink-friendly resources</h2>
+      <ul>
+        <li><a href="/#templates">Templates</a> (copy/paste structures)</li>
+        <li><a href="/#pricing">Pricing & plan limits</a> (BYOK details included)</li>
+        <li><a href="/blog/">More guides</a> (we’ll keep adding playbooks)</li>
+      </ul>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2 id="cta">Try ContentRepurpose.pro (creator promo inside)</h2>
+      <p>
+        You can try the <a href="/" class="underline">live demo</a> right now—no login needed. If you want the full
+        workflow (Notion/Trello exports, Buffer queueing, Project Pack export), the first <strong>20</strong> creators
+        can use code <strong>CONTENTOFF90</strong> for <strong>90% off month one</strong> on the Creator plan (cancel anytime).
+      </p>
+      <p class="mt-4">
+        <a href="https://contentrepurpose.pro" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open ContentRepurpose.pro</a>
+      </p>
+    </article>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="year"></span> ContentFlow AI
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
