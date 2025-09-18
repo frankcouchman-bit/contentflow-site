@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Notion & Trello Exports That Actually Save Time (Setup, Mapping, Best Practices)</title>
+  <meta name="description" content="A field-tested guide to export AI-generated drafts into Notion pages and Trello cards without cleanup. Exact mappings, one-click setup, templates, and pitfalls to avoid.">
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/notion-trello-export/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+  <meta name="keywords" content="Notion export, Trello export, AI content to Notion, AI content to Trello, content calendar, social media workflow, editorial calendar, content repurposing, ContentRepurpose.pro, BYOK">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Notion & Trello Exports That Actually Save Time (Setup, Mapping, Best Practices)">
+  <meta property="og:description" content="Export AI drafts into Notion pages and Trello cards with zero cleanup. Step-by-step setup, data mapping, and real-world tips.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/notion-trello-export/">
+  <meta property="og:image" content="https://contentrepurpose.pro/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Notion & Trello Exports That Actually Save Time">
+  <meta name="twitter:description" content="One-click exports, clean blocks/cards, predictable workflows.">
+  <meta name="twitter:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Styles -->
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+    .prose h2{font-weight:800;margin-top:1.5rem}
+    .prose h3{font-weight:700;margin-top:1rem}
+    .prose p{margin:.9rem 0}
+    .toc a:hover{opacity:.8}
+    .pill{border:1px solid rgba(148,163,184,.35);padding:.2rem .55rem;border-radius:9999px;font-size:.75rem}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);padding:.1rem .4rem;border-radius:.4rem}
+  </style>
+
+  <!-- Schema: Article + FAQ + Breadcrumbs -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Notion & Trello Exports That Actually Save Time (Setup, Mapping, Best Practices)",
+    "description": "A field-tested guide to export AI-generated drafts into Notion pages and Trello cards without cleanup. Exact mappings, one-click setup, templates, and pitfalls to avoid.",
+    "image": ["https://contentrepurpose.pro/og-cover.png"],
+    "author": { "@type": "Organization", "name": "ContentRepurpose.pro" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ContentFlow AI",
+      "logo": { "@type": "ImageObject", "url": "https://contentrepurpose.pro/logo.png" }
+    },
+    "mainEntityOfPage": "https://contentrepurpose.pro/blog/notion-trello-export/",
+    "datePublished": "2025-09-18",
+    "dateModified": "2025-09-18"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":"https://contentrepurpose.pro/"},
+      {"@type":"ListItem","position":2,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":3,"name":"Notion & Trello Export","item":"https://contentrepurpose.pro/blog/notion-trello-export/"}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" class="w-9 h-9 rounded-xl" alt="ContentRepurpose logo"/>
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80 opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-14">
+    <div class="grid lg:grid-cols-3 gap-8 items-center">
+      <div class="lg:col-span-2">
+        <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight">
+          Notion & Trello exports that <span class="txt-grad">actually save time</span>
+        </h1>
+        <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-2xl">
+          How to move AI-generated drafts into Notion pages and Trello cards with zero cleanup. Copy our mappings,
+          avoid common gotchas, and ship on a predictable schedule.
+        </p>
+        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+          <span class="pill">Playbook</span>
+          <span class="pill">Templates</span>
+          <span class="pill">Workflow Design</span>
+        </div>
+      </div>
+      <!-- Inline SVG Illustration -->
+      <figure class="card p-0 overflow-hidden">
+        <svg viewBox="0 0 600 360" role="img" aria-label="Export flow illustration" class="w-full h-full">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1">
+              <stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/>
+            </linearGradient>
+          </defs>
+          <rect width="600" height="360" fill="#0b0e17"/>
+          <g transform="translate(24,36)">
+            <rect x="0" y="0" width="552" height="84" rx="14" fill="url(#g1)" opacity="0.15" stroke="#2b2f45" />
+            <text x="18" y="36" fill="#e9eef6" font-size="16" font-family="Inter,system-ui">content → { linkedin, x, email, instagram }</text>
+            <text x="18" y="60" fill="#9aa4bf" font-size="12" font-family="Inter,system-ui">JSON clean • line/length guards • CTA consistency</text>
+          </g>
+          <g transform="translate(24,160)">
+            <rect x="0" y="0" width="264" height="160" rx="14" fill="#101523" stroke="#2b2f45"/>
+            <text x="16" y="30" fill="#7AA2FF" font-size="14">Notion Export</text>
+            <text x="16" y="56" fill="#cdd5e1" font-size="12">Page • H2 blocks per channel</text>
+          </g>
+          <g transform="translate(312,160)">
+            <rect x="0" y="0" width="264" height="160" rx="14" fill="#101523" stroke="#2b2f45"/>
+            <text x="16" y="30" fill="#7AA2FF" font-size="14">Trello Export</text>
+            <text x="16" y="56" fill="#cdd5e1" font-size="12">Card • Clean description • Assign</text>
+          </g>
+        </svg>
+      </figure>
+    </div>
+  </section>
+
+  <!-- TOC -->
+  <nav class="max-w-7xl mx-auto px-5 mt-8">
+    <div class="card p-5">
+      <strong>Contents</strong>
+      <ol class="mt-3 grid md:grid-cols-2 gap-2 text-sm toc">
+        <li><a href="#why">Why exports fail (and how to fix it)</a></li>
+        <li><a href="#setup">One-click setup (Notion & Trello)</a></li>
+        <li><a href="#mapping">Exact data mapping we use</a></li>
+        <li><a href="#workflow">A weekly workflow that scales</a></li>
+        <li><a href="#templates">Ready-to-copy templates</a></li>
+        <li><a href="#qa">Quality gates & pitfalls</a></li>
+        <li><a href="#faq">FAQs</a></li>
+        <li><a href="#cta">Try it with our creator promo</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <main class="max-w-3xl mx-auto px-5 py-10">
+    <article class="prose prose-invert max-w-none">
+
+      <h2 id="why">Why exports fail (and how to fix it)</h2>
+      <p>
+        Most “export to Notion/Trello” buttons dump raw text that breaks headings, bloats descriptions,
+        and forces manual cleanup. The fix is simple: <strong>export a predictable structure</strong> every time.
+        ContentRepurpose generates drafts as JSON with four keys—<code>linkedin</code>, <code>x</code>,
+        <code>email</code>, <code>instagram</code>—and formats exports accordingly.
+      </p>
+      <ul>
+        <li><strong>Notion:</strong> page → H2 per channel → paragraphs under each heading.</li>
+        <li><strong>Trello:</strong> card → title + clean description → you assign/label in one click.</li>
+      </ul>
+
+      <h2 id="setup">One-click setup (Notion & Trello)</h2>
+      <p>
+        In the app, connect integrations from your dashboard (Creator+):
+      </p>
+      <ol>
+        <li><strong>Notion:</strong> <span class="kbd">Connect</span> → authorize → we’ll remember your workspace and create pages to it.</li>
+        <li><strong>Trello:</strong> <span class="kbd">Connect</span> → authorize → for now paste Board & List IDs in the modal (fast and reliable).</li>
+      </ol>
+      <p class="text-sm text-slate-400">
+        Under the hood: our Worker hits <code>/api/integrations/notion/export</code> and <code>/api/integrations/trello/export</code> with clean blocks/fields.
+      </p>
+
+      <h2 id="mapping">Exact data mapping we use</h2>
+      <h3>Notion page</h3>
+      <ul>
+        <li><strong>Page title:</strong> first non-empty line of your LinkedIn block (or the Email subject if stronger).</li>
+        <li><strong>Blocks:</strong> H2 “LinkedIn”, “X (Twitter)”, “Email”, “Instagram” + paragraphs under each.</li>
+        <li><strong>Why it works:</strong> writers scan headings; editors tweak a single block; no messy bullets.</li>
+      </ul>
+
+      <h3>Trello card</h3>
+      <ul>
+        <li><strong>Card name:</strong> “LinkedIn Draft”, “X Draft”, “Email Draft”, or “Instagram Draft”.</li>
+        <li><strong>Description:</strong> the channel content, as-is, respecting line breaks.</li>
+        <li><strong>You add:</strong> member, due date, labels (e.g., Channel: LinkedIn; Stage: Draft/Ready).</li>
+      </ul>
+
+      <div class="card p-4">
+        <strong>Pro tip:</strong> Create lists “Backlog → Draft → Ready → Scheduled → Posted”.
+        Use labels for channel and campaign. Your board becomes a content calendar instantly.
+      </div>
+
+      <h2 id="workflow">A weekly workflow that scales (30–45 minutes)</h2>
+      <ol>
+        <li><strong>Monday:</strong> Paste one paragraph. Generate JSON drafts for 4 channels. Light edits (2–3 mins).</li>
+        <li><strong>Tuesday:</strong> Export to Notion and Trello. Assign owners. Add dates.</li>
+        <li><strong>Wednesday:</strong> Final edits in Notion. Mark “Ready”.</li>
+        <li><strong>Thursday:</strong> Publish via Composer buttons or Buffer (Creator+). Move to “Posted”.</li>
+        <li><strong>Friday:</strong> Review replies/saves/CTR; capture learnings in a Notion callout block.</li>
+      </ol>
+
+      <h2 id="templates">Ready-to-copy templates</h2>
+
+      <h3>Notion page skeleton</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code># &lt;Title derived from LinkedIn first line or Email subject&gt;
+
+## LinkedIn
+&lt;6–10 lines. 1 CTA.&gt;
+
+## X (Twitter)
+• Variant 1 (≤280 chars)
+• Variant 2 (≤280 chars)
+
+## Email
+Subject: &lt;short subject&gt;
+
+&lt;3–5 sentence body&gt;
+
+## Instagram
+&lt;1–2 short paragraphs&gt;
+#&lt;3–5 specific hashtags&gt;
+</code></pre>
+
+      <h3>Trello card description (LinkedIn example)</h3>
+      <pre class="card p-4 text-sm overflow-auto"><code>Hook: &lt;one line&gt;
+
+- Problem: &lt;one sentence&gt;
+- Lesson: &lt;one sentence&gt;
+- Result: &lt;one number&gt;
+
+CTA: Comment “template” and I’ll send it.</code></pre>
+
+      <h2 id="qa">Quality gates & pitfalls (save your future self)</h2>
+      <ul>
+        <li><strong>Line breaks on LinkedIn.</strong> Keep 6–10 lines. Walls of text die fast.</li>
+        <li><strong>X length:</strong> stay ≤ <span class="kbd">280</span>. Our counter helps; variants let you A/B.</li>
+        <li><strong>Email subject:</strong> ≤55 chars. Make the “why now” obvious.</li>
+        <li><strong>IG hashtags:</strong> 3–5 precise tags; avoid spammy clouds.</li>
+        <li><strong>One CTA:</strong> comment, DM, click—pick one. Two asks = zero action.</li>
+      </ul>
+
+      <h2>Why teams love this export approach</h2>
+      <ul>
+        <li><strong>Zero cleanup:</strong> exports are opinionated for readability.</li>
+        <li><strong>Ownership by block:</strong> Notion headings map to assignees/stages.</li>
+        <li><strong>Calendar by lists:</strong> Trello gives you a visual pipeline instantly.</li>
+        <li><strong>Model control (BYOK):</strong> bring your OpenRouter key; we don’t store it.</li>
+        <li><strong>Batch inputs (Starter+):</strong> sprint drafts for the month in one go.</li>
+      </ul>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2 id="faq">FAQs</h2>
+      <h3>Do I need to format anything after export?</h3>
+      <p>No. Notion gets clean headings/paragraphs; Trello gets a clean description. You just assign and schedule.</p>
+
+      <h3>Can I change the Notion parent page?</h3>
+      <p>Yes—after connecting, we remember your workspace. You can set a default page or move pages post-export.</p>
+
+      <h3>What about Buffer scheduling?</h3>
+      <p>Creator+ users can queue posts to social profiles from the dashboard. Otherwise, use our “Open Composer” buttons.</p>
+
+      <h3>Is my BYOK key stored?</h3>
+      <p>No. It lives only in your current browser tab. We never store BYOK.</p>
+
+      <h3>How many exports can I do?</h3>
+      <p>As many as you generate. Plan limits apply to generations/BYOK usage; exports are lightweight.</p>
+
+      <!-- FAQ Schema -->
+      <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"FAQPage",
+        "mainEntity":[
+          {"@type":"Question","name":"Do I need to format anything after export?","acceptedAnswer":{"@type":"Answer","text":"No. Notion gets clean headings/paragraphs; Trello gets a clean description. You just assign and schedule."}},
+          {"@type":"Question","name":"Can I change the Notion parent page?","acceptedAnswer":{"@type":"Answer","text":"Yes—after connecting, we remember your workspace. You can set a default page or move pages post-export."}},
+          {"@type":"Question","name":"What about Buffer scheduling?","acceptedAnswer":{"@type":"Answer","text":"Creator+ users can queue posts to social profiles from the dashboard. Otherwise, use our “Open Composer” buttons."}},
+          {"@type":"Question","name":"Is my BYOK key stored?","acceptedAnswer":{"@type":"Answer","text":"No. It lives only in your current browser tab. We never store BYOK."}},
+          {"@type":"Question","name":"How many exports can I do?","acceptedAnswer":{"@type":"Answer","text":"As many as you generate. Plan limits apply to generations/BYOK usage; exports are lightweight."}}
+        ]
+      }
+      </script>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2>Implementation checklist</h2>
+      <ul>
+        <li>✅ Connect Notion & Trello (Creator+).</li>
+        <li>✅ Generate JSON-clean drafts (4 channels).</li>
+        <li>✅ Export to Notion/Trello; assign owners/dates.</li>
+        <li>✅ Ship weekly; measure replies, saves, profile visits.</li>
+      </ul>
+
+      <h2>Further reading</h2>
+      <ul>
+        <li><a href="/blog/paste-once-multi-channel/">Paste once → multi-channel workflow</a></li>
+        <li><a href="/#templates">Channel templates</a></li>
+        <li><a href="/#pricing">Plans & BYOK limits</a></li>
+      </ul>
+
+      <hr class="my-10 border-white/10"/>
+
+      <h2 id="cta">Try ContentRepurpose.pro (creator promo)</h2>
+      <p>
+        Skip the fiddly copy/paste. Try the <a href="/" class="underline">live demo</a> now—no login required.
+        The first <strong>20</strong> creators can use <strong>CONTENTOFF90</strong> for <strong>90% off</strong> month one on the Creator plan (cancel anytime).
+      </p>
+      <p class="mt-4">
+        <a href="https://contentrepurpose.pro" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open ContentRepurpose.pro</a>
+      </p>
+    </article>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="year"></span> ContentFlow AI
+  </footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
