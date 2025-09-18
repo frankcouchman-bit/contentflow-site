@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to Repurpose One Piece of Content Across Multiple Social Media Platforms</title>
+  <meta name="description" content="Step-by-step workflow to turn one paragraph into platform-ready drafts for LinkedIn, X, Instagram, Facebook & email — without sounding copy-pasted. Templates, examples, and an AI-assisted process." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/" />
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to Repurpose One Piece of Content Across Multiple Social Media Platforms">
+  <meta property="og:description" content="A practical, AI-assisted workflow to turn one paragraph into platform-ready drafts for LinkedIn, X, Instagram, Facebook & email. Templates included.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/">
+  <meta property="og:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Repurpose One Piece of Content Across Multiple Social Media Platforms">
+  <meta name="twitter:description" content="Paste once → publish everywhere. A complete workflow with templates, guardrails, and an AI-powered tool to speed it up.">
+  <meta name="twitter:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .prose :where(h2,h3){scroll-margin-top:90px}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    .pill{border-radius:9999px;border:1px solid rgba(148,163,184,.35);padding:.2rem .6rem}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+    .toc a{color:inherit;text-decoration:none}
+    .toc a:hover{text-decoration:underline}
+    .note{background:rgba(122,162,255,.12)}
+    .kbd{font:12px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;border:1px solid rgba(148,163,184,.35);border-radius:.5rem;padding:.1rem .35rem}
+  </style>
+
+  <!-- JSON-LD: Breadcrumb + Article + FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":2,"name":"How to Repurpose One Piece of Content Across Multiple Social Media Platforms","item":"https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/"}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":"How to Repurpose One Piece of Content Across Multiple Social Media Platforms",
+    "description":"A practical, AI-assisted workflow to turn one paragraph into platform-ready drafts for LinkedIn, X, Instagram, Facebook & email — without sounding copy-pasted.",
+    "image":"https://contentrepurpose.pro/og-cover.png",
+    "author":{"@type":"Organization","name":"ContentFlow AI"},
+    "publisher":{"@type":"Organization","name":"ContentFlow AI","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/logo.png"}},
+    "datePublished":"2025-09-18",
+    "dateModified":"2025-09-18",
+    "mainEntityOfPage":"https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"Is cross-posting the same as repurposing?","acceptedAnswer":{"@type":"Answer","text":"No. Cross-posting is copying the same post everywhere. Repurposing adapts the message to each platform’s norms—length, tone, structure—so it fits and performs better."}},
+      {"@type":"Question","name":"Does repurposing hurt SEO or reach?","acceptedAnswer":{"@type":"Answer","text":"Done right, repurposing helps reach. You avoid duplicate content by reframing the angle, changing structure, and targeting the platform’s audience needs. Link back to the canonical source when appropriate."}},
+      {"@type":"Question","name":"What are safe character limits as of 2025?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn posts support up to ~3,000 characters (shorter often performs better); X is 280 characters per post by default; Instagram captions up to ~2,200 characters (keep the hook up front)."}},
+      {"@type":"Question","name":"How many posts can one source produce?","acceptedAnswer":{"@type":"Answer","text":"A single paragraph can become a LinkedIn post, two X variants, one Instagram caption with 3–5 hashtags, and a short email. A full blog can yield a thread, multi-post series, and newsletter."}},
+      {"@type":"Question","name":"How do I keep voice consistent across platforms?","acceptedAnswer":{"@type":"Answer","text":"Use a consistent POV, 2–3 signature phrases, and a tone preset. In ContentRepurpose Pro you can save presets so channel drafts keep the same voice."}}
+    ]
+  }
+  </script>
+</head>
+<body class="min-h-full">
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl" />
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80 opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-14">
+    <p class="pill text-xs">Guide • 12–15 min read</p>
+    <h1 class="mt-3 text-3xl md:text-4xl font-black leading-tight tracking-tight">
+      How to Repurpose One Piece of Content Across Multiple Social Media Platforms
+    </h1>
+    <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-3xl">
+      Paste once → publish everywhere. This guide shows a practical, AI-assisted workflow to turn one paragraph into platform-ready drafts for LinkedIn, X (Twitter), Instagram, Facebook, and email—without sounding copy-pasted.
+    </p>
+    <div class="mt-4 text-xs text-slate-500">Updated Sep 18, 2025 • ContentFlow AI</div>
+  </section>
+
+  <!-- CTA RIBBON -->
+  <section class="max-w-7xl mx-auto px-5 mt-6">
+    <div class="card p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <div class="text-sm text-slate-500">Try it while you read</div>
+        <div class="font-semibold">ContentRepurpose Pro — paste once → LinkedIn/X/Email/IG drafts</div>
+        <div class="text-xs text-slate-500 mt-1">Use promo <span class="font-semibold">CONTENTOFF90</span> for <span class="font-semibold">90% off</span> month 1. Cancel anytime.</div>
+      </div>
+      <a href="https://contentrepurpose.pro/#demo" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90 w-fit">Open the live demo</a>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <main class="max-w-7xl mx-auto px-5 py-10">
+    <!-- TOC -->
+    <aside class="card p-5 mb-8">
+      <strong>Table of contents</strong>
+      <nav class="toc mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+        <a href="#why-repurpose">Why repurpose vs. cross-post?</a>
+        <a href="#platform-basics">Platform basics (limits & norms)</a>
+        <a href="#core-blocks">Turn one paragraph into “building blocks”</a>
+        <a href="#five-step-workflow">The 5-step workflow</a>
+        <a href="#templates">Templates & examples per platform</a>
+        <a href="#schedule-measure">Scheduling, UTM tags & measuring</a>
+        <a href="#mistakes">Common mistakes to avoid</a>
+        <a href="#advanced">Advanced: presets, batching & exports</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </aside>
+
+    <article class="prose prose-slate max-w-none prose-invert">
+      <h2 id="why-repurpose">Why repurpose vs. cross-post?</h2>
+      <p>
+        Cross-posting is copy/paste. Repurposing reshapes your message so it <em>fits</em> each platform’s audience and format. That’s the difference between “meh” reach and posts that actually get read, saved, and clicked.
+      </p>
+      <ul>
+        <li><strong>Higher fit → higher engagement.</strong> A tight 1–2 sentence hook wins on X. LinkedIn favors scannable lines and a clear CTA. Instagram wants a visual plus a caption that invites interaction.</li>
+        <li><strong>No duplicate vibe.</strong> When you adapt structure, tone, and CTA, your audience won’t feel like they’re seeing the same post five times.</li>
+        <li><strong>More surface area.</strong> One idea becomes multiple assets: social posts, a mini-email, maybe even a short video or carousel.</li>
+      </ul>
+
+      <div class="card note p-4 my-6 text-sm">
+        <strong>Related:</strong> Want an end-to-end walkthrough? Read
+        <a class="underline" href="/blog/paste-once-multi-channel/">Paste once → LinkedIn/X/Email/IG: a 15-min workflow</a>.
+      </div>
+
+      <h2 id="platform-basics">Platform basics (limits & norms)</h2>
+      <p>As of 2025, these simple guardrails keep you safe:</p>
+      <ul>
+        <li><strong>LinkedIn:</strong> Up to ~3,000 chars. Lead with a hook line, keep 6–10 short lines, 1 CTA, optional 1–2 hashtags.</li>
+        <li><strong>X (Twitter):</strong> 280 chars default per post. Aim for a punchy variant; a 3–5 tweet mini-thread if needed.</li>
+        <li><strong>Instagram (feed caption):</strong> Up to ~2,200 chars, but front-load the hook. Add 3–5 relevant hashtags, not 30 random ones.</li>
+        <li><strong>Email (short update):</strong> 1 clear subject, 3–5 sentences, a single CTA link.</li>
+        <li><strong>Facebook:</strong> Slightly more forgiving length; lead with 1–2 strong sentences and a link preview.</li>
+      </ul>
+
+      <h2 id="core-blocks">Turn one paragraph into “building blocks”</h2>
+      <p>Start with a single paragraph (or a short excerpt). Break it into reusable blocks:</p>
+      <ol>
+        <li><strong>Hook:</strong> 1–2 sentences that promise a benefit or interesting insight.</li>
+        <li><strong>Point(s):</strong> 2–4 bullets or lines with the core idea, example, or mini-story.</li>
+        <li><strong>CTA:</strong> One action—read more, try the tool, get the template, etc.</li>
+        <li><strong>Proof (optional):</strong> A stat, quote, or micro-case.</li>
+      </ol>
+      <p>These blocks remix cleanly across channels. You’ll pull them into templates below.</p>
+
+      <h2 id="five-step-workflow">The 5-step workflow (15 minutes)</h2>
+      <ol>
+        <li><strong>Paste your source.</strong> Use a paragraph, a note, or a snippet from a blog/video transcript.</li>
+        <li><strong>Generate channel drafts.</strong> In ContentRepurpose Pro, click “Generate” to get LinkedIn, X, Email, and Instagram variations instantly.</li>
+        <li><strong>Refine tone & CTA.</strong> Tweak 1–2 lines for brand voice and swap in your logical CTA (demo, guide, newsletter).</li>
+        <li><strong>Package assets.</strong> Copy each platform’s draft (or export) and add visuals if needed.</li>
+        <li><strong>Publish or queue.</strong> Export to Notion/Trello, or queue via Buffer (Creator+) to schedule.</li>
+      </ol>
+
+      <h2 id="templates">Templates & examples per platform</h2>
+
+      <h3>LinkedIn (6–10 lines, one CTA)</h3>
+      <p><strong>Template</strong></p>
+      <pre><code>Hook (1 line)
+Line 2: Key point #1
+Line 3: Key point #2
+Line 4: Brief example or outcome
+Line 5: Micro-tip or caveat
+Line 6–8: Expand 1–2 points as needed (short lines)
+CTA: What to do next (single link)
+#OptionalHashtag</code></pre>
+      <p><strong>Example</strong></p>
+      <pre><code>You don’t need 5 hours to show up everywhere.
+Take one paragraph and shape it to fit each platform.
+
+Here’s the trick:
+• Short, punchy hooks for X
+• 6–10 scannable lines for LinkedIn
+• Visual + a tight caption for IG
+
+Want a head start?
+We built a paste-once workflow that drafts all four in minutes.
+Try the live demo → https://contentrepurpose.pro/#demo</code></pre>
+
+      <h3>X (Twitter) — 2 variants under 280 chars</h3>
+      <p><strong>Variant A</strong></p>
+      <pre><code>Paste once → publish everywhere.
+1 idea = LinkedIn, X, IG + email (without sounding copy-pasted).
+Here’s the workflow I use (takes ~15 min).
+Demo: https://contentrepurpose.pro/#demo</code></pre>
+      <p><strong>Variant B</strong></p>
+      <pre><code>Stop copy/pasting the same post across platforms.
+Adapt the hook, structure, and CTA for each channel.
+I use this 5-step flow to do it fast → https://contentrepurpose.pro/#demo</code></pre>
+
+      <h3>Instagram (caption + 3–5 hashtags)</h3>
+      <p><strong>Template</strong></p>
+      <pre><code>Hook (1–2 lines that can stand alone)
+Quick tip list or micro-story (2–3 lines)
+CTA: Learn more / try demo / link in bio
+#relevant #niche #brand</code></pre>
+      <p><strong>Example</strong></p>
+      <pre><code>One paragraph → posts for LinkedIn, X, IG + a short email.
+No copy/paste, no “same post everywhere” vibe.
+
+Save this flow:
+• Punchy hook for X
+• 6–10 short lines for LinkedIn
+• Visual + tight caption for IG
+
+Demo in bio.
+#contentrepurposing #contentmarketing #socialmediatips #creatoreconomy</code></pre>
+
+      <h3>Email (subject + 3–5 sentences)</h3>
+      <p><strong>Subject ideas</strong></p>
+      <ul>
+        <li>Paste once → publish everywhere (my 5-step flow)</li>
+        <li>How I turn 1 paragraph into 4 ready-to-post drafts</li>
+      </ul>
+      <p><strong>Body example</strong></p>
+      <pre><code>Quick tip: don’t copy/paste the same post across platforms.
+Adapt the hook, structure, and CTA for each channel.
+
+Here’s the 5-step flow I use (takes ~15 min).
+Try the live demo → https://contentrepurpose.pro/#demo</code></pre>
+
+      <h3>Facebook (short intro + link preview)</h3>
+      <pre><code>One idea can become LinkedIn, X, IG + a short email—if you adapt it.
+I use a 5-step flow to do this fast (no duplicate vibe).
+Demo here → https://contentrepurpose.pro/#demo</code></pre>
+
+      <h2 id="schedule-measure">Scheduling, UTM tags & measuring</h2>
+      <ul>
+        <li><strong>Cadence:</strong> 2–3 repurposed posts per source across a week performs better than a same-day blast.</li>
+        <li><strong>UTM tags:</strong> Add <span class="kbd">?utm_source=linkedin</span> (etc.) to your CTA link to see which platform drives signups.</li>
+        <li><strong>Metrics to watch:</strong> Saves/CTR on LinkedIn and IG; link clicks on X and FB; replies for qualitative signal.</li>
+      </ul>
+
+      <h2 id="mistakes">Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Copy/paste everywhere.</strong> Feels like spam and underperforms.</li>
+        <li><strong>Too many hashtags.</strong> Use 3–5 that are relevant; avoid generic tag dumping.</li>
+        <li><strong>Buried hook.</strong> Put the most interesting line first—especially for X and IG.</li>
+        <li><strong>CTA overload.</strong> One action per post. Choose clarity over options.</li>
+      </ul>
+
+      <h2 id="advanced">Advanced: presets, batching & exports</h2>
+      <ul>
+        <li><strong>Saved presets:</strong> Lock your tone and CTA once; reuse forever (Starter+: 10, Creator+: unlimited).</li>
+        <li><strong>Batch inputs:</strong> Paste multiple lines at once to generate many drafts in a single run (Starter/Creator/Business).</li>
+        <li><strong>Exports:</strong> Send drafts to <strong>Notion</strong> or <strong>Trello</strong>, or queue via <strong>Buffer</strong> (Creator+).</li>
+        <li><strong>BYOK:</strong> Bring your own OpenRouter key for additional headroom when you’re on a roll.</li>
+      </ul>
+
+      <h2 id="faq">FAQ</h2>
+      <p><strong>Is cross-posting ever OK?</strong> It’s fine occasionally, but expect lower engagement. Repurposing wins long-term.</p>
+      <p><strong>How long should LinkedIn be?</strong> Short lines that are easy to scan. 6–10 lines usually beats a wall of text.</p>
+      <p><strong>How many assets from one paragraph?</strong> At least: 1 LinkedIn, 2 X variants, 1 IG caption, and a short email.</p>
+    </article>
+
+    <!-- BOTTOM CTA -->
+    <section class="mt-10">
+      <div class="card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="text-sm text-slate-500">Ready to try it?</div>
+          <h3 class="text-xl font-bold tracking-tight">Paste once → platform-ready drafts in minutes</h3>
+          <p class="text-sm text-slate-500 mt-1">Use promo <span class="font-semibold">CONTENTOFF90</span> for <span class="font-semibold">90% off</span> your first month. Cancel anytime.</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="https://contentrepurpose.pro/#demo" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the live demo</a>
+          <a href="https://contentrepurpose.pro/#pricing" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
