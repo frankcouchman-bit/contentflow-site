@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>From Blog Post to Social Media Gold — Turning Articles into Engaging Posts</title>
+  <meta name="description" content="Step-by-step guide to repurpose a blog post for social media. Convert articles into LinkedIn posts, X/Twitter threads, Instagram captions, and more — with templates, examples, and a repeatable workflow." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" />
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="From Blog Post to Social Media Gold — Turning Articles into Engaging Posts">
+  <meta property="og:description" content="A practical workflow to convert one blog into LinkedIn posts, X/Twitter threads, Instagram captions, email, and more. Templates included.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/">
+  <meta property="og:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="From Blog Post to Social Media Gold — Turning Articles into Engaging Posts">
+  <meta name="twitter:description" content="Repurpose your blog into high-performing social posts. Templates for LinkedIn, X, and Instagram—plus a 7-step workflow.">
+  <meta name="twitter:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .prose :where(h2,h3){scroll-margin-top:90px}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    .pill{border-radius:9999px;border:1px solid rgba(148,163,184,.35);padding:.2rem .6rem}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+    .toc a{color:inherit;text-decoration:none}
+    .toc a:hover{text-decoration:underline}
+    .kbd{font:12px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;border:1px solid rgba(148,163,184,.35);border-radius:.5rem;padding:.1rem .35rem}
+    .note{background:rgba(122,162,255,.12)}
+  </style>
+
+  <!-- JSON-LD: Breadcrumb + Article + FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":2,"name":"From Blog Post to Social Media Gold — Turning Articles into Engaging Posts","item":"https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/"}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":"From Blog Post to Social Media Gold — Turning Articles into Engaging Posts",
+    "description":"A practical workflow to convert one blog into LinkedIn posts, X/Twitter threads, Instagram captions, email, and more. Templates included.",
+    "image":"https://contentrepurpose.pro/og-cover.png",
+    "author":{"@type":"Organization","name":"ContentFlow AI"},
+    "publisher":{"@type":"Organization","name":"ContentFlow AI","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/logo.png"}},
+    "datePublished":"2025-09-18",
+    "dateModified":"2025-09-18",
+    "mainEntityOfPage":"https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"How do I turn a blog post into multiple social posts?","acceptedAnswer":{"@type":"Answer","text":"Extract 3–7 key points, write a 1–2 sentence hook, choose one CTA, and adapt structure for each platform: LinkedIn (6–10 lines), X (1–2 variants under 280 chars), Instagram (visual + concise caption, 3–5 hashtags)."}},
+      {"@type":"Question","name":"What’s the best format to repurpose a blog on LinkedIn?","acceptedAnswer":{"@type":"Answer","text":"Short, scannable lines (6–10), a strong hook, one insight per line, and a single CTA. Optionally use a carousel with 5–8 slides summarizing your post."}},
+      {"@type":"Question","name":"How many social posts should one blog produce?","acceptedAnswer":{"@type":"Answer","text":"A single blog can yield at least: 1 LinkedIn post, a 3–5 tweet thread (or 2 variants), 1 Instagram caption, a short email snippet, and 1–2 additional LinkedIn/X follow-ups over the next week."}},
+      {"@type":"Question","name":"Does repurposing blog content hurt SEO?","acceptedAnswer":{"@type":"Answer","text":"No if you adapt and add context. Avoid copy/paste duplication—change angle, structure, and CTA. Link back to the canonical blog when appropriate."}}
+    ]
+  }
+  </script>
+</head>
+<body class="min-h-full">
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl" />
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80 opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-14">
+    <p class="pill text-xs">Guide • 10–14 min read</p>
+    <h1 class="mt-3 text-3xl md:text-4xl font-black leading-tight tracking-tight">
+      From Blog Post to Social Media Gold — Turning Articles into Engaging Posts
+    </h1>
+    <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-3xl">
+      Your blog already holds dozens of social posts. Here’s the workflow to transform one article into platform-ready content for LinkedIn, X (Twitter), Instagram, and email—without sounding recycled.
+    </p>
+    <div class="mt-4 text-xs text-slate-500">Updated Sep 18, 2025 • ContentFlow AI</div>
+  </section>
+
+  <!-- CTA RIBBON -->
+  <section class="max-w-7xl mx-auto px-5 mt-6">
+    <div class="card p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <div class="text-sm text-slate-500">Try it while you read</div>
+        <div class="font-semibold">ContentRepurpose Pro — paste once → LinkedIn/X/Email/IG drafts</div>
+        <div class="text-xs text-slate-500 mt-1">Use promo <span class="font-semibold">CONTENTOFF90</span> for <span class="font-semibold">90% off</span> month 1. Cancel anytime.</div>
+      </div>
+      <a href="https://contentrepurpose.pro/#demo" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90 w-fit">Open the live demo</a>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-5 py-10">
+    <!-- TOC -->
+    <aside class="card p-5 mb-8">
+      <strong>Table of contents</strong>
+      <nav class="toc mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+        <a href="#why">Why repurpose your blog to social?</a>
+        <a href="#extract">Extracting high-signal snippets</a>
+        <a href="#linkedin">Turn blog → LinkedIn post</a>
+        <a href="#x-thread">Turn blog → X (Twitter) thread</a>
+        <a href="#instagram">Turn blog → Instagram caption</a>
+        <a href="#email">Turn blog → Email snippet</a>
+        <a href="#workflow">7-step repurposing workflow</a>
+        <a href="#volume">How many posts per blog?</a>
+        <a href="#mistakes">Common mistakes to avoid</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </aside>
+
+    <article class="prose prose-slate max-w-none prose-invert">
+      <h2 id="why">Why repurpose your blog to social?</h2>
+      <ul>
+        <li><strong>Faster distribution:</strong> The hard part (research & writing) is done. Repurposing turns one article into 5–10 social assets.</li>
+        <li><strong>Audience fit:</strong> LinkedIn wants scannable lines; X wants punch; Instagram wants visual + a concise caption.</li>
+        <li><strong>Compounding reach:</strong> Each platform highlights a different angle from the same article—more surface area, more opportunities to engage.</li>
+      </ul>
+
+      <h2 id="extract">Extracting high-signal snippets</h2>
+      <p>Open your blog and mark:</p>
+      <ol>
+        <li><strong>Hook-worthy line(s):</strong> a bold claim, counterintuitive insight, or crisp benefit.</li>
+        <li><strong>3–7 key points:</strong> stats, steps, examples, quotes.</li>
+        <li><strong>1 CTA:</strong> read full post, try product, get template, join list.</li>
+        <li><strong>1 proof:</strong> metric, case, or testimonial to anchor credibility.</li>
+      </ol>
+      <p>These become the building blocks for each platform template below.</p>
+
+      <h2 id="linkedin">Turn blog → LinkedIn post</h2>
+      <p><strong>Structure (6–10 lines, 1 CTA)</strong></p>
+      <pre><code>Hook (1 line)
+Line 2–4: 2–3 insights from the blog (one per line)
+Line 5–7: a quick example or mini-case
+Line 8–9: a practical takeaway
+CTA (single action, single link)</code></pre>
+      <p><strong>Example</strong></p>
+      <pre><code>Most teams underuse their blog.
+One article can power a week of social—with higher CTR.
+
+From my last post:
+• Pull 3–7 key snippets
+• Reshape for each platform’s norms
+• Keep 1 clear CTA
+
+I turned one article into: a LinkedIn post, a 5-tweet thread, an IG caption, and a short email.
+Want the templates? (below)
+</code></pre>
+      <p class="text-sm text-slate-400">Deeper LinkedIn patterns? See our <a class="underline" href="/blog/linkedin-post-templates/">LinkedIn post templates</a>.</p>
+
+      <h2 id="x-thread">Turn blog → X (Twitter) thread</h2>
+      <p><strong>Thread template (3–5 tweets)</strong></p>
+      <pre><code>T1: Hook (benefit or surprising stat)
+T2–T4: 2–3 crisp points from the blog (1 idea per tweet)
+T5: CTA (read full post or get the template), link</code></pre>
+      <p><strong>Single-tweet variant (≤280 chars)</strong></p>
+      <pre><code>One blog = a week of social.
+Extract 3–7 snippets, adapt the structure per platform, keep one CTA.
+Here’s the template I use for LinkedIn + X + IG (takes 15 min).
+Full details → [your link]</code></pre>
+
+      <h2 id="instagram">Turn blog → Instagram caption</h2>
+      <p><strong>Caption template</strong></p>
+      <pre><code>Hook (1–2 lines that stand alone)
+Micro list (2–3 bullets) or a short story
+CTA (read the post / demo in bio)
+#3–5 relevant hashtags</code></pre>
+      <p><strong>Example</strong></p>
+      <pre><code>Your blog is a content goldmine.
+Turn 1 post into a week of updates.
+
+Try this:
+• 6–10 lines for LinkedIn
+• 3–5 tweets (one idea each)
+• 1 IG caption with 3–5 relevant hashtags
+
+Full post / demo in bio.
+#contentmarketing #socialmediatips #contentrepurposing</code></pre>
+
+      <h2 id="email">Turn blog → Email snippet</h2>
+      <p><strong>Subject:</strong> &ldquo;Turn one blog into a week of social (templates)&rdquo;</p>
+      <p><strong>Body (3–5 sentences)</strong></p>
+      <pre><code>Quick tip: your latest blog can become 5–10 social posts.
+Extract 3–7 snippets, write a tight hook, keep one CTA.
+I summarized the templates in today’s post.
+Read it here → [link]</code></pre>
+
+      <h2 id="workflow">7-step repurposing workflow</h2>
+      <ol>
+        <li><strong>Pick one blog:</strong> preferably evergreen.</li>
+        <li><strong>Highlight 3–7 snippets:</strong> hooks, stats, tips.</li>
+        <li><strong>Choose a single CTA:</strong> avoid splitting attention.</li>
+        <li><strong>Draft per-platform:</strong> use the templates above.</li>
+        <li><strong>Add visuals:</strong> a quote card, chart, or cover image boosts saves.</li>
+        <li><strong>Schedule smartly:</strong> stagger across 5–7 days, not all at once.</li>
+        <li><strong>Measure & iterate:</strong> watch saves, clicks, replies—then double down on what resonates.</li>
+      </ol>
+
+      <h2 id="volume">How many posts per blog?</h2>
+      <ul>
+        <li><strong>Baseline:</strong> 1 LinkedIn post, 1 IG caption, 1 email snippet, 1 X thread.</li>
+        <li><strong>Stretch goal:</strong> +1 follow-up on LinkedIn (a mini-case), +1 single-tweet variant, +1 IG carousel summary.</li>
+        <li><strong>Long tail:</strong> Revisit the same blog 30–60 days later with a new angle or stat update.</li>
+      </ul>
+
+      <h2 id="mistakes">Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Copy/paste duplication:</strong> adapt structure and voice for each platform.</li>
+        <li><strong>Too many CTAs:</strong> keep it to one action per post.</li>
+        <li><strong>Hashtag overload:</strong> 3–5 relevant tags beat 30 generic ones.</li>
+        <li><strong>Burying the hook:</strong> start with your strongest line.</li>
+      </ul>
+
+      <div class="card note p-4 my-8 text-sm">
+        <strong>Power-up:</strong> In ContentRepurpose Pro, paste your blog excerpt once and generate platform-ready drafts for LinkedIn, X, IG, and email in seconds. Save your tone as a preset and reuse forever. <a class="underline" href="https://contentrepurpose.pro/#demo">Try the live demo</a>.
+      </div>
+
+      <h2 id="faq">FAQ</h2>
+      <p><strong>How long should a LinkedIn post be?</strong> 6–10 short, scannable lines beats a wall of text.</p>
+      <p><strong>Do I need different visuals?</strong> Not always, but a quote card or chart can increase saves and shares.</p>
+      <p><strong>What if my blog is old?</strong> Great—update a stat or headline, then repurpose. Evergreen topics work best.</p>
+    </article>
+
+    <!-- BOTTOM CTA -->
+    <section class="mt-10">
+      <div class="card p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="text-sm text-slate-500">Ready to try it?</div>
+          <h3 class="text-xl font-bold tracking-tight">Paste once → platform-ready drafts in minutes</h3>
+          <p class="text-sm text-slate-500 mt-1">Use promo <span class="font-semibold">CONTENTOFF90</span> for <span class="font-semibold">90% off</span> your first month. Cancel anytime.</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="https://contentrepurpose.pro/#demo" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the live demo</a>
+          <a href="https://contentrepurpose.pro/#pricing" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
