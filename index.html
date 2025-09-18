@@ -1029,6 +1029,71 @@ supabase.auth.onAuthStateChange(() => {
     await refreshAll();
   } catch (e) { console.error(e); }
 })();
+/* === Saved Presets wiring === */
+async function renderPresets(){
+  const headers = await getAuthHeaders();
+  const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers }).catch(()=>null);
+  const j = await r?.json().catch(()=> ({}));
+  const list = (j?.presets || []);
+  const ul = document.getElementById("presetList");
+  if (!ul) return;
+  if (!list.length){ ul.innerHTML = `<li class="text-slate-500">No presets saved yet.</li>`; return; }
+  ul.innerHTML = "";
+  list.forEach(p=>{
+    const li = document.createElement("li");
+    li.className = "flex items-center justify-between gap-2";
+    li.innerHTML = `
+      <span class="truncate">${p.title || "Untitled"}</span>
+      <span class="flex items-center gap-2">
+        <button class="px-2 py-1 chip" data-load="${p.id}">Load</button>
+        <button class="px-2 py-1 chip" data-del="${p.id}">Delete</button>
+      </span>
+    `;
+    ul.appendChild(li);
+  });
+  ul.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.getAttribute("data-del");
+      const headers = await getAuthHeaders();
+      await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers, body: JSON.stringify({ id }) }).catch(()=>null);
+      renderPresets();
+    });
+  });
+  ul.querySelectorAll("[data-load]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers }).catch(()=>null);
+      const j = await r?.json().catch(()=> ({}));
+      const pres = (j?.presets || []).find(x => x.id === btn.getAttribute("data-load"));
+      if (!pres) return;
+      const d = pres.data || {};
+      if (d.linkedin != null)  document.getElementById("out-li_m").textContent = d.linkedin;
+      if (d.x != null)         document.getElementById("out-x_m").textContent  = Array.isArray(d.x) ? d.x.join("\n\n—\n\n") : d.x;
+      if (d.email?.subject != null) document.getElementById("out-em-subj_m").textContent = d.email.subject;
+      if (d.email?.body != null)    document.getElementById("out-em-body_m").textContent  = d.email.body;
+      if (d.instagram != null) document.getElementById("out-ig_m").textContent = d.instagram;
+      showToast("Preset loaded ✓");
+    });
+  });
+}
+document.getElementById("addPreset")?.addEventListener("click", async ()=>{
+  const data = {
+    linkedin:  document.getElementById("out-li_m")?.textContent || "",
+    x:         (document.getElementById("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
+    email:     { subject: document.getElementById("out-em-subj_m")?.textContent || "", body: document.getElementById("out-em-body_m")?.textContent || "" },
+    instagram: document.getElementById("out-ig_m")?.textContent || ""
+  };
+  if (!data.linkedin && !data.instagram && !data.email?.body && !(data.x && data.x.length)){
+    alert("Generate or paste something to save."); return;
+  }
+  const title = prompt("Preset name?", (data.email?.subject || (data.linkedin?.split("\n").find(Boolean)) || "Preset").slice(0,80)) || "Preset";
+  const headers = await getAuthHeaders();
+  const r = await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers, body: JSON.stringify({ title, data }) }).catch(()=>null);
+  if (r?.ok){ showToast("Preset saved ✓"); renderPresets(); }
+  else { const j = await r?.json().catch(()=> ({})); alert(j?.error?.message || "Could not save preset."); }
+});
+const _origRefreshAll = refreshAll;
+refreshAll = async function(){ await _origRefreshAll(); const { token } = await getAuth(); if (token) renderPresets(); };
 
     /* =========================
        GENERATOR HELPERS
