@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blog — ContentRepurpose.pro</title>
+  <meta name="description" content="Guides on repurposing content for LinkedIn, X, Email & IG. Notion/Trello workflows, presets, BYOK tips." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Blog — ContentRepurpose.pro">
+  <meta property="og:description" content="Guides on repurposing content for LinkedIn, X, Email & IG. Notion/Trello workflows, presets, BYOK tips.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/">
+  <meta property="og:image" content="/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Blog — ContentRepurpose.pro">
+  <meta name="twitter:description" content="Guides on repurposing content for LinkedIn, X, Email & IG. Notion/Trello workflows, presets, BYOK tips.">
+  <meta name="twitter:image" content="/og-cover.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+    .post-meta{font-size:.75rem}
+  </style>
+</head>
+<body class="min-h-full">
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl" />
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80 opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-14">
+    <h1 class="text-3xl md:text-4xl font-black leading-tight tracking-tight">Blog</h1>
+    <p class="mt-2 text-slate-600 dark:text-slate-300 max-w-2xl">
+      Guides, playbooks, and benchmarks for repurposing content to LinkedIn, X, Email & IG. Export workflows for Notion/Trello, and BYOK tips.
+    </p>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-5 py-10">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- your first post card -->
+      <article class="card p-6">
+        <a href="/blog/paste-once-multi-channel/" class="block group">
+          <h2 class="text-xl font-bold tracking-tight group-hover:underline">Paste once → LinkedIn/X/Email/IG: a 15-min workflow</h2>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Turn one paragraph into channel-ready drafts, then export to Notion/Trello. Includes reusable templates.
+          </p>
+          <div class="mt-3 post-meta text-slate-500">7 min read • Sep 18, 2025</div>
+        </a>
+      </article>
+
+      <!-- (optional) second post card -->
+      <article class="card p-6">
+        <a href="/blog/notion-trello-export/" class="block group">
+          <h2 class="text-xl font-bold tracking-tight group-hover:underline">Notion & Trello exports that actually save time</h2>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            How we structure headings, blocks, and card fields so you can hit publish faster with fewer edits.
+          </p>
+          <div class="mt-3 post-meta text-slate-500">6 min read • Sep 2025</div>
+        </a>
+      </article>
+    </div>
+  </main>
+
+  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
