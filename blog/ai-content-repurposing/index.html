@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>AI Content Repurposing: From One Idea to 4 Channels — ContentRepurpose.pro</title>
+  <meta name="description" content="Turn a single paragraph into LinkedIn, X, Email, and Instagram drafts in minutes. See the exact AI content repurposing workflow, prompts, templates, and export steps for Notion/Trello. BYOK supported." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AI Content Repurposing: From One Idea to 4 Channels">
+  <meta property="og:description" content="Paste once → get LinkedIn, X, Email, and Instagram drafts. Workflow, prompts, and export steps included.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/ai-content-repurposing/">
+  <meta property="og:image" content="https://contentrepurpose.pro/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI Content Repurposing: From One Idea to 4 Channels">
+  <meta name="twitter:description" content="A practical, repeatable MOFU workflow for founders and marketers.">
+  <meta name="twitter:image" content="https://contentrepurpose.pro/og-cover.png">
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
+    .btn{padding:.65rem 1rem;border-radius:.9rem;border:1px solid rgba(148,163,184,.35)}
+    .btn-primary{background:black;color:white}
+    .kicker{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    .prose pre{white-space:pre-wrap; word-break:break-word; background:rgba(2,6,23,.85); color:#e7ecf6; padding:1rem; border-radius:.9rem; font-size:.95rem}
+    @media (prefers-color-scheme:dark){
+      body{background:#07090f;color:#e9eef6}
+      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
+    }
+  </style>
+
+  <!-- Article Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":"AI Content Repurposing: From One Idea to 4 Channels",
+    "description":"A practical workflow to repurpose one paragraph into LinkedIn, X, Email, and Instagram drafts. Includes prompts, templates, and export steps for Notion and Trello.",
+    "author":{"@type":"Organization","name":"ContentFlow AI"},
+    "publisher":{"@type":"Organization","name":"ContentFlow AI","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/logo.png"}},
+    "image":"https://contentrepurpose.pro/og-cover.png",
+    "datePublished":"2025-09-18",
+    "dateModified":"2025-09-18",
+    "mainEntityOfPage":{"@type":"WebPage","@id":"https://contentrepurpose.pro/blog/ai-content-repurposing/"}
+  }
+  </script>
+
+  <!-- FAQ Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"What is AI content repurposing?","acceptedAnswer":{"@type":"Answer","text":"AI content repurposing is using AI to transform one source idea into platform-native drafts for multiple channels—e.g., LinkedIn posts, X tweets, email subject+body, and IG captions—without rewriting from scratch."}},
+      {"@type":"Question","name":"Which channels should I repurpose to first?","acceptedAnswer":{"@type":"Answer","text":"Start with LinkedIn and Email if you’re B2B; add X for velocity and IG for reach. Iterate based on replies and opens."}},
+      {"@type":"Question","name":"How do I keep content from sounding generic?","acceptedAnswer":{"@type":"Answer","text":"Lead with your specific story, metric, or artifact (screenshot, snippet, quote). Use templates as scaffolding only."}},
+      {"@type":"Question","name":"How fast can I go from idea to 4 channels?","acceptedAnswer":{"@type":"Answer","text":"With a clear paragraph, you can generate platform-native drafts in minutes using ContentRepurpose.pro, then export to Notion/Trello with one click."}}
+    ]
+  }
+  </script>
+</head>
+<body class="min-h-full">
+
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
+        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl" />
+        <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
+      </a>
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/#templates" class="hover:opacity-80">Templates</a>
+        <a href="/#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="/#pricing" class="hover:opacity-80">Pricing</a>
+        <a href="/blog" class="hover:opacity-80">Blog</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="max-w-3xl mx-auto px-5 pt-10 md:pt-14">
+    <p class="kicker">Guide • Playbook • B2B</p>
+    <h1 class="text-3xl md:text-5xl font-black leading-tight tracking-tight">
+      AI Content Repurposing: <span class="txt-grad">From One Idea to 4 Channels</span>
+    </h1>
+    <p class="mt-3 text-slate-600 dark:text-slate-300">
+      This is a practical, repeatable workflow to turn a single paragraph into channel-native drafts for <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, and <strong>Instagram</strong>. It includes the exact prompts, length targets, and export steps we use daily.
+    </p>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a href="https://contentrepurpose.pro/#demo" class="btn btn-primary">Try the Live Demo</a>
+      <a href="/blog/paste-once-multi-channel/" class="btn">15-min “paste once” workflow</a>
+    </div>
+  </section>
+
+  <!-- ARTICLE -->
+  <main class="max-w-3xl mx-auto px-5 pb-16 prose prose-invert prose-slate">
+    <section class="mt-10">
+      <h2>What is AI content repurposing? (answer first)</h2>
+      <p><strong>AI content repurposing</strong> is using AI to transform one source idea into multiple, platform-native drafts—without writing each post from scratch. Instead of rewriting for every channel, you paste your core paragraph, and the AI outputs LinkedIn, X, Email, and IG versions that follow each platform’s constraints (lines, character limits, hashtags, subject lines, etc.).</p>
+      <p>Why it matters: <em>consistency beats bursts.</em> Repurposing makes a 2–4×/week publishing cadence doable for a tiny team.</p>
+    </section>
+
+    <section class="mt-10">
+      <h2>The 6-part repurposing loop (30–45 min/week)</h2>
+      <ol>
+        <li><strong>Pick 1 customer question</strong> (from calls, DMs, tickets).</li>
+        <li><strong>Write a 6–10 line paragraph</strong> that answers it (with 1 proof: metric or artifact).</li>
+        <li><strong>Paste into</strong> <a href="https://contentrepurpose.pro/" class="underline">ContentRepurpose.pro</a> → get four channel drafts.</li>
+        <li><strong>Light edit</strong> for specificity (numbers, names, screenshots).</li>
+        <li><strong>Export to Notion/Trello</strong> for scheduling & collaboration.</li>
+        <li><strong>Publish & log replies</strong> → use best reply as next week’s topic.</li>
+      </ol>
+      <p class="text-slate-400 text-sm">Tip: save winning structures as <em>presets</em> so future drafts inherit your tone and CTA style.</p>
+    </section>
+
+    <section class="mt-10">
+      <h2>Exact prompts that avoid the “AI voice”</h2>
+      <p>Paste this in your head, then your tool. We bake these rules into our generator, but here’s the plain-English logic so you can see it:</p>
+<pre><code>Role: senior content strategist.
+Return JSON only with keys: linkedin, x, email, instagram.
+Rules:
+- LinkedIn: 6–10 short lines, 1 CTA. Avoid fluff. Include 1 specific metric or artifact.
+- X: ≤ 280 chars total; provide an array with 2 concise variants.
+- Email: { subject, body } — 3–5 sentences; one clear action.
+- Instagram: 1–2 punchy paragraphs + 3–5 relevant hashtags.
+No markdown, no backticks, no filler.</code></pre>
+      <p class="text-sm text-slate-400">These guardrails force brevity, which makes editing faster and posts sound human.</p>
+    </section>
+
+    <section class="mt-10">
+      <h2>Channel-by-channel: formats that actually work</h2>
+      <h3>LinkedIn (6–10 lines)</h3>
+      <ul>
+        <li><strong>Hook</strong>: 6–12 words (question, contrast, or mini-stat).</li>
+        <li><strong>Body</strong>: 2–4 lines with 1 proof (metric, screenshot, quote).</li>
+        <li><strong>CTA</strong>: one action (reply or resource). Hashtags: 1–3 max.</li>
+      </ul>
+<pre><code>Hook: "Our demo replies doubled after one small change."
+• Swapped feature tour → 3 outcome questions.
+• Shortened deck 14 → 5 slides.
+• Booked follow-ups live.
+30 days: +41% replies, +27% show rate.
+Want the 3 questions? Comment "questions".</code></pre>
+
+      <h3>X (Twitter) ≤ 280 chars</h3>
+<pre><code>Variant 1: From "tour first" → "outcomes first."
++41% replies, +27% shows in 30 days.
+Ask 3 questions:
+1) Outcome?
+2) Obstacle?
+3) Timeline?
+Ship the call, not the deck.</code></pre>
+
+      <h3>Email (subject + body)</h3>
+<pre><code>Subject: Skip the tour—ask these 3 demo questions
+Body: We swapped our product tour for 3 outcome questions.
+Result: +41% replies, +27% show rate (30 days).
+Want the exact script? Reply "script"—I’ll send it.</code></pre>
+
+      <h3>Instagram (caption + hashtags)</h3>
+<pre><code>We stopped pitching features and started asking outcomes.
+3 questions changed our demos in 30 days.
+Small shift, big lift.
+
+#b2bmarketing #salesdemo #saasgrowth</code></pre>
+    </section>
+
+    <section class="mt-10">
+      <h2>Templates you can reuse every week</h2>
+      <ul>
+        <li><strong>Problem → Lesson → CTA</strong>: one obstacle, one fix, one action.</li>
+        <li><strong>Myth vs Reality (3 bullets)</strong>: pattern break + proof.</li>
+        <li><strong>Metric-first mini case study</strong>: lead with a number and timeframe.</li>
+        <li><strong>Playbook in 5 steps</strong>: checklist energy (saves edits).</li>
+      </ul>
+      <p>We collected full examples here: <a href="/blog/linkedin-post-templates/" class="underline">10 LinkedIn post templates (not AI-ish)</a>.</p>
+    </section>
+
+    <section class="mt-10">
+      <h2>How to export & schedule without the copy-paste tax</h2>
+      <p>As soon as you like a draft, export it where your team actually works:</p>
+      <ul>
+        <li><strong>Notion</strong>: create a clean page with headings and paragraphs.</li>
+        <li><strong>Trello</strong>: send each channel as a card in your pipeline list.</li>
+        <li><strong>Buffer (Creator+)</strong>: queue LinkedIn/X/IG directly.</li>
+      </ul>
+      <p>We built the exports to be one-click. Learn more: <a href="/blog/notion-trello-export/" class="underline">Notion & Trello exports that actually save time</a>.</p>
+    </section>
+
+    <section class="mt-10">
+      <h2>Troubleshooting: keeping it specific (and human)</h2>
+      <ul>
+        <li><strong>Sounds generic?</strong> Add your own metric, time window, or artifact.</li>
+        <li><strong>Too long?</strong> Cut to 6–10 lines (LI) / 280 chars (X). Use bullets.</li>
+        <li><strong>Low replies?</strong> End with one action: ask a question or offer a resource.</li>
+        <li><strong>Inconsistent cadence?</strong> Batch prompts and save presets.</li>
+      </ul>
+    </section>
+
+    <!-- Inline CTA -->
+    <section class="mt-12 card p-6">
+      <div class="grid md:grid-cols-3 gap-5 items-center">
+        <div class="md:col-span-2">
+          <h3 class="text-xl font-bold tracking-tight">Paste once → get 4 channel drafts</h3>
+          <p class="text-slate-400 mt-1">LinkedIn, X, Email & IG in seconds. Export to Notion/Trello. BYOK supported.</p>
+        </div>
+        <div class="flex md:justify-end gap-3">
+          <a href="https://contentrepurpose.pro/#demo" class="btn btn-primary">Try Free Demo</a>
+          <a href="/#pricing" class="btn">Creator plan — <span class="mono">CONTENTOFF90</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-12">
+      <h2>FAQs</h2>
+      <details class="mb-3">
+        <summary class="font-semibold">What is AI content repurposing?</summary>
+        <p>Turning one source idea into platform-native drafts for multiple channels using AI, so you don’t rewrite everything from scratch.</p>
+      </details>
+      <details class="mb-3">
+        <summary class="font-semibold">Which channels should I start with?</summary>
+        <p>LinkedIn + Email for B2B. Add X for speed, IG for reach. Expand once you can sustain 2–4×/week.</p>
+      </details>
+      <details class="mb-3">
+        <summary class="font-semibold">How do I avoid the AI “tone”?</summary>
+        <p>Insert your own proof (metrics, screenshots, quotes) and keep structure tight (hooks, bullets, single CTA).</p>
+      </details>
+      <details class="mb-3">
+        <summary class="font-semibold">How fast is the workflow?</summary>
+        <p>With a clear paragraph, minutes. Then one-click export to Notion/Trello, and queue (Creator+).</p>
+      </details>
+    </section>
+  </main>
+
+  <!-- Related posts -->
+  <section class="max-w-7xl mx-auto px-5 pb-14">
+    <h2 class="text-2xl font-extrabold tracking-tight mb-4">Related</h2>
+    <div class="grid md:grid-cols-2 gap-5">
+      <a href="/blog/paste-once-multi-channel/" class="card p-5 group">
+        <div class="text-sm text-slate-400">Workflow</div>
+        <div class="font-semibold mt-1 group-hover:underline">Paste once → LinkedIn/X/Email/IG: a 15-min workflow</div>
+      </a>
+      <a href="/blog/linkedin-post-templates/" class="card p-5 group">
+        <div class="text-sm text-slate-400">Templates</div>
+        <div class="font-semibold mt-1 group-hover:underline">10 LinkedIn post templates (that don’t sound AI-ish)</div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
