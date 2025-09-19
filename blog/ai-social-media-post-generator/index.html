@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Social Media Post Generator: Turn One Blog into 12 Posts (Free Prompts + Templates)</title>
+  <meta name="description" content="Paste once → get LinkedIn, X, Instagram, and Email drafts in minutes. Learn what an AI social media post generator is, follow the 4-step quickstart, and grab free prompt packs and channel checklists.">
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- OG / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="AI Social Media Post Generator: Turn One Blog into 12 Posts (Free Prompts + Templates)">
+  <meta property="og:description" content="Turn one blog into 12 social posts with a paste-once workflow. Free prompts + checklists included.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">
+  <meta property="og:image" content="/og-cover.png">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI Social Media Post Generator: Turn One Blog into 12 Posts (Free Prompts + Templates)">
+  <meta name="twitter:description" content="4-step quickstart + prompt packs to spin one idea across LinkedIn, X, IG, and Email.">
+  <meta name="twitter:image" content="/og-cover.png">
+
+  <style>
+    :root{
+      --bg:#0b1020; --ink:#e6e8ef; --muted:#8b93a7; --ink-2:#cbd1dd;
+      --border:rgba(255,255,255,0.08); --card:#12172a;
+      --brand:#6ee7f8; --accent:#a78bfa; --ok:#34d399; --warn:#f59e0b;
+      --grad:linear-gradient(90deg,#6ee7f8,#a78bfa 60%,#f472b6);
+    }
+    html,body{background:var(--bg);color:var(--ink);margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto}
+    main{max-width:1024px;margin:0 auto;padding:28px 18px 96px}
+    .eyebrow{letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-size:12px;margin-bottom:10px}
+    h1{font-size:clamp(34px,4vw,48px);line-height:1.1;margin:8px 0 6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lede{font-size:clamp(18px,2.1vw,20px);color:var(--ink-2);margin-top:8px}
+    .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:10px}
+    .tag{border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+    /* Static ToC (no sticky/overlap) */
+    .toc{position:static;border:1px solid var(--border);border-radius:16px;padding:16px;background:rgba(255,255,255,0.02);margin:22px 0}
+    .toc h3{margin:0 0 6px;font-size:14px;color:var(--ink-2)}
+    .toc a{display:block;color:var(--ink-2);text-decoration:none;padding:6px 0}
+    .toc a:hover{color:#fff}
+    h2{font-size:clamp(26px,3vw,32px);margin-top:40px;line-height:1.2}
+    h3{font-size:clamp(20px,2.3vw,22px);margin-top:22px;color:var(--ink-2)}
+    p{line-height:1.75;color:#e9ecf6}
+    ul,ol{line-height:1.8}
+    .note,.pro,.warn,.def{border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:14px 16px;border-radius:14px;margin:16px 0}
+    .def .k{color:var(--accent);font-weight:700}
+    .pro .k{color:var(--ok);font-weight:700}
+    .warn .k{color:var(--warn);font-weight:700}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:16px 0}
+    .card{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:16px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-size:12px}
+    .cta{margin:40px 0 16px;padding:18px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(110,231,248,0.06),rgba(167,139,250,0.06))}
+    .cta .row{display:flex;gap:16px;flex-wrap:wrap}
+    .button{display:inline-block;padding:10px 14px;border-radius:12px;border:1px solid var(--border);text-decoration:none;color:#fff;background:var(--grad);box-shadow:0 10px 24px rgba(133,77,255,.18)}
+    a{color:#b4c5ff} a:hover{color:#fff}
+    code{background:#0f1430;border:1px solid var(--border);padding:2px 6px;border-radius:6px}
+    pre{background:#0f1430;border:1px solid var(--border);padding:12px;border-radius:12px;overflow:auto}
+    .typewriter{font-weight:600;white-space:nowrap;border-right:2px solid var(--brand);animation:caret 1s steps(1) infinite}
+    @keyframes caret{50%{border-color:transparent}}
+    .hero{border:1px solid var(--border);border-radius:18px;padding:18px;margin:16px 0 8px;background:linear-gradient(135deg,rgba(110,231,248,0.06),rgba(244,114,182,0.05) 50%,rgba(167,139,250,0.06))}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border);font-size:12px;color:var(--ink-2)}
+    .dl-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .copy{display:inline-block;margin-left:8px;padding:4px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03);cursor:pointer;font-size:12px;color:var(--ink-2)}
+  </style>
+
+  <!-- Article Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "inLanguage":"en-US",
+    "mainEntityOfPage":{"@type":"WebPage","@id":"https://contentrepurpose.pro/blog/ai-social-media-post-generator/"},
+    "headline":"AI Social Media Post Generator: Turn One Blog into 12 Posts (Free Prompts + Templates)",
+    "description":"What an AI social media post generator is, a 4-step quickstart, and free prompt packs/checklists to turn one blog into 12 channel-ready posts.",
+    "image":"https://contentrepurpose.pro/og-cover.png",
+    "author":{"@type":"Person","name":"Frank C"},
+    "publisher":{"@type":"Organization","name":"ContentRepurpose.pro","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/logo.png"}},
+    "datePublished":"2025-09-19",
+    "dateModified":"2025-09-19"
+  }
+  </script>
+
+  <!-- HowTo Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"HowTo",
+    "name":"Turn one blog into 12 social posts with an AI generator",
+    "inLanguage":"en-US",
+    "totalTime":"PT20M",
+    "tool":[{"@type":"HowToTool","name":"ContentRepurpose.pro"}],
+    "step":[
+      {"@type":"HowToStep","name":"Paste your source","text":"Paste the blog URL or text into ContentRepurpose.pro."},
+      {"@type":"HowToStep","name":"Choose channels","text":"Select LinkedIn, X, Instagram, and Email."},
+      {"@type":"HowToStep","name":"Generate + edit","text":"Generate drafts, then edit for tone, examples, and CTA."},
+      {"@type":"HowToStep","name":"Export + schedule","text":"Export to your calendar or planner and schedule across 2–3 weeks."}
+    ]
+  }
+  </script>
+
+  <!-- FAQ Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"What is an AI social media post generator?","acceptedAnswer":{"@type":"Answer","text":"A tool that transforms existing content—like a blog, video, or transcript—into platform-ready posts for LinkedIn, X, Instagram, and Email in minutes."}},
+      {"@type":"Question","name":"How do I turn one blog into multiple social posts?","acceptedAnswer":{"@type":"Answer","text":"Paste your blog into a generator, select channels, generate drafts, then edit and schedule. Use our free prompt pack to customize hooks and CTAs by platform."}},
+      {"@type":"Question","name":"Will AI-generated posts hurt SEO or authenticity?","acceptedAnswer":{"@type":"Answer","text":"No, when you adapt per channel and edit for voice and specifics. Avoid copy/pasting the same text across URLs."}}
+    ]
+  }
+  </script>
+
+  <!-- Breadcrumbs (helps sitelinks/snippets) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":2,"name":"AI Social Media Post Generator","item":"https://contentrepurpose.pro/blog/ai-social-media-post-generator/"}
+    ]
+  }
+  </script>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Social · AI · US</div>
+  <h1>AI Social Media Post Generator: Turn One Blog into 12 Posts (Free Prompts + Templates)</h1>
+  <p class="lede">
+    Paste once, then publish <span id="tw" class="typewriter">LinkedIn threads</span>, X posts, Instagram captions, and Email subject lines—fast.
+  </p>
+  <div class="meta">
+    <span class="tag">By Frank C</span>
+    <span class="tag">Updated: Sep 19, 2025</span>
+    <span class="tag">10–16 min read</span>
+  </div>
+
+  <section class="hero">
+    <span class="pill">Free prompts</span>
+    <span class="pill">Channel checklists</span>
+    <span class="pill">SEO-safe workflow</span>
+    <p style="margin:8px 0 0;color:var(--ink-2)">This guide shows how to turn one proven blog into a month of social content—without losing your voice or SEO signals.</p>
+    <div class="dl-row">
+      <!-- Prompt Pack CSV -->
+      <a class="button" download="ai-social-prompt-pack.csv"
+         href="data:text/csv;charset=utf-8,Channel,Prompt%20Template%0ALinkedIn,%22Turn the key ideas from [TITLE] into a 7-step LinkedIn thread for [ICP]. Start with a strong hook and end with a soft CTA to [OFFER]. Keep sentences short.%22%0AX,%22Condense [TITLE] into a 6–8 tweet mini-guide. Hook in tweet 1, 1 tip per tweet, include 2 relevant hashtags, end with a CTA to [LINK].%22%0AInstagram,%22Write an IG caption that summarizes [TITLE] in 4–6 short lines, then a list of 8–12 hashtags for [NICHE].%22%0AEmail,%22Write a newsletter intro (120–180 words) that distills [TITLE] into one story + one tip + one CTA to [LINK].%22">
+         Download Prompt Pack (CSV)
+      </a>
+      <!-- Channel Checklists CSV -->
+      <a class="button" download="channel-checklists.csv"
+         href="data:text/csv;charset=utf-8,Channel,Checklist%0ALinkedIn,%22Hook in line 1–2; 5–8 bullets; 1 soft CTA; link to pillar%22%0AX,%226–10 tweets; 1–2 keywords; short lines; CTA last%22%0AInstagram,%22Carousel steps or caption lines; 8–12 hashtags; final slide CTA%22%0AEmail,%22Subject A/B; 1 story + 1 tip; single CTA; UTM tag%22">
+         Download Channel Checklists (CSV)
+      </a>
+    </div>
+  </section>
+
+  <aside class="toc">
+    <h3>Table of Contents</h3>
+    <a href="#definition">1. What Is an AI Social Media Post Generator?</a>
+    <a href="#quickstart">2. Quickstart: 4 Steps (Featured Snippet Style)</a>
+    <a href="#prompts">3. Free Prompts by Channel</a>
+    <a href="#workflow">4. Paste-Once Workflow (Demo)</a>
+    <a href="#quality">5. Keep Quality & Voice</a>
+    <a href="#faq">6. FAQ</a>
+    <a href="#cta">Try the Live Demo (90% Off)</a>
+  </aside>
+
+  <section id="definition">
+    <h2>1) What Is an AI Social Media Post Generator?</h2>
+    <div class="def">
+      <span class="k">Definition:</span> An <strong>AI social media post generator</strong> turns an existing piece of content—like a blog, video, or transcript—into platform-ready posts (LinkedIn, X, Instagram, Email) in minutes, so you can publish faster with consistent quality.
+    </div>
+    <p>This page focuses on a <em>repurposing-first</em> workflow: start from a proven blog and spin out 12+ posts tailored to each channel’s format and intent.</p>
+  </section>
+
+  <section id="quickstart">
+    <h2>2) Quickstart: 4 Steps (Featured Snippet Style)</h2>
+    <ol>
+      <li><strong>Paste your source:</strong> Drop your blog URL/text into <a href="https://contentrepurpose.pro/">ContentRepurpose.pro</a>.</li>
+      <li><strong>Select channels:</strong> LinkedIn, X, Instagram, Email.</li>
+      <li><strong>Generate & edit:</strong> Apply the <a href="#prompts">prompt pack</a>, then add examples and a single CTA.</li>
+      <li><strong>Export & schedule:</strong> Send drafts to your calendar/Notion/Trello and stagger over 2–3 weeks.</li>
+    </ol>
+    <p class="pro"><span class="k">Tip:</span> Use one core CTA per post. Rotate offer language to avoid fatigue.</p>
+  </section>
+
+  <section id="prompts">
+    <h2>3) Free Prompts by Channel</h2>
+
+    <div class="grid">
+      <div class="card">
+        <div class="badge">LinkedIn</div>
+        <h3>Thread Generator</h3>
+        <pre><code id="p1">Turn the key ideas from [TITLE] into a 7-step LinkedIn thread for [ICP]. Start with a curiosity hook, 1 idea per step, include 1 example, and end with a soft CTA to [OFFER]. Keep sentences short.</code></pre>
+        <button class="copy" data-copy="p1">Copy</button>
+        <p>Read next: <a href="/blog/linkedin-post-templates">LinkedIn Post Templates</a></p>
+      </div>
+
+      <div class="card">
+        <div class="badge">X (Twitter)</div>
+        <h3>Mini-Guide (6–8 tweets)</h3>
+        <pre><code id="p2">Condense [TITLE] into a 6–8 tweet mini-guide. Hook in tweet 1, 1 tip per tweet, 2 relevant hashtags, and a final CTA to [LINK] with UTM.</code></pre>
+        <button class="copy" data-copy="p2">Copy</button>
+      </div>
+
+      <div class="card">
+        <div class="badge">Instagram</div>
+        <h3>Caption or Carousel</h3>
+        <pre><code id="p3">Write an IG caption that summarizes [TITLE] in 4–6 short lines, then add 8–12 hashtags for [NICHE]. If carousel, use 1 step per slide; finish with a “read more” CTA.</code></pre>
+        <button class="copy" data-copy="p3">Copy</button>
+      </div>
+
+      <div class="card">
+        <div class="badge">Email</div>
+        <h3>Newsletter Snippet</h3>
+        <pre><code id="p4">Write a newsletter intro (120–180 words) that distills [TITLE] into one story + one tip + one CTA to [LINK]. Offer 3 subject line options (40–55 chars).</code></pre>
+        <button class="copy" data-copy="p4">Copy</button>
+        <p>See: <a href="/blog/content-repurposing-for-seo/">Repurposing for SEO</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="workflow">
+    <h2>4) Paste-Once Workflow (Demo)</h2>
+    <p>Here’s the exact flow teams use to turn one blog into 12 posts:</p>
+    <ol>
+      <li><strong>Paste:</strong> Add the blog URL or text to <a href="https://contentrepurpose.pro/">ContentRepurpose.pro</a>.</li>
+      <li><strong>Choose channels:</strong> LinkedIn, X, Instagram, Email (you can add more later).</li>
+      <li><strong>Generate:</strong> Use prompt pack variations to tailor hooks and CTAs per channel.</li>
+      <li><strong>Edit:</strong> Add specific examples, stats, and your product context. Keep one clear CTA.</li>
+      <li><strong>Export:</strong> Push drafts to Notion/Trello or download and schedule in your social tool.</li>
+      <li><strong>Measure:</strong> Track saves/reposts/CTR; recycle winners with new hooks each quarter.</li>
+    </ol>
+    <p>Related reads: <a href="/blog/content-repurposing-101/">Repurposing 101</a> · <a href="/blog/best-ai-content-repurposing-tools-2025/">Top tools in 2025</a></p>
+  </section>
+
+  <section id="quality">
+    <h2>5) Keep Quality & Voice (SEO-Safe)</h2>
+    <ul>
+      <li><strong>Voice lock:</strong> paste a short brand-voice sample into your prompt.</li>
+      <li><strong>Adapt per channel:</strong> vary hooks, length, and CTA wording.</li>
+      <li><strong>Avoid duplication:</strong> don’t publish identical text across URLs; use canonicals when syndicating.</li>
+      <li><strong>Add structure:</strong> FAQs, checklists, and examples make posts more useful (and snippet-friendly).</li>
+    </ul>
+    <p>Deep dive: <a href="/blog/content-repurposing-for-seo/">Repurposing for SEO</a> · <a href="/blog/paste-once-multi-channel/">Paste-once workflow</a></p>
+  </section>
+
+  <section id="faq">
+    <h2>6) FAQ</h2>
+    <h3>What’s the fastest way to create posts from a blog?</h3>
+    <p>Use a generator: paste your blog, pick channels, apply the prompt pack, edit, and schedule. Most teams can ship 12 posts in under an hour.</p>
+
+    <h3>Does this work for video or podcast content?</h3>
+    <p>Yes—paste the transcript or summary and follow the same steps. Add a short clip or quote card for visual posts.</p>
+
+    <h3>Will this hurt authenticity?</h3>
+    <p>No—keep a human edit pass for examples and tone, and avoid one-size-fits-all copy.</p>
+  </section>
+
+  <section class="cta" id="cta">
+    <h3 style="margin:0 0 8px">Try the Live Demo (90% Off)</h3>
+    <p style="margin:0 0 10px;color:var(--ink-2)">Paste once → generate LinkedIn, X, Instagram, and Email drafts in seconds. Use promo code <code>CONTENTOFF90</code> at signup.</p>
+    <div class="row">
+      <a href="https://contentrepurpose.pro/" class="button">Go to Homepage</a>
+      <a href="https://contentrepurpose.pro/#demo" class="button">Try the Live Demo</a>
+      <a href="https://contentrepurpose.pro/#pricing" class="button">Sign up with Promo</a>
+    </div>
+  </section>
+</main>
+
+<!-- Typewriter + Copy buttons -->
+<script>
+(function(){
+  // Typewriter
+  const el = document.getElementById('tw'); if(el){
+    const phrases = ["LinkedIn threads","X posts","Instagram captions","email subject lines"];
+    let i=0,j=0,dir=1,hold=0;
+    (function tick(){
+      if(hold>0){hold--;return requestAnimationFrame(tick)}
+      const t=phrases[i]; el.textContent=t.slice(0,j); j+=dir;
+      if(j>t.length){dir=-1;hold=30}
+      if(j<0){dir=1;i=(i+1)%phrases.length}
+      requestAnimationFrame(tick)
+    })();
+  }
+  // Copy buttons
+  document.querySelectorAll(".copy").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id = btn.getAttribute("data-copy");
+      const code = document.getElementById(id);
+      if(code){
+        const text = code.innerText;
+        navigator.clipboard.writeText(text).then(()=>{
+          btn.textContent = "Copied!";
+          setTimeout(()=>btn.textContent="Copy",1200);
+        });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
