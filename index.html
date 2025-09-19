@@ -1,27 +1,26 @@
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
-   
   <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17511593434"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17511593434"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-17511593434');
+  </script>
 
-  gtag('config', 'AW-17511593434');
-</script>
-  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
+
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-  <meta name="description" content="Repurpose blogs, emails, and posts into LinkedIn, X, Instagram and more. AI-powered content repurposing tool & generator. Export to Notion, Trello, Buffer. BYOK supported.">
+  <meta name="description" content="Repurpose blogs, emails, and posts into LinkedIn, X, Instagram and more. AI-powered content repurposing tool & generator. Export to Notion & Trello. BYOK supported." />
   <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
+  <meta name="robots" content="index,follow,max-video-preview:-1,max-image-preview:large,max-snippet:-1">
 
-  <!-- OG/Twitter -->
+  <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
   <meta property="og:description" content="Turn one idea into posts for LinkedIn, X, Instagram, and Email. Export with one click. BYOK supported.">
@@ -29,73 +28,140 @@
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
-  <meta name="twitter:description" content="Repurpose your content into multi-channel drafts. Export to Notion, Trello & Buffer. BYOK supported.">
+  <meta name="twitter:description" content="Repurpose your content into multi-channel drafts. Export to Notion & Trello. BYOK supported.">
   <meta name="twitter:image" content="/og-cover.png">
-  
-  
-  <!-- Fonts + Tailwind -->
+
+  <!-- Preconnects for perf -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    :root { --brandA:#7AA2FF; --brandB:#FF2D2D; }
+    :root{ --brandA:#7AA2FF; --brandB:#FF2D2D; --ink:#0a0d18; --ink-2:#101425; }
     html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
     .bg-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB))}
-    .glass{backdrop-filter: blur(12px); background:rgba(255,255,255,.62)}
-    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.78);box-shadow:0 15px 60px rgba(2,6,23,.08)}
-    @media (prefers-color-scheme:dark){
-      body{background:#07090f;color:#e9eef6}
-      .glass{background:rgba(10,12,18,.5)}
-      .card{background:rgba(14,16,22,.65);border-color:rgba(255,255,255,.08);box-shadow:0 20px 70px rgba(122,162,255,.08),0 10px 60px rgba(255,45,45,.06)}
-    }
-    .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem}
-    .ok{color:#10b981}.warn{color:#f59e0b}.err{color:#ef4444}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-    .pill{border-radius:9999px;border:1px solid rgba(255,255,255,.25);padding:.2rem .6rem}
-    #click-guard{position:fixed;inset:0;pointer-events:none}
-    dialog{border:1px solid rgba(255,255,255,.1)}
-    .btn{padding:.5rem .75rem;border-radius:.75rem;border:1px solid rgba(148,163,184,.35)}
-    .btn-primary{background:black;color:white}
+    .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.80);box-shadow:0 12px 40px rgba(2,6,23,.08)}
+    .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem;background:rgba(255,255,255,.65)}
     .chip{font-size:.7rem;padding:.2rem .5rem;border-radius:9999px;border:1px solid rgba(148,163,184,.35)}
-    .toast{position:fixed;right:1rem;bottom:1rem;z-index:50}
+    .btn{padding:.6rem .9rem;border-radius:.9rem;border:1px solid rgba(148,163,184,.35)}
+    .btn-primary{background:black;color:white}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    #click-guard{position:fixed;inset:0;pointer-events:none}
+
+    /* Glass & dark */
+    .glass{backdrop-filter: blur(12px); background:rgba(255,255,255,.62)}
+    @media (prefers-color-scheme:dark){
+      body{background:var(--ink);color:#e9eef6}
+      .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)}
+      .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+    }
+
+    /* Decorative visuals */
+    .halo{
+      position:absolute; filter: blur(60px); opacity:.55; pointer-events:none; transform:translateZ(0);
+      background:radial-gradient(50% 50% at 50% 50%, rgba(122,162,255,.8), rgba(255,45,45,.65) 60%, transparent 70%);
+      width:42rem; height:42rem; border-radius:50%;
+      animation: float 16s ease-in-out infinite;
+    }
+    .halo.h2{ width:34rem; height:34rem; left:auto; right:-12rem; top:-6rem; animation-duration:18s; opacity:.5 }
+    .halo.h3{ width:28rem; height:28rem; left:-10rem; top:26rem; animation-duration:22s; opacity:.45 }
+    @keyframes float{
+      0%,100%{ transform: translate3d(0,0,0) }
+      50%{ transform: translate3d(0,-20px,0) }
+    }
+    .orbit{
+      position:absolute; inset:-32px; border-radius:24px; pointer-events:none;
+      background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
+      -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%);
+              mask: radial-gradient(closest-side, transparent 88%, black 89%);
+      animation: spin 18s linear infinite;
+    }
+    @keyframes spin{ to{ transform: rotate(360deg) } }
+
+    .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
+    @media (prefers-color-scheme:dark){
+      .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); }
+    }
+
+    .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
+    .marquee:hover{ animation-play-state: paused }
+    @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
+
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   </style>
 
-  <!-- JSON-LD: Organization + Site -->
+  <!-- JSON-LD: Organization -->
   <script type="application/ld+json">{
     "@context":"https://schema.org",
     "@type":"Organization",
     "name":"ContentRepurpose.pro",
     "url":"https://contentrepurpose.pro/",
-    "logo":"https://contentrepurpose.pro/logo.png",
-    "sameAs":["https://x.com/contentflow","https://www.linkedin.com/company/contentflowai"]
+    "logo":"https://contentrepurpose.pro/logo.svg",
+    "sameAs":[
+      "https://x.com/contentflow",
+      "https://www.linkedin.com/company/contentflowai"
+    ]
   }</script>
+
+  <!-- JSON-LD: WebSite + Sitelinks search -->
   <script type="application/ld+json">{
     "@context":"https://schema.org",
     "@type":"WebSite",
     "url":"https://contentrepurpose.pro/",
+    "name":"ContentRepurpose.pro",
     "potentialAction":{
       "@type":"SearchAction",
       "target":"https://contentrepurpose.pro/search?q={q}",
       "query-input":"required name=q"
     }
   }</script>
+
+  <!-- JSON-LD: SoftwareApplication -->
+  <script type="application/ld+json">{
+    "@context":"https://schema.org",
+    "@type":"SoftwareApplication",
+    "name":"ContentRepurpose.pro",
+    "applicationCategory":"ContentCreationApplication",
+    "operatingSystem":"Web",
+    "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+  }</script>
 </head>
+
 <body class="min-h-full" data-auth="guest">
-  <div id="click-guard"></div>
+  <div id="click-guard" aria-hidden="true"></div>
+
+  <!-- Decorative halos -->
+  <div class="halo" style="left:-14rem; top:-10rem;"></div>
+  <div class="halo h2"></div>
+  <div class="halo h3"></div>
 
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
-        <img src="/logo.png" alt="ContentRepurpose Logo" class="w-9 h-9 rounded-xl bg-grad" />
+        <!-- Inline SVG logo (no external asset needed) -->
+        <svg width="36" height="36" viewBox="0 0 48 48" class="rounded-xl" aria-hidden="true">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7AA2FF"/>
+              <stop offset="100%" stop-color="#FF2D2D"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
+          <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
+          <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/>
+        </svg>
         <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
       </a>
       <nav class="flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
-        <a href="#faq" class="hover:opacity-80">FAQ</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
@@ -108,81 +174,206 @@
   </header>
 
   <!-- HERO -->
-  <section class="max-w-7xl mx-auto px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
-    <div>
-      <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
-        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+  <section class="relative">
+    <div class="max-w-7xl mx-auto px-5 pt-12 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+        </div>
+        <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
+          AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
+        </h1>
+        <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
+          Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
+          Export to <strong>Notion</strong> or <strong>Trello</strong> with one click. BYOK supported.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
+          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
+        </div>
+        <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <span class="badge">AI Content Generator</span>
+          <span class="badge">Repurposing Tool</span>
+          <span class="badge">SEO-ready</span>
+          <span class="badge">BYOK</span>
+        </div>
+
+        <!-- Trust strip -->
+        <div class="mt-8 overflow-hidden">
+          <div class="flex items-center gap-4 text-[11px] uppercase tracking-widest text-slate-500">
+            <span class="chip">Creators</span>
+            <span class="chip">Marketers</span>
+            <span class="chip">Newsletters</span>
+            <span class="chip">Teams</span>
+          </div>
+          <div class="relative mt-4">
+            <div class="marquee opacity-70">
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
+              <!-- duplicate for seamless scroll -->
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
-        AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
-      </h1>
-      <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-        Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> & <strong>Instagram</strong> drafts. 
-        Export to Notion, Trello, or Buffer with one click. BYOK supported.
-      </p>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
-        <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-        <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
-      </div>
-      <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-        <span class="badge">Content Generator</span>
-        <span class="badge">Repurposing Tool</span>
-        <span class="badge">SEO-ready</span>
-        <span class="badge">BYOK</span>
-      </div>
-    </div>
-    <div class="glass card p-5">
-      <div class="text-xs text-slate-500 mb-2">Preview</div>
-      <pre class="text-xs bg-black/85 text-green-200 rounded-xl p-4 h-56 overflow-auto mono" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
+
+      <!-- Visual mockups -->
+      <div class="relative">
+        <div class="orbit" aria-hidden="true"></div>
+        <div class="grid gap-4">
+          <div class="mock p-4 card">
+            <div class="text-xs text-slate-400">Command</div>
+            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
 ✓ outline created
 ✓ 3 social variants
 ✓ email subject + body ready
 ✓ instagram caption + hashtags</pre>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">LinkedIn</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
+                • Hook that earns the scroll<br>
+                • 6–10 crisp lines, one CTA<br>
+                • On-brand tone &amp; keywords
+              </div>
+            </div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">X (Twitter)</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
+                Two fast variants<br>
+                Always &le; 280 chars<br>
+                Ready to post ✨
+              </div>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">Email</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
+                Subject &amp; body prepped<br>
+                Preview &amp; send from your client
+              </div>
+            </div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">Instagram</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
+                Caption + 3–5 hashtags<br>
+                Short, skimmable, on-brand
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
   <!-- TEMPLATES -->
-  <section id="templates" class="max-w-7xl mx-auto px-5 py-10">
+  <section id="templates" class="max-w-7xl mx-auto px-5 py-12">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
-      <div class="card p-5">
-        <div class="text-xs text-slate-400">Blog</div>
-        <div class="mt-1 font-semibold">Problem → Solution SEO Article</div>
-        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
-      </div>
-      <div class="card p-5">
-        <div class="text-xs text-slate-400">Email</div>
-        <div class="mt-1 font-semibold">Feature Launch / Update</div>
-        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
-      </div>
-      <div class="card p-5">
+      <article class="card p-5">
         <div class="text-xs text-slate-400">Social</div>
-        <div class="mt-1 font-semibold">LinkedIn Thread from Blog</div>
-        <button class="mt-4 px-3 py-2 rounded-xl border">Use template</button>
-      </div>
+        <h3 class="mt-1 font-semibold">LinkedIn Post Templates</h3>
+        <p class="text-sm text-slate-500 mt-2">Hooks, line breaks, and CTA patterns that perform.</p>
+        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">Use template</a>
+      </article>
+
+      <article class="card p-5">
+        <div class="text-xs text-slate-400">Generator</div>
+        <h3 class="mt-1 font-semibold">AI Social Media Post Generator</h3>
+        <p class="text-sm text-slate-500 mt-2">Paste once → get platform-ready snippets fast.</p>
+        <a href="http://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">Open guide</a>
+      </article>
+
+      <article class="card p-5">
+        <div class="text-xs text-slate-400">Blog → Social</div>
+        <h3 class="mt-1 font-semibold">Repurpose Blog Posts for Social</h3>
+        <p class="text-sm text-slate-500 mt-2">Turn articles into LinkedIn, X, Email & IG drafts.</p>
+        <a href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">See how</a>
+      </article>
     </div>
   </section>
 
   <!-- USE CASES -->
-  <section id="use-cases" class="max-w-7xl mx-auto px-5 pb-8">
+  <section id="use-cases" class="max-w-7xl mx-auto px-5 pb-10">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <div class="card p-5">
-        <div class="font-semibold">Repurpose a blog to social</div>
-        <p class="text-sm text-slate-500 mt-2">Turn one article into multi-platform posts in minutes.</p>
+        <div class="font-semibold">Paste once → multi-channel</div>
+        <p class="text-sm text-slate-500 mt-2">One source into LinkedIn, X, Email & Instagram.</p>
+        <a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" class="text-sm underline mt-2 inline-block">Workflow</a>
       </div>
       <div class="card p-5">
-        <div class="font-semibold">Launch email updates</div>
-        <p class="text-sm text-slate-500 mt-2">Subject lines + short body copy for quick campaigns.</p>
+        <div class="font-semibold">Notion & Trello export</div>
+        <p class="text-sm text-slate-500 mt-2">Ship faster with boards/pages and approvals.</p>
+        <a href="https://contentrepurpose.pro/blog/notion-trello-export/" class="text-sm underline mt-2 inline-block">Guide</a>
       </div>
       <div class="card p-5">
-        <div class="font-semibold">Schedule to your calendar</div>
-        <p class="text-sm text-slate-500 mt-2">Export to Notion / Trello or push to Buffer (paid).</p>
+        <div class="font-semibold">Content repurposing for SEO</div>
+        <p class="text-sm text-slate-500 mt-2">Win long-tails and improve click-throughs.</p>
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" class="text-sm underline mt-2 inline-block">Playbook</a>
       </div>
     </div>
   </section>
 
+  <!-- BEST PICKS (Topical clusters & internal links) -->
+  <section id="best-picks" class="max-w-7xl mx-auto px-5 pb-12">
+    <div class="flex items-end justify-between gap-4">
+      <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Best picks</h2>
+      <a href="/blog" class="text-sm underline">Visit the blog</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5 mt-5">
+      <!-- Cluster 1 -->
+      <nav class="card p-5">
+        <h3 class="font-semibold">Repurposing Fundamentals</h3>
+        <ul class="mt-2 text-sm space-y-2">
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-101/">Content repurposing 101</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-strategy/">Repurposing strategy</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/how-to-repurpose-content/">How to repurpose content</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-ideas/">100+ repurposing ideas</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/">One piece → many platforms</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/">Blog → Social guide</a></li>
+        </ul>
+      </nav>
+
+      <!-- Cluster 2 -->
+      <nav class="card p-5">
+        <h3 class="font-semibold">AI Repurposing & Tools</h3>
+        <ul class="mt-2 text-sm space-y-2">
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">AI content repurposing</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/">Best AI tools (2025)</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/">AI vs manual repurposing</a></li>
+          <li><a class="underline" href="http://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social post generator</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Repurposing for SEO</a></li>
+        </ul>
+      </nav>
+
+      <!-- Cluster 3 -->
+      <nav class="card p-5">
+        <h3 class="font-semibold">Workflows & Exports</h3>
+        <ul class="mt-2 text-sm space-y-2">
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion & Trello export</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">Paste-once workflow</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/linkedin-post-templates">LinkedIn templates</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
   <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
   <section id="guestView">
     <!-- DEMO -->
@@ -192,6 +383,7 @@
           <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
           <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
         </div>
+
         <label for="source" class="sr-only">Source text</label>
         <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
 
@@ -200,17 +392,17 @@
           <div class="grid md:grid-cols-3 gap-3 mt-3">
             <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
             <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
-            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Save</button>
+            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save</button>
           </div>
           <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
         </details>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
-          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
-          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">Clear</button>
-          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Download Markdown</button>
-          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" disabled>Export CSV</button>
+          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
+          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your BYOK</button>
+          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Clear</button>
+          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Download Markdown</button>
+          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Export CSV</button>
           <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
       </section>
@@ -221,42 +413,46 @@
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
             <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
-            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Copy</button>
+            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
           </div>
           <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
+
         <!-- X -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
             <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
-            <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Copy</button>
+            <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
           </div>
           <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
+
         <!-- Email -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Copy</button>
+            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
           </div>
           <div class="text-xs text-slate-400">Subject:</div>
           <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
           <div class="text-xs text-slate-400 mt-3">Body:</div>
           <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
         </div>
+
         <!-- Instagram -->
         <div class="card p-5">
           <div class="flex justify-between items-center">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
             <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
-            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50">Copy</button>
+            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
           </div>
           <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
         </div>
       </section>
     </main>
   </section>
+
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
     <div class="max-w-7xl mx-auto px-5 pb-12">
@@ -268,8 +464,8 @@
         </div>
         <div class="flex items-center gap-3">
           <span id="memberPlanBadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-          <button id="manageBilling2" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
-          <button id="logoutBtn2" class="px-3 py-1 rounded-lg border">Sign out</button>
+          <button id="manageBilling2" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
+          <button id="logoutBtn2" class="px-3 py-1 rounded-lg border" type="button">Sign out</button>
         </div>
       </div>
 
@@ -285,7 +481,7 @@
               <input id="whitelabel" type="checkbox" class="hidden">
               <span id="wlLabel" class="chip hidden">White-label export</span>
             </label>
-            <button id="exportPack" class="btn hidden">Export Project Pack (.zip)</button>
+            <button id="exportPack" class="btn hidden" type="button">Export Project Pack (.zip)</button>
             <span id="quotaMember" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Today: 0/5</span>
           </div>
         </div>
@@ -296,14 +492,14 @@
           <summary class="cursor-pointer text-sm text-slate-500">Batch inputs (Starter+: one line = one run)</summary>
           <textarea id="batch_inputs" class="mt-3 w-full h-24 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Each new line is a separate input…"></textarea>
           <div class="text-xs text-slate-500 mt-1" id="batchNote">Starter: up to 5 • Creator: 20 • Business: 50</div>
-          <button id="run_batch" class="mt-2 btn">Run Batch</button>
+          <button id="run_batch" class="mt-2 btn" type="button">Run Batch</button>
           <ul id="batch_progress" class="mt-2 text-xs space-y-1"></ul>
         </details>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
-          <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90">Generate with your BYOK</button>
-          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg:white/50">Clear</button>
+          <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
+          <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your BYOK</button>
+          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg:white/50" type="button">Clear</button>
           <span id="status_m" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
       </div>
@@ -315,11 +511,11 @@
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
             <div class="flex items-center gap-2">
-              <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border">Copy</button>
-              <button id="publish-li_m" class="px-3 py-1 rounded-full text-xs border">Publish</button>
-              <button id="li-notion" class="px-3 py-1 rounded-full text-xs border hidden">Export to Notion</button>
-              <button id="li-trello" class="px-3 py-1 rounded-full text-xs border hidden">Send to Trello</button>
-              <button id="li-buffer" class="px-3 py-1 rounded-full text-xs border hidden">Queue in Buffer</button>
+              <button id="copy-li_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button>
+              <button id="publish-li_m" class="px-3 py-1 rounded-full text-xs border" type="button">Publish</button>
+              <button id="li-notion" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Export to Notion</button>
+              <button id="li-trello" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Send to Trello</button>
+              <button id="li-buffer" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Queue in Buffer</button>
             </div>
           </div>
           <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -330,11 +526,11 @@
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
             <div class="flex items-center gap-2">
-              <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border">Copy</button>
-              <button id="publish-x_m" class="px-3 py-1 rounded-full text-xs border">Publish</button>
-              <button id="x-notion" class="px-3 py-1 rounded-full text-xs border hidden">Export to Notion</button>
-              <button id="x-trello" class="px-3 py-1 rounded-full text-xs border hidden">Send to Trello</button>
-              <button id="x-buffer" class="px-3 py-1 rounded-full text-xs border hidden">Queue in Buffer</button>
+              <button id="copy-x_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button>
+              <button id="publish-x_m" class="px-3 py-1 rounded-full text-xs border" type="button">Publish</button>
+              <button id="x-notion" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Export to Notion</button>
+              <button id="x-trello" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Send to Trello</button>
+              <button id="x-buffer" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Queue in Buffer</button>
             </div>
           </div>
           <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -345,11 +541,11 @@
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
             <div class="flex items-center gap-2">
-              <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border">Copy</button>
-              <button id="publish-em_m" class="px-3 py-1 rounded-full text-xs border">Preview & Send</button>
-              <button id="em-notion" class="px-3 py-1 rounded-full text-xs border hidden">Export to Notion</button>
-              <button id="em-trello" class="px-3 py-1 rounded-full text-xs border hidden">Send to Trello</button>
-              <button id="em-buffer" class="px-3 py-1 rounded-full text-xs border hidden">Queue in Buffer</button>
+              <button id="copy-em_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button>
+              <button id="publish-em_m" class="px-3 py-1 rounded-full text-xs border" type="button">Preview &amp; Send</button>
+              <button id="em-notion" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Export to Notion</button>
+              <button id="em-trello" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Send to Trello</button>
+              <button id="em-buffer" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Queue in Buffer</button>
             </div>
           </div>
           <div class="text-xs text-slate-400">Subject:</div>
@@ -363,11 +559,11 @@
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
             <div class="flex items-center gap-2">
-              <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border">Copy</button>
-              <button id="publish-ig_m" class="px-3 py-1 rounded-full text-xs border">Open Creator Studio</button>
-              <button id="ig-notion" class="px-3 py-1 rounded-full text-xs border hidden">Export to Notion</button>
-              <button id="ig-trello" class="px-3 py-1 rounded-full text-xs border hidden">Send to Trello</button>
-              <button id="ig-buffer" class="px-3 py-1 rounded-full text-xs border hidden">Queue in Buffer</button>
+              <button id="copy-ig_m" class="px-3 py-1 rounded-full text-xs border" type="button">Copy</button>
+              <button id="publish-ig_m" class="px-3 py-1 rounded-full text-xs border" type="button">Open Creator Studio</button>
+              <button id="ig-notion" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Export to Notion</button>
+              <button id="ig-trello" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Send to Trello</button>
+              <button id="ig-buffer" class="px-3 py-1 rounded-full text-xs border hidden" type="button">Queue in Buffer</button>
             </div>
           </div>
           <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
@@ -380,7 +576,7 @@
         <div class="card p-5">
           <div class="flex items-center justify-between">
             <strong>Saved presets</strong>
-            <button id="addPreset" class="px-3 py-1 rounded-xl border">Save current</button>
+            <button id="addPreset" class="px-3 py-1 rounded-xl border" type="button">Save current</button>
           </div>
           <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
           <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
@@ -388,13 +584,13 @@
         <!-- Growth / Referrals -->
         <div class="card p-5">
           <strong>Grow your daily quota</strong>
-          <p class="text-sm text-slate-500 mt-2">Share your invite to unlock bonus runs (visual; enforcement requires billing/worker rules).</p>
+          <p class="text-sm text-slate-500 mt-2">Share your invite to unlock bonus runs (visual; enforcement handled by Worker).</p>
           <div class="mt-3 grid gap-2">
             <input id="refLink" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" readonly value="">
             <div class="flex flex-wrap gap-2">
-              <button id="shareLi" class="px-3 py-2 rounded-xl border">Share on LinkedIn</button>
-              <button id="shareX" class="px-3 py-2 rounded-xl border">Share on X</button>
-              <button id="copyRef" class="px-3 py-2 rounded-xl border">Copy link</button>
+              <button id="shareLi" class="px-3 py-2 rounded-xl border" type="button">Share on LinkedIn</button>
+              <button id="shareX" class="px-3 py-2 rounded-xl border" type="button">Share on X</button>
+              <button id="copyRef" class="px-3 py-2 rounded-xl border" type="button">Copy link</button>
             </div>
           </div>
           <p id="refNote" class="text-xs text-slate-500 mt-2">Referrals this month: <span id="refCount">0</span></p>
@@ -417,8 +613,8 @@
             </div>
             <p class="text-xs text-slate-500 mt-1">Export pages to your workspace.</p>
             <div class="mt-3 flex gap-2">
-              <button id="connectNotion" class="btn">Connect</button>
-              <button id="disconnectNotion" class="btn hidden">Disconnect</button>
+              <button id="connectNotion" class="btn" type="button">Connect</button>
+              <button id="disconnectNotion" class="btn hidden" type="button">Disconnect</button>
             </div>
           </div>
           <div class="p-4 rounded-xl border">
@@ -427,8 +623,8 @@
             </div>
             <p class="text-xs text-slate-500 mt-1">Send drafts as cards.</p>
             <div class="mt-3 flex gap-2">
-              <button id="connectTrello" class="btn">Connect</button>
-              <button id="disconnectTrello" class="btn hidden">Disconnect</button>
+              <button id="connectTrello" class="btn" type="button">Connect</button>
+              <button id="disconnectTrello" class="btn hidden" type="button">Disconnect</button>
             </div>
           </div>
           <div class="p-4 rounded-xl border">
@@ -437,8 +633,8 @@
             </div>
             <p class="text-xs text-slate-500 mt-1">Queue posts to social profiles.</p>
             <div class="mt-3 flex gap-2">
-              <button id="connectBuffer" class="btn">Connect</button>
-              <button id="disconnectBuffer" class="btn hidden">Disconnect</button>
+              <button id="connectBuffer" class="btn" type="button">Connect</button>
+              <button id="disconnectBuffer" class="btn hidden" type="button">Disconnect</button>
             </div>
           </div>
         </div>
@@ -449,7 +645,7 @@
         <h3 class="text-lg font-bold">Team (Business)</h3>
         <div class="mt-2 flex gap-2">
           <input id="inviteEmail" class="p-2 rounded-xl border flex-1" placeholder="teammate@company.com">
-          <button id="inviteBtn" class="btn">Invite member</button>
+          <button id="inviteBtn" class="btn" type="button">Invite member</button>
         </div>
         <ul id="seatList" class="mt-3 text-sm space-y-1"></ul>
         <div class="mt-4 text-xs text-slate-500">Content Calendar (Coming Soon)</div>
@@ -488,7 +684,7 @@
           <li>• Priority models</li>
           <li>• BYOK: 50 / month <span class="text-slate-400">(plus +5 daily headroom)</span></li>
         </ul>
-        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Solo Creator</button>
+        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button>
       </div>
 
       <div class="card p-6">
@@ -504,7 +700,7 @@
           <li>• New workflows early</li>
           <li>• BYOK: 150 / month <span class="text-slate-400">(includes +10 daily)</span></li>
         </ul>
-        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Get Creator</button>
+        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button>
       </div>
 
       <div class="card p-6">
@@ -517,15 +713,15 @@
           <li>• White-label export</li>
           <li>• Priority support</li>
           <li>• All Creator integrations</li>
-          <li>• Team presets & shared calendar</li>
+          <li>• Team presets &amp; shared calendar</li>
           <li>• BYOK: 300 / month <span class="text-slate-400">(+30 daily)</span></li>
         </ul>
-        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Get Business</button>
+        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50" type="button">Get Business</button>
       </div>
     </div>
   </section>
 
-  <!-- SEO FAQ (hidden when signed in; still rendered for crawlers) -->
+  <!-- SEO FAQ (always rendered for crawlers) -->
   <section id="seo-faq" class="max-w-7xl mx-auto px-5 pb-12">
     <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
     <div class="mt-5 grid md:grid-cols-2 gap-5">
@@ -543,7 +739,7 @@
       </div>
       <div class="card p-5">
         <strong>Can I publish instantly?</strong>
-        <p class="text-sm text-slate-500 mt-2">Signed-in users can open the X composer with prefilled text, copy-and-open for LinkedIn, preview & send email, and jump to Meta Creator Studio for Instagram.</p>
+        <p class="text-sm text-slate-500 mt-2">Signed-in users can open the X composer with prefilled text, copy-and-open for LinkedIn, preview &amp; send email, and jump to Meta Creator Studio for Instagram.</p>
       </div>
       <div class="card p-5">
         <strong>Do you support BYOK (Bring Your Own Key)?</strong>
@@ -554,9 +750,27 @@
         <p class="text-sm text-slate-500 mt-2">Higher monthly generations, saved presets, integrations, and faster lanes. See pricing for details.</p>
       </div>
     </div>
+
+    <!-- FAQPage JSON-LD for SEO -->
+    <script type="application/ld+json">{
+      "@context":"https://schema.org",
+      "@type":"FAQPage",
+      "mainEntity":[
+        {"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported."}},
+        {"@type":"Question","name":"What channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business)."}},
+        {"@type":"Question","name":"How does it improve SEO?","acceptedAnswer":{"@type":"Answer","text":"We generate keyword-aware, on-brand drafts that lift rankings and CTR across channels."}},
+        {"@type":"Question","name":"Can I publish instantly?","acceptedAnswer":{"@type":"Answer","text":"Yes—open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG."}},
+        {"@type":"Question","name":"Do you support BYOK?","acceptedAnswer":{"@type":"Answer","text":"Yes. Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily)."}},
+        {"@type":"Question","name":"What’s in paid plans?","acceptedAnswer":{"@type":"Answer","text":"More monthly generations, presets, integrations, and faster lanes."}}
+      ]
+    }</script>
   </section>
 
-  <footer class="py-10 text-center text-xs text-slate-500">© <span id="year"></span> ContentFlow AI</footer>
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="year"></span> ContentFlow AI
+    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/privacy">Privacy</a>
+    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/terms">Terms</a>
+  </footer>
 
   <!-- Auth Modal -->
   <dialog id="auth" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
@@ -564,11 +778,11 @@
       <div class="p-6 space-y-3">
         <h3 class="text-xl font-bold">Sign in</h3>
         <p class="text-white/70 text-sm">Use Google or request a magic link.</p>
-        <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Continue with Google</button>
+        <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Continue with Google</button>
         <div class="flex items-center gap-3 text-xs text-white/50"><span class="flex-1 h-px bg-white/10"></span>or<span class="flex-1 h-px bg-white/10"></span></div>
         <div class="grid gap-2">
           <input id="emailInput" type="email" placeholder="you@company.com" class="p-2 rounded-xl border border-white/15 bg-white/5">
-          <button id="magicBtn" class="px-4 py-2 rounded-xl bg-white/10">Send magic link</button>
+          <button id="magicBtn" class="px-4 py-2 rounded-xl bg-white/10" type="button">Send magic link</button>
         </div>
         <div class="text-xs text-white/50">We never store your BYOK.</div>
       </div>
@@ -587,7 +801,7 @@
       <label class="text-sm">Body</label>
       <textarea id="emailBodyEdit" class="w-full h-52 p-2 rounded-xl border border-white/15 bg-white/5"></textarea>
       <div class="flex justify-end gap-2">
-        <button id="emailSendBtn" class="px-4 py-2 rounded-xl bg-white text-black font-semibold">Open in email client</button>
+        <button id="emailSendBtn" class="px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Open in email client</button>
       </div>
     </form>
   </dialog>
@@ -601,7 +815,7 @@
       </div>
       <input id="trelloBoardId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Board ID (paste for now)" />
       <input id="trelloListId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="List ID" />
-      <button id="trelloConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Send</button>
+      <button id="trelloConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Send</button>
     </form>
   </dialog>
 
@@ -613,7 +827,7 @@
         <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
       </div>
       <select id="bufferProfile" class="w-full p-2 rounded-xl border border-white/15 bg-white/5"></select>
-      <button id="bufferConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold">Queue</button>
+      <button id="bufferConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Queue</button>
     </form>
   </dialog>
 
@@ -629,21 +843,19 @@
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace in prod
 
-// --- Supabase via ESM (works inside type="module") ---
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    // --- Supabase via ESM (works inside type="module") ---
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// (optional but nice) react to login/logout without reload:
-supabase.auth.onAuthStateChange(() => {
-  // your existing functions:
-  paintAuth();
-  refreshAll();
-});
-
+    // react to login/logout without reload (smoothly repaint):
+    supabase.auth.onAuthStateChange(() => {
+      paintAuth();
+      refreshAll();
+    });
 
     // === Stripe (Customer Portal / Checkout redirects) ===
     let stripe = null;
@@ -654,16 +866,20 @@ supabase.auth.onAuthStateChange(() => {
     // === Small helpers ===
     const $  = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
-    $("#year").textContent = new Date().getFullYear();
+    const byId = (id) => document.getElementById(id);
+    byId("year") && (byId("year").textContent = new Date().getFullYear());
+
     const IS_DEV   = location.hostname === "localhost" || location.hostname.endsWith(".local") || location.hostname.endsWith(".ngrok.io");
     const todayStr = () => new Date().toISOString().slice(0,10);
+
     const showToast = (msg) => {
-      const t = $("#toast"), m = $("#toastMsg");
+      const t = byId("toast"), m = byId("toastMsg");
       if (!t || !m) return;
       m.textContent = msg;
       t.classList.remove("hidden");
       setTimeout(()=>t.classList.add("hidden"), 1800);
     };
+
     const PLAN_LABEL = (p)=>{
       if (!p || p==="free") return "Free";
       if (p==="starter") return "Solo Creator";
@@ -672,10 +888,12 @@ supabase.auth.onAuthStateChange(() => {
       return "Free";
     };
 
-    // Dev-only UI preview toggles
-    const togglesWrap = $("#viewToggles");
-    if (togglesWrap) togglesWrap.classList.toggle("hidden", !IS_DEV);
-    if (!IS_DEV) { try { localStorage.removeItem("viewOverride"); } catch {} }
+    const SOFT_DAILY_PLATFORM = { free:5, starter:10, creator:30, business:80 };
+    const PRICES = {
+      starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
+      creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
+      business: "price_1S7y8OJYjIKHzKcjqA9uJdyh"
+    };
 
     // Marketing features used by dashboard list
     const PLAN_FEATURES = {
@@ -695,7 +913,6 @@ supabase.auth.onAuthStateChange(() => {
         "Unlimited presets",
         "Project pack export",
         "Notion export + Trello boards",
-        "Push drafts to Buffer",
         "New workflows early"
       ],
       business: [
@@ -706,12 +923,6 @@ supabase.auth.onAuthStateChange(() => {
         "All Creator integrations",
         "Team presets & shared calendar"
       ]
-    };
-    const SOFT_DAILY_PLATFORM = { free:5, starter:10, creator:30, business:80 };
-    const PRICES = {
-      starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
-      creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
-      business: "price_1S7y8OJYjIKHzKcjqA9uJdyh"
     };
 
     // Allow plan override preview via URL (dev/marketing preview)
@@ -726,8 +937,8 @@ supabase.auth.onAuthStateChange(() => {
 
     function paintPlanBadge(plan){
       const label = PLAN_LABEL(plan);
-      $("#planbadge").textContent = `Plan: ${label}`;
-      const mb = $("#memberPlanBadge");
+      byId("planbadge") && (byId("planbadge").textContent = `Plan: ${label}`);
+      const mb = byId("memberPlanBadge");
       if (mb) mb.textContent = `Plan: ${label}`;
     }
 
@@ -735,40 +946,28 @@ supabase.auth.onAuthStateChange(() => {
        VIEW SWITCHING
     ========================== */
     function showView(isAuthenticated){
-      const guest  = $("#guestView");
-      const member = $("#memberView");
+      const guest  = byId("guestView");
+      const member = byId("memberView");
       if (isAuthenticated){
         document.body.setAttribute("data-auth","member");
-        guest?.classList.add("hidden");
-        member?.classList.remove("hidden");
-        $("#loginBtn")?.classList.add("hidden");
-        $("#heroSignIn")?.classList.add("hidden");
-        $("#logoutBtn")?.classList.remove("hidden");
-        $("#logoutBtn2")?.classList.remove("hidden");
-        $("#heroBadgeWrap")?.classList.add("hidden");
+        guest && guest.classList.add("hidden");
+        member && member.classList.remove("hidden");
+        byId("loginBtn") && byId("loginBtn").classList.add("hidden");
+        byId("heroSignIn") && byId("heroSignIn").classList.add("hidden");
+        byId("logoutBtn") && byId("logoutBtn").classList.remove("hidden");
+        byId("logoutBtn2") && byId("logoutBtn2").classList.remove("hidden");
+        byId("heroBadgeWrap") && byId("heroBadgeWrap").classList.add("hidden");
       } else {
         document.body.setAttribute("data-auth","guest");
-        member?.classList.add("hidden");
-        guest?.classList.remove("hidden");
-        $("#loginBtn")?.classList.remove("hidden");
-        $("#heroSignIn")?.classList.remove("hidden");
-        $("#logoutBtn")?.classList.add("hidden");
-        $("#logoutBtn2")?.classList.add("hidden");
-        $("#heroBadgeWrap")?.classList.remove("hidden");
+        member && member.classList.add("hidden");
+        guest && guest.classList.remove("hidden");
+        byId("loginBtn") && byId("loginBtn").classList.remove("hidden");
+        byId("heroSignIn") && byId("heroSignIn").classList.remove("hidden");
+        byId("logoutBtn") && byId("logoutBtn").classList.add("hidden");
+        byId("logoutBtn2") && byId("logoutBtn2").classList.add("hidden");
+        byId("heroBadgeWrap") && byId("heroBadgeWrap").classList.remove("hidden");
       }
     }
-
-    (function devViewToggles(){
-      if (!IS_DEV) return;
-      $("#viewGuest")?.addEventListener("click", ()=>{
-        try { localStorage.setItem("viewOverride","guest"); } catch {}
-        applyViewOverride(false);
-      });
-      $("#viewMember")?.addEventListener("click", ()=>{
-        try { localStorage.setItem("viewOverride","member"); } catch {}
-        applyViewOverride(false);
-      });
-    })();
 
     function applyViewOverride(isAuthenticated){
       if (isAuthenticated) return; // never override real auth
@@ -798,26 +997,20 @@ supabase.auth.onAuthStateChange(() => {
       showView(isAuthed);
       if (!isAuthed) applyViewOverride(false);
 
-      const heroBadge = $("#heroBadge");
-      if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — welcome back" : "Demo — 5 runs / month (no login)";
+      const heroBadge = byId("heroBadge");
+      if (heroBadge) {
+        heroBadge.textContent = isAuthed ? "Signed-in — welcome back" : "Demo — 5 runs / month (no login)";
+      }
 
-      const logout  = $("#logoutBtn");
-      const logout2 = $("#logoutBtn2");
-      if (logout)  logout.classList.toggle("hidden", !isAuthed);
-      if (logout2) logout2.classList.toggle("hidden", !isAuthed);
-
-      $("#loginBtn")?.classList.toggle("hidden", isAuthed);
-      $("#heroSignIn")?.classList.toggle("hidden", isAuthed);
-
-      const ue = $("#userEmail");
+      const ue = byId("userEmail");
       if (ue) ue.textContent = isAuthed ? (email || "member") : "";
 
       return { token, userId, email };
     }
 
     // Auth modal wiring
-    $("#loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
-    $("#heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); $("#auth")?.showModal(); });
+    byId("loginBtn") && byId("loginBtn").addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
+    byId("heroSignIn") && byId("heroSignIn").addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
 
     const doSignOut = async()=>{
       if (!supabase?.auth) { showToast("Auth not initialized"); return; }
@@ -826,10 +1019,10 @@ supabase.auth.onAuthStateChange(() => {
       await paintAuth();
       await refreshAll();
     };
-    $("#logoutBtn")?.addEventListener("click", doSignOut);
-    $("#logoutBtn2")?.addEventListener("click", doSignOut);
+    byId("logoutBtn")   && byId("logoutBtn").addEventListener("click", doSignOut);
+    byId("logoutBtn2")  && byId("logoutBtn2").addEventListener("click", doSignOut);
 
-    $("#googleBtn")?.addEventListener("click", async (e)=>{
+    byId("googleBtn") && byId("googleBtn").addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
       const { error } = await supabase.auth.signInWithOAuth({
@@ -839,26 +1032,34 @@ supabase.auth.onAuthStateChange(() => {
       if (error) alert(error.message || String(error));
     });
 
-    $("#magicBtn")?.addEventListener("click", async (e)=>{
+    byId("magicBtn") && byId("magicBtn").addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
-      const email = ($("#emailInput")?.value||"").trim();
+      const email = (byId("emailInput")?.value||"").trim();
       if (!email) return alert("Enter an email");
       const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href }});
       if (error) return alert(error.message || String(error));
       alert("Magic link sent. Check your inbox.");
-      $("#auth")?.close();
+      byId("auth")?.close();
     });
 
     /* =========================
        BILLING (Subscribe / Portal)
     ========================== */
+    async function getAuthHeaders(){
+      const { token, userId } = await getAuth();
+      const headers = { "Content-Type":"application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (userId) headers["X-User-Id"] = userId; // aligns with worker identity helper
+      return headers;
+    }
+
     async function openCheckout(priceId){
       const { token } = await getAuth();
-      if (!token) { $("#auth")?.showModal(); return; }
+      if (!token) { byId("auth")?.showModal(); return; }
       const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
         method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ price: priceId, success_url: location.href, cancel_url: location.href })
       }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
@@ -868,10 +1069,10 @@ supabase.auth.onAuthStateChange(() => {
 
     async function openPortal(){
       const { token } = await getAuth();
-      if (!token) { $("#auth")?.showModal(); return; }
+      if (!token) { byId("auth")?.showModal(); return; }
       const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
         method: "POST",
-        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${token}` },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ return_url: location.href })
       }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
@@ -882,8 +1083,8 @@ supabase.auth.onAuthStateChange(() => {
     $$(".subBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
     });
-    $("#manageBilling")?.addEventListener("click", openPortal);
-    $("#manageBilling2")?.addEventListener("click", openPortal);
+    byId("manageBilling")  && byId("manageBilling").addEventListener("click", openPortal);
+    byId("manageBilling2") && byId("manageBilling2").addEventListener("click", openPortal);
 
     /* =========================
        PLAN STATUS / QUOTAS
@@ -891,8 +1092,8 @@ supabase.auth.onAuthStateChange(() => {
     let LAST_STATUS = null;
 
     async function getPlanStatus(){
-      const { token } = await getAuth();
-      const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+      const headers = await getAuthHeaders();
+      // prefer /api/billing/status; fallback /api/quota
       try {
         const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
         if (r.ok) return await r.json();
@@ -910,20 +1111,27 @@ supabase.auth.onAuthStateChange(() => {
     };
 
     function paintFeatureList(planKey){
-      const ul = $("#featureList");
+      const ul = byId("featureList");
       if (!ul) return;
       const feats = PLAN_FEATURES[planKey] || PLAN_FEATURES.free;
       ul.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
     }
 
     function paintManageButtons(isSubscribed){
-      $("#manageBilling")?.classList.toggle("hidden", !isSubscribed);
-      $("#manageBilling2")?.classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling")  && byId("manageBilling").classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling2") && byId("manageBilling2").classList.toggle("hidden", !isSubscribed);
     }
 
     function paintTopBadges(status){
       const planKey = planKeyFromStatus(status||{});
       paintPlanBadge(planKey);
+      // Guest quota pill (if present)
+      const q = byId("quota");
+      if (q) {
+        const usedM = status?.platform?.monthly?.used ?? status?.platform?.used ?? status?.monthly?.used ?? status?.used ?? 0;
+        const capM  = status?.platform?.monthly?.cap ?? status?.monthly?.cap ?? 5;
+        q.textContent = `This month: ${usedM}/${capM ?? "∞"}`;
+      }
     }
 
     function tileHtml(title, used, cap, sub){
@@ -944,7 +1152,7 @@ supabase.auth.onAuthStateChange(() => {
     }
 
     function paintQuotaTiles(status){
-      const wrap = $("#quotaCards");
+      const wrap = byId("quotaCards");
       if (!wrap) return;
 
       const pk = planKeyFromStatus(status);
@@ -968,7 +1176,7 @@ supabase.auth.onAuthStateChange(() => {
         tileHtml("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
       ].join("");
 
-      const quotaMember = $("#quotaMember");
+      const quotaMember = byId("quotaMember");
       if (quotaMember) quotaMember.textContent = `Today: ${pDailyUsed||0}/${pDailyCap}`;
 
       paintFeatureList(pk);
@@ -976,24 +1184,27 @@ supabase.auth.onAuthStateChange(() => {
 
     function gateFeaturesByPlan(plan){
       const isStarter = plan==="starter", isCreator = plan==="creator", isBiz = plan==="business";
-      $("#integrationsCard")?.classList.toggle("hidden", !(isCreator||isBiz));      // Integrations: Creator+
-      $("#exportPack")?.classList.toggle("hidden", !(isCreator||isBiz));            // Project Pack: Creator+
-      $("#wlLabel")?.classList.toggle("hidden", !isBiz);                            // White-label: Business
-      $("#teamCard")?.classList.toggle("hidden", !isBiz);                           // Team: Business
+      byId("integrationsCard") && byId("integrationsCard").classList.toggle("hidden", !(isCreator||isBiz)); // Creator+
+      byId("exportPack")      && byId("exportPack").classList.toggle("hidden", !(isCreator||isBiz));       // Creator+
+      byId("wlLabel")         && byId("wlLabel").classList.toggle("hidden", !isBiz);                       // Business
+      byId("teamCard")        && byId("teamCard").classList.toggle("hidden", !isBiz);                      // Business
+
+      // Channel exports (Creator+)
       ["li","x","em","ig"].forEach(p=>{
         ["-notion","-trello","-buffer"].forEach(s=>{
-          const el = document.querySelector(`#${p}${s}`);
+          const el = byId(`${p}${s}`);
           if (el) el.classList.toggle("hidden", !(isCreator||isBiz));
         });
       });
-      const note = $("#batchNote");
+
+      const note = byId("batchNote");
       if (note) note.textContent =
         isBiz ? "Business: up to 50 lines/run" :
         isCreator ? "Creator: up to 20 lines/run" :
         isStarter ? "Starter: up to 5 lines/run" :
         "Upgrade to enable batch runs.";
-      $("#run_batch")?.classList.toggle("hidden", !(isStarter||isCreator||isBiz));
-      const bi = $("#batch_inputs");
+      byId("run_batch")?.classList.toggle("hidden", !(isStarter||isCreator||isBiz));
+      const bi = byId("batch_inputs");
       if (bi) {
         if (isStarter||isCreator||isBiz) bi.removeAttribute("disabled");
         else bi.setAttribute("disabled","true");
@@ -1005,8 +1216,7 @@ supabase.auth.onAuthStateChange(() => {
       const u = new URL(location.href);
       const ref = u.searchParams.get("ref");
       if (!ref) return;
-      const { token } = await getAuth();
-      const headers = token ? { Authorization:`Bearer ${token}` } : {};
+      const headers = await getAuthHeaders();
       try { await fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`, { headers }); } catch {}
       u.searchParams.delete("ref");
       history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):""));
@@ -1028,85 +1238,90 @@ supabase.auth.onAuthStateChange(() => {
         const uid = LAST_STATUS?.userId || (email ? email.split('@')[0] : 'guest');
         const code = btoa(uid).replace(/=+$/,'');
         const link = `${location.origin}${location.pathname}?ref=${encodeURIComponent(code)}`;
-        const refInput = $("#refLink");
+        const refInput = byId("refLink");
         if (refInput) refInput.value = link;
-        const refCount = $("#refCount");
+        const refCount = byId("refCount");
         if (refCount && typeof LAST_STATUS?.referrals_this_month === "number") refCount.textContent = String(LAST_STATUS.referrals_this_month);
       }catch{}
     }
 
     // Boot
-(async () => {
-  try {
-    await applyReferralIfPresent();
-    await refreshAll();
-  } catch (e) { console.error(e); }
-})();
-/* === Saved Presets wiring === */
-async function renderPresets(){
-  const headers = await getAuthHeaders();
-  const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers }).catch(()=>null);
-  const j = await r?.json().catch(()=> ({}));
-  const list = (j?.presets || []);
-  const ul = document.getElementById("presetList");
-  if (!ul) return;
-  if (!list.length){ ul.innerHTML = `<li class="text-slate-500">No presets saved yet.</li>`; return; }
-  ul.innerHTML = "";
-  list.forEach(p=>{
-    const li = document.createElement("li");
-    li.className = "flex items-center justify-between gap-2";
-    li.innerHTML = `
-      <span class="truncate">${p.title || "Untitled"}</span>
-      <span class="flex items-center gap-2">
-        <button class="px-2 py-1 chip" data-load="${p.id}">Load</button>
-        <button class="px-2 py-1 chip" data-del="${p.id}">Delete</button>
-      </span>
-    `;
-    ul.appendChild(li);
-  });
-  ul.querySelectorAll("[data-del]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.getAttribute("data-del");
-      const headers = await getAuthHeaders();
-      await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers, body: JSON.stringify({ id }) }).catch(()=>null);
-      renderPresets();
-    });
-  });
-  ul.querySelectorAll("[data-load]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
+    (async () => {
+      try {
+        await applyReferralIfPresent();
+        await refreshAll();
+      } catch (e) { console.error(e); }
+    })();
+
+    /* =========================
+       PRESETS (Creator UX sugar)
+    ========================== */
+    async function renderPresets(){
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
-      const pres = (j?.presets || []).find(x => x.id === btn.getAttribute("data-load"));
-      if (!pres) return;
-      const d = pres.data || {};
-      if (d.linkedin != null)  document.getElementById("out-li_m").textContent = d.linkedin;
-      if (d.x != null)         document.getElementById("out-x_m").textContent  = Array.isArray(d.x) ? d.x.join("\n\n—\n\n") : d.x;
-      if (d.email?.subject != null) document.getElementById("out-em-subj_m").textContent = d.email.subject;
-      if (d.email?.body != null)    document.getElementById("out-em-body_m").textContent  = d.email.body;
-      if (d.instagram != null) document.getElementById("out-ig_m").textContent = d.instagram;
-      showToast("Preset loaded ✓");
+      const list = (j?.presets || []);
+      const ul = byId("presetList");
+      if (!ul) return;
+      if (!list.length){ ul.innerHTML = `<li class="text-slate-500">No presets saved yet.</li>`; return; }
+      ul.innerHTML = "";
+      list.forEach(p=>{
+        const li = document.createElement("li");
+        li.className = "flex items-center justify-between gap-2";
+        li.innerHTML = `
+          <span class="truncate">${(p.title || "Untitled").replace(/</g,"&lt;")}</span>
+          <span class="flex items-center gap-2">
+            <button class="px-2 py-1 chip" data-load="${p.id}">Load</button>
+            <button class="px-2 py-1 chip" data-del="${p.id}">Delete</button>
+          </span>
+        `;
+        ul.appendChild(li);
+      });
+      ul.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-del");
+          const headers = await getAuthHeaders();
+          await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers, body: JSON.stringify({ id }) }).catch(()=>null);
+          renderPresets();
+        });
+      });
+      ul.querySelectorAll("[data-load]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const r2 = await fetch(`${WORKER_BASE}/api/presets/list`, { headers }).catch(()=>null);
+          const j2 = await r2?.json().catch(()=> ({}));
+          const pres = (j2?.presets || []).find(x => x.id === btn.getAttribute("data-load"));
+          if (!pres) return;
+          const d = pres.data || {};
+          byId("out-li_m") && (byId("out-li_m").textContent = d.linkedin ?? "");
+          byId("out-x_m")  && (byId("out-x_m").textContent  = Array.isArray(d.x) ? d.x.join("\n\n—\n\n") : (d.x ?? ""));
+          if (d.email?.subject != null) byId("out-em-subj_m") && (byId("out-em-subj_m").textContent = d.email.subject);
+          if (d.email?.body != null)    byId("out-em-body_m") && (byId("out-em-body_m").textContent = d.email.body);
+          byId("out-ig_m") && (byId("out-ig_m").textContent = d.instagram ?? "");
+          showToast("Preset loaded ✓");
+        });
+      });
+    }
+
+    byId("addPreset") && byId("addPreset").addEventListener("click", async ()=>{
+      const data = {
+        linkedin:  byId("out-li_m")?.textContent || "",
+        x:         (byId("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
+        email:     { subject: byId("out-em-subj_m")?.textContent || "", body: byId("out-em-body_m")?.textContent || "" },
+        instagram: byId("out-ig_m")?.textContent || ""
+      };
+      if (!data.linkedin && !data.instagram && !data.email?.body && !(data.x && data.x.length)){
+        alert("Generate or paste something to save."); return;
+      }
+      const defaultName = (data.email?.subject || (data.linkedin?.split("\n").find(Boolean)) || "Preset").slice(0,80);
+      const title = prompt("Preset name?", defaultName) || defaultName;
+      const headers = await getAuthHeaders();
+      const r = await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers, body: JSON.stringify({ title, data }) }).catch(()=>null);
+      if (r?.ok){ showToast("Preset saved ✓"); renderPresets(); }
+      else { const j = await r?.json().catch(()=> ({})); alert(j?.error?.message || "Could not save preset."); }
     });
-  });
-}
-document.getElementById("addPreset")?.addEventListener("click", async ()=>{
-  const data = {
-    linkedin:  document.getElementById("out-li_m")?.textContent || "",
-    x:         (document.getElementById("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
-    email:     { subject: document.getElementById("out-em-subj_m")?.textContent || "", body: document.getElementById("out-em-body_m")?.textContent || "" },
-    instagram: document.getElementById("out-ig_m")?.textContent || ""
-  };
-  if (!data.linkedin && !data.instagram && !data.email?.body && !(data.x && data.x.length)){
-    alert("Generate or paste something to save."); return;
-  }
-  const title = prompt("Preset name?", (data.email?.subject || (data.linkedin?.split("\n").find(Boolean)) || "Preset").slice(0,80)) || "Preset";
-  const headers = await getAuthHeaders();
-  const r = await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers, body: JSON.stringify({ title, data }) }).catch(()=>null);
-  if (r?.ok){ showToast("Preset saved ✓"); renderPresets(); }
-  else { const j = await r?.json().catch(()=> ({})); alert(j?.error?.message || "Could not save preset."); }
-});
-const _origRefreshAll = refreshAll;
-refreshAll = async function(){ await _origRefreshAll(); const { token } = await getAuth(); if (token) renderPresets(); };
+
+    const _origRefreshAll = refreshAll;
+    refreshAll = async function(){ await _origRefreshAll(); const { token } = await getAuth(); if (token) renderPresets(); };
 
     /* =========================
        GENERATOR HELPERS
@@ -1150,7 +1365,7 @@ refreshAll = async function(){ await _origRefreshAll(); const { token } = await 
       const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
       const xMatch  = text.match(/"x"\s*:\s*(\[[\s\S]*?\]|"[\s\S]*?")\s*(,|$)/i);
       const emMatch = text.match(/"email"\s*:\s*(\{[\s\S]*?\}|"[\s\S]*?")\s*(,|$)/i);
-      const igMatch = text.match(/"instagram"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
+      const igMatch = text.match(/"instagram"\s*:\s*"([\s*S]*?)"\s*(,|$)/i);
       if (liMatch) out.linkedin = liMatch[1].replace(/\\n/g,"\n");
       if (xMatch)  out.x = xMatch[1].startsWith('[') ? JSON.parse(xMatch[1]) : xMatch[1].replace(/\\n/g,"\n");
       if (emMatch){
@@ -1161,13 +1376,6 @@ refreshAll = async function(){ await _origRefreshAll(); const { token } = await 
       if (igMatch) out.instagram = igMatch[1].replace(/\\n/g,"\n");
       if (out.linkedin || out.x || out.email || out.instagram) return out;
       return { linkedin: text };
-    }
-    async function getAuthHeaders(){
-      const { token, userId } = await getAuth();
-      const headers = { "Content-Type":"application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (userId) headers["X-User-Id"] = userId;
-      return headers;
     }
     function download(filename, mime, text){
       const blob = new Blob([text], { type: mime });
@@ -1180,55 +1388,49 @@ refreshAll = async function(){ await _origRefreshAll(); const { token } = await 
     /* =========================
        GUEST: GENERATE / COPY
     ========================== */
-    const guestRunBtn    = document.getElementById("run");
-    const guestRunByok   = document.getElementById("run-byok");
-    const guestClearBtn  = document.getElementById("clear");
-    const guestSaveBtn   = document.getElementById("save");
-
-    if (guestRunBtn)  guestRunBtn.addEventListener("click", ()=> runGen({ useBYOK:false }));
-    if (guestRunByok) guestRunByok.addEventListener("click", ()=> runGen({ useBYOK:true }));
-    if (guestClearBtn) guestClearBtn.addEventListener("click", ()=>{
-      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
-      $("#source").value = "";
-      $("#status").textContent = "";
-      $("#dl-md").disabled = true;
-      $("#dl-csv").disabled = true;
+    byId("run")       && byId("run").addEventListener("click", ()=> runGen({ useBYOK:false }));
+    byId("run-byok")  && byId("run-byok").addEventListener("click", ()=> runGen({ useBYOK:true }));
+    byId("clear")     && byId("clear").addEventListener("click", ()=>{
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> { const el = document.querySelector(sel); if (el) el.textContent = ""; });
+      byId("source") && (byId("source").value = "");
+      byId("status") && (byId("status").textContent = "");
+      byId("dl-md") && (byId("dl-md").disabled = true);
+      byId("dl-csv") && (byId("dl-csv").disabled = true);
     });
-    if (guestSaveBtn) guestSaveBtn.addEventListener("click", ()=>{
-      sessionStorage.setItem("MODEL", document.getElementById("model").value.trim());
-      sessionStorage.setItem("BYOK", document.getElementById("byok").value.trim());
+    byId("save") && byId("save").addEventListener("click", ()=>{
+      sessionStorage.setItem("MODEL", (byId("model")?.value||"").trim());
+      sessionStorage.setItem("BYOK",  (byId("byok")?.value||"").trim());
       alert("Saved for this tab.");
     });
 
-    // Copy buttons (Guest)
-    document.getElementById("copy-li")?.addEventListener("click", ()=> {
-      navigator.clipboard.writeText(document.getElementById("out-li").textContent || "");
+    byId("copy-li") && byId("copy-li").addEventListener("click", ()=> {
+      navigator.clipboard.writeText(byId("out-li")?.textContent || "");
     });
-    document.getElementById("copy-x")?.addEventListener("click", ()=> {
-      navigator.clipboard.writeText(document.getElementById("out-x").textContent || "");
+    byId("copy-x") && byId("copy-x").addEventListener("click", ()=> {
+      navigator.clipboard.writeText(byId("out-x")?.textContent || "");
     });
-    document.getElementById("copy-em")?.addEventListener("click", ()=> {
-      const subj = document.getElementById("out-em-subj").textContent;
-      const body = document.getElementById("out-em-body").textContent;
+    byId("copy-em") && byId("copy-em").addEventListener("click", ()=> {
+      const subj = byId("out-em-subj")?.textContent || "";
+      const body = byId("out-em-body")?.textContent || "";
       navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
     });
-    document.getElementById("copy-ig")?.addEventListener("click", ()=> {
-      navigator.clipboard.writeText(document.getElementById("out-ig").textContent || "");
+    byId("copy-ig") && byId("copy-ig").addEventListener("click", ()=> {
+      navigator.clipboard.writeText(byId("out-ig")?.textContent || "");
     });
 
     async function runGen({ useBYOK=false }){
-      const sourceEl = document.getElementById("source");
+      const sourceEl = byId("source");
       if (!sourceEl) return;
       const source = sourceEl.value.trim();
       if (!source) { alert("Paste some content first."); return; }
 
-      document.getElementById("status").textContent = useBYOK? "Generating with your key…" : "Generating…";
-      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> document.querySelector(sel).textContent = "");
-      document.getElementById("dl-md").disabled = true;
-      document.getElementById("dl-csv").disabled = true;
+      byId("status") && (byId("status").textContent = useBYOK? "Generating with your key…" : "Generating…");
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> { const el=document.querySelector(sel); if (el) el.textContent=""; });
+      byId("dl-md") && (byId("dl-md").disabled = true);
+      byId("dl-csv") && (byId("dl-csv").disabled = true);
 
       const model = sessionStorage.getItem("MODEL") || "";
-      const byok = sessionStorage.getItem("BYOK") || "";
+      const byok  = sessionStorage.getItem("BYOK") || "";
       const headers = await getAuthHeaders();
       if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
 
@@ -1248,73 +1450,68 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           body: JSON.stringify({ plan: (useBYOK? "pro":"free"), messages, temperature:0.7, model: model || undefined })
         });
         const data = await r.json().catch(()=> ({}));
-        if (!r.ok) { document.getElementById("status").textContent = data?.error?.message || "Error"; return; }
+        if (!r.ok) { byId("status") && (byId("status").textContent = data?.error?.message || "Error"); return; }
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
-        document.getElementById("out-li").textContent = out.linkedin || "";
-        document.getElementById("li-lines").textContent = String(out.linkedin||"").split(/\n/).filter(Boolean).length;
+        byId("out-li") && (byId("out-li").textContent = out.linkedin || "");
+        byId("li-lines") && (byId("li-lines").textContent = String(out.linkedin||"").split(/\n/).filter(Boolean).length);
 
         const xText = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-        document.getElementById("out-x").textContent = xText;
+        byId("out-x") && (byId("out-x").textContent = xText);
         const len = xText.replace(/\n/g,' ').trim().length;
-        document.getElementById("x-len").textContent = len;
-        const flag = document.getElementById('x-flag');
+        byId("x-len") && (byId("x-len").textContent = len);
+        const flag = byId('x-flag');
         if (flag){
           flag.textContent = len <= 280 ? 'OK' : (len <= 320 ? 'Close' : 'Too long');
           flag.className = len<=280? 'ok' : (len<=320? 'warn' : 'err');
         }
 
-        document.getElementById('out-em-subj').textContent = out.email?.subject || "";
-        document.getElementById('out-em-body').textContent = out.email?.body || (typeof out.email==='string'? out.email : "");
+        byId('out-em-subj') && (byId('out-em-subj').textContent = out.email?.subject || "");
+        byId('out-em-body') && (byId('out-em-body').textContent = out.email?.body || (typeof out.email==='string'? out.email : ""));
 
-        document.getElementById('out-ig').textContent = out.instagram || "";
+        byId('out-ig') && (byId('out-ig').textContent = out.instagram || "");
         const tags = ((out.instagram||"").match(/#[\p{L}\w]+/gu) || []).length;
-        document.getElementById('ig-tags').textContent = tags;
+        byId('ig-tags') && (byId('ig-tags').textContent = tags);
 
-        document.getElementById("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-        document.getElementById("dl-md").disabled = false;
-        document.getElementById("dl-csv").disabled = false;
-        document.getElementById("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out));
-        document.getElementById("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out));
-      }catch(e){ document.getElementById("status").textContent = e.message || "Network error"; }
+        byId("status") && (byId("status").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`);
+        byId("dl-md") && (byId("dl-md").disabled = false);
+        byId("dl-csv") && (byId("dl-csv").disabled = false);
+        byId("dl-md") && (byId("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out)));
+        byId("dl-csv") && (byId("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out)));
+      }catch(e){ byId("status") && (byId("status").textContent = e.message || "Network error"); }
     }
 
     /* =========================
        MEMBER: GENERATE / PUBLISH / COPY
     ========================== */
-    const mRunBtn     = document.getElementById("run_m");
-    const mRunByokBtn = document.getElementById("run-byok_m");
-    const mClearBtn   = document.getElementById("clear_m");
-
-    if (mRunBtn)     mRunBtn.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
-    if (mRunByokBtn) mRunByokBtn.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
-    if (mClearBtn)   mClearBtn.addEventListener("click", ()=>{
-      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
-      $("#source_m").value = "";
-      $("#status_m").textContent = "";
+    byId("run_m")      && byId("run_m").addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    byId("run-byok_m") && byId("run-byok_m").addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    byId("clear_m")    && byId("clear_m").addEventListener("click", ()=>{
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> { const el=document.querySelector(sel); if (el) el.textContent=""; });
+      byId("source_m") && (byId("source_m").value = "");
+      byId("status_m") && (byId("status_m").textContent = "");
     });
 
-    // Copy buttons (Member)
-    $("#copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-li_m").textContent||""));
-    $("#copy-x_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-x_m").textContent||""));
-    $("#copy-em_m")?.addEventListener("click", ()=> {
-      const subj = $("#out-em-subj_m").textContent;
-      const body = $("#out-em-body_m").textContent;
+    byId("copy-li_m") && byId("copy-li_m").addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-li_m")?.textContent||""));
+    byId("copy-x_m")  && byId("copy-x_m").addEventListener("click",  ()=> navigator.clipboard.writeText(byId("out-x_m")?.textContent||""));
+    byId("copy-em_m") && byId("copy-em_m").addEventListener("click", ()=>{
+      const subj = byId("out-em-subj_m")?.textContent || "";
+      const body = byId("out-em-body_m")?.textContent || "";
       navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
     });
-    $("#copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText($("#out-ig_m").textContent||""));
+    byId("copy-ig_m") && byId("copy-ig_m").addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-ig_m")?.textContent||""));
 
     async function runGenMember({ useBYOK=false }){
-      const sourceEl = $("#source_m");
+      const sourceEl = byId("source_m");
       if (!sourceEl) return;
       const source = sourceEl.value.trim();
       if (!source) { alert("Paste some content first."); return; }
 
-      $("#status_m").textContent = useBYOK? "Generating with your key…" : "Generating…";
-      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> document.querySelector(sel).textContent = "");
+      byId("status_m") && (byId("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…");
+      ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> { const el=document.querySelector(sel); if (el) el.textContent=""; });
 
       const model = sessionStorage.getItem("MODEL") || "";
-      const byok = sessionStorage.getItem("BYOK") || "";
+      const byok  = sessionStorage.getItem("BYOK") || "";
       const headers = await getAuthHeaders();
       if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
 
@@ -1333,70 +1530,69 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           body: JSON.stringify({ plan: (useBYOK? "pro":"member"), messages, temperature:0.7, model: model || undefined })
         });
         const data = await r.json().catch(()=> ({}));
-        if (!r.ok) { $("#status_m").textContent = data?.error?.message || "Error"; return; }
+        if (!r.ok) { byId("status_m") && (byId("status_m").textContent = data?.error?.message || "Error"); return; }
         const content = data?.choices?.[0]?.message?.content || "";
         const out = parseOutput(content);
 
-        $("#out-li_m").textContent = out.linkedin || "";
-        $("#out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || "");
-        $("#out-em-subj_m").textContent = out.email?.subject || "";
-        $("#out-em-body_m").textContent = out.email?.body || (typeof out.email==='string'? out.email : "");
-        $("#out-ig_m").textContent = out.instagram || "";
+        byId("out-li_m") && (byId("out-li_m").textContent = out.linkedin || "");
+        byId("out-x_m")  && (byId("out-x_m").textContent  = Array.isArray(out.x) ? out.x.join("\n\n—\n\n") : (out.x || ""));
+        byId("out-em-subj_m") && (byId("out-em-subj_m").textContent = out.email?.subject || "");
+        byId("out-em-body_m") && (byId("out-em-body_m").textContent = out.email?.body || (typeof out.email==='string'? out.email : ""));
+        byId("out-ig_m") && (byId("out-ig_m").textContent = out.instagram || "");
 
-        $("#status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`;
-      }catch(e){ $("#status_m").textContent = e.message || "Network error"; }
+        byId("status_m") && (byId("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`);
+      }catch(e){ byId("status_m") && (byId("status_m").textContent = e.message || "Network error"); }
     }
 
     // Quick publish actions (open composer / mailto / meta studio)
-    $("#publish-li_m")?.addEventListener("click", ()=>{
-      const txt = encodeURIComponent($("#out-li_m").textContent||"");
+    byId("publish-li_m") && byId("publish-li_m").addEventListener("click", ()=>{
+      const txt = encodeURIComponent(byId("out-li_m")?.textContent||"");
       window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${txt}`, "_blank");
     });
-    $("#publish-x_m")?.addEventListener("click", ()=>{
-      const txt = encodeURIComponent($("#out-x_m").textContent||"");
+    byId("publish-x_m") && byId("publish-x_m").addEventListener("click", ()=>{
+      const txt = encodeURIComponent(byId("out-x_m")?.textContent||"");
       window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
     });
-    $("#publish-em_m")?.addEventListener("click", ()=>{
-      // open the preview modal to edit before mailto
-      const subj = $("#out-em-subj_m").textContent||"";
-      const body = $("#out-em-body_m").textContent||"";
-      $("#emailSubjEdit").value = subj;
-      $("#emailBodyEdit").value = body;
-      $("#emailPreview").showModal();
+    byId("publish-em_m") && byId("publish-em_m").addEventListener("click", ()=>{
+      const subj = byId("out-em-subj_m")?.textContent||"";
+      const body = byId("out-em-body_m")?.textContent||"";
+      byId("emailSubjEdit") && (byId("emailSubjEdit").value = subj);
+      byId("emailBodyEdit") && (byId("emailBodyEdit").value = body);
+      byId("emailPreview")?.showModal();
     });
-    $("#emailSendBtn")?.addEventListener("click", (e)=>{
+    byId("emailSendBtn") && byId("emailSendBtn").addEventListener("click", (e)=>{
       e.preventDefault();
-      const subj = encodeURIComponent($("#emailSubjEdit").value||"");
-      const body = encodeURIComponent($("#emailBodyEdit").value||"");
+      const subj = encodeURIComponent(byId("emailSubjEdit")?.value||"");
+      const body = encodeURIComponent(byId("emailBodyEdit")?.value||"");
       window.location.href = `mailto:?subject=${subj}&body=${body}`;
     });
-    $("#publish-ig_m")?.addEventListener("click", ()=>{
+    byId("publish-ig_m") && byId("publish-ig_m").addEventListener("click", ()=>{
       window.open("https://business.facebook.com/creatorstudio/home", "_blank");
     });
 
     /* =========================
        BATCH INPUTS (Starter+)
     ========================== */
-    $("#run_batch")?.addEventListener("click", async ()=>{
-      const src = ($("#batch_inputs")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    byId("run_batch") && byId("run_batch").addEventListener("click", async ()=>{
+      const src = (byId("batch_inputs")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
       if (!src.length) { alert("Add lines to run in batch."); return; }
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
       const cap = plan==="business"?50 : plan==="creator"?20 : plan==="starter"?5 : 0;
       if (!cap) { alert("Upgrade to Starter to use batch runs."); return; }
       if (src.length > cap) { alert(`Your plan allows ${cap} lines/run. You entered ${src.length}.`); return; }
 
-      const ul = $("#batch_progress"); ul.innerHTML = "";
-      const pushItem = (txt)=>{ const li=document.createElement("li"); li.textContent = txt; ul.appendChild(li); return li; };
+      const ul = byId("batch_progress"); if (ul) ul.innerHTML = "";
+      const pushItem = (txt)=>{ const li=document.createElement("li"); li.textContent = txt; ul && ul.appendChild(li); return li; };
 
       for (let i=0;i<src.length;i++){
         const li = pushItem(`(${i+1}/${src.length}) Generating…`);
         try{
-          $("#source_m").value = src[i];
+          byId("source_m") && (byId("source_m").value = src[i]);
           await runGenMember({ useBYOK:false });
-          li.textContent = `(${i+1}/${src.length}) Done`;
-          await new Promise(r=>setTimeout(r, 600)); // brief delay
+          li && (li.textContent = `(${i+1}/${src.length}) Done`);
+          await new Promise(r=>setTimeout(r, 400)); // short delay
         }catch(e){
-          li.textContent = `(${i+1}/${src.length}) Error: ${e?.message||e}`;
+          li && (li.textContent = `(${i+1}/${src.length}) Error: ${e?.message||e}`);
         }
       }
       showToast("Batch complete ✓");
@@ -1404,30 +1600,27 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
     /* =========================
        INTEGRATIONS (Creator+)
+       (Aligned to Worker routes only)
     ========================== */
     function paintIntegrations(status){
       const integ = status?.integrations || {};
       // Notion
       const notionConnected = !!integ?.notion?.access_token;
-      $("#notionState")?.classList?.remove("chip");
-      $("#notionState")?.classList?.add("chip");
-      $("#notionState").textContent = notionConnected? "Connected" : "Disconnected";
-      $("#connectNotion")?.classList.toggle("hidden", notionConnected);
-      $("#disconnectNotion")?.classList.toggle("hidden", !notionConnected);
+      byId("notionState") && (byId("notionState").textContent = notionConnected? "Connected" : "Disconnected");
+      byId("connectNotion")    && byId("connectNotion").classList.toggle("hidden", notionConnected);
+      byId("disconnectNotion") && byId("disconnectNotion").classList.toggle("hidden", !notionConnected);
       // Trello
       const trelloConnected = !!integ?.trello?.token;
-      $("#trelloState")?.classList?.add("chip");
-      $("#trelloState").textContent = trelloConnected? "Connected" : "Disconnected";
-      $("#connectTrello")?.classList.toggle("hidden", trelloConnected);
-      $("#disconnectTrello")?.classList.toggle("hidden", !trelloConnected);
-      // Buffer
+      byId("trelloState") && (byId("trelloState").textContent = trelloConnected? "Connected" : "Disconnected");
+      byId("connectTrello")    && byId("connectTrello").classList.toggle("hidden", trelloConnected);
+      byId("disconnectTrello") && byId("disconnectTrello").classList.toggle("hidden", !trelloConnected);
+      // Buffer (UI only — no Worker routes; keep safe)
       const bufferConnected = !!integ?.buffer?.access_token;
-      $("#bufferState")?.classList?.add("chip");
-      $("#bufferState").textContent = bufferConnected? "Connected" : "Disconnected";
-      $("#connectBuffer")?.classList.toggle("hidden", bufferConnected);
-      $("#disconnectBuffer")?.classList.toggle("hidden", !bufferConnected);
-      // Fill Buffer profiles into modal select
-      const sel = $("#bufferProfile");
+      byId("bufferState") && (byId("bufferState").textContent = bufferConnected? "Connected" : "Disconnected");
+      byId("connectBuffer")    && byId("connectBuffer").classList.toggle("hidden", bufferConnected);
+      byId("disconnectBuffer") && byId("disconnectBuffer").classList.toggle("hidden", !bufferConnected);
+      // Profiles select (if any from future backend)
+      const sel = byId("bufferProfile");
       if (sel){
         sel.innerHTML = "";
         (integ?.buffer?.profiles||[]).forEach(p=>{
@@ -1440,52 +1633,46 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     }
 
     // Connect/Disconnect handlers
-    $("#connectNotion")?.addEventListener("click", async ()=>{
+    byId("connectNotion") && byId("connectNotion").addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Notion connect.");
     });
-    $("#disconnectNotion")?.addEventListener("click", async ()=>{
+    byId("disconnectNotion") && byId("disconnectNotion").addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.ok) { showToast("Notion disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
     });
 
-    $("#connectTrello")?.addEventListener("click", async ()=>{
+    byId("connectTrello") && byId("connectTrello").addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Trello connect.");
     });
-    $("#disconnectTrello")?.addEventListener("click", async ()=>{
-      const headers = await getAuthHeaders();
-      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers }).catch(()=>null);
-      const j = await r?.json().catch(()=> ({}));
-      if (j?.ok) { showToast("Trello disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
+    // Worker has no Trello disconnect route; open Trello's authorized apps for revoke
+    byId("disconnectTrello") && byId("disconnectTrello").addEventListener("click", ()=>{
+      window.open("https://trello.com/1/authorized", "_blank");
+      showToast("Open Trello → revoke access there");
     });
 
-    $("#connectBuffer")?.addEventListener("click", async ()=>{
-      const headers = await getAuthHeaders();
-      const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/oauth/start`, { headers }).catch(()=>null);
-      const j = await r?.json().catch(()=> ({}));
-      if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Buffer connect.");
+    // Buffer — safe no-op actions (until Worker routes exist)
+    byId("connectBuffer") && byId("connectBuffer").addEventListener("click", ()=>{
+      showToast("Buffer integration coming soon");
     });
-    $("#disconnectBuffer")?.addEventListener("click", async ()=>{
-      const headers = await getAuthHeaders();
-      const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/disconnect`, { method:"POST", headers }).catch(()=>null);
-      const j = await r?.json().catch(()=> ({}));
-      if (j?.ok) { showToast("Buffer disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
+    byId("disconnectBuffer") && byId("disconnectBuffer").addEventListener("click", ()=>{
+      showToast("Buffer integration coming soon");
     });
 
     // Export helpers to collect current outputs (Member)
     function currentOutputsMember(){
       return {
-        linkedin:  $("#out-li_m")?.textContent || "",
-        x:          ($("#out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
-        email:     { subject: $("#out-em-subj_m")?.textContent || "", body: $("#out-em-body_m")?.textContent || "" },
-        instagram: $("#out-ig_m")?.textContent || ""
+        linkedin:  byId("out-li_m")?.textContent || "",
+        x:          (byId("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
+        email:     { subject: byId("out-em-subj_m")?.textContent || "", body: byId("out-em-body_m")?.textContent || "" },
+        instagram: byId("out-ig_m")?.textContent || ""
       };
     }
 
@@ -1510,14 +1697,15 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
     // Per-channel Trello export (uses modal)
     function openTrelloModal(defaultTitle, defaultDesc){
-      $("#trelloBoardId").value = localStorage.getItem("trello_board") || "";
-      $("#trelloListId").value  = localStorage.getItem("trello_list") || "";
-      $("#trelloModal").showModal();
-      const confirm = $("#trelloConfirm");
+      byId("trelloBoardId") && (byId("trelloBoardId").value = localStorage.getItem("trello_board") || "");
+      byId("trelloListId")  && (byId("trelloListId").value  = localStorage.getItem("trello_list") || "");
+      byId("trelloModal")?.showModal();
+      const confirm = byId("trelloConfirm");
+      if (!confirm) return;
       const handler = async (e)=>{
         e.preventDefault();
-        const board_id = $("#trelloBoardId").value.trim();
-        const list_id  = $("#trelloListId").value.trim();
+        const board_id = (byId("trelloBoardId")?.value||"").trim();
+        const list_id  = (byId("trelloListId")?.value||"").trim();
         if (!board_id || !list_id) { alert("Enter Board ID and List ID"); return; }
         localStorage.setItem("trello_board", board_id);
         localStorage.setItem("trello_list", list_id);
@@ -1526,172 +1714,150 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           method:"POST", headers, body: JSON.stringify({ board_id, list_id, title: defaultTitle, description: defaultDesc })
         }).catch(()=>null);
         const j = await r?.json().catch(()=> ({}));
-        $("#trelloModal").close();
+        byId("trelloModal")?.close();
         confirm.removeEventListener("click", handler);
         if (j?.url) { showToast("Sent to Trello ✓"); window.open(j.url, "_blank"); }
         else alert(j?.error?.message || "Failed to send to Trello.");
       };
-      confirm.addEventListener("click", handler);
+      confirm.addEventListener("click", handler, { once:false });
     }
 
-    // Buffer queue (uses modal)
+    // Buffer queue (modal) — safe no-op until backend exists
     function openBufferModal(defaultText){
-      const modal = $("#bufferModal");
-      $("#bufferProfile").value = ($("#bufferProfile").querySelector("option")?.value)||"";
+      const modal = byId("bufferModal");
+      if (!modal) return;
+      const sel = byId("bufferProfile");
+      if (sel && sel.querySelectorAll("option").length === 0){
+        const opt = document.createElement("option");
+        opt.value = "soon";
+        opt.textContent = "Coming soon";
+        sel.appendChild(opt);
+      }
+      sel && (sel.value = sel.querySelector("option")?.value || "soon");
       modal.showModal();
-      const confirm = $("#bufferConfirm");
-      const handler = async (e)=>{
+      const confirm = byId("bufferConfirm");
+      const handler = (e)=>{
         e.preventDefault();
-        const profile_id = $("#bufferProfile").value;
-        if (!profile_id) { alert("Choose a profile"); return; }
-        const headers = await getAuthHeaders();
-        const r = await fetch(`${WORKER_BASE}/api/integrations/buffer/publish`, {
-          method:"POST", headers, body: JSON.stringify({ profile_id, text: defaultText })
-        }).catch(()=>null);
-        const j = await r?.json().catch(()=> ({}));
         modal.close();
         confirm.removeEventListener("click", handler);
-        if (j?.id || j?.update_id) { showToast("Queued in Buffer ✓"); }
-        else alert(j?.error?.message || "Failed to queue in Buffer.");
+        showToast("Buffer integration coming soon");
       };
-      confirm.addEventListener("click", handler);
+      confirm.addEventListener("click", handler, { once:true });
     }
 
     // Channel action bindings (Member)
-    $("#li-notion")?.addEventListener("click", ()=>{
-      const t = $("#out-li_m").textContent||"";
+    byId("li-notion") && byId("li-notion").addEventListener("click", ()=>{
+      const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, t.split("\n").find(Boolean) || "LinkedIn");
     });
-    $("#x-notion")?.addEventListener("click", ()=>{
-      const t = $("#out-x_m").textContent||"";
+    byId("x-notion") && byId("x-notion").addEventListener("click", ()=>{
+      const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, "X (Twitter)");
     });
-    $("#em-notion")?.addEventListener("click", ()=>{
-      const subj = $("#out-em-subj_m").textContent||"";
-      const body = $("#out-em-body_m").textContent||"";
+    byId("em-notion") && byId("em-notion").addEventListener("click", ()=>{
+      const subj = byId("out-em-subj_m")?.textContent||"";
+      const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       exportNotionFrom(`Subject: ${subj}\n\n${body}`, subj||"Email");
     });
-    $("#ig-notion")?.addEventListener("click", ()=>{
-      const t = $("#out-ig_m").textContent||"";
+    byId("ig-notion") && byId("ig-notion").addEventListener("click", ()=>{
+      const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, "Instagram");
     });
 
-    $("#li-trello")?.addEventListener("click", ()=>{
-      const t = $("#out-li_m").textContent||"";
+    byId("li-trello") && byId("li-trello").addEventListener("click", ()=>{
+      const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("LinkedIn Draft", t);
     });
-    $("#x-trello")?.addEventListener("click", ()=>{
-      const t = $("#out-x_m").textContent||"";
+    byId("x-trello") && byId("x-trello").addEventListener("click", ()=>{
+      const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("X Draft", t);
     });
-    $("#em-trello")?.addEventListener("click", ()=>{
-      const subj = $("#out-em-subj_m").textContent||"";
-      const body = $("#out-em-body_m").textContent||"";
+    byId("em-trello") && byId("em-trello").addEventListener("click", ()=>{
+      const subj = byId("out-em-subj_m")?.textContent||"";
+      const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       openTrelloModal(subj||"Email Draft", body);
     });
-    $("#ig-trello")?.addEventListener("click", ()=>{
-      const t = $("#out-ig_m").textContent||"";
+    byId("ig-trello") && byId("ig-trello").addEventListener("click", ()=>{
+      const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("Instagram Draft", t);
     });
 
-    $("#li-buffer")?.addEventListener("click", ()=>{
-      const t = $("#out-li_m").textContent||"";
+    byId("li-buffer") && byId("li-buffer").addEventListener("click", ()=>{
+      const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
-    $("#x-buffer")?.addEventListener("click", ()=>{
-      const t = $("#out-x_m").textContent||"";
+    byId("x-buffer") && byId("x-buffer").addEventListener("click", ()=>{
+      const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
-    $("#em-buffer")?.addEventListener("click", ()=>{
-      const subj = $("#out-em-subj_m").textContent||"";
-      const body = $("#out-em-body_m").textContent||"";
+    byId("em-buffer") && byId("em-buffer").addEventListener("click", ()=>{
+      const subj = byId("out-em-subj_m")?.textContent||"";
+      const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       openBufferModal(`${subj}\n\n${body}`);
     });
-    $("#ig-buffer")?.addEventListener("click", ()=>{
-      const t = $("#out-ig_m").textContent||"";
+    byId("ig-buffer") && byId("ig-buffer").addEventListener("click", ()=>{
+      const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
 
     /* =========================
-       PACK EXPORT (Creator+)
+       PACK EXPORT (Creator+) — safe placeholder
     ========================== */
-    $("#exportPack")?.addEventListener("click", async ()=>{
+    byId("exportPack") && byId("exportPack").addEventListener("click", async ()=>{
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
       if (!["creator","business"].includes(plan)) return alert("Upgrade to Creator to use pack export.");
       const out = currentOutputsMember();
       if (!out.linkedin && !out.x?.length && !out.email?.body && !out.instagram) { alert("Generate content first."); return; }
-      const headers = await getAuthHeaders();
-      const u = new URL(`${WORKER_BASE}/api/export/pack`);
-      if ($("#whitelabel")?.checked) u.searchParams.set("white_label","1");
-      const r = await fetch(u.toString(), { method:"POST", headers, body: JSON.stringify({
-        linkedin: out.linkedin, x: out.x, email: out.email, instagram: out.instagram
-      })}).catch(()=>null);
-      if (!r || !r.ok) {
-        const j = await r?.json().catch(()=> ({}));
-        alert(j?.error?.message || "Could not create pack.");
-        return;
-      }
-      const blob = await r.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "content-pack.zip"; document.body.appendChild(a); a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
-      showToast("Pack downloaded ✓");
+      // Worker route for pack export isn't present; provide instant MD download as interim
+      const md = buildMarkdown(out);
+      download("content-pack.md", "text/markdown", md);
+      showToast("Pack exported (Markdown) ✓");
     });
 
     /* =========================
-       TEAM SEATS (Business)
+       TEAM SEATS (Business) — safe placeholder
     ========================== */
-    $("#inviteBtn")?.addEventListener("click", async ()=>{
+    byId("inviteBtn") && byId("inviteBtn").addEventListener("click", async ()=>{
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
       if (plan!=="business") return alert("Team seats are for Business plan.");
-      const email = ($("#inviteEmail")?.value||"").trim();
+      const email = (byId("inviteEmail")?.value||"").trim();
       if (!email) return alert("Enter an email to invite.");
-      const headers = await getAuthHeaders();
-      const r = await fetch(`${WORKER_BASE}/api/org/invite`, {
-        method:"POST", headers, body: JSON.stringify({ email })
-      }).catch(()=>null);
-      const j = await r?.json().catch(()=> ({}));
-      if (j?.token) {
-        showToast("Invite created ✓ (share token)");
-        await refreshAll();
-      } else alert(j?.error?.message || "Failed to create invite.");
+      // No Worker route for org invites—show safe info
+      showToast("Team invites coming soon");
     });
 
     /* =========================
        REFERRAL SHARE BUTTONS
     ========================== */
-    $("#copyRef")?.addEventListener("click", ()=>{
-      const val = $("#refLink")?.value || "";
+    byId("copyRef") && byId("copyRef").addEventListener("click", ()=>{
+      const val = byId("refLink")?.value || "";
       if (!val) return;
       navigator.clipboard.writeText(val);
       showToast("Referral link copied ✓");
     });
-    $("#shareLi")?.addEventListener("click", ()=>{
-      const link = $("#refLink")?.value || location.href;
+    byId("shareLi") && byId("shareLi").addEventListener("click", ()=>{
+      const link = byId("refLink")?.value || location.href;
       const txt = encodeURIComponent(`I’m using ContentFlow to repurpose one idea into ready-to-post drafts for LinkedIn, X, Email & IG. Try it → ${link}`);
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}&title=${txt}`, "_blank");
     });
-    $("#shareX")?.addEventListener("click", ()=>{
-      const link = $("#refLink")?.value || location.href;
+    byId("shareX") && byId("shareX").addEventListener("click", ()=>{
+      const link = byId("refLink")?.value || location.href;
       const txt = encodeURIComponent(`Repurpose your content across LinkedIn/X/Email/IG in minutes. My go-to: ContentFlow → ${link}`);
       window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
     });
 
-    /* Paint integrations on first load (if status includes them) */
-    paintIntegrations(LAST_STATUS||{});
     /* =========================
        OAUTH RETURN (toast + cleanup)
     ========================== */
@@ -1711,7 +1877,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       }
     })();
 
-    /* Repaint integrations on visibility change/focus */
+    /* Repaint integrations on focus */
     window.addEventListener("focus", ()=> paintIntegrations(LAST_STATUS||{}));
     document.addEventListener("visibilitychange", ()=>{
       if (!document.hidden) paintIntegrations(LAST_STATUS||{});
@@ -1720,10 +1886,8 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     /* Safety: if Supabase script didn’t load, disable auth buttons gracefully */
     if (!supabase) {
       ["loginBtn","heroSignIn","googleBtn","magicBtn"].forEach(id=>{
-        const el = document.getElementById(id);
+        const el = byId(id);
         if (el) el.addEventListener("click", (e)=>{ e.preventDefault(); alert("Auth isn’t available right now. Please refresh or try again soon."); });
       });
     }
   </script>
-</body>
-</html>
