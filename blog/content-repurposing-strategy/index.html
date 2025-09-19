@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to Create an Effective Content Repurposing Strategy (Step-by-Step)</title>
+  <meta name="description" content="A practical blueprint for building a content repurposing strategy. Audit your library, pick formats per channel, plan in Notion/Trello, and automate with AI. Includes free CSV template and Trello board JSON.">
+
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/content-repurposing-strategy/">
+  <meta name="theme-color" content="#0a0d18">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- OG / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to Create an Effective Content Repurposing Strategy (Step-by-Step)">
+  <meta property="og:description" content="Audit → Map → Plan → Generate → Edit → Schedule. A complete repurposing workflow with templates, examples, and automation tips.">
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/content-repurposing-strategy/">
+  <meta property="og:image" content="/og-cover.png">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How to Create an Effective Content Repurposing Strategy (Step-by-Step)">
+  <meta name="twitter:description" content="Build a repeatable content repurposing workflow using Notion/Trello and AI. Free CSV template included.">
+  <meta name="twitter:image" content="/og-cover.png">
+
+  <style>
+    :root{
+      --bg:#0b1020; --ink:#e6e8ef; --muted:#8b93a7; --ink-2:#cbd1dd;
+      --border:rgba(255,255,255,0.08); --card:#12172a;
+      --brand:#6ee7f8; --accent:#a78bfa; --ok:#34d399; --warn:#f59e0b;
+      --grad:linear-gradient(90deg,#6ee7f8,#a78bfa 60%,#f472b6);
+    }
+    html,body{background:var(--bg);color:var(--ink);margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Inter,Roboto}
+    main{max-width:920px;margin:0 auto;padding:28px 18px 88px}
+    .eyebrow{letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-size:12px;margin-bottom:10px}
+    h1{font-size:clamp(34px,4vw,48px);line-height:1.1;margin:8px 0 6px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .lede{font-size:clamp(18px,2.1vw,20px);color:var(--ink-2);margin-top:8px}
+    .meta{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-top:10px}
+    .tag{border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+    /* Static ToC (not sticky) */
+    .toc{position:static;border:1px solid var(--border);border-radius:16px;padding:16px;background:rgba(255,255,255,0.02);margin:22px 0}
+    .toc h3{margin:0 0 6px;font-size:14px;color:var(--ink-2)}
+    .toc a{display:block;color:var(--ink-2);text-decoration:none;padding:6px 0}
+    .toc a:hover{color:#fff}
+    h2{font-size:clamp(26px,3vw,32px);margin-top:40px;line-height:1.2}
+    h3{font-size:clamp(20px,2.3vw,22px);margin-top:24px;color:var(--ink-2)}
+    p{line-height:1.75;color:#e9ecf6}
+    ul,ol{line-height:1.8}
+    .note,.pro,.warn{border:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:14px 16px;border-radius:14px;margin:16px 0}
+    .pro .k{color:var(--ok);font-weight:600}
+    .note .k{color:var(--accent);font-weight:600}
+    .warn .k{color:var(--warn);font-weight:600}
+    .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin:16px 0}
+    .card{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:14px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-size:12px}
+    .cta{margin:40px 0 16px;padding:18px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(180deg,rgba(110,231,248,0.06),rgba(167,139,250,0.06))}
+    .cta .row{display:flex;gap:16px;flex-wrap:wrap}
+    .button{display:inline-block;padding:10px 14px;border-radius:12px;border:1px solid var(--border);text-decoration:none;color:#fff;background:var(--grad);box-shadow:0 10px 24px rgba(133,77,255,.18)}
+    a{color:#b4c5ff} a:hover{color:#fff}
+    code{background:#0f1430;border:1px solid var(--border);padding:2px 6px;border-radius:6px}
+    .typewriter{font-weight:600;white-space:nowrap;border-right:2px solid var(--brand);animation:caret 1s steps(1) infinite}
+    @keyframes caret{50%{border-color:transparent}}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid var(--border);font-size:12px;color:var(--ink-2)}
+    .hero{border:1px solid var(--border);border-radius:18px;padding:18px;margin:16px 0 8px;background:linear-gradient(135deg,rgba(110,231,248,0.06),rgba(244,114,182,0.05) 50%,rgba(167,139,250,0.06))}
+    .dl-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+  </style>
+
+  <!-- Article Schema -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "mainEntityOfPage":{"@type":"WebPage","@id":"https://contentrepurpose.pro/blog/content-repurposing-strategy/"},
+    "headline":"How to Create an Effective Content Repurposing Strategy (Step-by-Step)",
+    "description":"A practical blueprint for building a content repurposing strategy with workflows, templates, and automation tips.",
+    "image":"https://contentrepurpose.pro/og-cover.png",
+    "author":{"@type":"Person","name":"Frank C"},
+    "publisher":{"@type":"Organization","name":"ContentRepurpose.pro","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/logo.png"}},
+    "datePublished":"2025-09-19",
+    "dateModified":"2025-09-19"
+  }
+  </script>
+
+  <!-- HowTo Schema (condensed) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"HowTo",
+    "name":"Create a Content Repurposing Strategy",
+    "description":"Audit your library, map channel formats, plan in Notion/Trello, and automate with AI.",
+    "step":[
+      {"@type":"HowToStep","name":"Audit your content library","text":"Collect URLs, performance metrics, and classify evergreen pieces."},
+      {"@type":"HowToStep","name":"Map formats per channel","text":"Decide ideal derivatives (LinkedIn, X, Email, Instagram, Blog updates)."},
+      {"@type":"HowToStep","name":"Prioritize topics","text":"Pick winners based on performance and business goals."},
+      {"@type":"HowToStep","name":"Plan in Notion/Trello","text":"Use a template to track status: Backlog → Drafting → Editing → Scheduled → Published."},
+      {"@type":"HowToStep","name":"Draft with AI","text":"Generate first-pass derivatives from a single paste; align tone/voice."},
+      {"@type":"HowToStep","name":"Edit for accuracy & brand","text":"Add examples, facts, internal links, and CTAs."},
+      {"@type":"HowToStep","name":"Schedule & measure","text":"Stagger distribution and track reach/CTR/replies. Iterate monthly."}
+    ],
+    "totalTime":"P7D",
+    "tool":[
+      {"@type":"HowToTool","name":"ContentRepurpose.pro"},
+      {"@type":"HowToTool","name":"Notion or Trello"}
+    ]
+  }
+  </script>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Strategy · Workflow · US</div>
+  <h1>How to Create an Effective Content Repurposing Strategy (Step-by-Step)</h1>
+  <p class="lede">
+    Build a repeatable system to turn one idea into <span id="tw" class="typewriter">LinkedIn threads</span>, email segments, X posts, and SEO updates—without adding a full-time headcount.
+  </p>
+  <div class="meta">
+    <span class="tag">By Frank C</span>
+    <span class="tag">Updated: Sep 19, 2025</span>
+    <span class="tag">12–18 min read</span>
+  </div>
+
+  <section class="hero">
+    <span class="pill">Includes templates</span>
+    <span class="pill">Notion/Trello-friendly</span>
+    <span class="pill">AI automation tips</span>
+    <p style="margin:8px 0 0;color:var(--ink-2)">
+      Many teams struggle to repurpose at scale—industry surveys note that nearly half of marketers find it challenging.
+      This blueprint removes friction with a simple workflow, free templates, and automation where it matters.
+    </p>
+    <div class="dl-row">
+      <!-- CSV template (download) -->
+      <a class="button" download="content-repurposing-template.csv"
+         href="data:text/csv;charset=utf-8,Title%2CSourceURL%2CPrimaryGoal%2CTargetPersona%2CStageOfFunnel%2CPrimaryKeyword%2CSupportingKeywords%2CChannel%2CStatus%2COwner%2CDueDate%2CCTA%2CUTM_Campaign%0A%22Pillar%3A%20Repurposing%20101%22%2Chttps%3A//contentrepurpose.pro/blog/content-repurposing-101/%2CAwareness%2CSEO%2CTOFU%2Ccontent%20repurposing%2C%22what%20is%20content%20repurposing%3B%20content%20repurposing%20benefits%22%2CBlog%2CPublished%2CFrank%20C%2C2025-09-19%2CExplore%20demo%2Crepurpose101%0A%22LinkedIn%20thread%3A%20Repurpose%20tips%22%2C%2CGrowth%2CCreator%2CMOFU%2Crepurpose%20content%2C%22linkedin%20templates%3B%20repurposing%20ideas%22%2CLinkedIn%2CDrafting%2CFrank%20C%2C2025-09-22%2CSignup%20CTA%2Cthread101">
+         Download CSV Strategy Template
+      </a>
+      <!-- Trello board JSON (import: create board → menu → more → print/export) -->
+      <a class="button" download="repurposing-board.json"
+         href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Repurposing%20Board%22%2C%22lists%22%3A%5B%7B%22name%22%3A%22Backlog%22%7D%2C%7B%22name%22%3A%22Drafting%22%7D%2C%7B%22name%22%3A%22Editing%22%7D%2C%7B%22name%22%3A%22Scheduled%22%7D%2C%7B%22name%22%3A%22Published%22%7D%5D%7D">
+         Download Trello Board JSON
+      </a>
+    </div>
+  </section>
+
+  <aside class="toc">
+    <h3>Table of Contents</h3>
+    <a href="#why">1. Why a Repurposing Strategy Matters</a>
+    <a href="#audit">2. Step 1 — Audit Your Library</a>
+    <a href="#formats">3. Step 2 — Map Formats by Channel</a>
+    <a href="#prioritize">4. Step 3 — Prioritize Topics & Goals</a>
+    <a href="#plan">5. Step 4 — Plan in Notion/Trello</a>
+    <a href="#generate">6. Step 5 — Draft with AI (Paste-Once)</a>
+    <a href="#edit">7. Step 6 — Edit for Voice, Add Proof</a>
+    <a href="#schedule">8. Step 7 — Schedule, Measure, Iterate</a>
+    <a href="#templates">9. Free Templates & Examples</a>
+    <a href="#faq">10. FAQ</a>
+    <a href="#cta">Start with 90% Off</a>
+  </aside>
+
+  <section id="why">
+    <h2>1) Why a Repurposing Strategy Matters</h2>
+    <p>
+      Without a system, repurposing devolves into random acts of posting. A strategy ensures you consistently:
+      <strong>maximize each idea’s reach</strong>, <strong>protect quality</strong>, and <strong>reduce production cost</strong>.
+    </p>
+    <div class="grid">
+      <div class="card"><div class="badge">ROI</div><h3>Lower cost per asset</h3><p>One pillar yields 5–10 channel-ready derivatives for the same research time.</p></div>
+      <div class="card"><div class="badge">SEO</div><h3>Topical authority</h3><p>Derivatives cover supporting queries, FAQs, and related entities—fueling rankings.</p></div>
+      <div class="card"><div class="badge">Consistency</div><h3>Always-on presence</h3><p>Staggered distribution keeps your brand visible without burnout.</p></div>
+    </div>
+    <div class="note"><span class="k">Reality check:</span> Teams report scaling repurposing is hard. A light process + the right tools make it sustainable.</div>
+  </section>
+
+  <section id="audit">
+    <h2>2) Step 1 — Audit Your Library</h2>
+    <p>Pull your last 6–12 months of content. Capture for each item: title, URL, format, KPIs (traffic, watch time, saves, replies), and evergreen score.</p>
+    <h3>What qualifies as a pillar?</h3>
+    <ul>
+      <li>Evergreen topic (not news-bound)</li>
+      <li>Clear problem → solution structure</li>
+      <li>At least one standout KPI (e.g., above-median CTR or engagement)</li>
+    </ul>
+    <p>Put your audit into the <a href="#templates">CSV Strategy Template</a> and label quick wins.</p>
+  </section>
+
+  <section id="formats">
+    <h2>3) Step 2 — Map Formats by Channel</h2>
+    <p>For each pillar, decide the ideal derivatives per channel and the goal of each derivative.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>LinkedIn</h3>
+        <ul><li>Hook + 5–8 bullets</li><li>1 soft CTA</li><li>Internal link to pillar</li></ul>
+        <p>Use: <a href="/blog/linkedin-post-templates">LinkedIn Post Templates</a></p>
+      </div>
+      <div class="card"><h3>X (Twitter)</h3><ul><li>5–10 tweet mini-guide</li><li>1–2 keywords</li><li>CTA to signup</li></ul></div>
+      <div class="card"><h3>Email</h3><ul><li>One story + one tip</li><li>Single CTA</li><li>Link to pillar/demo</li></ul></div>
+      <div class="card"><h3>Instagram</h3><ul><li>Carousel: 1 step/slide</li><li>8–12 hashtags</li><li>“Read more” CTA</li></ul></div>
+    </div>
+    <p>Deep dives: <a href="/blog/repurpose-blog-post-for-social-media/">Blog → social guide</a>, <a href="/blog/paste-once-multi-channel/">paste-once workflow</a>.</p>
+  </section>
+
+  <section id="prioritize">
+    <h2>4) Step 3 — Prioritize Topics & Goals</h2>
+    <p>Score pillars by business impact (ICP relevance, product fit), audience demand (search volume, social saves), and effort (time to update).</p>
+    <div class="pro"><span class="k">Tip:</span> Favor “proven” ideas (above-median performance) that align to current offers.</div>
+  </section>
+
+  <section id="plan">
+    <h2>5) Step 4 — Plan in Notion/Trello</h2>
+    <p>Create statuses: <code>Backlog → Drafting → Editing → Scheduled → Published</code>. Track owner, due date, and CTA per asset.</p>
+    <p>How-to: See <a href="/blog/notion-trello-export/">Notion + Trello export workflow</a>.</p>
+  </section>
+
+  <section id="generate">
+    <h2>6) Step 5 — Draft with AI (Paste-Once)</h2>
+    <p>Paste your pillar into <a href="https://contentrepurpose.pro/">ContentRepurpose.pro</a> and generate LinkedIn, X, Email, and Instagram variants in seconds.</p>
+    <ul>
+      <li>Use BYOK if preferred; see <a href="/blog/ai-content-repurposing/">AI content repurposing</a>.</li>
+      <li>Lock your tone: supply a brand voice sample in the prompt.</li>
+      <li>Auto-insert internal links to related posts where relevant.</li>
+    </ul>
+  </section>
+
+  <section id="edit">
+    <h2>7) Step 6 — Edit for Voice, Add Proof</h2>
+    <p>Polish hooks, add examples, and ensure claims are supported. Refresh headlines per channel; avoid reusing the same intro everywhere.</p>
+    <div class="warn"><span class="k">Avoid:</span> copy/paste duplication. <strong>Adapt</strong> for platform intent and audience depth.</div>
+  </section>
+
+  <section id="schedule">
+    <h2>8) Step 7 — Schedule, Measure, Iterate</h2>
+    <p>Stagger distribution over 2–3 weeks. Track reach, CTR, replies, and conversions. Reuse winning hooks later with new angles.</p>
+    <p>Next: <a href="/blog/how-to-repurpose-content/">How to repurpose content</a> · <a href="/blog/content-repurposing-ideas/">Repurposing ideas</a></p>
+  </section>
+
+  <section id="templates">
+    <h2>9) Free Templates & Examples</h2>
+    <ul>
+      <li><a href="#"
+             onclick="return false;">Strategy template (CSV)</a> — use the **Download CSV Strategy Template** button above.</li>
+      <li><a href="#"
+             onclick="return false;">Trello board JSON</a> — import lists Backlog → Drafting → Editing → Scheduled → Published.</li>
+      <li>Examples: <a href="/blog/repurpose-one-piece-multiple-platforms/">One piece → many formats</a>, <a href="/blog/paste-once-multi-channel/">paste-once workflow</a>.</li>
+    </ul>
+
+    <div class="cta" id="cta">
+      <h3 style="margin:0 0 8px">Start Your Strategy with 90% Off</h3>
+      <p style="margin:0 0 10px;color:var(--ink-2)">Paste once, generate channel-ready drafts, and plan in minutes. Use promo code <code>CONTENTOFF90</code> (90% off) at signup.</p>
+      <div class="row">
+        <a href="https://contentrepurpose.pro/" class="button">Go to Homepage</a>
+        <a href="https://contentrepurpose.pro/#demo" class="button">Try the Live Demo</a>
+        <a href="https://contentrepurpose.pro/#pricing" class="button">Sign up with Promo</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <h2>10) Frequently Asked Questions</h2>
+
+    <h3>How do I build a repurposing strategy from scratch?</h3>
+    <p>Follow the 7 steps above: audit → map formats → prioritize → plan → draft with AI → edit → schedule & measure.</p>
+
+    <h3>What template should I use?</h3>
+    <p>Start with our CSV Strategy Template (download above). Track status, channel, keywords, owner, due date, and CTA.</p>
+
+    <h3>How often should I repurpose?</h3>
+    <p>Weekly. Repurpose one pillar into 4–8 derivatives across 2–3 weeks, then recycle winning hooks quarterly.</p>
+
+    <h3>Will AI hurt authenticity?</h3>
+    <p>No, when you edit for voice and add specific examples. Use AI to speed up drafting; keep the final say human.</p>
+
+    <div style="height:1px;background:var(--border);margin:28px 0"></div>
+    <p style="color:var(--muted)">Next reads: <a href="/blog/ai-content-repurposing/">AI content repurposing</a> · <a href="/blog/notion-trello-export/">Notion + Trello export</a></p>
+  </section>
+</main>
+
+<!-- FAQ Schema -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {"@type":"Question","name":"How do I build a repurposing strategy from scratch?","acceptedAnswer":{"@type":"Answer","text":"Follow the 7 steps: audit, map formats, prioritize, plan, draft with AI, edit, schedule and measure."}},
+    {"@type":"Question","name":"What template should I use?","acceptedAnswer":{"@type":"Answer","text":"Use the CSV Strategy Template to track status, channel, keywords, owner, due date, and CTA."}},
+    {"@type":"Question","name":"How often should I repurpose?","acceptedAnswer":{"@type":"Answer","text":"Weekly. Turn one pillar into 4–8 derivatives across 2–3 weeks, then recycle winning hooks quarterly."}},
+    {"@type":"Question","name":"Will AI hurt authenticity?","acceptedAnswer":{"@type":"Answer","text":"No—edit for voice and add specific examples. Use AI for speed; keep the final say human."}}
+  ]
+}
+</script>
+
+<!-- Typewriter (no deps) -->
+<script>
+(function(){
+  const el = document.getElementById('tw'); if(!el) return;
+  const phrases = ["LinkedIn threads","X post series","newsletter segments","Instagram captions"];
+  let i=0,j=0,dir=1,hold=0;
+  function tick(){
+    if(hold>0){hold--;return requestAnimationFrame(tick)}
+    const t=phrases[i]; el.textContent=t.slice(0,j); j+=dir;
+    if(j>t.length){dir=-1;hold=30}
+    if(j<0){dir=1;i=(i+1)%phrases.length}
+    requestAnimationFrame(tick)
+  } tick();
+})();
+</script>
+</body>
+</html>
