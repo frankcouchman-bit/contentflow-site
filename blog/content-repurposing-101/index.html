@@ -46,7 +46,8 @@
     .lede{font-size: clamp(18px, 2.1vw, 20px); color: var(--ink-2); margin-top: 8px;}
     .meta{display:flex; gap:16px; font-size:14px; color:var(--muted); margin-top:10px; flex-wrap:wrap}
     .tag{border:1px solid var(--border); padding:4px 8px; border-radius:999px}
-    .toc{position:sticky; top:14px; border:1px solid var(--border); border-radius:16px; padding:16px; background:rgba(255,255,255,0.02); margin:22px 0;}
+    /* ToC fixed: no sticky/overlap */
+    .toc{position:static; border:1px solid var(--border); border-radius:16px; padding:16px; background:rgba(255,255,255,0.02); margin:22px 0;}
     .toc h3{margin-top:0; font-size:14px; color:var(--ink-2)}
     .toc a{display:block; color:var(--ink-2); text-decoration:none; padding:6px 0;}
     .toc a:hover{color:white}
@@ -321,7 +322,7 @@
     </ul>
     <div class="cta" id="cta">
       <h3 style="margin:0 0 8px">Try ContentRepurpose.pro</h3>
-      <p style="margin:0 0 10px;color:var(--ink-2)">Turn one idea into channel-ready drafts. Paste → Generate → Edit → Schedule. Use promo code <code>CREATOR</code> at signup.</p>
+      <p style="margin:0 0 10px;color:var(--ink-2)">Turn one idea into channel-ready drafts. Paste → Generate → Edit → Schedule. Use promo code <code>CONTENTOFF90</code> (90% off) at signup.</p>
       <div class="row">
         <a href="https://contentrepurpose.pro/" class="button">Go to Homepage</a>
         <a href="https://contentrepurpose.pro/#demo" class="button">Try the Live Demo</a>
