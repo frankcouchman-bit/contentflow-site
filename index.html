@@ -156,6 +156,7 @@
 
       <!-- Desktop nav -->
       <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
@@ -183,6 +184,7 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
           <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
           <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
           <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
@@ -199,7 +201,7 @@
     </div>
   </header>
 
-  <!-- HERO -->
+  <!-- HERO (Live Demo high on page) -->
   <section class="relative">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <div>
@@ -308,7 +310,7 @@
       </div>
     </div>
 
-    <!-- NEW: Live activity strip -->
+    <!-- Live activity strip -->
     <div class="mt-8 md:mt-10">
       <div class="max-w-7xl mx-auto px-4 md:px-5">
         <div class="card p-4 md:p-5">
@@ -434,14 +436,25 @@
         <label for="source" class="sr-only">Source text</label>
         <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
 
+        <!-- Advanced settings (BYOK multi-provider) -->
         <details id="settings" class="mt-4 open:scroll-mt-20">
           <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
           <div class="grid md:grid-cols-3 gap-3 mt-3">
             <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
-            <input id="byok" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your OpenRouter key (optional BYOK)" />
+            <select id="byok_provider" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30">
+              <option value="">Provider (auto)</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="together">Together</option>
+              <option value="groq">Groq</option>
+              <option value="custom">Custom (OpenAI-compatible)</option>
+            </select>
+            <input id="byok_key" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your API key (BYOK)" />
+            <input id="byok_base" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30 md:col-span-2" placeholder="Custom base URL (if custom provider)" />
             <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save</button>
           </div>
-          <p class="text-xs text-slate-500 mt-2">BYOK lives only in this tab. We don’t store keys.</p>
+          <p class="text-xs text-slate-500 mt-2">BYOK is used only when you click “Generate with your BYOK”. If signed in, you can also save BYOK to your account; otherwise it’s saved to this tab only.</p>
         </details>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -534,13 +547,25 @@
         </div>
         <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or idea…"></textarea>
 
-        <!-- Batch inputs (Starter+) -->
+        <!-- Member BYOK quick settings -->
         <details class="mt-4">
-          <summary class="cursor-pointer text-sm text-slate-500">Batch inputs (Starter+: one line = one run)</summary>
-          <textarea id="batch_inputs" class="mt-3 w-full h-24 p-3 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Each new line is a separate input…"></textarea>
-          <div class="text-xs text-slate-500 mt-1" id="batchNote">Starter: up to 5 • Creator: 20 • Business: 50</div>
-          <button id="run_batch" class="mt-2 btn" type="button">Run Batch</button>
-          <ul id="batch_progress" class="mt-2 text-xs space-y-1"></ul>
+          <summary class="cursor-pointer text-sm text-slate-500">BYOK settings (optional)</summary>
+          <div class="grid md:grid-cols-3 gap-3 mt-3">
+            <input id="model_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
+            <select id="byok_provider_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30">
+              <option value="">Provider (auto)</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="together">Together</option>
+              <option value="groq">Groq</option>
+              <option value="custom">Custom (OpenAI-compatible)</option>
+            </select>
+            <input id="byok_key_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your API key (BYOK)" />
+            <input id="byok_base_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30 md:col-span-2" placeholder="Custom base URL (if custom provider)" />
+            <button id="save_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save to my account</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Your BYOK is only used when you click “Generate with your BYOK”.</p>
         </details>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -699,118 +724,130 @@
       </div>
     </div>
   </section>
+      <!-- PRICING -->
+      <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
+          <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
+        </div>
+        <div class="grid lg:grid-cols-4 gap-6">
+          <div class="card p-6">
+            <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
+            <h3 class="mt-3 text-xl font-bold">Demo</h3>
+            <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
+            <ul class="mt-4 text-sm space-y-2">
+              <li>• 5 runs / month (no login)</li>
+              <li>• Signed-in free: 5 / day</li>
+              <li>• BYOK: 5 / day</li>
+              <li>• CSV/Markdown export</li>
+            </ul>
+            <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
+          </div>
 
-  <!-- PRICING -->
-  <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
-    <div class="text-center mb-8">
-      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
-      <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
+          <div class="card p-6">
+            <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
+            <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
+            <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
+            <ul class="mt-4 text-sm space-y-2">
+              <li>• 200 generations / month</li>
+              <li>• Batch inputs</li>
+              <li>• 10 saved presets</li>
+              <li>• Priority models</li>
+              <li>• BYOK: 50 / month <span class="text-slate-400">(plus +5 daily headroom)</span></li>
+            </ul>
+            <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button>
+          </div>
+
+          <div class="card p-6">
+            <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
+            <h3 class="mt-3 text-xl font-bold">Creator</h3>
+            <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
+            <ul class="mt-4 text-sm space-y-2">
+              <li>• 500 generations / month</li>
+              <li>• Unlimited presets</li>
+              <li>• Project pack export</li>
+              <li>• <strong>Notion export + Trello boards</strong></li>
+              <li>• <strong>Push drafts to Buffer</strong></li>
+              <li>• New workflows early</li>
+              <li>• BYOK: 150 / month <span class="text-slate-400">(includes +10 daily)</span></li>
+            </ul>
+            <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button>
+          </div>
+
+          <div class="card p-6">
+            <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
+            <h3 class="mt-3 text-xl font-bold">Business</h3>
+            <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
+            <ul class="mt-4 text-sm space-y-2">
+              <li>• Unlimited (fair use)</li>
+              <li>• 3 seats</li>
+              <li>• White-label export</li>
+              <li>• Priority support</li>
+              <li>• All Creator integrations</li>
+              <li>• Team presets &amp; shared calendar</li>
+              <li>• BYOK: 300 / month <span class="text-slate-400">(+30 daily)</span></li>
+            </ul>
+            <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50" type="button">Get Business</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEO FAQ -->
+      <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
+        <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
+        <div class="mt-5 grid md:grid-cols-2 gap-5">
+          <div class="card p-5">
+            <strong>Is it free?</strong>
+            <p class="text-sm text-slate-500 mt-2">Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported.</p>
+          </div>
+          <div class="card p-5">
+            <strong>What channels are supported?</strong>
+            <p class="text-sm text-slate-500 mt-2">LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business).</p>
+          </div>
+          <div class="card p-5">
+            <strong>How does ContentFlow AI improve SEO?</strong>
+            <p class="text-sm text-slate-500 mt-2">We generate keyword-aware, on-brand drafts for social and email, helping your blog content rank and get clicked across channels.</p>
+          </div>
+          <div class="card p-5">
+            <strong>Can I publish instantly?</strong>
+            <p class="text-sm text-slate-500 mt-2">Signed-in users can open the X composer with prefilled text, copy-and-open for LinkedIn, preview &amp; send email, and jump to Meta Creator Studio for Instagram.</p>
+          </div>
+          <div class="card p-5">
+            <strong>Do you support BYOK (Bring Your Own Key)?</strong>
+            <p class="text-sm text-slate-500 mt-2">Yes. Limits: Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily).</p>
+          </div>
+          <div class="card p-5">
+            <strong>What’s included in paid plans?</strong>
+            <p class="text-sm text-slate-500 mt-2">Higher monthly generations, saved presets, integrations, and faster lanes. See pricing for details.</p>
+          </div>
+        </div>
+
+        <!-- FAQPage JSON-LD -->
+        <script type="application/ld+json">{
+          "@context":"https://schema.org",
+          "@type":"FAQPage",
+          "mainEntity":[
+            {"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported."}},
+            {"@type":"Question","name":"What channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business)."}},
+            {"@type":"Question","name":"How does it improve SEO?","acceptedAnswer":{"@type":"Answer","text":"We generate keyword-aware, on-brand drafts that lift rankings and CTR across channels."}},
+            {"@type":"Question","name":"Can I publish instantly?","acceptedAnswer":{"@type":"Answer","text":"Yes—open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG."}},
+            {"@type":"Question","name":"Do you support BYOK?","acceptedAnswer":{"@type":"Answer","text":"Yes. Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily)."}},
+            {"@type":"Question","name":"What’s in paid plans?","acceptedAnswer":{"@type":"Answer","text":"More monthly generations, presets, integrations, and faster lanes."}}
+          ]
+        }</script>
+      </section>
+
+      <!-- Promo: external ad link -->
+      <section class="max-w-7xl mx-auto px-4 md:px-5 pb-8">
+        <div class="card p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold">Want more AI creation ideas?</h3>
+            <p class="text-sm text-slate-500 mt-1">Check out our friends at <strong>aigenerationtool.com</strong> for inspiration and tools.</p>
+          </div>
+          <a href="https://aigenerationtool.com" target="_blank" rel="noopener nofollow" class="px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Visit aigenerationtool.com</a>
+        </div>
+      </section>
     </div>
-    <div class="grid lg:grid-cols-4 gap-6">
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
-        <h3 class="mt-3 text-xl font-bold">Demo</h3>
-        <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 5 runs / month (no login)</li>
-          <li>• Signed-in free: 5 / day</li>
-          <li>• BYOK: 5 / day</li>
-          <li>• CSV/Markdown export</li>
-        </ul>
-        <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-        <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 200 generations / month</li>
-          <li>• Batch inputs</li>
-          <li>• 10 saved presets</li>
-          <li>• Priority models</li>
-          <li>• BYOK: 50 / month <span class="text-slate-400">(plus +5 daily headroom)</span></li>
-        </ul>
-        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
-        <h3 class="mt-3 text-xl font-bold">Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 500 generations / month</li>
-          <li>• Unlimited presets</li>
-          <li>• Project pack export</li>
-          <li>• <strong>Notion export + Trello boards</strong></li>
-          <li>• <strong>Push drafts to Buffer</strong></li>
-          <li>• New workflows early</li>
-          <li>• BYOK: 150 / month <span class="text-slate-400">(includes +10 daily)</span></li>
-        </ul>
-        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
-        <h3 class="mt-3 text-xl font-bold">Business</h3>
-        <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• Unlimited (fair use)</li>
-          <li>• 3 seats</li>
-          <li>• White-label export</li>
-          <li>• Priority support</li>
-          <li>• All Creator integrations</li>
-          <li>• Team presets &amp; shared calendar</li>
-          <li>• BYOK: 300 / month <span class="text-slate-400">(+30 daily)</span></li>
-        </ul>
-        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50" type="button">Get Business</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- SEO FAQ -->
-  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
-    <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
-    <div class="mt-5 grid md:grid-cols-2 gap-5">
-      <div class="card p-5">
-        <strong>Is it free?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported.</p>
-      </div>
-      <div class="card p-5">
-        <strong>What channels are supported?</strong>
-        <p class="text-sm text-slate-500 mt-2">LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business).</p>
-      </div>
-      <div class="card p-5">
-        <strong>How does ContentFlow AI improve SEO?</strong>
-        <p class="text-sm text-slate-500 mt-2">We generate keyword-aware, on-brand drafts for social and email, helping your blog content rank and get clicked across channels.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Can I publish instantly?</strong>
-        <p class="text-sm text-slate-500 mt-2">Signed-in users can open the X composer with prefilled text, copy-and-open for LinkedIn, preview &amp; send email, and jump to Meta Creator Studio for Instagram.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Do you support BYOK (Bring Your Own Key)?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes. Limits: Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily).</p>
-      </div>
-      <div class="card p-5">
-        <strong>What’s included in paid plans?</strong>
-        <p class="text-sm text-slate-500 mt-2">Higher monthly generations, saved presets, integrations, and faster lanes. See pricing for details.</p>
-      </div>
-    </div>
-
-    <!-- FAQPage JSON-LD -->
-    <script type="application/ld+json">{
-      "@context":"https://schema.org",
-      "@type":"FAQPage",
-      "mainEntity":[
-        {"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported."}},
-        {"@type":"Question","name":"What channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business)."}},
-        {"@type":"Question","name":"How does it improve SEO?","acceptedAnswer":{"@type":"Answer","text":"We generate keyword-aware, on-brand drafts that lift rankings and CTR across channels."}},
-        {"@type":"Question","name":"Can I publish instantly?","acceptedAnswer":{"@type":"Answer","text":"Yes—open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG."}},
-        {"@type":"Question","name":"Do you support BYOK?","acceptedAnswer":{"@type":"Answer","text":"Yes. Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily)."}},
-        {"@type":"Question","name":"What’s in paid plans?","acceptedAnswer":{"@type":"Answer","text":"More monthly generations, presets, integrations, and faster lanes."}}
-      ]
-    }</script>
   </section>
 
   <footer class="py-10 text-center text-xs text-slate-500">
@@ -899,27 +936,23 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // react to login/logout without reload (smoothly repaint):
     supabase.auth.onAuthStateChange(() => {
       paintAuth();
       refreshAll();
+      loadMemberBYOK(); // pull stored BYOK when auth changes
     });
 
-    // === Stripe (Customer Portal / Checkout redirects) ===
+    // Stripe
     let stripe = null;
     if (window.Stripe) {
       try { stripe = window.Stripe(STRIPE_PUBLISHABLE_KEY); } catch {}
     }
 
-    // === Small helpers ===
+    // Helpers
     const $  = (s) => document.querySelector(s);
     const $$ = (s) => Array.from(document.querySelectorAll(s));
     const byId = (id) => document.getElementById(id);
     byId("year") && (byId("year").textContent = new Date().getFullYear());
-
-    const IS_DEV   = location.hostname === "localhost" || location.hostname.endsWith(".local") || location.hostname.endsWith(".ngrok.io");
-    const todayStr = () => new Date().toISOString().slice(0,10);
-
     const showToast = (msg) => {
       const t = byId("toast"), m = byId("toastMsg");
       if (!t || !m) return;
@@ -943,7 +976,7 @@
       business: "price_1S7y8OJYjIKHzKcjqA9uJdyh"
     };
 
-    // Marketing features used by dashboard list
+    // Feature lists
     const PLAN_FEATURES = {
       free: [
         "5/day platform runs (signed-in)",
@@ -973,7 +1006,7 @@
       ]
     };
 
-    // Allow plan override preview via URL (dev/marketing preview)
+    // Optional plan override for demos
     (function planOverrideFromURL(){
       const params = new URLSearchParams(location.search);
       const incoming = (params.get("plan")||"").toLowerCase();
@@ -988,49 +1021,46 @@
       byId("planbadge") && (byId("planbadge").textContent = `Plan: ${label}`);
       const mb = byId("memberPlanBadge");
       if (mb) mb.textContent = `Plan: ${label}`;
-      // mirror to mobile
       const pm = byId("planbadge_m");
       if (pm) pm.textContent = `Plan: ${label}`;
     }
 
     /* =========================
-       VIEW SWITCHING + MOBILE NAV
+       VIEW + NAV
     ========================== */
     function showView(isAuthenticated){
       const guest  = byId("guestView");
       const member = byId("memberView");
       if (isAuthenticated){
         document.body.setAttribute("data-auth","member");
-        guest && guest.classList.add("hidden");
-        member && member.classList.remove("hidden");
+        guest?.classList.add("hidden");
+        member?.classList.remove("hidden");
         ["loginBtn","heroSignIn"].forEach(id=> byId(id)?.classList.add("hidden"));
         ["logoutBtn","logoutBtn2"].forEach(id=> byId(id)?.classList.remove("hidden"));
         byId("heroBadgeWrap")?.classList.add("hidden");
-        // mobile
         byId("loginBtn_m")?.classList.add("hidden");
         byId("logoutBtn_m")?.classList.remove("hidden");
       } else {
         document.body.setAttribute("data-auth","guest");
-        member && member.classList.add("hidden");
-        guest && guest.classList.remove("hidden");
+        member?.classList.add("hidden");
+        guest?.classList.remove("hidden");
         ["loginBtn","heroSignIn"].forEach(id=> byId(id)?.classList.remove("hidden"));
         ["logoutBtn","logoutBtn2"].forEach(id=> byId(id)?.classList.add("hidden"));
         byId("heroBadgeWrap")?.classList.remove("hidden");
-        // mobile
         byId("loginBtn_m")?.classList.remove("hidden");
         byId("logoutBtn_m")?.classList.add("hidden");
       }
     }
 
     function applyViewOverride(isAuthenticated){
-      if (isAuthenticated) return; // never override real auth
+      if (isAuthenticated) return;
       let o = "";
       try { o = (localStorage.getItem("viewOverride")||"").toLowerCase(); } catch {}
       if (o === "member") showView(true);
       else if (o === "guest") showView(false);
     }
 
-    // Mobile nav wiring
+    // Mobile nav
     (function initMobileNav(){
       const sheet = byId("mobileNav");
       const openBtn = byId("navToggle");
@@ -1040,11 +1070,9 @@
       openBtn && openBtn.addEventListener("click", ()=> document.documentElement.classList.contains("nav-open") ? close() : open());
       closeBtn && closeBtn.addEventListener("click", close);
       sheet && sheet.addEventListener("click", (e)=>{ if (e.target === sheet) close(); });
-      // mirror desktop auth buttons into mobile actions
       byId("manageBilling_m")?.addEventListener("click", ()=> byId("manageBilling")?.click());
       byId("loginBtn_m")?.addEventListener("click", ()=> byId("loginBtn")?.click());
       byId("logoutBtn_m")?.addEventListener("click", ()=> byId("logoutBtn")?.click());
-      // close when clicking a link
       sheet?.querySelectorAll("a").forEach(a=> a.addEventListener("click", close));
     })();
 
@@ -1064,24 +1092,17 @@
     async function paintAuth(){
       const { token, userId, email } = await getAuth();
       const isAuthed = !!userId;
-
       showView(isAuthed);
       if (!isAuthed) applyViewOverride(false);
-
       const heroBadge = byId("heroBadge");
-      if (heroBadge) {
-        heroBadge.textContent = isAuthed ? "Signed-in — welcome back" : "Demo — 5 runs / month (no login)";
-      }
-
+      if (heroBadge) heroBadge.textContent = isAuthed ? "Signed-in — welcome back" : "Demo — 5 runs / month (no login)";
       const ue = byId("userEmail");
       if (ue) ue.textContent = isAuthed ? (email || "member") : "";
-
       return { token, userId, email };
     }
 
-    // Auth modal wiring
-    byId("loginBtn") && byId("loginBtn").addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
-    byId("heroSignIn") && byId("heroSignIn").addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
+    byId("loginBtn")?.addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
+    byId("heroSignIn")?.addEventListener("click", (e)=>{ e.preventDefault(); byId("auth")?.showModal(); });
 
     const doSignOut = async()=>{
       if (!supabase?.auth) { showToast("Auth not initialized"); return; }
@@ -1090,10 +1111,10 @@
       await paintAuth();
       await refreshAll();
     };
-    byId("logoutBtn")   && byId("logoutBtn").addEventListener("click", doSignOut);
-    byId("logoutBtn2")  && byId("logoutBtn2").addEventListener("click", doSignOut);
+    byId("logoutBtn")?.addEventListener("click", doSignOut);
+    byId("logoutBtn2")?.addEventListener("click", doSignOut);
 
-    byId("googleBtn") && byId("googleBtn").addEventListener("click", async (e)=>{
+    byId("googleBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
       const { error } = await supabase.auth.signInWithOAuth({
@@ -1103,7 +1124,7 @@
       if (error) alert(error.message || String(error));
     });
 
-    byId("magicBtn") && byId("magicBtn").addEventListener("click", async (e)=>{
+    byId("magicBtn")?.addEventListener("click", async (e)=>{
       e.preventDefault();
       if (!supabase) return alert("Auth not initialized");
       const email = (byId("emailInput")?.value||"").trim();
@@ -1115,13 +1136,13 @@
     });
 
     /* =========================
-       BILLING (Subscribe / Portal)
+       BILLING
     ========================== */
     async function getAuthHeaders(){
       const { token, userId } = await getAuth();
       const headers = { "Content-Type":"application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
-      if (userId) headers["X-User-Id"] = userId; // aligns with worker identity helper
+      if (userId) headers["X-User-Id"] = userId;
       return headers;
     }
 
@@ -1154,17 +1175,16 @@
     $$(".subBtn").forEach(btn=>{
       btn.addEventListener("click", ()=> openCheckout(btn.getAttribute("data-price")));
     });
-    byId("manageBilling")  && byId("manageBilling").addEventListener("click", openPortal);
-    byId("manageBilling2") && byId("manageBilling2").addEventListener("click", openPortal);
+    byId("manageBilling")?.addEventListener("click", openPortal);
+    byId("manageBilling2")?.addEventListener("click", openPortal);
 
     /* =========================
-       PLAN STATUS / QUOTAS
+       PLAN / QUOTAS / STATS
     ========================== */
     let LAST_STATUS = null;
 
     async function getPlanStatus(){
       const headers = await getAuthHeaders();
-      // prefer /api/billing/status; fallback /api/quota
       try {
         const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
         if (r.ok) return await r.json();
@@ -1189,15 +1209,14 @@
     }
 
     function paintManageButtons(isSubscribed){
-      byId("manageBilling")  && byId("manageBilling").classList.toggle("hidden", !isSubscribed);
-      byId("manageBilling2") && byId("manageBilling2").classList.toggle("hidden", !isSubscribed);
-      byId("manageBilling_m") && byId("manageBilling_m").classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling")?.classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling2")?.classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling_m")?.classList.toggle("hidden", !isSubscribed);
     }
 
     function paintTopBadges(status){
       const planKey = planKeyFromStatus(status||{});
       paintPlanBadge(planKey);
-      // Guest quota pill (if present)
       const q = byId("quota");
       if (q) {
         const usedM = status?.platform?.monthly?.used ?? status?.platform?.used ?? status?.monthly?.used ?? status?.used ?? 0;
@@ -1256,12 +1275,11 @@
 
     function gateFeaturesByPlan(plan){
       const isStarter = plan==="starter", isCreator = plan==="creator", isBiz = plan==="business";
-      byId("integrationsCard") && byId("integrationsCard").classList.toggle("hidden", !(isCreator||isBiz)); // Creator+
-      byId("exportPack")      && byId("exportPack").classList.toggle("hidden", !(isCreator||isBiz));       // Creator+
-      byId("wlLabel")         && byId("wlLabel").classList.toggle("hidden", !isBiz);                       // Business
-      byId("teamCard")        && byId("teamCard").classList.toggle("hidden", !isBiz);                      // Business
+      byId("integrationsCard")?.classList.toggle("hidden", !(isCreator||isBiz));
+      byId("exportPack")?.classList.toggle("hidden", !(isCreator||isBiz));
+      byId("wlLabel")?.classList.toggle("hidden", !isBiz);
+      byId("teamCard")?.classList.toggle("hidden", !isBiz);
 
-      // Channel exports (Creator+)
       ["li","x","em","ig"].forEach(p=>{
         ["-notion","-trello","-buffer"].forEach(s=>{
           const el = byId(`${p}${s}`);
@@ -1283,7 +1301,6 @@
       }
     }
 
-    // Referral apply (MVP)
     async function applyReferralIfPresent(){
       const u = new URL(location.href);
       const ref = u.searchParams.get("ref");
@@ -1294,15 +1311,14 @@
       history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):""));
     }
 
-    // NEW: Live stats (Generations today + real examples)
+    // Live stats (Generations today)
     async function fetchLiveStats(){
-      // Try a few sensible endpoints; show gracefully if none exist.
       const headers = await getAuthHeaders();
       const candidates = [
-        `${WORKER_BASE}/api/stats`,                // { today_count, examples:[{channel,text}] }
-        `${WORKER_BASE}/api/stats/today`,         // { count, examples:[...] }
-        `${WORKER_BASE}/api/activity`,            // { today:{count}, examples:[...] }
-        `${WORKER_BASE}/api/stats/generations`    // { today: number }
+        `${WORKER_BASE}/api/stats`,
+        `${WORKER_BASE}/api/stats/today`,
+        `${WORKER_BASE}/api/activity`,
+        `${WORKER_BASE}/api/stats/generations`
       ];
       for (const url of candidates){
         try{
@@ -1324,7 +1340,6 @@
 
       if (feed){
         if (!examples || !examples.length){
-          // fallback: show static friendly placeholders (no errors)
           feed.innerHTML = `
             <span class="chip">LinkedIn • SaaS launch tips</span>
             <span class="chip">Email • Weekly digest intro</span>
@@ -1338,7 +1353,7 @@
             const safe = (text||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
             return `<span class="chip">${channel} • ${safe}${text.length>=64?"…":""}</span>`;
           }).join("");
-          feed.innerHTML = pills + pills; // duplicate for seamless loop
+          feed.innerHTML = pills + pills;
         }
       }
     }
@@ -1362,7 +1377,6 @@
       paintManageButtons(isSub);
       gateFeaturesByPlan((LAST_STATUS?.plan||"free").toLowerCase());
 
-      // Referral link + count
       try{
         const email = LAST_STATUS?.email || "";
         const uid = LAST_STATUS?.userId || (email ? email.split('@')[0] : 'guest');
@@ -1381,14 +1395,13 @@
         await applyReferralIfPresent();
         await refreshAll();
         await refreshLiveStats();
-        // Update live stats every 30s (stops if tab hidden to save work)
         let liveTimer = setInterval(()=>{ if (!document.hidden) refreshLiveStats(); }, 30000);
-        document.addEventListener("visibilitychange", ()=>{ if (document.hidden) return; refreshLiveStats(); });
+        document.addEventListener("visibilitychange", ()=>{ if (!document.hidden) refreshLiveStats(); });
       } catch (e) { console.error(e); }
     })();
 
     /* =========================
-       PRESETS (Creator UX sugar)
+       PRESETS (Member)
     ========================== */
     async function renderPresets(){
       const headers = await getAuthHeaders();
@@ -1436,7 +1449,7 @@
       });
     }
 
-    byId("addPreset") && byId("addPreset").addEventListener("click", async ()=>{
+    byId("addPreset")?.addEventListener("click", async ()=>{
       const data = {
         linkedin:  byId("out-li_m")?.textContent || "",
         x:         (byId("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
@@ -1458,8 +1471,111 @@
     refreshAll = async function(){ await _origRefreshAll(); const { token } = await getAuth(); if (token) renderPresets(); };
 
     /* =========================
-       GENERATOR HELPERS
+       BYOK (multi-provider)
     ========================== */
+    // Helpers to read BYOK fields (guest)
+    function readGuestBYOK(){
+      return {
+        provider: sessionStorage.getItem("BYOK_PROVIDER") || "",
+        key:      sessionStorage.getItem("BYOK_KEY") || sessionStorage.getItem("BYOK") || "",
+        base:     sessionStorage.getItem("BYOK_BASE") || ""
+      };
+    }
+    // Save guest BYOK
+    byId("save")?.addEventListener("click", ()=>{
+      sessionStorage.setItem("MODEL", (byId("model")?.value||"").trim());
+      sessionStorage.setItem("BYOK_PROVIDER", (byId("byok_provider")?.value||"").trim());
+      sessionStorage.setItem("BYOK_KEY", (byId("byok_key")?.value||"").trim());
+      sessionStorage.setItem("BYOK", (byId("byok_key")?.value||"").trim()); // backward compat
+      sessionStorage.setItem("BYOK_BASE", (byId("byok_base")?.value||"").trim());
+      alert("Saved for this tab.");
+    });
+
+    // Member BYOK persistence (best-effort; falls back to session)
+    async function saveMemberBYOK(){
+      const body = {
+        provider: (byId("byok_provider_m")?.value||"").trim(),
+        key:      (byId("byok_key_m")?.value||"").trim(),
+        base:     (byId("byok_base_m")?.value||"").trim(),
+        model:    (byId("model_m")?.value||"").trim()
+      };
+      // Always also mirror to sessionStorage for immediate use
+      try {
+        sessionStorage.setItem("MODEL", body.model || "");
+        sessionStorage.setItem("BYOK_PROVIDER", body.provider || "");
+        sessionStorage.setItem("BYOK_KEY", body.key || "");
+        sessionStorage.setItem("BYOK", body.key || "");
+        sessionStorage.setItem("BYOK_BASE", body.base || "");
+      } catch {}
+      // Try to persist to account (non-breaking; ignore if route absent)
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/byok/save`, {
+          method: "POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify(body)
+        });
+        if (r.ok) { showToast("BYOK saved to your account ✓"); return; }
+      }catch{}
+      showToast("BYOK saved for this session ✓");
+    }
+    byId("save_m")?.addEventListener("click", saveMemberBYOK);
+
+    // Load BYOK for member (if API exists)
+    async function loadMemberBYOK(){
+      const { userId } = await getAuth();
+      if (!userId) return;
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/byok/get`, { headers: await getAuthHeaders() });
+        const j = await r.json();
+        if (j?.provider || j?.key || j?.base){
+          byId("byok_provider_m") && (byId("byok_provider_m").value = j.provider || "");
+          byId("byok_key_m") && (byId("byok_key_m").value = j.key || "");
+          byId("byok_base_m") && (byId("byok_base_m").value = j.base || "");
+          byId("model_m") && (byId("model_m").value = j.model || "");
+          // mirror to session for immediate generation
+          sessionStorage.setItem("MODEL", j.model || "");
+          sessionStorage.setItem("BYOK_PROVIDER", j.provider || "");
+          sessionStorage.setItem("BYOK_KEY", j.key || "");
+          sessionStorage.setItem("BYOK", j.key || "");
+          sessionStorage.setItem("BYOK_BASE", j.base || "");
+        }
+      }catch{}
+    }
+
+    // Build BYOK headers (never used unless useBYOK=true)
+    function applyBYOKHeaders(headers, { provider, key, base }){
+      if (!key) return;
+      headers["X-BYOK-Key"] = key;
+      headers["X-BYOK-Provider"] = provider || "";
+      if (base) headers["X-BYOK-Base"] = base;
+      // Backward compatibility with existing worker:
+      headers["X-User-OpenRouter-Key"] = key;       // if your worker expects this for OpenRouter
+      headers["X-User-API-Key"] = key;              // generic
+      if (base) headers["X-User-API-Base"] = base;  // generic base
+    }
+
+    /* =========================
+       GUEST GENERATION
+    ========================== */
+    byId("run")?.addEventListener("click", ()=> runGen({ useBYOK:false }));
+    byId("run-byok")?.addEventListener("click", ()=> runGen({ useBYOK:true }));
+    byId("clear")?.addEventListener("click", ()=>{
+      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> { const el = document.querySelector(sel); if (el) el.textContent = ""; });
+      byId("source") && (byId("source").value = "");
+      byId("status") && (byId("status").textContent = "");
+      byId("dl-md") && (byId("dl-md").disabled = true);
+      byId("dl-csv") && (byId("dl-csv").disabled = true);
+    });
+
+    byId("copy-li")?.addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-li")?.textContent || ""));
+    byId("copy-x")?.addEventListener("click",  ()=> navigator.clipboard.writeText(byId("out-x")?.textContent || ""));
+    byId("copy-em")?.addEventListener("click", ()=>{
+      const subj = byId("out-em-subj")?.textContent || "";
+      const body = byId("out-em-body")?.textContent || "";
+      navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
+    });
+    byId("copy-ig")?.addEventListener("click",  ()=> navigator.clipboard.writeText(byId("out-ig")?.textContent || ""));
+
     const csvEsc = s => '"' + String(s ?? "").replace(/"/g,'""') + '"';
     function buildCSV(o){
       const rows = [["channel","content"]];
@@ -1519,39 +1635,6 @@
       setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
     }
 
-    /* =========================
-       GUEST: GENERATE / COPY
-    ========================== */
-    byId("run")       && byId("run").addEventListener("click", ()=> runGen({ useBYOK:false }));
-    byId("run-byok")  && byId("run-byok").addEventListener("click", ()=> runGen({ useBYOK:true }));
-    byId("clear")     && byId("clear").addEventListener("click", ()=>{
-      ["#out-li","#out-x","#out-em-subj","#out-em-body","#out-ig"].forEach(sel=> { const el = document.querySelector(sel); if (el) el.textContent = ""; });
-      byId("source") && (byId("source").value = "");
-      byId("status") && (byId("status").textContent = "");
-      byId("dl-md") && (byId("dl-md").disabled = true);
-      byId("dl-csv") && (byId("dl-csv").disabled = true);
-    });
-    byId("save") && byId("save").addEventListener("click", ()=>{
-      sessionStorage.setItem("MODEL", (byId("model")?.value||"").trim());
-      sessionStorage.setItem("BYOK",  (byId("byok")?.value||"").trim());
-      alert("Saved for this tab.");
-    });
-
-    byId("copy-li") && byId("copy-li").addEventListener("click", ()=> {
-      navigator.clipboard.writeText(byId("out-li")?.textContent || "");
-    });
-    byId("copy-x") && byId("copy-x").addEventListener("click", ()=> {
-      navigator.clipboard.writeText(byId("out-x")?.textContent || "");
-    });
-    byId("copy-em") && byId("copy-em").addEventListener("click", ()=> {
-      const subj = byId("out-em-subj")?.textContent || "";
-      const body = byId("out-em-body")?.textContent || "";
-      navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
-    });
-    byId("copy-ig") && byId("copy-ig").addEventListener("click", ()=> {
-      navigator.clipboard.writeText(byId("out-ig")?.textContent || "");
-    });
-
     async function runGen({ useBYOK=false }){
       const sourceEl = byId("source");
       if (!sourceEl) return;
@@ -1564,9 +1647,10 @@
       byId("dl-csv") && (byId("dl-csv").disabled = true);
 
       const model = sessionStorage.getItem("MODEL") || "";
-      const byok  = sessionStorage.getItem("BYOK") || "";
+      const byok  = readGuestBYOK();
+
       const headers = await getAuthHeaders();
-      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+      if (useBYOK && byok.key) applyBYOKHeaders(headers, byok);
 
       const SYSTEM = { role: "system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
 - linkedin: 6–10 lines, one CTA.
@@ -1613,30 +1697,29 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         byId("dl-md") && (byId("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out)));
         byId("dl-csv") && (byId("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out)));
 
-        // Nudge live stats after a successful run
         refreshLiveStats();
       }catch(e){ byId("status") && (byId("status").textContent = e.message || "Network error"); }
     }
 
     /* =========================
-       MEMBER: GENERATE / PUBLISH / COPY
+       MEMBER GENERATION + PUBLISH
     ========================== */
-    byId("run_m")      && byId("run_m").addEventListener("click", ()=> runGenMember({ useBYOK:false }));
-    byId("run-byok_m") && byId("run-byok_m").addEventListener("click", ()=> runGenMember({ useBYOK:true }));
-    byId("clear_m")    && byId("clear_m").addEventListener("click", ()=>{
+    byId("run_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:false }));
+    byId("run-byok_m")?.addEventListener("click", ()=> runGenMember({ useBYOK:true }));
+    byId("clear_m")?.addEventListener("click", ()=>{
       ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> { const el=document.querySelector(sel); if (el) el.textContent=""; });
       byId("source_m") && (byId("source_m").value = "");
       byId("status_m") && (byId("status_m").textContent = "");
     });
 
-    byId("copy-li_m") && byId("copy-li_m").addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-li_m")?.textContent||""));
-    byId("copy-x_m")  && byId("copy-x_m").addEventListener("click",  ()=> navigator.clipboard.writeText(byId("out-x_m")?.textContent||""));
-    byId("copy-em_m") && byId("copy-em_m").addEventListener("click", ()=>{
+    byId("copy-li_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-li_m")?.textContent||""));
+    byId("copy-x_m")?.addEventListener("click",  ()=> navigator.clipboard.writeText(byId("out-x_m")?.textContent||""));
+    byId("copy-em_m")?.addEventListener("click", ()=>{
       const subj = byId("out-em-subj_m")?.textContent || "";
       const body = byId("out-em-body_m")?.textContent || "";
       navigator.clipboard.writeText(`Subject: ${subj}\n\n${body}`);
     });
-    byId("copy-ig_m") && byId("copy-ig_m").addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-ig_m")?.textContent||""));
+    byId("copy-ig_m")?.addEventListener("click", ()=> navigator.clipboard.writeText(byId("out-ig_m")?.textContent||""));
 
     async function runGenMember({ useBYOK=false }){
       const sourceEl = byId("source_m");
@@ -1647,10 +1730,15 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       byId("status_m") && (byId("status_m").textContent = useBYOK? "Generating with your key…" : "Generating…");
       ["#out-li_m","#out-x_m","#out-em-subj_m","#out-em-body_m","#out-ig_m"].forEach(sel=> { const el=document.querySelector(sel); if (el) el.textContent=""; });
 
-      const model = sessionStorage.getItem("MODEL") || "";
-      const byok  = sessionStorage.getItem("BYOK") || "";
+      const model = (byId("model_m")?.value || sessionStorage.getItem("MODEL") || "").trim();
+      const byok = {
+        provider: (byId("byok_provider_m")?.value || sessionStorage.getItem("BYOK_PROVIDER") || "").trim(),
+        key:      (byId("byok_key_m")?.value || sessionStorage.getItem("BYOK_KEY") || sessionStorage.getItem("BYOK") || "").trim(),
+        base:     (byId("byok_base_m")?.value || sessionStorage.getItem("BYOK_BASE") || "").trim()
+      };
+
       const headers = await getAuthHeaders();
-      if (useBYOK && byok) headers["X-User-OpenRouter-Key"] = byok;
+      if (useBYOK && byok.key) applyBYOKHeaders(headers, byok);
 
       const SYSTEM = { role: "system", content: `You are a senior content strategist. Return pure JSON only with keys: linkedin, x, email, instagram.
 - linkedin: 6–10 lines, one CTA.
@@ -1678,42 +1766,40 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         byId("out-ig_m") && (byId("out-ig_m").textContent = out.instagram || "");
 
         byId("status_m") && (byId("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`);
-
-        // Nudge live stats after a successful run
         refreshLiveStats();
       }catch(e){ byId("status_m") && (byId("status_m").textContent = e.message || "Network error"); }
     }
 
-    // Quick publish actions (open composer / mailto / meta studio)
-    byId("publish-li_m") && byId("publish-li_m").addEventListener("click", ()=>{
+    // Quick publish actions
+    byId("publish-li_m")?.addEventListener("click", ()=>{
       const txt = encodeURIComponent(byId("out-li_m")?.textContent||"");
       window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${txt}`, "_blank");
     });
-    byId("publish-x_m") && byId("publish-x_m").addEventListener("click", ()=>{
+    byId("publish-x_m")?.addEventListener("click", ()=>{
       const txt = encodeURIComponent(byId("out-x_m")?.textContent||"");
       window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
     });
-    byId("publish-em_m") && byId("publish-em_m").addEventListener("click", ()=>{
+    byId("publish-em_m")?.addEventListener("click", ()=>{
       const subj = byId("out-em-subj_m")?.textContent||"";
       const body = byId("out-em-body_m")?.textContent||"";
       byId("emailSubjEdit") && (byId("emailSubjEdit").value = subj);
       byId("emailBodyEdit") && (byId("emailBodyEdit").value = body);
       byId("emailPreview")?.showModal();
     });
-    byId("emailSendBtn") && byId("emailSendBtn").addEventListener("click", (e)=>{
+    byId("emailSendBtn")?.addEventListener("click", (e)=>{
       e.preventDefault();
       const subj = encodeURIComponent(byId("emailSubjEdit")?.value||"");
       const body = encodeURIComponent(byId("emailBodyEdit")?.value||"");
       window.location.href = `mailto:?subject=${subj}&body=${body}`;
     });
-    byId("publish-ig_m") && byId("publish-ig_m").addEventListener("click", ()=>{
+    byId("publish-ig_m")?.addEventListener("click", ()=>{
       window.open("https://business.facebook.com/creatorstudio/home", "_blank");
     });
 
     /* =========================
        BATCH INPUTS (Starter+)
     ========================== */
-    byId("run_batch") && byId("run_batch").addEventListener("click", async ()=>{
+    byId("run_batch")?.addEventListener("click", async ()=>{
       const src = (byId("batch_inputs")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
       if (!src.length) { alert("Add lines to run in batch."); return; }
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
@@ -1730,7 +1816,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           byId("source_m") && (byId("source_m").value = src[i]);
           await runGenMember({ useBYOK:false });
           li && (li.textContent = `(${i+1}/${src.length}) Done`);
-          await new Promise(r=>setTimeout(r, 400)); // short delay
+          await new Promise(r=>setTimeout(r, 400));
         }catch(e){
           li && (li.textContent = `(${i+1}/${src.length}) Error: ${e?.message||e}`);
         }
@@ -1743,22 +1829,18 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     ========================== */
     function paintIntegrations(status){
       const integ = status?.integrations || {};
-      // Notion
       const notionConnected = !!integ?.notion?.access_token;
       byId("notionState") && (byId("notionState").textContent = notionConnected? "Connected" : "Disconnected");
-      byId("connectNotion")    && byId("connectNotion").classList.toggle("hidden", notionConnected);
-      byId("disconnectNotion") && byId("disconnectNotion").classList.toggle("hidden", !notionConnected);
-      // Trello
+      byId("connectNotion")?.classList.toggle("hidden", notionConnected);
+      byId("disconnectNotion")?.classList.toggle("hidden", !notionConnected);
       const trelloConnected = !!integ?.trello?.token;
       byId("trelloState") && (byId("trelloState").textContent = trelloConnected? "Connected" : "Disconnected");
-      byId("connectTrello")    && byId("connectTrello").classList.toggle("hidden", trelloConnected);
-      byId("disconnectTrello") && byId("disconnectTrello").classList.toggle("hidden", !trelloConnected);
-      // Buffer (UI only — no Worker routes; keep safe)
+      byId("connectTrello")?.classList.toggle("hidden", trelloConnected);
+      byId("disconnectTrello")?.classList.toggle("hidden", !trelloConnected);
       const bufferConnected = !!integ?.buffer?.access_token;
       byId("bufferState") && (byId("bufferState").textContent = bufferConnected? "Connected" : "Disconnected");
-      byId("connectBuffer")    && byId("connectBuffer").classList.toggle("hidden", bufferConnected);
-      byId("disconnectBuffer") && byId("disconnectBuffer").classList.toggle("hidden", !bufferConnected);
-      // Profiles select (if any from future backend)
+      byId("connectBuffer")?.classList.toggle("hidden", bufferConnected);
+      byId("disconnectBuffer")?.classList.toggle("hidden", !bufferConnected);
       const sel = byId("bufferProfile");
       if (sel){
         sel.innerHTML = "";
@@ -1771,51 +1853,34 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       }
     }
 
-    // Connect/Disconnect handlers
-    byId("connectNotion") && byId("connectNotion").addEventListener("click", async ()=>{
+    byId("connectNotion")?.addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Notion connect.");
     });
-    byId("disconnectNotion") && byId("disconnectNotion").addEventListener("click", async ()=>{
+    byId("disconnectNotion")?.addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.ok) { showToast("Notion disconnected"); await refreshAll(); } else alert(j?.error?.message || "Failed to disconnect.");
     });
 
-    byId("connectTrello") && byId("connectTrello").addEventListener("click", async ()=>{
+    byId("connectTrello")?.addEventListener("click", async ()=>{
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
       if (j?.url) location.href = j.url; else alert(j?.error?.message || "Unable to start Trello connect.");
     });
-    // Worker has no Trello disconnect route; open Trello's authorized apps for revoke
-    byId("disconnectTrello") && byId("disconnectTrello").addEventListener("click", ()=>{
+    byId("disconnectTrello")?.addEventListener("click", ()=>{
       window.open("https://trello.com/1/authorized", "_blank");
       showToast("Open Trello → revoke access there");
     });
 
-    // Buffer — safe no-op actions (until Worker routes exist)
-    byId("connectBuffer") && byId("connectBuffer").addEventListener("click", ()=>{
-      showToast("Buffer integration coming soon");
-    });
-    byId("disconnectBuffer") && byId("disconnectBuffer").addEventListener("click", ()=>{
-      showToast("Buffer integration coming soon");
-    });
+    byId("connectBuffer")?.addEventListener("click", ()=> showToast("Buffer integration coming soon"));
+    byId("disconnectBuffer")?.addEventListener("click", ()=> showToast("Buffer integration coming soon"));
 
-    // Export helpers to collect current outputs (Member)
-    function currentOutputsMember(){
-      return {
-        linkedin:  byId("out-li_m")?.textContent || "",
-        x:          (byId("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
-        email:     { subject: byId("out-em-subj_m")?.textContent || "", body: byId("out-em-body_m")?.textContent || "" },
-        instagram: byId("out-ig_m")?.textContent || ""
-      };
-    }
-
-    // Per-channel Notion export
+    // Notion/Trello/Buffer export helpers remain same as Part 1
     async function exportNotionFrom(text, title){
       const headers = await getAuthHeaders();
       const blocks = [];
@@ -1834,7 +1899,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       else alert(j?.error?.message || "Failed to export to Notion.");
     }
 
-    // Per-channel Trello export (uses modal)
     function openTrelloModal(defaultTitle, defaultDesc){
       byId("trelloBoardId") && (byId("trelloBoardId").value = localStorage.getItem("trello_board") || "");
       byId("trelloListId")  && (byId("trelloListId").value  = localStorage.getItem("trello_list") || "");
@@ -1861,7 +1925,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       confirm.addEventListener("click", handler, { once:false });
     }
 
-    // Buffer queue (modal) — safe no-op until backend exists
     function openBufferModal(defaultText){
       const modal = byId("bufferModal");
       if (!modal) return;
@@ -1884,91 +1947,97 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       confirm.addEventListener("click", handler, { once:true });
     }
 
-    // Channel action bindings (Member)
-    byId("li-notion") && byId("li-notion").addEventListener("click", ()=>{
+    byId("li-notion")?.addEventListener("click", ()=>{
       const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, t.split("\n").find(Boolean) || "LinkedIn");
     });
-    byId("x-notion") && byId("x-notion").addEventListener("click", ()=>{
+    byId("x-notion")?.addEventListener("click", ()=>{
       const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, "X (Twitter)");
     });
-    byId("em-notion") && byId("em-notion").addEventListener("click", ()=>{
+    byId("em-notion")?.addEventListener("click", ()=>{
       const subj = byId("out-em-subj_m")?.textContent||"";
       const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       exportNotionFrom(`Subject: ${subj}\n\n${body}`, subj||"Email");
     });
-    byId("ig-notion") && byId("ig-notion").addEventListener("click", ()=>{
+    byId("ig-notion")?.addEventListener("click", ()=>{
       const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       exportNotionFrom(t, "Instagram");
     });
 
-    byId("li-trello") && byId("li-trello").addEventListener("click", ()=>{
+    byId("li-trello")?.addEventListener("click", ()=>{
       const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("LinkedIn Draft", t);
     });
-    byId("x-trello") && byId("x-trello").addEventListener("click", ()=>{
+    byId("x-trello")?.addEventListener("click", ()=>{
       const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("X Draft", t);
     });
-    byId("em-trello") && byId("em-trello").addEventListener("click", ()=>{
+    byId("em-trello")?.addEventListener("click", ()=>{
       const subj = byId("out-em-subj_m")?.textContent||"";
       const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       openTrelloModal(subj||"Email Draft", body);
     });
-    byId("ig-trello") && byId("ig-trello").addEventListener("click", ()=>{
+    byId("ig-trello")?.addEventListener("click", ()=>{
       const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openTrelloModal("Instagram Draft", t);
     });
 
-    byId("li-buffer") && byId("li-buffer").addEventListener("click", ()=>{
+    byId("li-buffer")?.addEventListener("click", ()=>{
       const t = byId("out-li_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
-    byId("x-buffer") && byId("x-buffer").addEventListener("click", ()=>{
+    byId("x-buffer")?.addEventListener("click", ()=>{
       const t = byId("out-x_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
-    byId("em-buffer") && byId("em-buffer").addEventListener("click", ()=>{
+    byId("em-buffer")?.addEventListener("click", ()=>{
       const subj = byId("out-em-subj_m")?.textContent||"";
       const body = byId("out-em-body_m")?.textContent||"";
       if (!subj && !body) return alert("Generate content first.");
       openBufferModal(`${subj}\n\n${body}`);
     });
-    byId("ig-buffer") && byId("ig-buffer").addEventListener("click", ()=>{
+    byId("ig-buffer")?.addEventListener("click", ()=>{
       const t = byId("out-ig_m")?.textContent||"";
       if (!t) return alert("Generate content first.");
       openBufferModal(t);
     });
 
     /* =========================
-       PACK EXPORT (Creator+) — safe placeholder
+       PACK EXPORT (Creator+) placeholder
     ========================== */
-    byId("exportPack") && byId("exportPack").addEventListener("click", async ()=>{
+    byId("exportPack")?.addEventListener("click", async ()=>{
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
       if (!["creator","business"].includes(plan)) return alert("Upgrade to Creator to use pack export.");
-      const out = currentOutputsMember();
+      const out = {
+        linkedin:  byId("out-li_m")?.textContent || "",
+        x:          (byId("out-x_m")?.textContent || "").split(/\n\s*—\s*\n/).filter(Boolean),
+        email:     { subject: byId("out-em-subj_m")?.textContent || "", body: byId("out-em-body_m")?.textContent || "" },
+        instagram: byId("out-ig_m")?.textContent || ""
+      };
       if (!out.linkedin && !out.x?.length && !out.email?.body && !out.instagram) { alert("Generate content first."); return; }
-      // Worker route for pack export isn't present; provide instant MD download as interim
-      const md = buildMarkdown(out);
-      download("content-pack.md", "text/markdown", md);
+      const md = [
+        "# Content Pack","","## LinkedIn",out.linkedin,"","## X (Twitter)", (out.x||[]).join("\n\n—\n\n"),"",
+        "## Email", out.email?.body || "", "", "## Instagram", out.instagram || ""
+      ].join("\n");
+      download("content-pack.md","text/markdown", md);
       showToast("Pack exported (Markdown) ✓");
     });
 
     /* =========================
-       TEAM SEATS (Business) — safe placeholder
+       TEAM (Business) placeholder
     ========================== */
-    byId("inviteBtn") && byId("inviteBtn").addEventListener("click", async ()=>{
+    byId("inviteBtn")?.addEventListener("click", async ()=>{
       const plan = (LAST_STATUS?.plan||"free").toLowerCase();
       if (plan!=="business") return alert("Team seats are for Business plan.");
       const email = (byId("inviteEmail")?.value||"").trim();
@@ -1977,20 +2046,20 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     });
 
     /* =========================
-       REFERRAL SHARE BUTTONS
+       REFERRALS
     ========================== */
-    byId("copyRef") && byId("copyRef").addEventListener("click", ()=>{
+    byId("copyRef")?.addEventListener("click", ()=>{
       const val = byId("refLink")?.value || "";
       if (!val) return;
       navigator.clipboard.writeText(val);
       showToast("Referral link copied ✓");
     });
-    byId("shareLi") && byId("shareLi").addEventListener("click", ()=>{
+    byId("shareLi")?.addEventListener("click", ()=>{
       const link = byId("refLink")?.value || location.href;
       const txt = encodeURIComponent(`I’m using ContentFlow to repurpose one idea into ready-to-post drafts for LinkedIn, X, Email & IG. Try it → ${link}`);
       window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}&title=${txt}`, "_blank");
     });
-    byId("shareX") && byId("shareX").addEventListener("click", ()=>{
+    byId("shareX")?.addEventListener("click", ()=>{
       const link = byId("refLink")?.value || location.href;
       const txt = encodeURIComponent(`Repurpose your content across LinkedIn/X/Email/IG in minutes. My go-to: ContentFlow → ${link}`);
       window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
@@ -2015,13 +2084,12 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       }
     })();
 
-    /* Repaint integrations on focus */
     window.addEventListener("focus", ()=> paintIntegrations(LAST_STATUS||{}));
     document.addEventListener("visibilitychange", ()=>{
       if (!document.hidden) paintIntegrations(LAST_STATUS||{});
     });
 
-    /* Safety: if Supabase script didn’t load, disable auth buttons gracefully */
+    /* Safety: if Supabase didn’t load, disable auth gracefully */
     if (!supabase) {
       ["loginBtn","heroSignIn","googleBtn","magicBtn"].forEach(id=>{
         const el = byId(id);
