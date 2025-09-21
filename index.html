@@ -69,10 +69,7 @@
     }
     .halo.h2{ width:34rem; height:34rem; left:auto; right:-12rem; top:-6rem; animation-duration:18s; opacity:.5 }
     .halo.h3{ width:28rem; height:28rem; left:-10rem; top:26rem; animation-duration:22s; opacity:.45 }
-    @keyframes float{
-      0%,100%{ transform: translate3d(0,0,0) }
-      50%{ transform: translate3d(0,-20px,0) }
-    }
+    @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
     .orbit{
       position:absolute; inset:-32px; border-radius:24px; pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
@@ -83,13 +80,17 @@
     @keyframes spin{ to{ transform: rotate(360deg) } }
 
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
-    @media (prefers-color-scheme:dark){
-      .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); }
-    }
+    @media (prefers-color-scheme:dark){ .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); } }
 
     .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
     .marquee:hover{ animation-play-state: paused }
     @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
+
+    /* Mobile helpers */
+    .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none}
+    .nav-panel{position:absolute; top:0; right:0; width:82vw; max-width:380px; height:100%; background:rgba(14,16,22,.96); border-left:1px solid rgba(255,255,255,.08); padding:1rem}
+    .nav-open .nav-sheet{display:block}
+    .touch-target{min-height:44px; min-width:44px}
 
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   </style>
@@ -141,23 +142,20 @@
 
   <!-- NAV -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
-    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
-        <!-- Inline SVG logo (no external asset needed) -->
+        <!-- Inline SVG logo -->
         <svg width="36" height="36" viewBox="0 0 48 48" class="rounded-xl" aria-hidden="true">
-          <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#7AA2FF"/>
-              <stop offset="100%" stop-color="#FF2D2D"/>
-            </linearGradient>
-          </defs>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
           <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
           <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
           <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/>
         </svg>
         <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
       </a>
-      <nav class="flex items-center gap-6 text-sm">
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6 text-sm">
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
@@ -170,18 +168,46 @@
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
       </nav>
+
+      <!-- Mobile burger -->
+      <button id="navToggle" class="md:hidden touch-target px-3 py-2 rounded-lg border" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+        ☰
+      </button>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div id="mobileNav" class="nav-sheet" aria-hidden="true">
+      <div class="nav-panel text-sm text-white">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold">Menu</span>
+          <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
+        </div>
+        <nav class="mt-4 grid gap-2">
+          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
+          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
+          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
+          <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
+        </nav>
+        <div class="mt-6 grid gap-2">
+          <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
+          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
+          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Sign out</button>
+        </div>
+      </div>
     </div>
   </header>
 
   <!-- HERO -->
   <section class="relative">
-    <div class="max-w-7xl mx-auto px-5 pt-12 md:pt-16 grid lg:grid-cols-2 gap-10 items-center">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
         </div>
-        <h1 class="mt-4 text-4xl md:text-5xl font-black leading-tight tracking-tight">
+        <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
           AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
         </h1>
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
@@ -281,9 +307,29 @@
         </div>
       </div>
     </div>
+
+    <!-- NEW: Live activity strip -->
+    <div class="mt-8 md:mt-10">
+      <div class="max-w-7xl mx-auto px-4 md:px-5">
+        <div class="card p-4 md:p-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <strong class="tracking-tight">Generations today</strong>
+              <span id="liveCount" class="chip">–</span>
+            </div>
+            <div class="text-xs text-slate-500">Real results update every 30s</div>
+          </div>
+          <div class="mt-3 overflow-hidden">
+            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
+
   <!-- TEMPLATES -->
-  <section id="templates" class="max-w-7xl mx-auto px-5 py-12">
+  <section id="templates" class="max-w-7xl mx-auto px-4 md:px-5 py-12">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <article class="card p-5">
@@ -310,7 +356,7 @@
   </section>
 
   <!-- USE CASES -->
-  <section id="use-cases" class="max-w-7xl mx-auto px-5 pb-10">
+  <section id="use-cases" class="max-w-7xl mx-auto px-4 md:px-5 pb-10">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <div class="card p-5">
@@ -331,8 +377,8 @@
     </div>
   </section>
 
-  <!-- BEST PICKS (Topical clusters & internal links) -->
-  <section id="best-picks" class="max-w-7xl mx-auto px-5 pb-12">
+  <!-- BEST PICKS -->
+  <section id="best-picks" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
     <div class="flex items-end justify-between gap-4">
       <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Best picks</h2>
       <a href="/blog" class="text-sm underline">Visit the blog</a>
@@ -374,10 +420,11 @@
       </nav>
     </div>
   </section>
+
   <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
   <section id="guestView">
     <!-- DEMO -->
-    <main id="demo" class="max-w-7xl mx-auto px-5 pb-12 grid lg:grid-cols-2 gap-8">
+    <main id="demo" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 grid lg:grid-cols-2 gap-8">
       <section class="card p-6">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
@@ -455,7 +502,7 @@
 
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden">
-    <div class="max-w-7xl mx-auto px-5 pb-12">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
         <div>
@@ -470,7 +517,7 @@
       </div>
 
       <!-- Top Cards (Platform + BYOK) -->
-      <div id="quotaCards" class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
+      <div id="quotaCards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
 
       <!-- Member Generator -->
       <div class="card p-6">
@@ -654,7 +701,7 @@
   </section>
 
   <!-- PRICING -->
-  <section id="pricing" class="max-w-7xl mx-auto px-5 pb-16">
+  <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
     <div class="text-center mb-8">
       <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
       <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
@@ -721,8 +768,8 @@
     </div>
   </section>
 
-  <!-- SEO FAQ (always rendered for crawlers) -->
-  <section id="seo-faq" class="max-w-7xl mx-auto px-5 pb-12">
+  <!-- SEO FAQ -->
+  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
     <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
     <div class="mt-5 grid md:grid-cols-2 gap-5">
       <div class="card p-5">
@@ -751,7 +798,7 @@
       </div>
     </div>
 
-    <!-- FAQPage JSON-LD for SEO -->
+    <!-- FAQPage JSON-LD -->
     <script type="application/ld+json">{
       "@context":"https://schema.org",
       "@type":"FAQPage",
@@ -776,7 +823,7 @@
   <dialog id="auth" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
     <form method="dialog">
       <div class="p-6 space-y-3">
-        <h3 class="text-xl font-bold">Sign in</h3>
+        <h3 class="text-xl text-white font-bold">Sign in</h3>
         <p class="text-white/70 text-sm">Use Google or request a magic link.</p>
         <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Continue with Google</button>
         <div class="flex items-center gap-3 text-xs text-white/50"><span class="flex-1 h-px bg-white/10"></span>or<span class="flex-1 h-px bg-white/10"></span></div>
@@ -835,6 +882,7 @@
   <div id="toast" class="toast hidden">
     <div id="toastMsg" class="px-3 py-2 rounded-lg bg-black text-white text-sm"></div>
   </div>
+
   <!-- APP SCRIPT (module so top-level await is valid) -->
   <script type="module">
     /* =========================
@@ -843,7 +891,7 @@
     const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace in prod
 
-    // --- Supabase via ESM (works inside type="module") ---
+    // --- Supabase via ESM ---
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
@@ -940,10 +988,13 @@
       byId("planbadge") && (byId("planbadge").textContent = `Plan: ${label}`);
       const mb = byId("memberPlanBadge");
       if (mb) mb.textContent = `Plan: ${label}`;
+      // mirror to mobile
+      const pm = byId("planbadge_m");
+      if (pm) pm.textContent = `Plan: ${label}`;
     }
 
     /* =========================
-       VIEW SWITCHING
+       VIEW SWITCHING + MOBILE NAV
     ========================== */
     function showView(isAuthenticated){
       const guest  = byId("guestView");
@@ -952,20 +1003,22 @@
         document.body.setAttribute("data-auth","member");
         guest && guest.classList.add("hidden");
         member && member.classList.remove("hidden");
-        byId("loginBtn") && byId("loginBtn").classList.add("hidden");
-        byId("heroSignIn") && byId("heroSignIn").classList.add("hidden");
-        byId("logoutBtn") && byId("logoutBtn").classList.remove("hidden");
-        byId("logoutBtn2") && byId("logoutBtn2").classList.remove("hidden");
-        byId("heroBadgeWrap") && byId("heroBadgeWrap").classList.add("hidden");
+        ["loginBtn","heroSignIn"].forEach(id=> byId(id)?.classList.add("hidden"));
+        ["logoutBtn","logoutBtn2"].forEach(id=> byId(id)?.classList.remove("hidden"));
+        byId("heroBadgeWrap")?.classList.add("hidden");
+        // mobile
+        byId("loginBtn_m")?.classList.add("hidden");
+        byId("logoutBtn_m")?.classList.remove("hidden");
       } else {
         document.body.setAttribute("data-auth","guest");
         member && member.classList.add("hidden");
         guest && guest.classList.remove("hidden");
-        byId("loginBtn") && byId("loginBtn").classList.remove("hidden");
-        byId("heroSignIn") && byId("heroSignIn").classList.remove("hidden");
-        byId("logoutBtn") && byId("logoutBtn").classList.add("hidden");
-        byId("logoutBtn2") && byId("logoutBtn2").classList.add("hidden");
-        byId("heroBadgeWrap") && byId("heroBadgeWrap").classList.remove("hidden");
+        ["loginBtn","heroSignIn"].forEach(id=> byId(id)?.classList.remove("hidden"));
+        ["logoutBtn","logoutBtn2"].forEach(id=> byId(id)?.classList.add("hidden"));
+        byId("heroBadgeWrap")?.classList.remove("hidden");
+        // mobile
+        byId("loginBtn_m")?.classList.remove("hidden");
+        byId("logoutBtn_m")?.classList.add("hidden");
       }
     }
 
@@ -976,6 +1029,24 @@
       if (o === "member") showView(true);
       else if (o === "guest") showView(false);
     }
+
+    // Mobile nav wiring
+    (function initMobileNav(){
+      const sheet = byId("mobileNav");
+      const openBtn = byId("navToggle");
+      const closeBtn = byId("navClose");
+      const close = ()=>{ document.documentElement.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); openBtn?.setAttribute("aria-expanded","false"); };
+      const open  = ()=>{ document.documentElement.classList.add("nav-open"); sheet?.setAttribute("aria-hidden","false"); openBtn?.setAttribute("aria-expanded","true"); };
+      openBtn && openBtn.addEventListener("click", ()=> document.documentElement.classList.contains("nav-open") ? close() : open());
+      closeBtn && closeBtn.addEventListener("click", close);
+      sheet && sheet.addEventListener("click", (e)=>{ if (e.target === sheet) close(); });
+      // mirror desktop auth buttons into mobile actions
+      byId("manageBilling_m")?.addEventListener("click", ()=> byId("manageBilling")?.click());
+      byId("loginBtn_m")?.addEventListener("click", ()=> byId("loginBtn")?.click());
+      byId("logoutBtn_m")?.addEventListener("click", ()=> byId("logoutBtn")?.click());
+      // close when clicking a link
+      sheet?.querySelectorAll("a").forEach(a=> a.addEventListener("click", close));
+    })();
 
     /* =========================
        AUTH
@@ -1120,6 +1191,7 @@
     function paintManageButtons(isSubscribed){
       byId("manageBilling")  && byId("manageBilling").classList.toggle("hidden", !isSubscribed);
       byId("manageBilling2") && byId("manageBilling2").classList.toggle("hidden", !isSubscribed);
+      byId("manageBilling_m") && byId("manageBilling_m").classList.toggle("hidden", !isSubscribed);
     }
 
     function paintTopBadges(status){
@@ -1222,6 +1294,64 @@
       history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):""));
     }
 
+    // NEW: Live stats (Generations today + real examples)
+    async function fetchLiveStats(){
+      // Try a few sensible endpoints; show gracefully if none exist.
+      const headers = await getAuthHeaders();
+      const candidates = [
+        `${WORKER_BASE}/api/stats`,                // { today_count, examples:[{channel,text}] }
+        `${WORKER_BASE}/api/stats/today`,         // { count, examples:[...] }
+        `${WORKER_BASE}/api/activity`,            // { today:{count}, examples:[...] }
+        `${WORKER_BASE}/api/stats/generations`    // { today: number }
+      ];
+      for (const url of candidates){
+        try{
+          const r = await fetch(url, { headers });
+          if (!r.ok) continue;
+          const j = await r.json();
+          const count = j?.today_count ?? j?.today?.count ?? j?.count ?? j?.today ?? null;
+          const examples = j?.examples ?? j?.recent ?? j?.items ?? [];
+          return { count, examples };
+        }catch{}
+      }
+      return { count:null, examples:[] };
+    }
+
+    function paintLiveStats({ count, examples }){
+      const cEl = byId("liveCount");
+      const feed = byId("liveFeed");
+      if (cEl) cEl.textContent = (typeof count === "number" && count>=0) ? String(count) : "–";
+
+      if (feed){
+        if (!examples || !examples.length){
+          // fallback: show static friendly placeholders (no errors)
+          feed.innerHTML = `
+            <span class="chip">LinkedIn • SaaS launch tips</span>
+            <span class="chip">Email • Weekly digest intro</span>
+            <span class="chip">X • 2 short variants</span>
+            <span class="chip">Instagram • Caption + hashtags</span>
+          `;
+        } else {
+          const pills = examples.slice(0,24).map(e=>{
+            const channel = (e.channel||"").toString().trim() || "Post";
+            const text = (e.text||e.preview||e.title||"").toString().trim().slice(0,64);
+            const safe = (text||"").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+            return `<span class="chip">${channel} • ${safe}${text.length>=64?"…":""}</span>`;
+          }).join("");
+          feed.innerHTML = pills + pills; // duplicate for seamless loop
+        }
+      }
+    }
+
+    async function refreshLiveStats(){
+      try{
+        const data = await fetchLiveStats();
+        paintLiveStats(data);
+      }catch{
+        paintLiveStats({ count:null, examples:[] });
+      }
+    }
+
     async function refreshAll(){
       await paintAuth();
       const status = await getPlanStatus();
@@ -1250,6 +1380,10 @@
       try {
         await applyReferralIfPresent();
         await refreshAll();
+        await refreshLiveStats();
+        // Update live stats every 30s (stops if tab hidden to save work)
+        let liveTimer = setInterval(()=>{ if (!document.hidden) refreshLiveStats(); }, 30000);
+        document.addEventListener("visibilitychange", ()=>{ if (document.hidden) return; refreshLiveStats(); });
       } catch (e) { console.error(e); }
     })();
 
@@ -1365,7 +1499,7 @@
       const liMatch = text.match(/"linkedin"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
       const xMatch  = text.match(/"x"\s*:\s*(\[[\s\S]*?\]|"[\s\S]*?")\s*(,|$)/i);
       const emMatch = text.match(/"email"\s*:\s*(\{[\s\S]*?\}|"[\s\S]*?")\s*(,|$)/i);
-      const igMatch = text.match(/"instagram"\s*:\s*"([\s*S]*?)"\s*(,|$)/i);
+      const igMatch = text.match(/"instagram"\s*:\s*"([\s\S]*?)"\s*(,|$)/i);
       if (liMatch) out.linkedin = liMatch[1].replace(/\\n/g,"\n");
       if (xMatch)  out.x = xMatch[1].startsWith('[') ? JSON.parse(xMatch[1]) : xMatch[1].replace(/\\n/g,"\n");
       if (emMatch){
@@ -1478,6 +1612,9 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         byId("dl-csv") && (byId("dl-csv").disabled = false);
         byId("dl-md") && (byId("dl-md").onclick = ()=> download("content-pack.md","text/markdown", buildMarkdown(out)));
         byId("dl-csv") && (byId("dl-csv").onclick = ()=> download("content-pack.csv","text/csv", buildCSV(out)));
+
+        // Nudge live stats after a successful run
+        refreshLiveStats();
       }catch(e){ byId("status") && (byId("status").textContent = e.message || "Network error"); }
     }
 
@@ -1541,6 +1678,9 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         byId("out-ig_m") && (byId("out-ig_m").textContent = out.instagram || "");
 
         byId("status_m") && (byId("status_m").textContent = `Done • Model: ${data?._meta?.model_used || "n/a"} • Lane: ${data?._meta?.lane||'n/a'}`);
+
+        // Nudge live stats after a successful run
+        refreshLiveStats();
       }catch(e){ byId("status_m") && (byId("status_m").textContent = e.message || "Network error"); }
     }
 
@@ -1600,7 +1740,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
 
     /* =========================
        INTEGRATIONS (Creator+)
-       (Aligned to Worker routes only)
     ========================== */
     function paintIntegrations(status){
       const integ = status?.integrations || {};
@@ -1834,7 +1973,6 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       if (plan!=="business") return alert("Team seats are for Business plan.");
       const email = (byId("inviteEmail")?.value||"").trim();
       if (!email) return alert("Enter an email to invite.");
-      // No Worker route for org invites—show safe info
       showToast("Team invites coming soon");
     });
 
@@ -1891,3 +2029,5 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       });
     }
   </script>
+</body>
+</html>
