@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>AI Content Repurposing: Benefits, Risks & ROI (2025) | ContentRepurpose.pro</title>
+  <meta name="description" content="A 2025 playbook for AI content repurposing: benefits, risks, and a practical ROI model. See workflows, guardrails, and a calculator to estimate payback. US-focused, with links to SEO tactics and tools." />
+  <link rel="canonical" href="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/" />
+  <meta name="theme-color" content="#0a0d18" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="AI Content Repurposing: Benefits, Risks & ROI (2025)" />
+  <meta property="og:description" content="Benefits, risks, and a practical ROI calculator for AI content repurposing in 2025. Workflows + guardrails for US teams." />
+  <meta property="og:url" content="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/" />
+  <meta property="og:image" content="https://contentrepurpose.pro/assets/og/ai-content-repurposing-benefits-risks-roi-2025.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AI Content Repurposing: Benefits, Risks & ROI (2025)" />
+  <meta name="twitter:description" content="A 2025 playbook for AI content repurposing: benefits, risks, and an ROI model. US-focused workflows and guardrails." />
+  <meta name="twitter:image" content="https://contentrepurpose.pro/assets/og/ai-content-repurposing-benefits-risks-roi-2025.png" />
+
+  <!-- Article + Breadcrumbs + FAQ JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Article",
+    "headline":"AI Content Repurposing: Benefits, Risks & ROI (2025)",
+    "description":"A 2025 playbook for AI content repurposing: benefits, risks, and a practical ROI model. US-focused workflows, guardrails, and an ROI calculator.",
+    "author":{"@type":"Person","name":"Frank C"},
+    "publisher":{"@type":"Organization","name":"ContentRepurpose.pro","logo":{"@type":"ImageObject","url":"https://contentrepurpose.pro/assets/logo.png"}},
+    "datePublished":"2025-09-23T09:00:00-04:00",
+    "dateModified":"2025-09-23T09:00:00-04:00",
+    "mainEntityOfPage":{"@type":"WebPage","@id":"https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/"},
+    "image":"https://contentrepurpose.pro/assets/og/ai-content-repurposing-benefits-risks-roi-2025.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Blog","item":"https://contentrepurpose.pro/blog/"},
+      {"@type":"ListItem","position":2,"name":"AI Content Repurposing: Benefits, Risks & ROI (2025)","item":"https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/"}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"What’s the fastest way to quantify ROI from repurposing?","acceptedAnswer":{"@type":"Answer","text":"Use a simple model: Time Saved × Hourly Cost + Incremental Traffic × CVR × LTV − Tool Cost. Track leading indicators weekly and lagging indicators monthly."}},
+      {"@type":"Question","name":"Does repurposing create duplicate content issues?","acceptedAnswer":{"@type":"Answer","text":"Not if each derivative is tailored to its channel and adds unique value. Keep a canonical on the pillar page and vary angle, format, and CTA."}},
+      {"@type":"Question","name":"How do I reduce AI tone drift and hallucinations?","acceptedAnswer":{"@type":"Answer","text":"Generate all derivatives in one pass (paste-once), lock brand voice rules, add proof elements, and set a light approval step before scheduling."}},
+      {"@type":"Question","name":"Which channels typically pay back fastest in the US?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn for B2B awareness and pipeline touches, Email for owned-audience conversions, and X for velocity and influencer amplification."}},
+      {"@type":"Question","name":"What governance should my team adopt?","acceptedAnswer":{"@type":"Answer","text":"Define a voice preset, a claim-check step for numbers, a source-of-truth doc per campaign, UTM standards, and Notion/Trello approvals."}}
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --ink:#0a0d18; --sky:#6ee7ff; --vio:#8b5cf6; --mint:#34d399; --fg:#e5f1ff; --muted:#9fb3c8; --rose:#fb7185; --amber:#fbbf24;
+    }
+    body {margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:#dbe7ff; background:#0a0d18;}
+    a {color: var(--sky); text-decoration: none;}
+    a:hover {text-decoration: underline;}
+    .wrap {max-width: 1040px; margin: 0 auto; padding: 28px;}
+    .topbar {position: sticky; top:0; z-index:20; background:rgba(10,13,24,.75); backdrop-filter: blur(8px); border-bottom:1px solid rgba(255,255,255,.06);}
+    .cta {display:flex; gap:12px; align-items:center; justify-content:space-between;}
+    .btn {padding:10px 16px; border-radius:14px; background:linear-gradient(135deg, var(--sky), var(--vio)); color:#041225; font-weight:800}
+    .btn:hover {filter:brightness(1.1)}
+    .hero {padding:56px 0 24px; background: radial-gradient(1200px 600px at 20% -10%, rgba(110,231,255,.18), transparent 40%), radial-gradient(1000px 480px at 80% -20%, rgba(139,92,246,.18), transparent 40%);}
+    .title {font-size: clamp(36px, 4.6vw, 58px); line-height:1.1; margin:0 0 12px; font-weight:900;}
+    .type {display:inline-block; border-right: 2px solid var(--sky); white-space:nowrap; overflow:hidden}
+    .lede {font-size:20px; color:var(--muted); max-width: 820px}
+    .note {background: rgba(52,211,153,.15); border:1px solid rgba(52,211,153,.3); padding:14px 16px; border-radius:14px; margin:24px 0;}
+    h2 {font-size: clamp(26px, 3.2vw, 34px); margin-top:36px}
+    h3 {font-size: clamp(20px, 2.2vw, 24px); margin-top:24px}
+    .grid {display:grid; grid-template-columns:1fr; gap:16px}
+    @media (min-width:980px){ .grid.two {grid-template-columns: 1fr 1fr} .grid.three{grid-template-columns:1fr 1fr 1fr} }
+    .kbd {font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background: rgba(255,255,255,.06); padding:.2em .45em; border-radius:8px}
+    .callout {border-left: 4px solid var(--amber); padding: 12px 14px; background: rgba(251,191,36,.07); border-radius:10px; margin: 16px 0}
+    .footer-cta {margin:48px 0; padding:24px; border-radius:18px; background:linear-gradient(135deg, rgba(110,231,255,.12), rgba(139,92,246,.12)); border:1px solid rgba(255,255,255,.08)}
+    .promo {padding:18px; border-radius:14px; border:1px dashed rgba(255,255,255,.18); display:flex; justify-content:space-between; align-items:center}
+    .small {font-size:13px; color:var(--muted)}
+    code, pre {background: rgba(255,255,255,.06); padding:.2em .4em; border-radius:8px}
+    .checklist li {margin-bottom:8px}
+    blockquote {border-left: 4px solid rgba(255,255,255,.18); padding: 10px 14px; color:#cfe2ff; background: rgba(255,255,255,.04); border-radius:10px}
+    .kpi {display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0}
+    .kpi div {background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px}
+    .tag {display:inline-block; font-size:12px; color:#041225; background:linear-gradient(135deg, var(--mint), var(--sky)); padding:3px 8px; border-radius:999px; font-weight:800}
+    table {width:100%; border-collapse: collapse; margin: 16px 0}
+    td, th {border-bottom: 1px solid rgba(255,255,255,.12); padding: 10px; text-align:left}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap cta">
+      <div class="small">Paste once → multi-channel. Ship drafts for LinkedIn, X, Email & IG.</div>
+      <a class="btn" href="https://contentrepurpose.pro/?utm_source=blog&utm_medium=topbar&utm_campaign=ai-content-repurposing-benefits-risks-roi-2025">Try the live demo</a>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="wrap">
+      <h1 class="title">AI Content Repurposing: Benefits, Risks & ROI (2025)</h1>
+      <p class="lede">
+        <span id="type" class="type">From “rewrite tax” to measurable returns in weeks — here’s the model.</span>
+      </p>
+      <div class="promo" style="margin-top:16px">
+        <div><strong>Creator Plan:</strong> use code <strong>CONTENTOFF90</strong> for <strong>90% off</strong> today (US customers welcome).</div>
+        <a class="btn" href="https://contentrepurpose.pro/?plan=creator&coupon=CONTENTOFF90&utm_source=blog&utm_medium=hero&utm_campaign=ai-content-repurposing-benefits-risks-roi-2025">Get the deal</a>
+      </div>
+      <p class="small" style="margin-top:10px">By <strong>Frank C</strong> • Updated Sep 23, 2025 • 22 min read</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article>
+      <p><span class="tag">Overview</span> This 2025 guide shows US teams how to evaluate <strong>benefits</strong>, mitigate <strong>risks</strong>, and quantify <strong>ROI</strong> from AI content repurposing. You’ll get a practical model, guardrails for accuracy and brand safety, and workflows that turn one source into LinkedIn, X, Email & IG assets in minutes—without sacrificing voice or trust.</p>
+
+      <div class="note"><strong>Skip ahead:</strong> If you just want the numbers, jump to the <a href="#roi-calculator">ROI calculator</a>. If you’re planning how repurposing impacts organic visibility, read <a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Content Repurposing for SEO</a>. For picking software, see <a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/">Best AI Content Repurposing Tools (2025)</a>.</div>
+
+      <h2>Why repurpose with AI in 2025 (US context)</h2>
+      <p>Audience attention is atomized across platforms, and the algorithmic feeds reward frequent, native-looking posts. AI lowers the cost of iteration: instead of rewriting the same idea four times, you <em>paste once</em>, generate LinkedIn, X, Email & IG drafts, and spend human time on proof, polishing, and distribution. The result is more surface area for the same core message—without burning your team out.</p>
+
+      <div class="kpi">
+        <div><strong>80–90%</strong><br><span class="small">Typical reduction in first-draft time per campaign (teams report 45–60 min vs 5–6 hrs).</span></div>
+        <div><strong>3–5×</strong><br><span class="small">More “touchpoints” per idea (LI, X, Email, IG) → higher assisted conversions over 30–90 days.</span></div>
+      </div>
+
+      <h2>Benefits (beyond “we post more”)</h2>
+      <h3>1) Message consistency, not copy-paste</h3>
+      <p>Generating all derivatives in a single pass keeps nouns, metaphors, and claims aligned. You then tweak for channel constraints—hooks on LinkedIn, open-loop sequencing on X, subject lines in Email, line breaks on IG—without drifting from the original narrative.</p>
+
+      <h3>2) Speed, without losing specificity</h3>
+      <p>AI drafts free your experts to add what machines can’t: named examples, personal stories, screenshots, and data points. That blend—fast drafting + real proof—outperforms generic content every time.</p>
+
+      <h3>3) Compounding SEO effects</h3>
+      <p>Repurposed posts amplify discovery, earn mentions and links, and point back to your evergreen pillar. Over quarters, your hub pages gain topical depth and internal links. See our playbook: <a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Content Repurposing for SEO</a>.</p>
+
+      <h3>4) Better use of owned media</h3>
+      <p>Turning each idea into a short, scannable email keeps your US list warm. Email becomes your control channel for announcements, product updates, and demand capture.</p>
+
+      <h2>Risks (and how to de-risk fast)</h2>
+      <div class="callout"><strong>Principle:</strong> AI drafts, humans decide. Keep a lightweight approval step and a claim-check rule for any numbers.</div>
+
+      <h3>1) Tone drift</h3>
+      <p><strong>Risk:</strong> Inconsistent voice across platforms feels “off.”<br/><strong>Mitigation:</strong> Use a brand voice preset (3–6 rules), generate in one pass (paste-once), and keep an editor’s review for voice before scheduling.</p>
+
+      <h3>2) Hallucinations & overclaims</h3>
+      <p><strong>Risk:</strong> AI invents stats or misstates context.<br/><strong>Mitigation:</strong> Don’t ask AI to create net-new facts; ask it to reframe <em>your</em> facts. Require a claim-check on any numbers, add sources when public, or remove unverifiable details.</p>
+
+      <h3>3) Compliance & brand safety</h3>
+      <p><strong>Risk:</strong> Regulated or sensitive topics (finance, health, etc.).<br/><strong>Mitigation:</strong> Maintain a “do/don’t” ruleset; flag terms; keep approvals for risky categories; avoid promises—use precise, qualified language.</p>
+
+      <h3>4) Duplicate content worries</h3>
+      <p><strong>Risk:</strong> Republishing identical copy across web pages.<br/><strong>Mitigation:</strong> Repurposing ≠ duplicate if each derivative adds unique value per channel. Keep a canonical on the main article; vary angle and format; link back to the pillar. See <a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">SEO guidance</a>.</p>
+
+      <h2 id="roi-calculator">ROI model (2025): simple and defensible</h2>
+      <p>Use this practical formula to estimate monthly payback. Plug in your numbers.</p>
+
+      <pre><code>ROI = (Time Saved × Hourly Cost)
+    + (Incremental Traffic × Conversion Rate × Lead/Customer Value)
+    − (Tool Cost + Additional Media Costs)</code></pre>
+
+      <h3>Define the inputs</h3>
+      <table>
+        <thead><tr><th>Variable</th><th>What it means</th><th>Default example</th></tr></thead>
+        <tbody>
+          <tr><td>Time Saved</td><td>Hours reduced per month vs manual rewrites</td><td>18 hrs</td></tr>
+          <tr><td>Hourly Cost</td><td>Blended rate of your writer/marketer</td><td>$55</td></tr>
+          <tr><td>Incremental Traffic</td><td>Extra sessions from added distribution</td><td>1,200 / mo</td></tr>
+          <tr><td>Conversion Rate (CVR)</td><td>Visitor → trial or lead</td><td>2.2%</td></tr>
+          <tr><td>Lead/Customer Value</td><td>LTV or expected value per trial/lead</td><td>$120 (lead)</td></tr>
+          <tr><td>Tool Cost</td><td>Monthly software (e.g., Creator or Business)</td><td>$19–$49</td></tr>
+          <tr><td>Media Costs</td><td>Optional design, stock, editing</td><td>$0–$150</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Worked example (US B2B team)</h3>
+      <p><strong>Time Saved:</strong> 18 hrs × $55 = <strong>$990</strong><br/>
+         <strong>Incremental Revenue Proxy:</strong> 1,200 × 2.2% = 26.4 ≈ 26 leads × $120 = <strong>$3,120</strong><br/>
+         <strong>Costs:</strong> $49 (tool) + $100 (media) = <strong>$149</strong><br/>
+         <strong>Monthly ROI:</strong> $990 + $3,120 − $149 = <strong>$3,961</strong></p>
+      <p><em>Interpretation:</em> Even at modest traffic lift and conservative CVR, the blend of labor savings + incremental results dwarfs cost. If your LTV is higher (SaaS), ROI scales quickly.</p>
+
+      <h2>Operational blueprint: guardrails + workflow</h2>
+      <h3>Brand voice preset (paste into your docs)</h3>
+      <ul>
+        <li>Short, declarative sentences; US spelling; no hype.</li>
+        <li>Each post includes one proof (number, screenshot, named example).</li>
+        <li>Avoid jargon; prefer plain-English benefits before features.</li>
+        <li>Default CTA: “Full guide →” or “Try the live demo.”</li>
+      </ul>
+
+      <h3>Prompt skeleton (repurpose from one source)</h3>
+      <pre><code>Context: Senior content strategist for US B2B.
+Input: &lt;source text&gt; (blog/transcript/case study). Core message: &lt;one sentence&gt;.
+Task: Generate LinkedIn (200–230w), X thread (8–12 tweets), Email (subject + 180–220w), IG caption (120–180w).
+Constraints:
+- Preserve message; vary angle per channel.
+- Include 1 proof element.
+- CTA back to &lt;pillar URL&gt; or live demo.
+Tone: Confident, specific, human. Avoid fluff.</code></pre>
+
+      <h3>Workflow (weekly cadence)</h3>
+      <ol>
+        <li><strong>Pick the source:</strong> Your newest pillar or webinar transcript.</li>
+        <li><strong>Paste once:</strong> Use <a href="https://contentrepurpose.pro/?utm_source=blog&utm_medium=inline&utm_campaign=ai-content-repurposing-benefits-risks-roi-2025">ContentRepurpose.pro</a> to draft LI, X, Email & IG.</li>
+        <li><strong>Proof pass:</strong> Add one number, example, or screenshot; claim-check.</li>
+        <li><strong>Export:</strong> Notion/Trello for approval; Buffer queue with UTMs.</li>
+        <li><strong>Measure:</strong> Track leading indicators weekly; lagging indicators monthly.</li>
+      </ol>
+
+      <div class="footer-cta">
+        <h3>Paste once → get LinkedIn, X, Email & IG drafts in ~15s</h3>
+        <p>Stop rewriting the same idea four times. Generate channel-ready drafts, export to Notion & Trello, queue to Buffer.</p>
+        <p><a class="btn" href="https://contentrepurpose.pro/?utm_source=blog&utm_medium=midcta&utm_campaign=ai-content-repurposing-benefits-risks-roi-2025">Open the live demo</a></p>
+        <p class="small">Use code <strong>CONTENTOFF90</strong> for 90% off the Creator plan.</p>
+      </div>
+
+      <h2>Channel-by-channel: quick wins</h2>
+      <h3>LinkedIn</h3>
+      <ul>
+        <li><strong>Hook:</strong> tension + promise (“Stop paying the rewrite tax”).</li>
+        <li><strong>Body:</strong> 3–5 short paragraphs; one proof; one CTA.</li>
+        <li><strong>Cadence:</strong> 2–4×/week for B2B, midday US time zones.</li>
+      </ul>
+
+      <h3>X (Twitter)</h3>
+      <ul>
+        <li><strong>First tweet:</strong> state the transformation.</li>
+        <li><strong>Middle:</strong> 6–9 steps/tips; keep cadence tight.</li>
+        <li><strong>Last:</strong> recap + link to pillar or demo.</li>
+      </ul>
+
+      <h3>Email</h3>
+      <ul>
+        <li><strong>Subject:</strong> benefit + time (“One idea → 4 channels in 15 minutes”).</li>
+        <li><strong>Body:</strong> lead with the takeaway; one example; one CTA.</li>
+        <li><strong>Timing:</strong> late morning US (test per list).</li>
+      </ul>
+
+      <h3>Instagram</h3>
+      <ul>
+        <li><strong>Caption:</strong> strong first line; line breaks; save/share CTA.</li>
+        <li><strong>Visual:</strong> carousels with “slide maps” summarizing the steps.</li>
+        <li><strong>Cross-link:</strong> Link in bio → pillar or demo.</li>
+      </ul>
+
+      <h2>Governance: keep quality high</h2>
+      <ul>
+        <li><strong>Source of truth:</strong> one doc per campaign with final claims and links.</li>
+        <li><strong>Approval in Notion/Trello:</strong> Draft → Review → Approved → Scheduled.</li>
+        <li><strong>Glossary:</strong> maintain brand terms to avoid drift.</li>
+        <li><strong>Accessibility:</strong> alt text on images; readable contrast; clear link text.</li>
+      </ul>
+
+      <h2>Measurement: what to track, when to adjust</h2>
+      <div class="grid two">
+        <div>
+          <h3>Leading indicators (weekly)</h3>
+          <ul>
+            <li>Impressions by channel</li>
+            <li>Engagement rate (saves/replies/CTR)</li>
+            <li>Traffic to pillar page (UTM)</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Lagging indicators (monthly/quarterly)</h3>
+          <ul>
+            <li>Trials/signups, MQLs, SQLs</li>
+            <li>Assisted revenue</li>
+            <li>Rankings/links to your pillar</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Examples: from one source → four channels</h2>
+      <p>Assume your pillar is “How to Build a Repurposing Strategy.” Here’s a compact set of derivatives:</p>
+      <h3>LinkedIn (condensed)</h3>
+      <blockquote>
+        You don’t need more ideas—you need better distribution.<br/><br/>
+        Paste once → get LI/X/Email/IG drafts. Spend human time on proof and voice, not rewrites. We cut first-draft time by ~80% and grew assisted conversions in 6 weeks. Full playbook + live demo here.
+      </blockquote>
+
+      <h3>X thread (first 5)</h3>
+      <ol>
+        <li>Stop paying the “rewrite tax.” One idea → 4 channels in minutes.</li>
+        <li>Coherence wins: generate in one pass; edit per channel.</li>
+        <li>Proof beats adjectives: 1 screenshot/number/name per post.</li>
+        <li>Export to Notion/Trello → approve → Buffer queue (with UTMs).</li>
+        <li>Our ROI model + demo below. ↓</li>
+      </ol>
+
+      <h3>Email (subject + body)</h3>
+      <p><strong>Subject:</strong> The ROI math for repurposing (2025)<br/>
+      <strong>Body:</strong> We turned one source into four channels in minutes—and measured it. Here’s the calculator + guardrails we use, plus a live demo you can try today.</p>
+
+      <h3>IG caption (condensed)</h3>
+      <blockquote>
+        Your best ideas need more distribution. Paste once → get LI/X/Email/IG drafts. Save this for your next launch and thank yourself later.
+      </blockquote>
+
+      <div class="footer-cta">
+        <h3>Ready to repurpose smarter?</h3>
+        <p>Try ContentRepurpose.pro — paste once → get LinkedIn, X, Email & IG drafts. Export to Notion/Trello. BYOK supported.</p>
+        <p><a class="btn" href="https://contentrepurpose.pro/?utm_source=blog&utm_medium=bottomcta&utm_campaign=ai-content-repurposing-benefits-risks-roi-2025">Try the live demo</a></p>
+        <p class="small">Use code <strong>CONTENTOFF90</strong> for 90% off the Creator plan.</p>
+      </div>
+
+      <!-- Internal links block -->
+      <h2>Keep going</h2>
+      <ul>
+        <li><a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Content Repurposing for SEO</a></li>
+        <li><a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/">Best AI Content Repurposing Tools (2025)</a></li>
+        <li><a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">Paste Once → Multi-Channel</a></li>
+        <li><a href="https://contentrepurpose.pro/blog/how-to-repurpose-content/">How to Repurpose Content</a></li>
+      </ul>
+
+      <!-- FAQs visible block (mirrors FAQPage JSON-LD) -->
+      <section class="faq">
+        <h2>FAQs</h2>
+        <details><summary>What’s the fastest way to quantify ROI from repurposing?</summary><p>Use a simple, defensible model: Time Saved × Hourly Cost + Incremental Traffic × Conversion Rate × LTV − Tool Cost. Track leading indicators weekly and lagging indicators monthly.</p></details>
+        <details><summary>Does repurposing create duplicate content issues?</summary><p>No, provided each derivative is tailored to its channel and adds unique value. Keep a canonical on the pillar page, vary structure/angle, and link back.</p></details>
+        <details><summary>How do I reduce AI tone drift and hallucinations?</summary><p>Generate all derivatives in one pass (paste-once), lock brand voice rules, add proof elements, and keep a light approval step before scheduling.</p></details>
+        <details><summary>Which channels typically pay back fastest in the US?</summary><p>LinkedIn for B2B awareness and pipeline touches, Email for owned-audience conversions, and X for velocity and influencer amplification.</p></details>
+        <details><summary>What governance should my team adopt?</summary><p>Define a voice preset, a claim-check step for numbers, a source-of-truth doc per campaign, UTM standards, and Notion/Trello approvals.</p></details>
+      </section>
+    </article>
+  </main>
+
+  <script>
+    // Typewriter effect for the hook line
+    (function(){
+      const el = document.getElementById('type');
+      const full = el.textContent.trim();
+      el.textContent = '';
+      let i = 0;
+      function tick(){
+        el.textContent = full.slice(0, i++) + ' ';
+        if(i <= full.length){ setTimeout(tick, 28); }
+      }
+      tick();
+    })();
+  </script>
+</body>
+</html>
