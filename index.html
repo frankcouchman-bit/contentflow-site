@@ -53,6 +53,12 @@
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     #click-guard{position:fixed;inset:0;pointer-events:none}
 
+    /* Guest/Member display helpers */
+    .guest-only{}
+    .member-only{ display:none !important; }
+    [data-auth="member"] .guest-only{ display:none !important; }
+    [data-auth="member"] .member-only{ display:initial !important; }
+
     /* Glass & dark */
     .glass{backdrop-filter: blur(12px); background:rgba(255,255,255,.62)}
     @media (prefers-color-scheme:dark){
@@ -157,12 +163,13 @@
 
       <!-- Desktop nav -->
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80">Live Demo</a>
-        <a href="#templates" class="hover:opacity-80">Templates</a>
-        <a href="#use-cases" class="hover:opacity-80">Use cases</a>
-        <a href="#best-picks" class="hover:opacity-80">Best picks</a>
+        <a href="#demo" class="hover:opacity-80 guest-only">Live Demo</a>
+        <a href="#templates" class="hover:opacity-80 guest-only">Templates</a>
+        <a href="#use-cases" class="hover:opacity-80 guest-only">Use cases</a>
+        <a href="#best-picks" class="hover:opacity-80 guest-only">Best picks</a>
+        <!-- PRICING visible for everyone -->
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
-        <a href="/blog" class="hover:opacity-80">Blog</a>
+        <a href="/blog" class="hover:opacity-80 guest-only">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
@@ -177,6 +184,20 @@
       </button>
     </div>
 
+    <!-- Guest promo bar -->
+    <div id="promoGuest" class="guest-only border-t border-white/40 bg-white/70 dark:bg-white/10">
+      <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
+          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
+          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Mobile sheet -->
     <div id="mobileNav" class="nav-sheet" aria-hidden="true">
       <div class="nav-panel text-sm text-white">
@@ -185,12 +206,13 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">?</button>
         </div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
-          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg:white/10">Templates</a>
-          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg:white/10">Use cases</a>
-          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg:white/10">Best picks</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Live Demo</a>
+          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Templates</a>
+          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Use cases</a>
+          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Best picks</a>
+          <!-- PRICING visible for everyone -->
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg:white/10">Pricing</a>
-          <a href="/blog" class="px-3 py-2 rounded-lg hover:bg:white/10">Blog</a>
+          <a href="/blog" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Blog</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
@@ -202,8 +224,8 @@
     </div>
   </header>
 
-  <!-- HERO (Live Demo high on page) -->
-  <section class="relative">
+  <!-- HERO (marketing) -->
+  <section class="relative guest-only">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
@@ -331,8 +353,8 @@
     </div>
   </section>
 
-  <!-- SEO SECTION (added, keyword-focused) -->
-  <section class="max-w-7xl mx-auto px-4 md:px-5 py-12">
+  <!-- SEO SECTION -->
+  <section class="max-w-7xl mx-auto px-4 md:px-5 py-12 guest-only">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing AI — turn one asset into many</h2>
     <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-3xl">
       ContentRepurpose.pro is a <strong>content repurposing tool</strong> powered by <strong>AI</strong>. Paste a paragraph, blog, or idea and instantly
@@ -351,7 +373,7 @@
   </section>
 
   <!-- TEMPLATES -->
-  <section id="templates" class="max-w-7xl mx-auto px-4 md:px-5 py-12">
+  <section id="templates" class="max-w-7xl mx-auto px-4 md:px-5 py-12 guest-only">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <article class="card p-5">
@@ -378,7 +400,7 @@
   </section>
 
   <!-- USE CASES -->
-  <section id="use-cases" class="max-w-7xl mx-auto px-4 md:px-5 pb-10">
+  <section id="use-cases" class="max-w-7xl mx-auto px-4 md:px-5 pb-10 guest-only">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <div class="card p-5">
@@ -400,7 +422,7 @@
   </section>
 
   <!-- BEST PICKS -->
-  <section id="best-picks" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
+  <section id="best-picks" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
     <div class="flex items-end justify-between gap-4">
       <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Best picks</h2>
       <a href="/blog" class="text-sm underline">Visit the blog</a>
@@ -444,7 +466,7 @@
   </section>
 
   <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
-  <section id="guestView">
+  <section id="guestView" class="guest-only">
     <!-- DEMO -->
     <main id="demo" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 grid lg:grid-cols-2 gap-8">
       <section class="card p-6">
@@ -534,7 +556,7 @@
   </section>
 
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
-  <section id="memberView" class="hidden">
+  <section id="memberView" class="hidden member-only">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
       <!-- Header -->
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-8 mb-6">
@@ -610,6 +632,7 @@
         </div>
         <ul id="batch_progress" class="mt-3 text-sm space-y-1"></ul>
       </div>
+
       <!-- Outputs + Publish -->
       <div class="grid lg:grid-cols-2 gap-5 mt-6">
         <!-- LinkedIn -->
@@ -759,7 +782,7 @@
     </div>
   </section>
 
-  <!-- PRICING (unchanged structure) -->
+  <!-- PRICING (visible to guests & members) -->
   <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
     <div class="text-center mb-8">
       <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
@@ -827,8 +850,8 @@
     </div>
   </section>
 
-  <!-- SEO FAQ (expanded with your target keywords) -->
-  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
+  <!-- SEO FAQ (guest-only to declutter dashboard) -->
+  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
     <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
     <div class="mt-5 grid md:grid-cols-2 gap-5">
       <div class="card p-5">
@@ -905,7 +928,7 @@
   </section>
 
   <!-- Promo: external ad link (unchanged) -->
-  <section class="max-w-7xl mx-auto px-4 md:px-5 pb-8">
+  <section class="max-w-7xl mx-auto px-4 md:px-5 pb-8 guest-only">
     <div class="card p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
         <h3 class="text-lg font-semibold">Want more AI creation ideas?</h3>
@@ -985,7 +1008,7 @@
     <div id="toastMsg" class="px-3 py-2 rounded-lg bg-black text-white text-sm"></div>
   </div>
 
-  <!-- Branding patch: ensure share copy uses ContentRepurpose (non-breaking override) -->
+  <!-- Branding & share helpers -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const li = document.getElementById('shareLi');
@@ -1007,10 +1030,24 @@
           window.open(`https://twitter.com/intent/tweet?text=${txt}`, "_blank");
         }, true);
       }
+
+      // Guest promo code copy
+      const copyPromo = document.getElementById('copyPromoBtn');
+      if (copyPromo) {
+        copyPromo.addEventListener('click', () => {
+          navigator.clipboard.writeText('CONTENTOFF90');
+          const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
+          if (t && m) {
+            m.textContent = 'Promo code copied: CONTENTOFF90';
+            t.classList.remove('hidden');
+            setTimeout(()=>t.classList.add('hidden'), 1600);
+          }
+        });
+      }
     });
   </script>
 
-  <!-- APP SCRIPT (unchanged; your existing logic) -->
+  <!-- APP SCRIPT (original logic, unchanged except guest/member UI helpers & promo bar) -->
   <script type="module">
     /* =========================
        CONFIG & GLOBAL HELPERS
@@ -1311,14 +1348,14 @@
       if (q) {
         const usedM = status?.platform?.monthly?.used ?? status?.platform?.used ?? status?.monthly?.used ?? status?.used ?? 0;
         const capM  = status?.platform?.monthly?.cap ?? status?.monthly?.cap ?? 5;
-        q.textContent = `This month: ${usedM}/${capM ?? "8"}`;
+        q.textContent = `This month: ${usedM}/${capM ?? "∞"}`;
       }
     }
 
     function tileHtml(title, used, cap, sub){
       const isInf = cap === Number.MAX_SAFE_INTEGER || cap === Infinity || cap === null;
       const pct = isInf ? 0 : Math.max(0, Math.min(100, Math.round((used / (cap||1)) * 100)));
-      const capTxt = isInf ? "8" : cap;
+      const capTxt = isInf ? "∞" : cap;
       return `
         <div class="card p-5">
           <div class="flex items-center justify-between">
@@ -1353,7 +1390,7 @@
       wrap.innerHTML = [
         tileHtml("Platform — Today", pDailyUsed||0, pDailyCap, PLAN_LABEL(pk)),
         tileHtml("Platform — This month", pMonthly.used||0, (pMonthly.cap ?? (pk==='business'?Infinity:(pk==='creator'?500:(pk==='starter'?200:Infinity)))), "Generations"),
-        tileHtml("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? "8")), "Your key only"),
+        tileHtml("BYOK — Today", bDaily.used||0, (pk==='free'?5:(bDaily.cap ?? "∞")), "Your key only"),
         tileHtml("BYOK — This month", bMonthly.used||0, (bMonthly.cap ?? 0), "Your key only")
       ].join("");
 
@@ -1485,7 +1522,7 @@
         await applyReferralIfPresent();
         await refreshAll();
         await refreshLiveStats();
-        let liveTimer = setInterval(()=>{ if (!document.hidden) refreshLiveStats(); }, 30000);
+        setInterval(()=>{ if (!document.hidden) refreshLiveStats(); }, 30000);
         document.addEventListener("visibilitychange", ()=>{ if (!document.hidden) refreshLiveStats(); });
       } catch (e) { console.error(e); }
     })();
@@ -1534,7 +1571,7 @@
           if (d.email?.subject != null) byId("out-em-subj_m") && (byId("out-em-subj_m").textContent = d.email.subject);
           if (d.email?.body != null)    byId("out-em-body_m") && (byId("out-em-body_m").textContent = d.email.body);
           byId("out-ig_m") && (byId("out-ig_m").textContent = d.instagram ?? "");
-          showToast("Preset loaded ?");
+          showToast("Preset loaded ✅");
         });
       });
     }
@@ -1553,7 +1590,7 @@
       const title = prompt("Preset name?", defaultName) || defaultName;
       const headers = await getAuthHeaders();
       const r = await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers, body: JSON.stringify({ title, data }) }).catch(()=>null);
-      if (r?.ok){ showToast("Preset saved ?"); renderPresets(); }
+      if (r?.ok){ showToast("Preset saved ✅"); renderPresets(); }
       else { const j = await r?.json().catch(()=> ({})); alert(j?.error?.message || "Could not save preset."); }
     });
 
@@ -1599,9 +1636,9 @@
           headers: await getAuthHeaders(),
           body: JSON.stringify(body)
         });
-        if (r.ok) { showToast("BYOK saved to your account ?"); return; }
+        if (r.ok) { showToast("BYOK saved to your account ✅"); return; }
       }catch{}
-      showToast("BYOK saved for this session ?");
+      showToast("BYOK saved for this session ✅");
     }
     byId("save_m")?.addEventListener("click", saveMemberBYOK);
 
@@ -1630,6 +1667,7 @@
       headers["X-BYOK-Key"] = key;
       headers["X-BYOK-Provider"] = provider || "";
       if (base) headers["X-BYOK-Base"] = base;
+      // Back-compat headers if Worker expects these:
       headers["X-User-OpenRouter-Key"] = key;
       headers["X-User-API-Key"] = key;
       if (base) headers["X-User-API-Base"] = base;
@@ -1672,7 +1710,7 @@
         "## LinkedIn",(o.linkedin||"").trim(),"",
         "## X (Twitter)", (Array.isArray(o.x)?o.x.join("\n\n—\n\n"):o.x||"").trim(),"",
         "## Email", (o.email?.body||o.email||"").trim(),"",
-        "## Instagram", (o.instagram||"").trim(),""
+        "## Instagram", (o.instagram||"").trim(),"" 
       ];
       return lines.join("\n");
     }
@@ -1901,7 +1939,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
           li && (li.textContent = `(${i+1}/${src.length}) Error: ${e?.message||e}`);
         }
       }
-      showToast("Batch complete ?");
+      showToast("Batch complete ✅");
     });
 
     /* =========================
@@ -1954,7 +1992,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
     });
     byId("disconnectTrello")?.addEventListener("click", ()=>{
       window.open("https://trello.com/1/authorized", "_blank");
-      showToast("Open Trello ? revoke access there");
+      showToast("Open Trello → revoke access there");
     });
 
     byId("connectBuffer")?.addEventListener("click", ()=> showToast("Buffer integration coming soon"));
@@ -1974,7 +2012,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         method:"POST", headers, body: JSON.stringify({ blocks, parent_page_id: undefined, title: title||lines[0]||"Untitled" })
       }).catch(()=>null);
       const j = await r?.json().catch(()=> ({}));
-      if (j?.url) { showToast("Exported to Notion ?"); window.open(j.url, "_blank"); }
+      if (j?.url) { showToast("Exported to Notion ✅"); window.open(j.url, "_blank"); }
       else alert(j?.error?.message || "Failed to export to Notion.");
     }
 
@@ -1998,7 +2036,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         const j = await r?.json().catch(()=> ({}));
         byId("trelloModal")?.close();
         confirm.removeEventListener("click", handler);
-        if (j?.url) { showToast("Sent to Trello ?"); window.open(j.url, "_blank"); }
+        if (j?.url) { showToast("Sent to Trello ✅"); window.open(j.url, "_blank"); }
         else alert(j?.error?.message || "Failed to send to Trello.");
       };
       confirm.addEventListener("click", handler, { once:false });
@@ -2110,7 +2148,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
         "## Email", out.email?.body || "", "", "## Instagram", out.instagram || ""
       ].join("\n");
       download("content-pack.md","text/markdown", md);
-      showToast("Pack exported (Markdown) ?");
+      showToast("Pack exported (Markdown) ✅");
     });
 
     /* =========================
@@ -2131,7 +2169,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       const val = byId("refLink")?.value || "";
       if (!val) return;
       navigator.clipboard.writeText(val);
-      showToast("Referral link copied ?");
+      showToast("Referral link copied ✅");
     });
 
     /* =========================
@@ -2144,7 +2182,7 @@ STRICT: No Markdown, no triple backticks, no prose — JSON object only.` };
       if (connected) {
         const svc = connected.toLowerCase();
         const nice = svc === "notion" ? "Notion" : svc === "trello" ? "Trello" : svc === "buffer" ? "Buffer" : connected;
-        showToast(`${nice} connected ?`);
+        showToast(`${nice} connected ✅`);
         try { u.searchParams.delete("connected"); history.replaceState({}, "", u.pathname + (u.searchParams.toString()?("?"+u.searchParams.toString()):"")); } catch {}
         refreshAll().then(()=> paintIntegrations(LAST_STATUS||{}));
       } else if (error) {
