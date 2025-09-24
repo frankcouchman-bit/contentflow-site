@@ -5,7 +5,7 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17511593434"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){ try{ dataLayer.push(arguments); }catch(e){} }
     gtag('js', new Date());
     gtag('config', 'AW-17511593434');
   </script>
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-  <meta name="description" content="Content repurposing AI that turns one idea into LinkedIn, X, Email & Instagram drafts. The #1 content repurposing tool to repurpose content fast. Export to Notion & Trello. BYOK supported." />
+  <meta name="description" content="Turn one idea into LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. Try free (no login). BYOK supported. Cancel anytime." />
   <meta name="keywords" content="content repurposing, content repurposing ai, content repurposing tool, repurpose content, content repurpose, content repurposing ideas, repurpose project, repurpose content ai" />
   <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18">
@@ -24,7 +24,7 @@
   <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
-  <meta property="og:description" content="Repurpose content with AI. Paste once → get LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported.">
+  <meta property="og:description" content="Paste once → get LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported.">
   <meta property="og:url" content="https://contentrepurpose.pro/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -154,7 +154,7 @@
         <!-- Inline SVG logo -->
         <svg width="36" height="36" viewBox="0 0 48 48" class="rounded-xl" aria-hidden="true">
           <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
-        <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
+          <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
           <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
           <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/>
         </svg>
@@ -180,7 +180,9 @@
 
       <!-- Mobile burger -->
       <button id="navToggle" class="md:hidden touch-target px-3 py-2 rounded-lg border" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
-        ?
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/>
+        </svg>
       </button>
     </div>
 
@@ -193,26 +195,30 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
+          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white hover:opacity-90">See pricing</a>
         </div>
       </div>
     </div>
 
     <!-- Mobile sheet -->
     <div id="mobileNav" class="nav-sheet" aria-hidden="true">
-      <div class="nav-panel text-sm text-white">
+      <div class="nav-panel text-sm text-white" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <div class="flex items-center justify-between">
           <span class="font-semibold">Menu</span>
-          <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">?</button>
+          <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m18.3 5.71-1.41-1.42L12 9.17 7.11 4.29 5.7 5.7 10.59 10.6 5.7 15.49l1.41 1.42L12 12.01l4.89 4.9 1.41-1.42-4.89-4.9z"/>
+            </svg>
+          </button>
         </div>
         <nav class="mt-4 grid gap-2">
           <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Live Demo</a>
-          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Templates</a>
-          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Use cases</a>
-          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Best picks</a>
+          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Templates</a>
+          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Use cases</a>
+          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Best picks</a>
           <!-- PRICING visible for everyone -->
-          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg:white/10">Pricing</a>
-          <a href="/blog" class="px-3 py-2 rounded-lg hover:bg:white/10 guest-only">Blog</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
+          <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Blog</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
@@ -223,7 +229,6 @@
       </div>
     </div>
   </header>
-
   <!-- HERO (marketing) -->
   <section class="relative guest-only">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
@@ -236,19 +241,31 @@
           AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
         </h1>
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Paste content ? get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
-          Export to <strong>Notion</strong> or <strong>Trello</strong> with one click. BYOK supported.
+          Paste content and get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
+          Export to <strong>Notion</strong> or <strong>Trello</strong>. <strong>BYOK supported</strong>. Try free — <em>no credit card</em>.
         </p>
+
+        <!-- Primary CTAs -->
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
-          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Sign in</button>
+          <a id="heroDemoCta" href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Try the Live Demo</a>
+          <a id="heroPricingCta" href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60" type="button">Sign in</button>
         </div>
-        <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <span class="badge">AI Content Generator</span>
-          <span class="badge">Repurposing Tool</span>
-          <span class="badge">SEO-ready</span>
-          <span class="badge">BYOK</span>
+
+        <!-- What you get (conversion bullets) -->
+        <div class="mt-6 grid gap-3 text-sm max-w-xl">
+          <div class="badge">What you get</div>
+          <ul class="grid sm:grid-cols-2 gap-2">
+            <li class="card p-3">✔️ Ready-to-post LinkedIn &amp; X</li>
+            <li class="card p-3">✔️ Email subject + body</li>
+            <li class="card p-3">✔️ Instagram caption + hashtags</li>
+            <li class="card p-3">✔️ Notion &amp; Trello export</li>
+            <li class="card p-3">✔️ Keep tone &amp; keywords</li>
+            <li class="card p-3">✔️ BYOK privacy — your key only</li>
+          </ul>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Free demo: 5 runs/month (no login). Signed-in free: 5/day. Cancel anytime on paid plans.
+          </p>
         </div>
 
         <!-- Trust strip -->
@@ -290,26 +307,26 @@
           <div class="mock p-4 card">
             <div class="text-xs text-slate-400">Command</div>
             <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
-? outline created
-? 3 social variants
-? email subject + body ready
-? instagram caption + hashtags</pre>
+✓ outline created
+✓ 2 tweet variants
+✓ email subject + body ready
+✓ Instagram caption + hashtags</pre>
           </div>
           <div class="grid md:grid-cols-2 gap-4">
             <div class="mock p-4 card">
               <div class="text-xs text-slate-400">LinkedIn</div>
               <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
-                • Hook that earns the scroll<br>
+                • Hook to earn the scroll<br>
                 • 6–10 crisp lines, one CTA<br>
-                • On-brand tone &amp; keywords
+                • On-brand tone + keywords
               </div>
             </div>
             <div class="mock p-4 card">
               <div class="text-xs text-slate-400">X (Twitter)</div>
               <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
                 Two fast variants<br>
-                Always &le; 280 chars<br>
-                Ready to post ?
+                Always ≤ 280 chars<br>
+                Ready to post
               </div>
             </div>
           </div>
@@ -351,6 +368,17 @@
         </div>
       </div>
     </div>
+
+    <!-- Sticky mobile CTA (boost conversions) -->
+    <div class="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/30 bg-white/90 dark:bg-black/60 backdrop-blur">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div class="text-xs">
+          <div class="font-semibold">Try free — no login</div>
+          <div class="text-slate-500">Paste once → multi-channel drafts</div>
+        </div>
+        <a href="#demo" id="mobileStickyDemo" class="px-3 py-2 rounded-lg bg-black text-white text-sm font-semibold">Open Demo</a>
+      </div>
+    </div>
   </section>
 
   <!-- SEO SECTION -->
@@ -359,22 +387,22 @@
     <p class="mt-3 text-slate-600 dark:text-slate-300 max-w-3xl">
       ContentRepurpose.pro is a <strong>content repurposing tool</strong> powered by <strong>AI</strong>. Paste a paragraph, blog, or idea and instantly
       <strong>repurpose content</strong> into LinkedIn posts, X threads, email copy, and Instagram captions. If you’re searching for
-      <em>content repurposing ideas</em> or a simple way to <em>repurpose content AI</em>-style for your next <em>repurpose project</em>,
+      <em>content repurposing ideas</em> or a simple way to <em>repurpose content</em> for your next <em>repurpose project</em>,
       this is the fastest route from draft to publish.
     </p>
     <ul class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-      <li class="card p-4">✔️ <strong>Content repurposing AI</strong> that keeps tone & keywords</li>
-      <li class="card p-4">✔️ <strong>Repurpose content</strong> for LinkedIn, X, Email & IG</li>
+      <li class="card p-4">✔️ <strong>Content repurposing AI</strong> that keeps tone &amp; keywords</li>
+      <li class="card p-4">✔️ <strong>Repurpose content</strong> for LinkedIn, X, Email &amp; IG</li>
       <li class="card p-4">✔️ <strong>Content repurposing ideas</strong> baked into templates</li>
-      <li class="card p-4">✔️ <strong>Content repurposing tool</strong> with Notion & Trello export</li>
-      <li class="card p-4">✔️ BYOK supported for privacy & control</li>
+      <li class="card p-4">✔️ <strong>Content repurposing tool</strong> with Notion &amp; Trello export</li>
+      <li class="card p-4">✔️ BYOK supported for privacy &amp; control</li>
       <li class="card p-4">✔️ SEO-aware drafts to win more clicks</li>
     </ul>
   </section>
-
   <!-- TEMPLATES -->
   <section id="templates" class="max-w-7xl mx-auto px-4 md:px-5 py-12 guest-only">
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Templates</h2>
+    <p class="mt-2 text-slate-600 dark:text-slate-300 max-w-2xl">Start from high-performing patterns. Each template includes hooks, tone notes, and length guidelines.</p>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <article class="card p-5">
         <div class="text-xs text-slate-400">Social</div>
@@ -386,14 +414,14 @@
       <article class="card p-5">
         <div class="text-xs text-slate-400">Generator</div>
         <h3 class="mt-1 font-semibold">AI Social Media Post Generator</h3>
-        <p class="text-sm text-slate-500 mt-2">Paste once ? get platform-ready snippets fast.</p>
-        <a href="http://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">Open guide</a>
+        <p class="text-sm text-slate-500 mt-2">Paste once → get platform-ready snippets fast.</p>
+        <a href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">Open guide</a>
       </article>
 
       <article class="card p-5">
-        <div class="text-xs text-slate-400">Blog ? Social</div>
+        <div class="text-xs text-slate-400">Blog → Social</div>
         <h3 class="mt-1 font-semibold">Repurpose Blog Posts for Social</h3>
-        <p class="text-sm text-slate-500 mt-2">Turn articles into LinkedIn, X, Email & IG drafts.</p>
+        <p class="text-sm text-slate-500 mt-2">Turn articles into LinkedIn, X, Email &amp; IG drafts.</p>
         <a href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" class="mt-4 inline-block px-3 py-2 rounded-xl border hover:bg-white/50">See how</a>
       </article>
     </div>
@@ -404,12 +432,12 @@
     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Use cases</h2>
     <div class="grid md:grid-cols-3 gap-5 mt-5">
       <div class="card p-5">
-        <div class="font-semibold">Paste once ? multi-channel</div>
-        <p class="text-sm text-slate-500 mt-2">One source into LinkedIn, X, Email & Instagram.</p>
+        <div class="font-semibold">Paste once → multi-channel</div>
+        <p class="text-sm text-slate-500 mt-2">One source into LinkedIn, X, Email &amp; Instagram.</p>
         <a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" class="text-sm underline mt-2 inline-block">Workflow</a>
       </div>
       <div class="card p-5">
-        <div class="font-semibold">Notion & Trello export</div>
+        <div class="font-semibold">Notion &amp; Trello export</div>
         <p class="text-sm text-slate-500 mt-2">Ship faster with boards/pages and approvals.</p>
         <a href="https://contentrepurpose.pro/blog/notion-trello-export/" class="text-sm underline mt-2 inline-block">Guide</a>
       </div>
@@ -436,28 +464,28 @@
           <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-strategy/">Repurposing strategy</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/how-to-repurpose-content/">How to repurpose content</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-ideas/">100+ repurposing ideas</a></li>
-          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/">One piece ? many platforms</a></li>
-          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/">Blog ? Social guide</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/">One piece → many platforms</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/">Blog → Social guide</a></li>
         </ul>
       </nav>
 
       <!-- Cluster 2 -->
       <nav class="card p-5">
-        <h3 class="font-semibold">AI Repurposing & Tools</h3>
+        <h3 class="font-semibold">AI Repurposing &amp; Tools</h3>
         <ul class="mt-2 text-sm space-y-2">
           <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">AI content repurposing</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/">Best AI tools (2025)</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/">AI vs manual repurposing</a></li>
-          <li><a class="underline" href="http://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social post generator</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social post generator</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Repurposing for SEO</a></li>
         </ul>
       </nav>
 
       <!-- Cluster 3 -->
       <nav class="card p-5">
-        <h3 class="font-semibold">Workflows & Exports</h3>
+        <h3 class="font-semibold">Workflows &amp; Exports</h3>
         <ul class="mt-2 text-sm space-y-2">
-          <li><a class="underline" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion & Trello export</a></li>
+          <li><a class="underline" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion &amp; Trello export</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">Paste-once workflow</a></li>
           <li><a class="underline" href="https://contentrepurpose.pro/blog/linkedin-post-templates">LinkedIn templates</a></li>
         </ul>
@@ -465,96 +493,209 @@
     </div>
   </section>
 
-  <!-- ===== GUEST VIEW (LOGGED OUT) ===== -->
-  <section id="guestView" class="guest-only">
-    <!-- DEMO -->
-    <main id="demo" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 grid lg:grid-cols-2 gap-8">
-      <section class="card p-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold tracking-tight">Live Demo — Repurpose</h2>
-          <span id="quota" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Checking quota…</span>
-        </div>
-
-        <label for="source" class="sr-only">Source text</label>
-        <textarea id="source" class="mt-4 w-full h-48 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or blog snippet…"></textarea>
-
-        <!-- Advanced settings (BYOK multi-provider) -->
-        <details id="settings" class="mt-4 open:scroll-mt-20">
-          <summary class="cursor-pointer text-sm text-slate-500">Advanced settings</summary>
-          <div class="grid md:grid-cols-3 gap-3 mt-3">
-            <input id="model" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Preferred model (optional)" />
-            <select id="byok_provider" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30">
-              <option value="">Provider (auto)</option>
-              <option value="openrouter">OpenRouter</option>
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic</option>
-              <option value="together">Together</option>
-              <option value="groq">Groq</option>
-              <option value="custom">Custom (OpenAI-compatible)</option>
-            </select>
-            <input id="byok_key" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your API key (BYOK)" />
-            <input id="byok_base" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30 md:col-span-2" placeholder="Custom base URL (if custom provider)" />
-            <button id="save" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save</button>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">BYOK is used only when you click “Generate with your BYOK”. If signed in, you can also save BYOK to your account; otherwise it’s saved to this tab only.</p>
-        </details>
-
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <button id="run" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
-          <button id="run-byok" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your BYOK</button>
-          <button id="clear" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Clear</button>
-          <button id="dl-md" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Download Markdown</button>
-          <button id="dl-csv" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button" disabled>Export CSV</button>
-          <span id="status" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
-        </div>
-      </section>
-
-      <section class="grid gap-5">
-        <!-- LinkedIn -->
-        <div class="card p-5">
-          <div class="flex justify-between items-center">
-            <strong class="tracking-tight inline-flex items-center gap-2">LinkedIn</strong>
-            <div class="text-xs text-slate-400"><span id="li-lines">0</span> lines</div>
-            <button id="copy-li" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
-          </div>
-          <pre id="out-li" class="whitespace-pre-wrap text-sm mt-3"></pre>
-        </div>
-
-        <!-- X -->
-        <div class="card p-5">
-          <div class="flex justify-between items-center">
-            <strong class="tracking-tight inline-flex items-center gap-2">X (Twitter)</strong>
-            <div class="text-xs text-slate-400">Chars: <span id="x-len">0</span> <span id="x-flag" class="ml-1"></span></div>
-            <button id="copy-x" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
-          </div>
-          <pre id="out-x" class="whitespace-pre-wrap text-sm mt-3"></pre>
-        </div>
-
-        <!-- Email -->
-        <div class="card p-5">
-          <div class="flex justify-between items-center">
-            <strong class="tracking-tight inline-flex items-center gap-2">Email</strong>
-            <button id="copy-em" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Subject:</div>
-          <pre id="out-em-subj" class="whitespace-pre-wrap text-sm mt-1"></pre>
-          <div class="text-xs text-slate-400 mt-3">Body:</div>
-          <pre id="out-em-body" class="whitespace-pre-wrap text-sm mt-1"></pre>
-        </div>
-
-        <!-- Instagram -->
-        <div class="card p-5">
-          <div class="flex justify-between items-center">
-            <strong class="tracking-tight inline-flex items-center gap-2">Instagram</strong>
-            <div class="text-xs text-slate-400">Hashtags: <span id="ig-tags">0</span></div>
-            <button id="copy-ig" class="px-3 py-1 rounded-full text-xs border border-slate-300/60 hover:bg:white/50" type="button">Copy</button>
-          </div>
-          <pre id="out-ig" class="whitespace-pre-wrap text-sm mt-3"></pre>
-        </div>
-      </section>
-    </main>
+  <!-- HOW IT WORKS (conversion helper) -->
+  <section id="how-it-works" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
+    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">How it works</h2>
+    <div class="grid md:grid-cols-3 gap-5 mt-5">
+      <div class="card p-5">
+        <div class="font-semibold">1) Paste</div>
+        <p class="text-sm text-slate-500 mt-2">Drop in a paragraph, blog URL, or idea. Choose channels and tone.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">2) Generate</div>
+        <p class="text-sm text-slate-500 mt-2">Get LinkedIn, X, Email &amp; Instagram drafts. Keep brand voice and keywords.</p>
+      </div>
+      <div class="card p-5">
+        <div class="font-semibold">3) Publish</div>
+        <p class="text-sm text-slate-500 mt-2">Copy or export to Notion/Trello. Post to X or open Meta Creator Studio.</p>
+      </div>
+    </div>
   </section>
 
+  <!-- WHAT YOU GET WHEN YOU SIGN UP (clear value props) -->
+  <section id="signup-benefits" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
+    <div class="card p-6">
+      <h2 class="text-2xl font-extrabold tracking-tight">What you get when you sign up</h2>
+      <div class="grid md:grid-cols-4 gap-5 mt-5 text-sm">
+        <div class="p-4 rounded-xl border">
+          <strong>Free</strong>
+          <ul class="mt-2 space-y-1 text-slate-500">
+            <li>• 5 runs/day (signed-in)</li>
+            <li>• BYOK: 5/day</li>
+            <li>• CSV/Markdown export</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl border">
+          <strong>Solo Creator ($9/mo)</strong>
+          <ul class="mt-2 space-y-1 text-slate-500">
+            <li>• 200 generations/month</li>
+            <li>• Batch inputs (up to 5 lines/run)</li>
+            <li>• 10 saved presets</li>
+            <li>• Priority models</li>
+            <li>• BYOK: 50/mo (+5 daily)</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl border">
+          <strong>Creator ($19/mo)</strong>
+          <ul class="mt-2 space-y-1 text-slate-500">
+            <li>• 500 generations/month</li>
+            <li>• Unlimited presets</li>
+            <li>• Project pack export</li>
+            <li>• Notion &amp; Trello integrations</li>
+            <li>• Buffer (queue) access</li>
+            <li>• BYOK: 150/mo (+10 daily)</li>
+          </ul>
+        </div>
+        <div class="p-4 rounded-xl border">
+          <strong>Business ($49/mo)</strong>
+          <ul class="mt-2 space-y-1 text-slate-500">
+            <li>• Unlimited (fair use)</li>
+            <li>• 3 seats + shared presets</li>
+            <li>• White-label export</li>
+            <li>• Priority support</li>
+            <li>• BYOK: 300/mo (+30 daily)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a href="#pricing" class="px-4 py-2 rounded-xl font-semibold bg-black text-white">Compare plans</a>
+        <a href="#demo" class="px-4 py-2 rounded-xl font-semibold border">Try the free demo</a>
+      </div>
+      <p class="mt-3 text-xs text-slate-500">Cancel anytime. No credit card for the free plan. BYOK means your API key is only used when you choose it.</p>
+    </div>
+  </section>
+  <!-- PRICING (visible to guests & members) -->
+  <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
+      <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Upgrade when you’re ready. Cancel anytime.</p>
+      <p class="mt-2 text-xs text-slate-500">
+        ✨ Limited offer: use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month on Creator.
+      </p>
+    </div>
+
+    <div class="grid lg:grid-cols-4 gap-6">
+      <!-- Free -->
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
+        <h3 class="mt-3 text-xl font-bold">Demo</h3>
+        <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 5 runs/day (signed-in)</li>
+          <li>• BYOK: 5/day</li>
+          <li>• LinkedIn, X, Email &amp; IG drafts</li>
+          <li>• CSV/Markdown export</li>
+        </ul>
+        <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50">Try free</a>
+      </div>
+
+      <!-- Starter -->
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
+        <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
+        <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 200 generations/month</li>
+          <li>• Batch inputs (up to 5 lines/run)</li>
+          <li>• 10 saved presets</li>
+          <li>• Priority models</li>
+          <li>• BYOK: 50/mo <span class="text-slate-400">( +5 daily )</span></li>
+        </ul>
+        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button>
+      </div>
+
+      <!-- Creator -->
+      <div class="card p-6 border-2 border-black/20 dark:border-white/25">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
+        <h3 class="mt-3 text-xl font-bold">Creator</h3>
+        <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• 500 generations/month</li>
+          <li>• Unlimited presets &amp; Project pack export</li>
+          <li>• <strong>Notion export + Trello boards</strong></li>
+          <li>• <strong>Buffer queue (coming soon)</strong></li>
+          <li>• New workflows early</li>
+          <li>• BYOK: 150/mo <span class="text-slate-400">( +10 daily )</span></li>
+        </ul>
+        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button>
+      </div>
+
+      <!-- Business -->
+      <div class="card p-6">
+        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
+        <h3 class="mt-3 text-xl font-bold">Business</h3>
+        <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
+        <ul class="mt-4 text-sm space-y-2">
+          <li>• Unlimited (fair use)</li>
+          <li>• 3 seats + shared presets</li>
+          <li>• White-label export</li>
+          <li>• Priority support</li>
+          <li>• All Creator integrations</li>
+          <li>• BYOK: 300/mo <span class="text-slate-400">( +30 daily )</span></li>
+        </ul>
+        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg-white/50" type="button">Get Business</button>
+      </div>
+    </div>
+
+    <!-- Risk-reversal / trust row -->
+    <div class="mt-8 grid md:grid-cols-3 gap-4 text-sm">
+      <div class="card p-4"><strong>Cancel anytime</strong><p class="text-slate-500 mt-1">Upgrade, downgrade, or cancel in two clicks in the billing portal.</p></div>
+      <div class="card p-4"><strong>7-day guarantee</strong><p class="text-slate-500 mt-1">Not a fit? Email us within 7 days for a full refund on your first month.</p></div>
+      <div class="card p-4"><strong>BYOK privacy</strong><p class="text-slate-500 mt-1">Your API key is only sent when you choose “Generate with your BYOK”.</p></div>
+    </div>
+  </section>
+
+  <!-- SEO FAQ (guest-only to declutter dashboard) -->
+  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
+    <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
+    <div class="mt-5 grid md:grid-cols-2 gap-5">
+      <div class="card p-5">
+        <strong>Is it free?</strong>
+        <p class="text-sm text-slate-500 mt-2">Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported.</p>
+      </div>
+      <div class="card p-5">
+        <strong>What channels are supported?</strong>
+        <p class="text-sm text-slate-500 mt-2">LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business).</p>
+      </div>
+      <div class="card p-5">
+        <strong>How does it help SEO?</strong>
+        <p class="text-sm text-slate-500 mt-2">Keyword-aware snippets improve click-through and reinforce topical relevance for your site.</p>
+      </div>
+      <div class="card p-5">
+        <strong>Do you support BYOK?</strong>
+        <p class="text-sm text-slate-500 mt-2">Yes. Limits: Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily).</p>
+      </div>
+      <div class="card p-5">
+        <strong>Can I publish instantly?</strong>
+        <p class="text-sm text-slate-500 mt-2">Open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG.</p>
+      </div>
+      <div class="card p-5">
+        <strong>What’s included in paid plans?</strong>
+        <p class="text-sm text-slate-500 mt-2">More monthly generations, saved presets, integrations, white-label (Business), and faster lanes.</p>
+      </div>
+    </div>
+
+    <!-- FAQPage JSON-LD (compact) -->
+    <script type="application/ld+json">{
+      "@context":"https://schema.org",
+      "@type":"FAQPage",
+      "mainEntity":[
+        {"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported."}},
+        {"@type":"Question","name":"What channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business)."}},
+        {"@type":"Question","name":"How does it help SEO?","acceptedAnswer":{"@type":"Answer","text":"Keyword-aware snippets improve click-through and reinforce topical relevance for your site."}},
+        {"@type":"Question","name":"Do you support BYOK?","acceptedAnswer":{"@type":"Answer","text":"Yes. Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily)."}},
+        {"@type":"Question","name":"Can I publish instantly?","acceptedAnswer":{"@type":"Answer","text":"Open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG."}},
+        {"@type":"Question","name":"What’s included in paid plans?","acceptedAnswer":{"@type":"Answer","text":"More monthly generations, saved presets, integrations, white-label (Business), and faster lanes."}}
+      ]
+    }</script>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="year"></span> ContentRepurpose.pro
+    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/privacy">Privacy</a>
+    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/terms">Terms</a>
+  </footer>
   <!-- ===== MEMBER VIEW (SIGNED IN) ===== -->
   <section id="memberView" class="hidden member-only">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pb-12">
@@ -571,7 +712,7 @@
         </div>
       </div>
 
-      <!-- Top Cards (Platform + BYOK) -->
+      <!-- Quota Tiles (populated by JS) -->
       <div id="quotaCards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6"></div>
 
       <!-- Member Generator -->
@@ -583,13 +724,14 @@
               <input id="whitelabel" type="checkbox" class="hidden">
               <span id="wlLabel" class="chip hidden">White-label export</span>
             </label>
-            <button id="exportPack" class="btn hidden" type="button">Export Project Pack (.zip)</button>
+            <button id="exportPack" class="btn hidden" type="button">Export Project Pack (.md)</button>
             <span id="quotaMember" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Today: 0/5</span>
           </div>
         </div>
-        <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph or idea…"></textarea>
 
-        <!-- Member BYOK quick settings -->
+        <textarea id="source_m" class="mt-4 w-full h-40 p-3 rounded-xl border border-slate-200/70 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:bg-black/30" placeholder="Paste a paragraph, blog snippet, or idea…"></textarea>
+
+        <!-- BYOK quick settings -->
         <details class="mt-4">
           <summary class="cursor-pointer text-sm text-slate-500">BYOK settings (optional)</summary>
           <div class="grid md:grid-cols-3 gap-3 mt-3">
@@ -603,22 +745,22 @@
               <option value="groq">Groq</option>
               <option value="custom">Custom (OpenAI-compatible)</option>
             </select>
-            <input id="byok_key_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your API key (BYOK)" />
-            <input id="byok_base_m" class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30 md:col-span-2" placeholder="Custom base URL (if custom provider)" />
+            <input id="byok_key_m"   class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30" placeholder="Your API key (BYOK)" />
+            <input id="byok_base_m"  class="p-2 rounded-xl border border-slate-200/70 dark:bg-black/30 md:col-span-2" placeholder="Custom base URL (if custom provider)" />
             <button id="save_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Save to my account</button>
           </div>
-          <p class="text-xs text-slate-500 mt-2">Your BYOK is only used when you click “Generate with your BYOK”.</p>
+          <p class="text-xs text-slate-500 mt-2">Your BYOK is only used when you click <em>Generate with your BYOK</em>.</p>
         </details>
 
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <button id="run_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-black hover:opacity-90" type="button">Generate</button>
           <button id="run-byok_m" class="px-4 py-2 rounded-xl font-semibold text-white bg-emerald-600 hover:opacity-90" type="button">Generate with your BYOK</button>
-          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg:white/50" type="button">Clear</button>
+          <button id="clear_m" class="px-4 py-2 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" type="button">Clear</button>
           <span id="status_m" class="text-sm text-slate-500" role="status" aria-live="polite"></span>
         </div>
       </div>
 
-      <!-- NEW: Batch Inputs (shows for Starter/Creator/Business via existing JS) -->
+      <!-- Batch Inputs (Starter/Creator/Business) -->
       <div class="card p-6 mt-6">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-bold">Batch inputs</h3>
@@ -710,6 +852,7 @@
           <p class="text-xs text-slate-500 mt-2">Free: 0 • Solo Creator: 10 • Creator/Business: Unlimited</p>
           <ul id="presetList" class="mt-3 text-sm space-y-2"></ul>
         </div>
+
         <!-- Growth / Referrals -->
         <div class="card p-5">
           <strong>Grow your daily quota</strong>
@@ -746,6 +889,7 @@
               <button id="disconnectNotion" class="btn hidden" type="button">Disconnect</button>
             </div>
           </div>
+
           <div class="p-4 rounded-xl border">
             <div class="flex items-center justify-between">
               <strong>Trello</strong><span id="trelloState" class="chip">Disconnected</span>
@@ -756,6 +900,7 @@
               <button id="disconnectTrello" class="btn hidden" type="button">Disconnect</button>
             </div>
           </div>
+
           <div class="p-4 rounded-xl border">
             <div class="flex items-center justify-between">
               <strong>Buffer</strong><span id="bufferState" class="chip">Disconnected</span>
@@ -781,233 +926,6 @@
       </div>
     </div>
   </section>
-
-  <!-- PRICING (visible to guests & members) -->
-  <section id="pricing" class="max-w-7xl mx-auto px-4 md:px-5 pb-16">
-    <div class="text-center mb-8">
-      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Simple, honest pricing</h2>
-      <p class="text-slate-600 dark:text-slate-300 mt-2">Start free. Add power when you need it.</p>
-    </div>
-    <div class="grid lg:grid-cols-4 gap-6">
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
-        <h3 class="mt-3 text-xl font-bold">Demo</h3>
-        <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 5 runs / month (no login)</li>
-          <li>• Signed-in free: 5 / day</li>
-          <li>• BYOK: 5 / day</li>
-          <li>• CSV/Markdown export</li>
-        </ul>
-        <a href="#demo" class="mt-6 block text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50">Try free</a>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-        <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 200 generations / month</li>
-          <li>• Batch inputs</li>
-          <li>• 10 saved presets</li>
-          <li>• Priority models</li>
-          <li>• BYOK: 50 / month <span class="text-slate-400">(plus +5 daily headroom)</span></li>
-        </ul>
-        <button data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Solo Creator</button>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Best value</div>
-        <h3 class="mt-3 text-xl font-bold">Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 500 generations / month</li>
-          <li>• Unlimited presets</li>
-          <li>• Project pack export</li>
-          <li>• <strong>Notion export + Trello boards</strong></li>
-          <li>• <strong>Push drafts to Buffer</strong></li>
-          <li>• New workflows early</li>
-          <li>• BYOK: 150 / month <span class="text-slate-400">(includes +10 daily)</span></li>
-        </ul>
-        <button data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90" type="button">Get Creator</button>
-      </div>
-
-      <div class="card p-6">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
-        <h3 class="mt-3 text-xl font-bold">Business</h3>
-        <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• Unlimited (fair use)</li>
-          <li>• 3 seats</li>
-          <li>• White-label export</li>
-          <li>• Priority support</li>
-          <li>• All Creator integrations</li>
-          <li>• Team presets &amp; shared calendar</li>
-          <li>• BYOK: 300 / month <span class="text-slate-400">(+30 daily)</span></li>
-        </ul>
-        <button data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full text-center px-4 py-2 rounded-xl font-semibold border hover:bg:white/50" type="button">Get Business</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- SEO FAQ (guest-only to declutter dashboard) -->
-  <section id="seo-faq" class="max-w-7xl mx-auto px-4 md:px-5 pb-12 guest-only">
-    <h2 id="faq" class="text-2xl md:text-3xl font-extrabold tracking-tight">Content Repurposing Tool — FAQs</h2>
-    <div class="mt-5 grid md:grid-cols-2 gap-5">
-      <div class="card p-5">
-        <strong>Is it free?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported.</p>
-      </div>
-      <div class="card p-5">
-        <strong>What channels are supported?</strong>
-        <p class="text-sm text-slate-500 mt-2">LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business).</p>
-      </div>
-      <div class="card p-5">
-        <strong>How does ContentRepurpose.pro help SEO?</strong>
-        <p class="text-sm text-slate-500 mt-2">Our <em>content repurposing AI</em> produces keyword-aware snippets that improve click-through from social/email and reinforce topical relevance for your site.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Do you support BYOK (Bring Your Own Key)?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes. Limits: Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily).</p>
-      </div>
-      <div class="card p-5">
-        <strong>Can I publish instantly?</strong>
-        <p class="text-sm text-slate-500 mt-2">Open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG.</p>
-      </div>
-      <div class="card p-5">
-        <strong>What’s included in paid plans?</strong>
-        <p class="text-sm text-slate-500 mt-2">Higher monthly generations, saved presets, integrations, and faster lanes. See pricing for details.</p>
-      </div>
-
-      <!-- NEW keyword-targeted FAQs -->
-      <div class="card p-5">
-        <strong>What is a content repurposing tool?</strong>
-        <p class="text-sm text-slate-500 mt-2">It lets you <em>repurpose content</em> from one source into platform-ready drafts. Our tool automates LinkedIn, X, Email & IG with consistent tone and keywords.</p>
-      </div>
-      <div class="card p-5">
-        <strong>How does content repurposing AI work?</strong>
-        <p class="text-sm text-slate-500 mt-2">You paste text or a link. The <em>AI content repurposing</em> engine extracts key points, applies channel rules, and returns drafts you can edit or export.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Do you provide content repurposing ideas?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes—templates and prompts inside the app generate fresh <em>content repurposing ideas</em> for posts, threads, emails, and captions.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Can I run a repurpose project in batches?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes. Starter/Creator/Business plans include <em>batch inputs</em> to run a whole <em>repurpose project</em> from a list of ideas or URLs.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Is this the right tool to repurpose content AI-style?</strong>
-        <p class="text-sm text-slate-500 mt-2">If you need speed and consistency, our <em>repurpose content AI</em> workflow is built to keep your brand voice while saving hours each week.</p>
-      </div>
-      <div class="card p-5">
-        <strong>Do you support teams and agencies?</strong>
-        <p class="text-sm text-slate-500 mt-2">Yes—Business includes seats, white-label export, and shared presets. Great for agencies coordinating multi-channel campaigns.</p>
-      </div>
-    </div>
-
-    <!-- FAQPage JSON-LD (expanded) -->
-    <script type="application/ld+json">{
-      "@context":"https://schema.org",
-      "@type":"FAQPage",
-      "mainEntity":[
-        {"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Demo is 5/month by IP. Signed-in free is 5/day. BYOK is supported."}},
-        {"@type":"Question","name":"What channels are supported?","acceptedAnswer":{"@type":"Answer","text":"LinkedIn, X (Twitter), Email and Instagram—plus Notion/Trello export and Buffer (Creator/Business)."}},
-        {"@type":"Question","name":"How does ContentRepurpose.pro help SEO?","acceptedAnswer":{"@type":"Answer","text":"Our content repurposing AI produces keyword-aware snippets that improve click-through and reinforce topical relevance."}},
-        {"@type":"Question","name":"Do you support BYOK?","acceptedAnswer":{"@type":"Answer","text":"Yes. Free 5/day • Solo Creator 50/month (+5 daily) • Creator 150/month (+10 daily) • Business 300/month (+30 daily)."}},
-        {"@type":"Question","name":"Can I publish instantly?","acceptedAnswer":{"@type":"Answer","text":"Yes—open X composer, copy to LinkedIn, preview/send email, or jump to Meta Creator Studio for IG."}},
-        {"@type":"Question","name":"What’s in paid plans?","acceptedAnswer":{"@type":"Answer","text":"More monthly generations, presets, integrations, and faster lanes."}},
-        {"@type":"Question","name":"What is a content repurposing tool?","acceptedAnswer":{"@type":"Answer","text":"A tool to repurpose content from one source into platform-ready drafts for LinkedIn, X, Email & Instagram."}},
-        {"@type":"Question","name":"How does content repurposing AI work?","acceptedAnswer":{"@type":"Answer","text":"Paste text or a link and the AI content repurposing engine returns channel-optimized drafts you can export."}},
-        {"@type":"Question","name":"Do you provide content repurposing ideas?","acceptedAnswer":{"@type":"Answer","text":"Yes—templates and prompts generate content repurposing ideas for posts, threads, emails, and captions."}},
-        {"@type":"Question","name":"Can I run a repurpose project in batches?","acceptedAnswer":{"@type":"Answer","text":"Yes. Starter/Creator/Business plans include batch inputs to process multiple ideas or URLs per run."}},
-        {"@type":"Question","name":"Is this the right tool to repurpose content AI-style?","acceptedAnswer":{"@type":"Answer","text":"Yes—our repurpose content AI workflow keeps brand voice while saving hours each week."}},
-        {"@type":"Question","name":"Do you support teams and agencies?","acceptedAnswer":{"@type":"Answer","text":"Business plan adds seats, white-label export, and shared presets for teams and agencies."}}
-      ]
-    }</script>
-  </section>
-
-  <!-- Promo: external ad link (unchanged) -->
-  <section class="max-w-7xl mx-auto px-4 md:px-5 pb-8 guest-only">
-    <div class="card p-5 md:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-      <div>
-        <h3 class="text-lg font-semibold">Want more AI creation ideas?</h3>
-        <p class="text-sm text-slate-500 mt-1">Check out our friends at <strong>aigenerationtool.com</strong> for inspiration and tools.</p>
-      </div>
-      <a href="https://aigenerationtool.com" target="_blank" rel="noopener nofollow" class="px-4 py-2 rounded-xl font-semibold bg-black text-white hover:opacity-90">Visit aigenerationtool.com</a>
-    </div>
-  </section>
-
-  <footer class="py-10 text-center text-xs text-slate-500">
-    © <span id="year"></span> ContentRepurpose.pro
-    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/privacy">Privacy</a>
-    • <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/terms">Terms</a>
-  </footer>
-
-  <!-- Auth Modal -->
-  <dialog id="auth" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
-    <form method="dialog">
-      <div class="p-6 space-y-3">
-        <h3 class="text-xl text-white font-bold">Sign in</h3>
-        <p class="text-white/70 text-sm">Use Google or request a magic link.</p>
-        <button id="googleBtn" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Continue with Google</button>
-        <div class="flex items-center gap-3 text-xs text-white/50"><span class="flex-1 h-px bg-white/10"></span>or<span class="flex-1 h-px bg-white/10"></span></div>
-        <div class="grid gap-2">
-          <input id="emailInput" type="email" placeholder="you@company.com" class="p-2 rounded-xl border border-white/15 bg-white/5">
-          <button id="magicBtn" class="px-4 py-2 rounded-xl bg-white/10" type="button">Send magic link</button>
-        </div>
-        <div class="text-xs text-white/50">We never store your BYOK.</div>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Email Preview Modal -->
-  <dialog id="emailPreview" class="rounded-2xl p-0 w-[720px] max-w-[96vw] bg-neutral-900 text-white border border-white/10">
-    <form method="dialog" class="p-6 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Preview email</h3>
-        <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
-      </div>
-      <label class="text-sm">Subject</label>
-      <input id="emailSubjEdit" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" />
-      <label class="text-sm">Body</label>
-      <textarea id="emailBodyEdit" class="w-full h-52 p-2 rounded-xl border border-white/15 bg-white/5"></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="emailSendBtn" class="px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Open in email client</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Trello Picker Modal -->
-  <dialog id="trelloModal" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
-    <form method="dialog" class="p-6 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Send to Trello</h3>
-        <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
-      </div>
-      <input id="trelloBoardId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="Board ID (paste for now)" />
-      <input id="trelloListId" class="w-full p-2 rounded-xl border border-white/15 bg-white/5" placeholder="List ID" />
-      <button id="trelloConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Send</button>
-    </form>
-  </dialog>
-
-  <!-- Buffer Picker Modal -->
-  <dialog id="bufferModal" class="rounded-2xl p-0 w-[520px] max-w-[92vw] bg-neutral-900 text-white border border-white/10">
-    <form method="dialog" class="p-6 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Queue in Buffer</h3>
-        <button value="cancel" class="px-3 py-1 rounded-lg border border-white/20">Close</button>
-      </div>
-      <select id="bufferProfile" class="w-full p-2 rounded-xl border border-white/15 bg-white/5"></select>
-      <button id="bufferConfirm" class="w-full px-4 py-2 rounded-xl bg-white text-black font-semibold" type="button">Queue</button>
-    </form>
-  </dialog>
-
-  <!-- Toast -->
-  <div id="toast" class="toast hidden">
-    <div id="toastMsg" class="px-3 py-2 rounded-lg bg-black text-white text-sm"></div>
-  </div>
-
   <!-- Branding & share helpers -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -1047,12 +965,12 @@
     });
   </script>
 
-  <!-- APP SCRIPT (original logic, unchanged except guest/member UI helpers & promo bar) -->
+  <!-- APP SCRIPT -->
   <script type="module">
     /* =========================
        CONFIG & GLOBAL HELPERS
     ========================== */
-    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+    const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev"; // replace with your Worker base
     const STRIPE_PUBLISHABLE_KEY = "pk_test_12345_placeholder"; // replace in prod
 
     // --- Supabase via ESM ---
@@ -1137,7 +1055,8 @@
     (function planOverrideFromURL(){
       const params = new URLSearchParams(location.search);
       const incoming = (params.get("plan")||"").toLowerCase();
-      if (incoming && ["starter","creator","business"].includes(incoming)) {
+      const allowed = ["starter","creator","business","free"];
+      if (incoming && allowed.includes(incoming)) {
         try { localStorage.setItem("plan", incoming); } catch {}
         history.replaceState({}, "", location.pathname);
       }
