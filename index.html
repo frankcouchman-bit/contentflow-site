@@ -47,27 +47,31 @@
     .halo.h2{width:34rem;height:34rem;right:-12rem;top:-6rem;animation-duration:18s;opacity:.5}
     .halo.h3{width:28rem;height:28rem;left:-10rem;top:26rem;animation-duration:22s;opacity:.45}
     @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
-    .orbit{position:absolute;inset:-32px;border-radius:24px;pointer-events:none;
+    .orbit{position:absolute; inset:-32px; border-radius:24px; pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
       -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%, black 89%);
       animation: spin 18s linear infinite;}
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
-    @media (prefers-color-scheme:dark){ body{background:var(--ink);color:#e9eef6} .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)} .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)} .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); } }
+
+    @media (prefers-color-scheme:dark){
+      body{background:var(--ink);color:#e9eef6}
+      .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)}
+      .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+      .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); }
+    }
+
     .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
-    .marquee:hover{ animation-play-state: paused } @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
+    .marquee:hover{ animation-play-state: paused }
+    @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
+
     .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none}
     .nav-panel{position:absolute; top:0; right:0; width:82vw; max-width:380px; height:100%; background:rgba(14,16,22,.96); border-left:1px solid rgba(255,255,255,.08); padding:1rem}
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .touch-target{min-height:40px;min-width:40px}
 
-    /* Safe previews (no full-screen overlays) */
-    .preview-locked .preview-mask{display:flex}
-    .preview-mask{display:none;position:absolute;inset:0;border-radius:1rem;align-items:end;justify-end;padding:.5rem}
-    .preview-mask .cta{pointer-events:auto}
-
-    /* Auth/plan gates — default safe state */
+    /* Auth/plan gates — safe defaults (guests see guest UI; authed flips via data-*) */
     .only-guest{display:revert}
     .only-authed{display:none}
     .plan-starter-plus{display:none}
@@ -90,6 +94,7 @@
 
   <!-- Worker base -->
   <script>
+    // Use your Worker origin everywhere from the front-end
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
@@ -100,14 +105,16 @@
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
+    // Create client once and expose helpers
     window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
     });
 
-    // lightweight helpers used later
     window.getAuth = async () => {
-      try { const { data } = await window.supabase.auth.getSession();
-        const s=data?.session; return { token:s?.access_token||"", userId:s?.user?.id||null, email:s?.user?.email||null };
+      try {
+        const { data } = await window.supabase.auth.getSession();
+        const s = data?.session;
+        return { token: s?.access_token || "", userId: s?.user?.id || null, email: s?.user?.email || null };
       } catch { return { token:"", userId:null, email:null }; }
     };
     window.getAuthHeaders = async () => {
@@ -118,7 +125,7 @@
       return h;
     };
 
-    // make sure auth badge never shows "Member" wrongly on initial paint
+    // Paint initial auth state early to avoid “locked” UI flashes
     function paintAuthBadge({authed, plan="free"}){
       document.body.setAttribute("data-auth", authed ? "authed" : "guest");
       document.body.setAttribute("data-plan", plan);
@@ -127,7 +134,6 @@
       const el2 = document.getElementById("planbadge_m");
       if (el1) el1.textContent = `Plan: ${pretty}`;
       if (el2) el2.textContent = `Plan: ${pretty}`;
-      // toggle nav buttons
       const show = (id, on)=>{ const el=document.getElementById(id); if (el) el.classList.toggle("hidden", !on); };
       show("loginBtn", !authed); show("loginBtn_m", !authed);
       show("logoutBtn", authed);  show("logoutBtn_m", authed);
@@ -135,10 +141,10 @@
     }
 
     document.addEventListener("DOMContentLoaded", async ()=>{
-      // initial paint assumes guest/free
+      // Assume guest until status paints real plan
       paintAuthBadge({authed:false, plan:"free"});
 
-      // finish OAuth/magic link then clean URL noise
+      // Handle magic-link/PKCE return URLs and clean query params
       try{
         const u = new URL(location.href);
         const hasCode = u.searchParams.get("code");
@@ -153,9 +159,9 @@
         }
       }catch{}
 
-      // react to auth state and repaint
+      // Keep header/buttons in sync when auth changes
       window.supabase.auth.onAuthStateChange((_e, session)=>{
-        paintAuthBadge({ authed: !!session, plan: "free" }); // exact plan painted later by status fetch
+        paintAuthBadge({ authed: !!session, plan: "free" }); // real plan gets applied after /status fetch
         try{ document.getElementById("auth")?.close(); }catch{}
       });
     });
@@ -182,18 +188,18 @@
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
         <a href="#demo" class="hover:opacity-80">Live Demo</a>
-        <!-- Force Templates → internal article per your SEO plan -->
         <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
-        <!-- Best picks opens advisor (wired later) -->
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
+
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
+
         <div class="flex items-center gap-2">
-          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
-          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden">Sign out</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest" type="button">Sign in</button>
+          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden" type="button">Sign out</button>
         </div>
       </nav>
 
@@ -208,7 +214,7 @@
           <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
+          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border" type="button">Copy code</button>
           <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
         </div>
       </div>
@@ -231,9 +237,9 @@
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
-          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
-          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest">Sign in</button>
-          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden">Sign out</button>
+          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden" type="button">Manage billing</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest" type="button">Sign in</button>
+          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden" type="button">Sign out</button>
         </div>
       </div>
     </div>
@@ -264,7 +270,7 @@
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
           <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest" type="button">Sign in</button>
         </div>
 
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -376,7 +382,7 @@
     </div>
   </section>
 
-  <!-- Auth dialog (wired in Part 4) -->
+  <!-- Auth dialog -->
   <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
@@ -455,7 +461,7 @@
             </div>
           </fieldset>
 
-          <!-- Article Optimizer (your requested SEO features) -->
+          <!-- Article Optimizer -->
           <fieldset class="relative">
             <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -490,7 +496,7 @@
             </div>
 
             <p class="mt-2 text-[12px] text-slate-500">
-              We’ll also provide: <em>estimated ranking likelihood</em> for your focus keyword, <em>alt keyword ideas</em> to try, and a
+              We’ll also provide: <em>estimated ranking likelihood</em>, <em>alt keyword ideas</em>, and a
               <em>meta description</em> tuned for CTR.
             </p>
 
@@ -578,23 +584,23 @@
         <!-- Channel cards injected here -->
       </div>
 
-      <!-- ===== QUICK PUBLISH (Authed only; Free can SEE as preview, guests cannot) ===== -->
+      <!-- ===== QUICK PUBLISH (Authed only) ===== -->
       <div class="mt-10 card p-5 only-authed hidden">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Quick publish</strong>
           <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
         </div>
         <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <button id="qp-x" class="btn">Post to X</button>
-          <button id="qp-reddit" class="btn">Open Reddit submit</button>
-          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
-          <button id="qp-email" class="btn">Send email draft</button>
+          <button id="qp-x" class="btn" type="button">Post to X</button>
+          <button id="qp-reddit" class="btn" type="button">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn" type="button">Copy for LinkedIn & open</button>
+          <button id="qp-email" class="btn" type="button">Send email draft</button>
         </div>
 
         <!-- Creator+ integrations -->
         <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
-          <button id="li-notion" class="btn">Export to Notion</button>
-          <button id="li-trello" class="btn">Send to Trello</button>
+          <button id="li-notion" class="btn" type="button">Export to Notion</button>
+          <button id="li-trello" class="btn" type="button">Send to Trello</button>
         </div>
         <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
           Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
@@ -672,7 +678,7 @@
         </div>
       </div>
 
-      <!-- Live strip (section-local, unique IDs) -->
+      <!-- Live strip (section-local) -->
       <div class="mt-10">
         <div class="card p-4 md:p-5">
           <div class="flex items-center justify-between flex-wrap gap-3">
@@ -771,7 +777,7 @@
     </div>
   </section>
 
-  <!-- ===== USE CASES (Topical authority + internal links) ===== -->
+  <!-- ===== USE CASES (Topical authority) ===== -->
   <section id="use-cases" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
@@ -807,7 +813,7 @@
         </a>
       </div>
 
-      <!-- Authority cluster (hidden text links for crawl + useful for users) -->
+      <!-- Authority cluster -->
       <div class="text-xs text-slate-500 mt-6 flex flex-wrap gap-3">
         <a href="https://contentrepurpose.pro/blog/content-repurposing-101/" target="_blank" rel="noopener">Content repurposing 101</a> ·
         <a href="https://contentrepurpose.pro/blog/content-repurposing-strategy/" target="_blank" rel="noopener">Strategy</a> ·
@@ -841,7 +847,6 @@
       </div>
     </div>
   </section>
-
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -1037,28 +1042,37 @@
   </footer>
 <!-- ===== CRP APP BOOT (FINAL) ===== -->
 <script type="module">
-/* ContentRepurpose.pro — Final boot (auth + plan + generator + advisor + billing) */
+/* ContentRepurpose.pro — Final boot (auth + router + generator + exports + scheduler + billing + analytics) */
 
 if (!window.__CRP_FINAL_BOOT__) {
   window.__CRP_FINAL_BOOT__ = true;
 
-  /* ---------- Short helpers ---------- */
+  /* ---------- DOM helpers ---------- */
   const $  = (s, el=document)=> el.querySelector(s);
   const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
   const byId = (id)=> document.getElementById(id);
-  const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
   const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
   const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
   const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+  const cap = s => (s||"").charAt(0).toUpperCase() + (s||"").slice(1);
 
+  // minimal toast (auto-injected so buttons “feel” responsive)
+  (function injectToast(){
+    if (byId("toast")) return;
+    const n = document.createElement("div");
+    n.id = "toast";
+    n.className = "fixed z-[100] bottom-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-black/80 text-white text-sm shadow hidden";
+    n.innerHTML = '<span id="toastMsg"></span>';
+    document.body.appendChild(n);
+  })();
   const toast = (msg) => {
     const t=byId("toast"), m=byId("toastMsg");
-    if (!t || !m) return alert(msg);
+    if (!t || !m){ alert(msg); return; }
     m.textContent = msg; t.classList.remove("hidden");
     setTimeout(()=> t.classList.add("hidden"), 1700);
   };
 
-  /* ---------- Supabase Auth ---------- */
+  /* ---------- Supabase (resilient init) ---------- */
   const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
   const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
   let supabase = window.supabase;
@@ -1066,12 +1080,9 @@ if (!window.__CRP_FINAL_BOOT__) {
   async function ensureSupabase(){
     if (window.supabase) { supabase = window.supabase; return; }
     const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
     supabase = window.supabase;
   }
-
   async function finishOAuthAndCleanUrl(){
     try{
       const u = new URL(location.href);
@@ -1090,7 +1101,6 @@ if (!window.__CRP_FINAL_BOOT__) {
       }
     }catch{}
   }
-
   async function getAuthHeaders(){
     const h = { "Content-Type":"application/json" };
     try{
@@ -1103,9 +1113,10 @@ if (!window.__CRP_FINAL_BOOT__) {
     return h;
   }
 
-  /* ---------- State ---------- */
+  /* ---------- Global state ---------- */
   let AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
-  let LAST_OUTPUT=null;
+  let LAST_OUTPUT=null;                   // quick publish source
+  let SCHED_QUEUE = [];                   // simple in-memory + localStorage mirror
 
   function setAuthFlag(authed){ AUTHTED = !!authed; document.body.setAttribute("data-auth", authed ? "authed" : "guest"); }
   function setPlan(plan){
@@ -1115,97 +1126,119 @@ if (!window.__CRP_FINAL_BOOT__) {
     byId("planbadge")   && (byId("planbadge").textContent   = label);
     byId("planbadge_m") && (byId("planbadge_m").textContent = label);
     byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(CURRENT_PLAN));
-    // Apply gates (hide premium until unlocked)
     const r = PLAN_RANK[CURRENT_PLAN] ?? 0;
     $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r < 1));
     $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r < 2));
     $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r < 3));
   }
-  function paintGuestUi(){
-    $$(".only-guest").forEach(el=> el.classList.remove("hidden"));
-    $$(".only-authed").forEach(el=> el.classList.add("hidden"));
-  }
-  function paintAuthedUi(){
-    $$(".only-guest").forEach(el=> el.classList.add("hidden"));
-    $$(".only-authed").forEach(el=> el.classList.remove("hidden"));
-  }
+  function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
+  function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden"));   $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
 
   /* ---------- Status / quotas ---------- */
   async function fetchStatus(){
     try{
       const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
       const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Status error");
-      const authed = j.scope==="user";
+      const authed = r.ok && j.scope==="user";
       setAuthFlag(authed);
       USER_ID = authed ? (j.userId || null) : null;
       const plan = (j.plan || "free").toLowerCase();
       setPlan(plan);
 
-      // show/hide manage billing
+      // manage billing buttons
       ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
         const el = byId(id); if (el) el.classList.toggle("hidden", !authed);
       });
 
-      // Quotas UI
-      const demoEl = byId("demoQuota");
-      const memEl  = byId("memberQuota");
+      // quotas UI
       if (!authed){
         const cap = j.platform?.monthly?.cap ?? 5;
         const used= j.platform?.monthly?.used ?? 0;
-        demoEl && (demoEl.textContent = Math.max(0, cap - used));
+        byId("demoQuota") && (byId("demoQuota").textContent = Math.max(0, cap - used));
         paintGuestUi();
       } else {
-        const cap = j.platform?.daily?.cap;
+        const cap = j.platform?.daily?.cap; // null => ∞
         const used= j.platform?.daily?.used ?? 0;
-        memEl && (memEl.textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
+        byId("memberQuota") && (byId("memberQuota").textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
         paintAuthedUi();
       }
 
-      // Toggle Generate buttons
+      // toggle the two generate buttons
       byId("generateBtn")?.classList.toggle("hidden", authed);
       byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-    }catch{
-      // fallback safe
+
+      return j;
+    }catch(e){
       setAuthFlag(false); setPlan("free"); paintGuestUi();
+      return null;
     }
   }
 
-  /* ---------- Navbar + auth dialog ---------- */
-  function wireNav(){
+  /* ---------- Router (fix #pricing / #optimizer navigation) ---------- */
+  function wireRouter(){
+    // assign id="optimizer" to the Article Optimizer fieldset if missing
+    try{
+      const legends = $$("fieldset > legend");
+      for (const lg of legends){
+        if (/article optimizer/i.test(lg.textContent||"")){
+          const fs = lg.parentElement; if (fs && !fs.id) fs.id = "optimizer";
+        }
+      }
+    }catch{}
+
+    // smooth-scroll anchors + prevent “just URL change” issue
+    $$('a[href^="#"]').forEach(a=>{
+      a.addEventListener("click", (e)=>{
+        const id = a.getAttribute("href");
+        if (!id || id==="#") return;
+        const el = document.querySelector(id);
+        if (el){
+          e.preventDefault();
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          history.replaceState(null,"",id);
+        }
+      });
+    });
+
+    // handle direct hash on load (#pricing, #optimizer, #demo)
+    const go = (hash)=>{
+      if (!hash) return;
+      const el = document.querySelector(hash);
+      if (el){
+        setTimeout(()=> {
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          // gentle highlight for optimizer
+          if (hash==="#optimizer"){ el.classList.add("ring-2","ring-blue-500/40"); setTimeout(()=> el.classList.remove("ring-2","ring-blue-500/40"), 1200); }
+        }, 60);
+      }
+    };
+    go(location.hash);
+    window.addEventListener("hashchange", ()=> go(location.hash));
+  }
+
+  /* ---------- Navbar + Auth dialog wiring ---------- */
+  function wireNavAndAuth(){
+    // mobile nav
     const toggle = byId("navToggle");
     const sheet  = byId("mobileNav");
     const close  = byId("navClose");
     toggle && toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
     close  && close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-    $$('a[href^="#"]').forEach(a=>{
-      a.addEventListener("click",(e)=>{
-        const id = a.getAttribute("href");
-        if (!id || id==="#" ) return;
-        const el = $(id);
-        if (el){
-          e.preventDefault();
-          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-          document.body.classList.remove("nav-open");
-          history.replaceState(null,"",id);
-        }
-      });
-    });
-  }
+    sheet  && sheet.addEventListener("click", (e)=>{ if(e.target===sheet) document.body.classList.remove("nav-open") });
 
-  function wireAuth(){
+    // auth dialog openers
     const dlg = byId("auth");
     const openAuth = ()=> dlg?.showModal?.();
-    // Openers
     ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
     $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
-    // Google
+
+    // google oauth
     byId("authGoogle")?.addEventListener("click", async ()=>{
       try{
         await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
       }catch(e){ toast(e?.message || "Google sign-in failed"); }
     });
-    // Magic link
+    // magic link
     byId("authSend")?.addEventListener("click", async ()=>{
       const email = byId("authEmail")?.value?.trim();
       if (!email) return toast("Enter your email");
@@ -1215,7 +1248,7 @@ if (!window.__CRP_FINAL_BOOT__) {
         toast("Check your email for the magic link.");
       }catch(e){ toast(e?.message || "Sign-in error"); }
     });
-    // Logout
+    // logout
     ["logoutBtn","logoutBtn_m"].forEach(id=>{
       byId(id)?.addEventListener("click", async ()=>{
         try{ await supabase.auth.signOut(); toast("Signed out"); }catch{}
@@ -1223,14 +1256,14 @@ if (!window.__CRP_FINAL_BOOT__) {
     });
   }
 
-  /* ---------- Billing (Stripe) ---------- */
+  /* ---------- Billing ---------- */
   function wireBilling(){
-    // Checkout
+    // checkout
     $$(".js-checkout").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
         const price = btn.getAttribute("data-price") || "";
         if (!price) return toast("Missing price id");
-        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
+        const label = btn.textContent; btn.disabled=true; btn.textContent="Opening…";
         try{
           const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
             method:"POST",
@@ -1244,10 +1277,10 @@ if (!window.__CRP_FINAL_BOOT__) {
           const j = await r.json();
           if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
           location.href = j.url;
-        }catch(e){ toast(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
+        }catch(e){ toast(e.message||"Checkout error"); btn.disabled=false; btn.textContent=label; }
       });
     });
-    // Portal
+    // portal
     ["manageBilling","manageBilling_m","manageBilling2","advisorPortal"].forEach(id=>{
       const b = byId(id); if (!b) return;
       b.addEventListener("click", async ()=>{
@@ -1265,11 +1298,10 @@ if (!window.__CRP_FINAL_BOOT__) {
     });
   }
 
-  /* ---------- Live stats + promo copy ---------- */
+  /* ---------- Live stats & promo ---------- */
   function wirePromo(){
     ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
-      const el = byId(id);
-      el && el.addEventListener("click", async ()=>{
+      byId(id)?.addEventListener("click", async ()=>{
         try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
       });
     });
@@ -1296,44 +1328,16 @@ if (!window.__CRP_FINAL_BOOT__) {
     try{ return JSON.parse(s);}catch{}
     return null;
   };
-
   function readToggles(form){
-    const g = (n)=> form.elements[n];
+    const g = n=> form.elements[n];
     return {
-      opt: {
-        humanize:  g("opt_humanize")?.checked,
-        lengthen:  g("opt_lengthen")?.checked,
-        faqs:      g("opt_faqs")?.checked,
-        headings:  g("opt_headings")?.checked,
-        svg:       g("opt_svg")?.checked,
-        seo:       g("opt_seo")?.checked
-      },
-      ch: {
-        linkedin:  g("ch_linkedin")?.checked,
-        x:         g("ch_x")?.checked,
-        email:     g("ch_email")?.checked,
-        instagram: g("ch_instagram")?.checked,
-        reddit:    g("ch_reddit")?.checked,
-        facebook:  g("ch_facebook")?.checked,
-        quora:     g("ch_quora")?.checked,
-        tiktok:    g("ch_tiktok")?.checked,
-      },
-      extras: {
-        li_article: g("li_article")?.checked,
-        x_sequence: g("x_sequence")?.checked,
-        x_posts:    g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked,
-        rdt_comments:    g("rdt_comments")?.checked,
-        tt_hooks:   g("tt_hooks")?.checked,
-        tt_onscreen:g("tt_onscreen")?.checked
-      }
+      opt: { humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked, svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked },
+      ch:  { linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
+      extras: { li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked }
     };
   }
-
   function systemPrompt(tog){
-    return {
-      role:"system",
-      content:
+    return { role:"system", content:
 `You are a senior social copywriter.
 Return ONLY valid JSON with this shape:
 {
@@ -1352,30 +1356,23 @@ Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.length
 Rules:
 - Keep platform-native, concise. X posts ≤ 280 chars where possible; if multiple, prefix "Post N:".
 - Provide 3–5 meaningful Instagram hashtags.
-- Do not include any prose outside the JSON.`
-    };
+- Do not include any prose outside the JSON.` };
   }
-
   function userPrompt(raw, form, tog){
     const srcType = form.elements["sourceType"]?.value || "paragraph";
     const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
     const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return {
-      role:"user",
-      content:
+    return { role:"user", content:
 `${head}:
 ${raw}
 
 Task:
 1) Create a one-line outline.
 2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`
-    };
+3) Apply the toggles and extras exactly.` };
   }
-
   function paintOutput(j){
-    const wrap = byId("demoOutput");
-    if (!wrap) return;
+    const wrap = byId("demoOutput"); if (!wrap) return;
     wrap.innerHTML = "";
     const add = (title, html, key=null)=>{
       wrap.insertAdjacentHTML("beforeend", `
@@ -1394,10 +1391,7 @@ Task:
       });
       if (key && pre){ LAST_OUTPUT = LAST_OUTPUT || {}; LAST_OUTPUT[key] = pre.innerText; }
     };
-
-    if (j.linkedin){
-      add("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
-    }
+    if (j.linkedin) add("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
     if (Array.isArray(j.x) && j.x.length){
       const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
       add("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
@@ -1415,7 +1409,7 @@ Task:
       add("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
     }
     if (j.reddit){
-      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+      const subs = (j.reddit.communities||[]).map(s=> s.replace(/^r\//i,"")).map(s=>`r/${s}`).join(", ");
       const starters = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
       add("Reddit", `
         <div class="text-xs text-slate-400">Main post:</div>
@@ -1451,8 +1445,25 @@ Task:
         <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
         <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`, "tiktok");
     }
+    // LinkedIn Article preview (if present)
+    if (j.linkedin_article_html && j.linkedin_article_html.trim()){
+      const safe = j.linkedin_article_html;
+      wrap.insertAdjacentHTML("beforeend", `
+        <div class="card p-5">
+          <div class="flex justify-between items-center gap-2 flex-wrap">
+            <strong class="tracking-tight">LinkedIn Article</strong>
+            <button class="btn copy" type="button">Copy HTML</button>
+          </div>
+          <div class="mt-3 border rounded-lg p-3 bg-white/60 dark:bg-white/5 overflow-auto max-h-[420px]">
+            ${safe}
+          </div>
+        </div>`);
+      const last = wrap.lastElementChild;
+      $(".btn.copy", last)?.addEventListener("click", async ()=>{
+        try{ await navigator.clipboard.writeText(j.linkedin_article_html); toast("Copied ✅"); }catch{ toast("Copy failed"); }
+      });
+    }
   }
-
   function wireGenerator(){
     const form = byId("demoForm");
     const src  = byId("sourceText");
@@ -1465,7 +1476,7 @@ Task:
     clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
 
     form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); // ← prevents unwanted navigation
+      e.preventDefault(); // prevents navigation (fixes your “can’t click” issue)
       const raw = (src.value||"").trim();
       if (!raw) return toast("Paste some content first");
 
@@ -1500,44 +1511,38 @@ Task:
     });
   }
 
-  /* ---------- Best Picks Advisor ---------- */
-  function wireAdvisor(){
-    const form = byId("advisorForm");
-    const result = byId("advisorResult");
-    const reason = byId("advisorReason");
-    const pickStarter  = byId("advisorStarter");
-    const pickCreator  = byId("advisorCreator");
-    const pickBusiness = byId("advisorBusiness");
-    const btn = byId("advisorSuggest");
-    if (!form || !btn) return;
-
-    btn.addEventListener("click", ()=>{
-      const vol = form.elements["volume"]?.value || "under100";
-      const need= form.elements["needs"]?.value  || "none";
-      // Decide plan
-      let plan="starter", why="Balanced power & price";
-      if (need==="pro" || vol==="100to300") { plan="creator"; why="Pro analytics + integrations"; }
-      if (need==="team" || vol==="300plus") { plan="business"; why="Team seats & org analytics"; }
-      if (need==="none" && vol==="under100") { plan="starter"; why="Plenty for under 100/month"; }
-
-      reason.textContent = why;
-      result.classList.remove("hidden");
-      // Visual emphasis
-      [pickStarter, pickCreator, pickBusiness].forEach(x=> x?.classList.remove("ring-2","ring-black/20","dark:ring-white/20"));
-      (plan==="starter"? pickStarter : plan==="creator"? pickCreator : pickBusiness)?.classList.add("ring-2","ring-black/20","dark:ring-white/20");
-      // Scroll to result block
-      result.scrollIntoView({ behavior:"smooth", block:"start" });
+  /* ---------- Quick Publish + Integrations (Notion/Trello) ---------- */
+  async function ensureNotionConnected(){
+    const test = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+      method:"POST", headers: await getAuthHeaders(),
+      body: JSON.stringify({ title:"Connection test", blocks:[{type:"paragraph", text:"Hi from ContentRepurpose."}] })
     });
+    if (test.status===400){ // likely not_connected
+      const start = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`,{ headers: await getAuthHeaders() });
+      const j = await start.json();
+      if (start.ok && j.url) { location.href = j.url; return false; }
+      toast(j?.error?.message || "Notion connect failed");
+      return false;
+    }
+    return test.ok;
   }
-
-  /* ---------- Quick Publish (if you kept those buttons) ---------- */
+  async function ensureTrelloConnected(){
+    const test = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+      method:"POST", headers: await getAuthHeaders(),
+      body: JSON.stringify({ board_id:"", list_id:"", title:"Connection test", description:"" })
+    });
+    if (!test.ok){
+      // Start OAuth (the Worker will finish and redirect back)
+      const start = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`,{ headers: await getAuthHeaders() });
+      const j = await start.json();
+      if (start.ok && j.url){ location.href = j.url; return false; }
+      toast(j?.error?.message || "Trello connect failed");
+      return false;
+    }
+    return true;
+  }
   function wireQuickPublish(){
-    const qp = {
-      x: byId("qp-x"),
-      reddit: byId("qp-reddit"),
-      linkedin: byId("qp-linkedin"),
-      email: byId("qp-email")
-    };
+    const qp = { x:byId("qp-x"), reddit:byId("qp-reddit"), linkedin:byId("qp-linkedin"), email:byId("qp-email") };
     const need = (k)=> (LAST_OUTPUT && LAST_OUTPUT[k]) ? LAST_OUTPUT[k] : null;
 
     qp.x?.addEventListener("click", ()=>{
@@ -1563,6 +1568,132 @@ Task:
       const body = em;
       location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
     });
+
+    // Exports (Creator+)
+    byId("li-notion")?.addEventListener("click", async ()=>{
+      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required");
+      if (!LAST_OUTPUT) return toast("Generate something first");
+      const ok = await ensureNotionConnected(); if (!ok) return; // might redirect for OAuth
+      try{
+        const blocks = Object.entries(LAST_OUTPUT).slice(0,6).map(([k,v])=> ({ type:"paragraph", text:`[${k.toUpperCase()}]\n${v}` }));
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ title:"ContentRepurpose Export", blocks })
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
+        window.open(j.url, "_blank");
+      }catch(e){ toast(e.message); }
+    });
+    byId("li-trello")?.addEventListener("click", async ()=>{
+      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required");
+      if (!LAST_OUTPUT) return toast("Generate something first");
+      const ok = await ensureTrelloConnected(); if (!ok) return; // might redirect for OAuth
+      try{
+        // For first export we create a simple card into the user’s last-used list (handled by Worker defaults)
+        const desc = Object.entries(LAST_OUTPUT).map(([k,v])=>`### ${k.toUpperCase()}\n${v}`).join("\n\n");
+        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ board_id:"", list_id:"", title:"ContentRepurpose Draft", description: desc })
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+        window.open(j.url, "_blank");
+      }catch(e){ toast(e.message); }
+    });
+  }
+
+  /* ---------- Scheduler (Starter+) ---------- */
+  function loadQueue(){ try{ SCHED_QUEUE = JSON.parse(localStorage.getItem("crp_queue")||"[]"); }catch{ SCHED_QUEUE=[]; } }
+  function saveQueue(){ localStorage.setItem("crp_queue", JSON.stringify(SCHED_QUEUE)); }
+  function paintQueue(){
+    const list = byId("schedList"); const empty=byId("schedEmpty"); if (!list) return;
+    list.innerHTML = "";
+    if (!SCHED_QUEUE.length){ empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+    SCHED_QUEUE.forEach((item,i)=>{
+      const dt = new Date(item.when||Date.now()).toLocaleString();
+      list.insertAdjacentHTML("beforeend", `
+        <label class="flex items-start gap-3 p-3 border rounded-xl">
+          <input type="checkbox" data-idx="${i}" class="mt-1">
+          <div class="grow">
+            <div class="text-xs text-slate-500">${item.channel} — ${dt}</div>
+            <div class="text-sm mt-1 whitespace-pre-wrap">${(item.text||"").slice(0,500)}</div>
+          </div>
+          <button class="btn" data-del="${i}" type="button">Delete</button>
+        </label>`);
+    });
+    $$('button[data-del]').forEach(b=> b.addEventListener("click", ()=>{
+      const i = +b.getAttribute("data-del"); SCHED_QUEUE.splice(i,1); saveQueue(); paintQueue();
+    }));
+  }
+  function wireScheduler(){
+    if (PLAN_RANK[CURRENT_PLAN] < 1) return; // hidden if not Starter+
+    const chSel = byId("schedChannel"); const when = byId("schedWhen");
+    const txt   = byId("schedText");
+    const add   = byId("schedAdd"); const useLast = byId("schedUseLast");
+    const pub   = byId("schedPublish"); const clr = byId("schedClear");
+    loadQueue(); paintQueue();
+
+    add?.addEventListener("click", ()=>{
+      if (!txt.value.trim()) return toast("Paste some text first");
+      SCHED_QUEUE.push({ channel: chSel.value, when: when.value ? new Date(when.value).toISOString() : new Date().toISOString(), text: txt.value.trim() });
+      saveQueue(); paintQueue(); toast("Added to queue");
+    });
+    useLast?.addEventListener("click", ()=>{
+      const prefer = LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.email || "";
+      if (!prefer) return toast("Generate something first");
+      txt.value = prefer;
+      toast("Loaded last output");
+    });
+    clr?.addEventListener("click", ()=>{ if (confirm("Clear all scheduled items?")){ SCHED_QUEUE=[]; saveQueue(); paintQueue(); } });
+    pub?.addEventListener("click", ()=>{
+      const checks = $$('input[type="checkbox"][data-idx]:checked');
+      if (!checks.length) return toast("Select items to publish");
+      checks.forEach(c=>{
+        const i = +c.getAttribute("data-idx");
+        const it = SCHED_QUEUE[i]; if (!it) return;
+        // "Publish" simulation: open relevant targets or copy
+        if (it.channel==="x"){
+          const t = it.text.slice(0,270);
+          window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t)}`,"_blank");
+        } else if (it.channel==="linkedin"){
+          navigator.clipboard.writeText(it.text).catch(()=>{});
+          window.open("https://www.linkedin.com/feed/","_blank");
+        } else if (it.channel==="reddit"){
+          const title = it.text.split("\n")[0].slice(0,280);
+          window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(it.text)}`,"_blank");
+        } else if (it.channel==="email"){
+          location.href = `mailto:?subject=${encodeURIComponent("Draft")}&body=${encodeURIComponent(it.text)}`;
+        }
+      });
+      toast("Opened publish windows");
+    });
+  }
+
+  /* ---------- Advisor ---------- */
+  function wireAdvisor(){
+    const form = byId("advisorForm");
+    const result = byId("advisorResult");
+    const reason = byId("advisorReason");
+    const pickStarter  = byId("advisorStarter");
+    const pickCreator  = byId("advisorCreator");
+    const pickBusiness = byId("advisorBusiness");
+    const btn = byId("advisorSuggest");
+    if (!form || !btn) return;
+
+    btn.addEventListener("click", ()=>{
+      const vol = form.elements["volume"]?.value || "under100";
+      const need= form.elements["needs"]?.value  || "none";
+      let plan="starter", why="Balanced power & price";
+      if (need==="pro" || vol==="100to300") { plan="creator"; why="Pro analytics + integrations"; }
+      if (need==="team" || vol==="300plus") { plan="business"; why="Team seats & org analytics"; }
+      if (need==="none" && vol==="under100") { plan="starter"; why="Plenty for under 100/month"; }
+      reason.textContent = why; result.classList.remove("hidden");
+      [pickStarter, pickCreator, pickBusiness].forEach(x=> x?.classList.remove("ring-2","ring-black/20","dark:ring-white/20"));
+      (plan==="starter"? pickStarter : plan==="creator"? pickCreator : pickBusiness)?.classList.add("ring-2","ring-black/20","dark:ring-white/20");
+      result.scrollIntoView({ behavior:"smooth", block:"start" });
+    });
   }
 
   /* ---------- Misc ---------- */
@@ -1583,8 +1714,8 @@ Task:
     await ensureSupabase();
     await finishOAuthAndCleanUrl();
 
-    wireNav();
-    wireAuth();
+    wireRouter();
+    wireNavAndAuth();
     wireBilling();
     wirePromo();
     wireGenerator();
@@ -1600,7 +1731,6 @@ Task:
       setAuthFlag(!!session);
       USER_ID = session?.user?.id || null;
       fetchStatus().catch(()=>{});
-      // close auth dialog if open
       try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
     });
   });
