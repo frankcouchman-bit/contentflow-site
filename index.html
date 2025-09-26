@@ -47,31 +47,22 @@
     .halo.h2{width:34rem;height:34rem;right:-12rem;top:-6rem;animation-duration:18s;opacity:.5}
     .halo.h3{width:28rem;height:28rem;left:-10rem;top:26rem;animation-duration:22s;opacity:.45}
     @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
-    .orbit{position:absolute; inset:-32px; border-radius:24px; pointer-events:none;
+    .orbit{position:absolute;inset:-32px;border-radius:24px;pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
       -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%, black 89%);
       animation: spin 18s linear infinite;}
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
-
-    @media (prefers-color-scheme:dark){
-      body{background:var(--ink);color:#e9eef6}
-      .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)}
-      .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
-      .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); }
-    }
-
+    @media (prefers-color-scheme:dark){ body{background:var(--ink);color:#e9eef6} .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)} .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)} .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); } }
     .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
-    .marquee:hover{ animation-play-state: paused }
-    @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
-
+    .marquee:hover{ animation-play-state: paused } @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
     .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none}
     .nav-panel{position:absolute; top:0; right:0; width:82vw; max-width:380px; height:100%; background:rgba(14,16,22,.96); border-left:1px solid rgba(255,255,255,.08); padding:1rem}
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .touch-target{min-height:40px;min-width:40px}
 
-    /* Auth/plan gates — safe defaults (guests see guest UI; authed flips via data-*) */
+    /* Feature gating */
     .only-guest{display:revert}
     .only-authed{display:none}
     .plan-starter-plus{display:none}
@@ -85,36 +76,33 @@
     body[data-plan="creator"] .plan-creator-plus,
     body[data-plan="business"] .plan-creator-plus{display:revert}
     body[data-plan="business"] .plan-business-only{display:revert}
+
+    /* “Unlock preview” mask for Free users */
+    .locked-mask{position:absolute;inset:0;border-radius:1rem;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.75));display:flex;align-items:center;justify-content:center;gap:10px;color:#fff}
+    .lock-badge{font-size:.75rem;padding:.35rem .6rem;border:1px solid rgba(255,255,255,.35);border-radius:9999px;background:rgba(255,255,255,.12)}
+    .hidden{display:none !important}
+    :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
   </style>
 
-  <!-- JSON-LD -->
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <!-- JSON-LD minimal -->
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg"}</script>
 
   <!-- Worker base -->
   <script>
-    // Use your Worker origin everywhere from the front-end
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- Supabase v2 auth (magic link + Google OAuth) — resilient init -->
+  <!-- Supabase v2 (resilient init) -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-
-    // Create client once and expose helpers
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
 
     window.getAuth = async () => {
-      try {
-        const { data } = await window.supabase.auth.getSession();
-        const s = data?.session;
-        return { token: s?.access_token || "", userId: s?.user?.id || null, email: s?.user?.email || null };
+      try { const { data } = await window.supabase.auth.getSession();
+        const s=data?.session; return { token:s?.access_token||"", userId:s?.user?.id||null, email:s?.user?.email||null };
       } catch { return { token:"", userId:null, email:null }; }
     };
     window.getAuthHeaders = async () => {
@@ -124,47 +112,6 @@
       if (userId) h["X-User-Id"] = userId;
       return h;
     };
-
-    // Paint initial auth state early to avoid “locked” UI flashes
-    function paintAuthBadge({authed, plan="free"}){
-      document.body.setAttribute("data-auth", authed ? "authed" : "guest");
-      document.body.setAttribute("data-plan", plan);
-      const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
-      const el1 = document.getElementById("planbadge");
-      const el2 = document.getElementById("planbadge_m");
-      if (el1) el1.textContent = `Plan: ${pretty}`;
-      if (el2) el2.textContent = `Plan: ${pretty}`;
-      const show = (id, on)=>{ const el=document.getElementById(id); if (el) el.classList.toggle("hidden", !on); };
-      show("loginBtn", !authed); show("loginBtn_m", !authed);
-      show("logoutBtn", authed);  show("logoutBtn_m", authed);
-      show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
-    }
-
-    document.addEventListener("DOMContentLoaded", async ()=>{
-      // Assume guest until status paints real plan
-      paintAuthBadge({authed:false, plan:"free"});
-
-      // Handle magic-link/PKCE return URLs and clean query params
-      try{
-        const u = new URL(location.href);
-        const hasCode = u.searchParams.get("code");
-        if (hasCode) {
-          await window.supabase.auth.exchangeCodeForSession({ code: hasCode });
-          ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
-          history.replaceState({}, "", u.toString());
-        }
-        if (location.hash.includes("access_token")) {
-          await window.supabase.auth.getSession();
-          history.replaceState({}, "", u.pathname + u.search);
-        }
-      }catch{}
-
-      // Keep header/buttons in sync when auth changes
-      window.supabase.auth.onAuthStateChange((_e, session)=>{
-        paintAuthBadge({ authed: !!session, plan: "free" }); // real plan gets applied after /status fetch
-        try{ document.getElementById("auth")?.close(); }catch{}
-      });
-    });
   </script>
 </head>
 <body class="min-h-full" data-auth="guest" data-plan="free">
@@ -188,36 +135,20 @@
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
         <a href="#demo" class="hover:opacity-80">Live Demo</a>
-        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-80">Templates</a>
+        <a href="#optimizer" class="hover:opacity-80">Article Optimizer</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
-
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
-
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest" type="button">Sign in</button>
-          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden" type="button">Sign out</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
+          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden">Sign out</button>
         </div>
       </nav>
 
       <button id="navToggle" class="md:hidden touch-target px-3 py-2 rounded-lg border" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">☰</button>
-    </div>
-
-    <!-- Promo strip -->
-    <div class="border-t border-white/40 bg-white/70 dark:bg-white/10">
-      <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
-          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border" type="button">Copy code</button>
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
-        </div>
-      </div>
     </div>
 
     <!-- Mobile sheet -->
@@ -229,7 +160,7 @@
         </div>
         <nav class="mt-4 grid gap-2">
           <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
-          <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
+          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
           <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
           <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
@@ -237,18 +168,34 @@
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
-          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden" type="button">Manage billing</button>
-          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest" type="button">Sign in</button>
-          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden" type="button">Sign out</button>
+          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest">Sign in</button>
+          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden">Sign out</button>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- Auth dialog -->
+  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Sign in</h3>
+        <button class="btn" value="cancel">Close</button>
+      </div>
+      <p class="text-sm text-slate-500">Use a magic link or Google.</p>
+      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
+      <div class="grid grid-cols-2 gap-2">
+        <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+        <button id="authGoogle" class="btn" type="button">Continue with Google</button>
+      </div>
+      <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
+    </form>
+  </dialog>
   <!-- ===== HERO ===== -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
-      <!-- Left: copy + CTAs -->
+      <!-- Left -->
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -261,54 +208,22 @@
         </h1>
 
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
-          Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
+          Paste once → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
+          Export to <strong>Notion</strong> & <strong>Trello</strong>. BYOK supported.
         </p>
 
-        <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
           <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest" type="button">Sign in</button>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
 
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <span class="badge">AI Content Generator</span>
-          <span class="badge">Repurposing Tool</span>
-          <span class="badge">SEO-ready</span>
-          <span class="badge">BYOK</span>
-        </div>
-
-        <!-- Trust strip -->
-        <div class="mt-8 overflow-hidden">
-          <div class="flex items-center gap-4 text-[11px] uppercase tracking-widest text-slate-500">
-            <span class="chip">Creators</span>
-            <span class="chip">Marketers</span>
-            <span class="chip">Newsletters</span>
-            <span class="chip">Teams</span>
-          </div>
-          <div class="relative mt-4">
-            <div class="marquee opacity-70">
-              <div class="chip">LinkedIn-first</div>
-              <div class="chip">Editorial-friendly</div>
-              <div class="chip">Email copy</div>
-              <div class="chip">Instagram captions</div>
-              <div class="chip">Notion export</div>
-              <div class="chip">Trello sync</div>
-              <div class="chip">Keyword-aware</div>
-              <div class="chip">Tone controls</div>
-              <!-- duplicate for seamless scroll -->
-              <div class="chip">LinkedIn-first</div>
-              <div class="chip">Editorial-friendly</div>
-              <div class="chip">Email copy</div>
-              <div class="chip">Instagram captions</div>
-              <div class="chip">Notion export</div>
-              <div class="chip">Trello sync</div>
-              <div class="chip">Keyword-aware</div>
-              <div class="chip">Tone controls</div>
-            </div>
-          </div>
+          <span class="badge">Generator</span>
+          <span class="badge">Optimizer</span>
+          <span class="badge">Scheduler</span>
+          <span class="badge">Presets</span>
         </div>
       </div>
 
@@ -318,7 +233,7 @@
         <div class="grid gap-4">
           <div class="mock p-4 card">
             <div class="text-xs text-slate-400">Command</div>
-            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
+            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto">repurpose generate --channels linkedin,x,email,instagram
 ? outline created
 ? 3 social variants
 ? email subject + body ready
@@ -339,22 +254,6 @@
                 Two fast variants<br>
                 Always ≤ 280 chars<br>
                 Ready to post ✓
-              </div>
-            </div>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div class="mock p-4 card">
-              <div class="text-xs text-slate-400">Email</div>
-              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
-                Subject &amp; body prepped<br>
-                Preview &amp; send from your client
-              </div>
-            </div>
-            <div class="mock p-4 card">
-              <div class="text-xs text-slate-400">Instagram</div>
-              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
-                Caption + 3–5 hashtags<br>
-                Short, skimmable, on-brand
               </div>
             </div>
           </div>
@@ -382,29 +281,12 @@
     </div>
   </section>
 
-  <!-- Auth dialog -->
-  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
-    <form method="dialog" class="p-5 grid gap-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Sign in</h3>
-        <button class="btn" value="cancel">Close</button>
-      </div>
-      <p class="text-sm text-slate-500">Enter your email to receive a magic link or continue with Google.</p>
-      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
-      <div class="grid grid-cols-2 gap-2">
-        <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
-        <button id="authGoogle" class="btn" type="button">Continue with Google</button>
-      </div>
-      <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
-    </form>
-  </dialog>
   <!-- ===== LIVE DEMO / GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
-          <!-- Copy changes by auth state -->
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
             No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
           </p>
@@ -418,22 +300,38 @@
         </div>
       </div>
 
-      <!-- Conversion rail -->
+      <!-- Presets + Batch rail -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2 text-sm">
-            <span class="badge">LIMITED</span>
-            <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
+            <span class="badge">Presets</span>
+            <span>Save prompt settings for later. Starter: 10, Creator+: Unlimited.</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
-            <a class="btn btn-primary" href="#pricing">Upgrade</a>
+            <button id="presetSave" class="btn only-authed hidden" type="button">Save as preset</button>
+            <select id="presetSelect" class="border rounded-lg px-2 py-1 min-w-[200px]">
+              <option value="">— Load preset —</option>
+            </select>
+            <button id="presetDelete" class="btn only-authed hidden" type="button">Delete</button>
           </div>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="badge">Batch</span>
+            <span>Up to <strong>5 lines/run</strong>. Each line becomes a separate generation.</span>
+          </div>
+          <div class="text-xs text-slate-500">Paste multiple lines in the source box below.</div>
         </div>
       </div>
 
       <!-- Generator Form -->
-      <div class="card p-5 md:p-6">
+      <div class="card p-5 md:p-6 relative">
+        <!-- Unlock mask (shown for Free when premium-only controls are used) -->
+        <div id="genLock" class="locked-mask hidden">
+          <span class="lock-badge">Creator+ feature</span>
+          <a href="#pricing" class="btn btn-primary">Unlock preview</a>
+        </div>
+
         <form id="demoForm" class="grid gap-6" autocomplete="off">
           <!-- Source selector -->
           <fieldset>
@@ -448,7 +346,7 @@
               </label>
               <label class="tab flex items-center">
                 <input type="radio" name="sourceType" value="blog" class="mr-2">
-                Full Blog
+                Full Blog (paste)
               </label>
               <label class="tab flex items-center">
                 <input type="radio" name="sourceType" value="url" class="mr-2">
@@ -456,12 +354,15 @@
               </label>
             </div>
             <div class="mt-3">
-              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]"
-                placeholder="Paste your paragraph, full article, or a URL."></textarea>
+              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[160px]"
+                placeholder="Paste your paragraph, full article, or a URL.
+
+For batch, paste up to 5 lines — each line is processed separately."></textarea>
+              <div class="mt-2 text-xs text-slate-500"><span id="batchHint">Batch lines detected: 0</span></div>
             </div>
           </fieldset>
 
-          <!-- Article Optimizer -->
+          <!-- Article Optimizer toggles (applied when present in input) -->
           <fieldset class="relative">
             <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -469,7 +370,7 @@
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen" value="30"> Lengthen ~30%</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Improve title & meta (CTR)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Better title & meta</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_ab" checked> A/B test 5 titles</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo" checked> SEO check (alt/links/length)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG ideas</label>
@@ -494,18 +395,9 @@
                 </select>
               </label>
             </div>
-
             <p class="mt-2 text-[12px] text-slate-500">
-              We’ll also provide: <em>estimated ranking likelihood</em>, <em>alt keyword ideas</em>, and a
-              <em>meta description</em> tuned for CTR.
+              We’ll also provide: <em>ranking likelihood</em>, <em>alt keyword ideas</em>, and a <em>CTR-tuned meta description</em>.
             </p>
-
-            <!-- Plan caps hint -->
-            <div class="mt-2 text-[12px] text-slate-500">
-              <span class="chip">Starter: up to 5/day</span>
-              <span class="chip">Creator: up to 15/day</span>
-              <span class="chip">Business: up to 30/day</span>
-            </div>
           </fieldset>
 
           <!-- Channels -->
@@ -523,13 +415,12 @@
             </div>
           </fieldset>
 
-          <!-- Channel-specific extras -->
+          <!-- Channel extras -->
           <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">LinkedIn</legend>
               <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label>
             </fieldset>
-
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">X (Twitter)</legend>
               <div class="mt-2 flex items-center gap-3">
@@ -541,18 +432,6 @@
                   </select>
                 </label>
               </div>
-            </fieldset>
-
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">Reddit</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
-            </fieldset>
-
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">TikTok</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label>
             </fieldset>
           </div>
 
@@ -566,7 +445,6 @@
             </button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
 
-            <!-- Quota copy varies -->
             <div class="text-sm text-slate-500 only-guest">
               You have <span id="demoQuota">—</span> demo runs left this month.
             </div>
@@ -584,1172 +462,1235 @@
         <!-- Channel cards injected here -->
       </div>
 
-      <!-- ===== QUICK PUBLISH (Authed only) ===== -->
+      <!-- Quick Publish (authed) -->
       <div class="mt-10 card p-5 only-authed hidden">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Quick publish</strong>
           <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
         </div>
         <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <button id="qp-x" class="btn" type="button">Post to X</button>
-          <button id="qp-reddit" class="btn" type="button">Open Reddit submit</button>
-          <button id="qp-linkedin" class="btn" type="button">Copy for LinkedIn & open</button>
-          <button id="qp-email" class="btn" type="button">Send email draft</button>
+          <button id="qp-x" class="btn">Post to X</button>
+          <button id="qp-reddit" class="btn">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
+          <button id="qp-email" class="btn">Send email draft</button>
         </div>
 
         <!-- Creator+ integrations -->
         <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
-          <button id="li-notion" class="btn" type="button">Export to Notion</button>
-          <button id="li-trello" class="btn" type="button">Send to Trello</button>
+          <button id="li-notion" class="btn">Export to Notion</button>
+          <button id="li-trello" class="btn">Send to Trello</button>
         </div>
         <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
-          Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
-        </div>
-      </div>
-
-      <!-- ===== SCHEDULER (Starter+) ===== -->
-      <div class="mt-10 card p-5 plan-starter-plus">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <strong class="tracking-tight">Scheduler</strong>
-          <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
-        </div>
-
-        <!-- Composer -->
-        <div class="mt-4 grid md:grid-cols-4 gap-3">
-          <label class="grid gap-1">
-            <span class="text-xs text-slate-500">Channel</span>
-            <select id="schedChannel" class="border rounded-lg px-3 py-2">
-              <option value="linkedin">LinkedIn</option>
-              <option value="x">X (Twitter)</option>
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-              <option value="reddit">Reddit</option>
-              <option value="email">Email</option>
-            </select>
-          </label>
-          <label class="grid gap-1">
-            <span class="text-xs text-slate-500">When</span>
-            <input id="schedWhen" type="datetime-local" class="border rounded-lg px-3 py-2" />
-          </label>
-          <div class="md:col-span-2 grid grid-cols-2 gap-2 items-end">
-            <button id="schedAdd" class="btn btn-primary" type="button">Add to queue</button>
-            <button id="schedUseLast" class="btn" type="button">Add from last output</button>
-          </div>
-        </div>
-
-        <label class="grid gap-1 mt-3">
-          <span class="text-xs text-slate-500">Text</span>
-          <textarea id="schedText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Paste content (or generate first and use 'Add from last output')"></textarea>
-        </label>
-
-        <!-- Queue -->
-        <div class="mt-5">
-          <div class="flex items-center justify-between">
-            <strong class="text-sm">Queue</strong>
-            <div class="flex items-center gap-2">
-              <button id="schedPublish" class="btn" type="button">Publish selected</button>
-              <button id="schedClear" class="btn" type="button">Clear all</button>
-            </div>
-          </div>
-          <div id="schedEmpty" class="text-sm text-slate-500 mt-3">Nothing scheduled yet.</div>
-          <div id="schedList" class="mt-3 grid gap-3"></div>
-        </div>
-      </div>
-
-      <!-- ===== ANALYTICS ===== -->
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <!-- Starter+: basics -->
-        <div class="card p-5 plan-starter-plus">
-          <strong class="tracking-tight">Analytics (basics)</strong>
-          <div class="text-xs text-slate-500 mt-1">Per-day posts & estimated reach.</div>
-          <div id="anaBasic" class="mt-3 text-sm text-slate-400">Connect accounts to see data.</div>
-        </div>
-        <!-- Creator+: per-channel -->
-        <div class="card p-5 plan-creator-plus">
-          <strong class="tracking-tight">Analytics Pro</strong>
-          <div class="text-xs text-slate-500 mt-1">Breakdown by channel.</div>
-          <div id="anaPro" class="mt-3 text-sm text-slate-400">Coming online as you post.</div>
-        </div>
-        <!-- Business: team -->
-        <div class="card p-5 plan-business-only">
-          <strong class="tracking-tight">Team Analytics</strong>
-          <div class="text-xs text-slate-500 mt-1">Org-wide view, shared calendar.</div>
-          <div id="anaTeam" class="mt-3 text-sm text-slate-400">Invite teammates to populate.</div>
-        </div>
-      </div>
-
-      <!-- Live strip (section-local) -->
-      <div class="mt-10">
-        <div class="card p-4 md:p-5">
-          <div class="flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <strong class="tracking-tight">Generations today</strong>
-              <span id="liveCount" class="chip">–</span>
-            </div>
-            <div class="text-xs text-slate-500">Real results update every 30s</div>
-          </div>
-          <div class="mt-3 overflow-hidden">
-            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
-          </div>
+          Notion/Trello stay connected after refresh or logout; reconnect only if you revoke access.
         </div>
       </div>
     </div>
   </section>
-  <!-- ===== BEST PICKS (Plan Advisor) ===== -->
-  <section id="best-picks" class="relative scroll-mt-24">
+  <!-- ===== ARTICLE OPTIMIZER (Authed-only; Free sees unlock mask) ===== -->
+  <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks for your workflow</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">Answer two quick questions → we’ll recommend the right plan.</p>
-      </div>
-
-      <div class="card p-5 md:p-6">
-        <form id="advisorForm" class="grid gap-4">
-          <div class="grid md:grid-cols-2 gap-4">
-            <label class="grid gap-1">
-              <span class="text-sm text-slate-500">How many drafts do you create per month?</span>
-              <select name="volume" class="border rounded-lg px-3 py-2">
-                <option value="under100" selected>Under 100</option>
-                <option value="100to300">100–300</option>
-                <option value="300plus">300+</option>
-              </select>
-            </label>
-            <label class="grid gap-1">
-              <span class="text-sm text-slate-500">Do you need scheduling, analytics, or team seats?</span>
-              <select name="needs" class="border rounded-lg px-3 py-2">
-                <option value="none" selected>Just generate content</option>
-                <option value="sched">Scheduling + basics</option>
-                <option value="pro">Pro analytics + integrations</option>
-                <option value="team">Team seats + org analytics</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="flex items-center gap-3 mt-2">
-            <button id="advisorSuggest" class="btn btn-primary" type="button">Get suggestion</button>
-            <a href="#pricing" class="btn">Skip to pricing</a>
-          </div>
-        </form>
-
-        <div id="advisorResult" class="mt-6 hidden">
-          <div class="card p-4">
-            <div class="flex items-center justify-between gap-3">
-              <strong class="tracking-tight">Our pick</strong>
-              <span class="chip" id="advisorReason">—</span>
-            </div>
-            <div class="mt-3 grid md:grid-cols-3 gap-4">
-              <!-- Starter -->
-              <div class="border rounded-xl p-4" id="advisorStarter">
-                <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-                <h4 class="mt-2 font-semibold">Solo Creator</h4>
-                <p class="text-sm mt-1 text-slate-500">200 generations/month, queue & calendar, basics analytics.</p>
-                <button
-                  data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-                  class="mt-3 btn btn-primary js-checkout"
-                  type="button">Choose Starter</button>
-              </div>
-              <!-- Creator -->
-              <div class="border rounded-xl p-4" id="advisorCreator">
-                <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Creator</div>
-                <h4 class="mt-2 font-semibold">Power User</h4>
-                <p class="text-sm mt-1 text-slate-500">500 generations/month, Notion/Trello/Buffer, Analytics Pro.</p>
-                <button
-                  data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-                  class="mt-3 btn btn-primary js-checkout"
-                  type="button">Choose Creator</button>
-              </div>
-              <!-- Business -->
-              <div class="border rounded-xl p-4" id="advisorBusiness">
-                <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Business</div>
-                <h4 class="mt-2 font-semibold">Team</h4>
-                <p class="text-sm mt-1 text-slate-500">Unlimited (fair use), 3 seats, org analytics, white-label export.</p>
-                <button
-                  data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-                  class="mt-3 btn btn-primary js-checkout"
-                  type="button">Choose Business</button>
-              </div>
-            </div>
-            <p class="text-xs mt-3 text-slate-500">Already subscribed? <button id="advisorPortal" type="button" class="underline">Manage billing</button></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== USE CASES (Topical authority) ===== -->
-  <section id="use-cases" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Use cases</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">See how ContentRepurpose outperforms point tools across your workflow.</p>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-6">
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" target="_blank" rel="noopener">
-          <strong>AI Social Media Post Generator</strong>
-          <p class="text-sm mt-2 text-slate-500">From one input to multi-channel drafts that fit each platform.</p>
-        </a>
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" target="_blank" rel="noopener">
-          <strong>Paste once, multi-channel</strong>
-          <p class="text-sm mt-2 text-slate-500">Single paste → LinkedIn, X, Email, Instagram, Reddit & more.</p>
-        </a>
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/ai-content-repurposing/" target="_blank" rel="noopener">
-          <strong>AI content repurposing</strong>
-          <p class="text-sm mt-2 text-slate-500">Modern workflows for speed without losing editorial control.</p>
-        </a>
-
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" target="_blank" rel="noopener">
-          <strong>Repurposing for SEO</strong>
-          <p class="text-sm mt-2 text-slate-500">Turn articles into search-aligned social narratives.</p>
-        </a>
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" target="_blank" rel="noopener">
-          <strong>Repurpose blog → social</strong>
-          <p class="text-sm mt-2 text-slate-500">Max reach with headline, hooks, captions & CTAs.</p>
-        </a>
-        <a class="card p-5 hover:opacity-95" href="https://contentrepurpose.pro/blog/ai-content-repurposing-examples-workflows/" target="_blank" rel="noopener">
-          <strong>Examples & workflows</strong>
-          <p class="text-sm mt-2 text-slate-500">Real examples you can copy/paste into your projects.</p>
-        </a>
-      </div>
-
-      <!-- Authority cluster -->
-      <div class="text-xs text-slate-500 mt-6 flex flex-wrap gap-3">
-        <a href="https://contentrepurpose.pro/blog/content-repurposing-101/" target="_blank" rel="noopener">Content repurposing 101</a> ·
-        <a href="https://contentrepurpose.pro/blog/content-repurposing-strategy/" target="_blank" rel="noopener">Strategy</a> ·
-        <a href="https://contentrepurpose.pro/blog/how-to-repurpose-content/" target="_blank" rel="noopener">How-to guide</a> ·
-        <a href="https://contentrepurpose.pro/blog/content-repurposing-ideas/" target="_blank" rel="noopener">Ideas</a> ·
-        <a href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/" target="_blank" rel="noopener">One piece → many</a> ·
-        <a href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/" target="_blank" rel="noopener">AI vs manual</a> ·
-        <a href="https://contentrepurpose.pro/blog/ai-search-ranking-with-repurposed-content/" target="_blank" rel="noopener">Search ranking</a> ·
-        <a href="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/" target="_blank" rel="noopener">Benefits, risks & ROI</a> ·
-        <a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" target="_blank" rel="noopener">Best tools 2025</a> ·
-        <a href="https://contentrepurpose.pro/blog/notion-trello-export/" target="_blank" rel="noopener">Notion / Trello export</a> ·
-        <a href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" target="_blank" rel="noopener">Free AI LinkedIn post generator</a> ·
-        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" target="_blank" rel="noopener">LinkedIn post templates</a> ·
-        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-missinglettr/" target="_blank" rel="noopener">vs Missinglettr</a> ·
-        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-writesonic/" target="_blank" rel="noopener">vs Writesonic</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== TEMPLATES QUICK LINK ===== -->
-  <section id="templates" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-8">
-      <div class="card p-5 flex items-center justify-between gap-4">
+      <div class="flex items-end justify-between gap-4 mb-6">
         <div>
-          <h3 class="font-semibold">Templates</h3>
-          <p class="text-sm text-slate-500">Grab our LinkedIn post templates and kickstart your draft.</p>
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Article Optimizer</h2>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
+            Sign in to optimize full articles with SEO structure, FAQs (JSON-LD) and improved meta.
+          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
+            Paste your article — we’ll return clean HTML with headings, meta, FAQs & checks.
+          </p>
         </div>
-        <a class="btn btn-primary"
-           href="https://contentrepurpose.pro/blog/linkedin-post-templates/"
-           target="_blank" rel="noopener">Open templates</a>
-      </div>
-    </div>
-  </section>
-  <!-- ===== PRICING ===== -->
-  <section id="pricing" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Simple, honest pricing</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">Start free. Add power when you need it.</p>
-      </div>
-
-      <!-- Conversion rail -->
-      <div class="card p-4 md:p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2 text-sm">
-          <span class="badge">LIMITED</span>
-          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month of <strong>Creator</strong>.</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
-          <a href="#demo" class="btn only-guest">Try Demo</a>
-          <button id="manageBilling2" class="btn hidden only-authed" type="button">Manage billing</button>
+        <div class="flex items-center gap-3">
+          <a href="#pricing" class="btn">See pricing</a>
           <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
 
-      <div class="grid lg:grid-cols-4 gap-6">
-        <!-- FREE -->
-        <div class="card p-6 flex flex-col">
-          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
-          <h3 class="mt-3 text-xl font-bold">Demo + Account</h3>
-          <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• Demo (no login): <strong>5 runs / month</strong></li>
-            <li>• Free account: <strong>5 runs / day</strong></li>
-            <li>• 1× <strong>Article Optimizer</strong> (after verification)</li>
-            <li>• BYOK: <strong>5 / day</strong></li>
-            <li>• CSV/Markdown export</li>
-          </ul>
-          <a href="#demo" class="mt-6 block text-center btn">Start free</a>
+      <div class="card p-5 md:p-6 relative">
+        <!-- Unlock mask for non-members -->
+        <div id="optLock" class="locked-mask hidden">
+          <span class="lock-badge">Members feature</span>
+          <a href="#pricing" class="btn btn-primary">Unlock preview</a>
         </div>
 
-        <!-- STARTER -->
-        <div class="card p-6 flex flex-col">
-          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-          <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
-          <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• <strong>200 generations / month</strong></li>
-            <li>• Batch inputs (up to 5 lines/run)</li>
-            <li>• 10 saved presets</li>
-            <li>• Priority models</li>
-            <li>• BYOK: 50 / month (+5 daily headroom)</li>
-            <li>• <strong>Scheduler</strong> (queue & calendar)</li>
-            <li>• <strong>Analytics</strong> (basics)</li>
-            <li>• <strong>Article Optimizer</strong>: up to 5 / day</li>
-          </ul>
-          <button
-            data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-            class="mt-6 w-full btn btn-primary js-checkout subBtn"
-            type="button">Get Starter</button>
-        </div>
+        <form id="optForm" class="grid gap-6" autocomplete="off">
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">Your article</span>
+            <textarea id="optSource" class="w-full rounded-xl border p-4 min-h-[220px]" placeholder="Paste your full article (plain text or HTML). We’ll restructure headings, humanize tone, add FAQs, and improve meta."></textarea>
+          </label>
 
-        <!-- CREATOR (featured) -->
-        <div class="card p-6 flex flex-col ring-1 ring-black/5 relative">
-          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
-          <h3 class="mt-1 text-xl font-bold">Creator</h3>
-          <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• <strong>500 generations / month</strong></li>
-            <li>• Unlimited presets</li>
-            <li>• Project pack export</li>
-            <li>• Notion export & Trello boards</li>
-            <li>• Push drafts to Buffer</li>
-            <li>• New workflows early</li>
-            <li>• BYOK: 150 / month (+10 daily)</li>
-            <li>• <strong>Scheduler</strong> (multi-profile)</li>
-            <li>• <strong>Analytics Pro</strong> (per-channel)</li>
-            <li>• <strong>Article Optimizer</strong>: up to 15 / day</li>
-          </ul>
-          <button
-            data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-            class="mt-6 w-full btn btn-primary js-checkout subBtn"
-            type="button">Get Creator</button>
-        </div>
+          <div class="grid md:grid-cols-3 gap-3">
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Focus keyword</span>
+              <input id="optKw" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO">
+            </label>
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
+              <input id="optKws" class="border rounded-lg px-3 py-2" placeholder="repurpose blog to social, linkedin content plan">
+            </label>
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Tone</span>
+              <select id="optTone" class="border rounded-lg px-3 py-2">
+                <option value="helpful" selected>Helpful</option>
+                <option value="authoritative">Authoritative</option>
+                <option value="conversational">Conversational</option>
+                <option value="technical">Technical</option>
+              </select>
+            </label>
+          </div>
 
-        <!-- BUSINESS -->
-        <div class="card p-6 flex flex-col">
-          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
-          <h3 class="mt-3 text-xl font-bold">Business</h3>
-          <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• <strong>Unlimited</strong> (fair use)</li>
-            <li>• 3 seats included</li>
-            <li>• White-label export</li>
-            <li>• Priority support</li>
-            <li>• All Creator integrations</li>
-            <li>• Team presets & shared calendar</li>
-            <li>• BYOK: 300 / month (+30 daily)</li>
-            <li>• <strong>Team Analytics</strong> (org-wide)</li>
-            <li>• <strong>Article Optimizer</strong>: up to 30 / day</li>
-          </ul>
-          <button
-            data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-            class="mt-6 w-full btn js-checkout subBtn"
-            type="button">Get Business</button>
-        </div>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <label class="flex items-center gap-2"><input type="checkbox" id="optHumanize" checked> Humanize & clarity pass</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="optHeadings" checked> Auto H2/H3 sections</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="optMeta" checked> Title & meta improvement</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="optFaqs" checked> Add FAQs + JSON-LD</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="optLinks" checked> Internal & external link suggestions</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="optCheck" checked> SEO checks (alt, length)</label>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="optGenerate" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Optimize Article</button>
+            <button type="button" id="optClear" class="px-4 py-3 rounded-xl font-semibold border only-authed hidden">Clear</button>
+            <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in to optimize</button>
+
+            <div class="text-sm text-slate-500 ml-auto only-authed hidden">
+              Creator+: export optimized HTML to Notion or Trello below.
+            </div>
+          </div>
+        </form>
       </div>
 
-      <!-- Why upgrade -->
-      <div class="grid md:grid-cols-3 gap-6 mt-10">
-        <div class="stat">
-          <div class="k">Faster queues</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p>
-        </div>
-        <div class="stat">
-          <div class="k">Scheduler</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p>
-        </div>
-        <div class="stat">
-          <div class="k">Integrations</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p>
-        </div>
-      </div>
+      <!-- Optimized Output -->
+      <div id="optResultWrap" class="mt-6 hidden">
+        <div class="card p-4 md:p-5">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <button id="optTabPreview" class="btn btn-primary" type="button">Preview</button>
+              <button id="optTabHtml" class="btn" type="button">HTML</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="optCopyHtml" class="btn" type="button">Copy HTML</button>
+              <button id="optCopyMd" class="btn" type="button">Copy Markdown</button>
+              <button id="optDownloadHtml" class="btn" type="button">Download .html</button>
+            </div>
+          </div>
 
-      <!-- ===== FAQ ===== -->
-      <div id="faq" class="mt-14">
-        <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
-        <div class="mt-6 grid md:grid-cols-2 gap-4">
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Any click on <em>Generate</em> that returns content (demo or signed-in). Batch mode counts per line.
-            </p>
-          </details>
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Yes for all paid plans (daily caps by tier). Free users get one verified run.
-            </p>
-          </details>
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              “Bring Your Own Key.” Use your own model API key for extra capacity. We never store your key in plaintext.
-            </p>
-          </details>
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.
-            </p>
-          </details>
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
-            </p>
-          </details>
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.
-            </p>
-          </details>
+          <!-- Tabs -->
+          <div class="mt-4">
+            <div id="optPreview" class="rounded-lg border p-4 bg-white/50 dark:bg-white/5 min-h-[200px]" aria-label="Optimized article preview"></div>
+            <textarea id="optHtml" class="rounded-lg border p-4 mono text-sm w-full min-h-[240px] hidden" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Creator+ exports -->
+          <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
+            <button id="optExportNotion" class="btn">Export to Notion</button>
+            <button id="optExportTrello" class="btn">Send to Trello</button>
+          </div>
+          <p class="text-xs text-slate-500 mt-2 plan-creator-plus">
+            Exports persist across refresh/logouts — reconnect only if you revoke access in Notion/Trello.
+          </p>
         </div>
       </div>
     </div>
-
-    <!-- FAQ JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        { "@type": "Question","name": "What counts as a “generation”?","acceptedAnswer": { "@type": "Answer","text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line." } },
-        { "@type": "Question","name": "Is the Article Optimizer included?","acceptedAnswer": { "@type": "Answer","text": "Yes for all paid plans (daily caps by tier). Free users get one verified run." } },
-        { "@type": "Question","name": "What is BYOK?","acceptedAnswer": { "@type": "Answer","text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext." } },
-        { "@type": "Question","name": "Can I cancel anytime?","acceptedAnswer": { "@type": "Answer","text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle." } },
-        { "@type": "Question","name": "Do you support teams?","acceptedAnswer": { "@type": "Answer","text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports." } },
-        { "@type": "Question","name": "Which platforms can you export to?","acceptedAnswer": { "@type": "Answer","text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram." } }
-      ]
-    }
-    </script>
   </section>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="mt-20 border-t border-white/30">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
-      <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
-      <nav class="flex items-center gap-4 opacity-80">
-        <a href="#pricing" class="hover:opacity-100">Pricing</a>
-        <a href="/blog" class="hover:opacity-100">Blog</a>
-        <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
-      </nav>
+  <!-- ===== INTEGRATIONS (Notion & Trello) ===== -->
+  <section id="integrations" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Integrations</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Connect once — stays connected across refresh and sign-outs.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Notion -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <strong>Notion</strong>
+              <div id="notionStatus" class="text-xs text-slate-500 mt-1">Not connected</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="connectNotion" class="btn only-authed hidden" type="button">Connect</button>
+              <button id="disconnectNotion" class="btn only-authed hidden" type="button">Disconnect</button>
+              <button class="btn js-open-auth only-guest" type="button">Sign in</button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Creator+: export optimized articles and generator outputs to Notion.</p>
+        </div>
+
+        <!-- Trello -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <strong>Trello</strong>
+              <div id="trelloStatus" class="text-xs text-slate-500 mt-1">Not connected</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="connectTrello" class="btn only-authed hidden" type="button">Connect</button>
+              <button id="disconnectTrello" class="btn only-authed hidden" type="button">Disconnect</button>
+              <button class="btn js-open-auth only-guest" type="button">Sign in</button>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Creator+: send drafts and project packs to Trello boards.</p>
+        </div>
+      </div>
+
+      <!-- Export Project (Creator+) -->
+      <div class="mt-6 card p-5 plan-creator-plus">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Project export</strong>
+          <div class="text-xs text-slate-500">Bundle your latest generator outputs and optimized article.</div>
+        </div>
+        <div class="mt-3 grid sm:grid-cols-2 gap-3">
+          <button id="projExportNotion" class="btn">Export project to Notion</button>
+          <button id="projExportTrello" class="btn">Send project to Trello</button>
+        </div>
+      </div>
     </div>
-  </footer>
-<!-- ===== CRP APP BOOT (FINAL) ===== -->
+  </section>
+<!-- ===== CRP ADD-ONS: Optimizer + Integrations + Presets + Batch (Part 4) ===== -->
 <script type="module">
-/* ContentRepurpose.pro — Final boot (auth + router + generator + exports + scheduler + billing + analytics) */
+/* This script is additive. It does not modify your earlier boot code. */
 
-if (!window.__CRP_FINAL_BOOT__) {
-  window.__CRP_FINAL_BOOT__ = true;
+const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
 
-  /* ---------- DOM helpers ---------- */
-  const $  = (s, el=document)=> el.querySelector(s);
-  const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-  const byId = (id)=> document.getElementById(id);
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
-  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
-  const cap = s => (s||"").charAt(0).toUpperCase() + (s||"").slice(1);
-
-  // minimal toast (auto-injected so buttons “feel” responsive)
-  (function injectToast(){
-    if (byId("toast")) return;
-    const n = document.createElement("div");
-    n.id = "toast";
-    n.className = "fixed z-[100] bottom-5 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-black/80 text-white text-sm shadow hidden";
-    n.innerHTML = '<span id="toastMsg"></span>';
-    document.body.appendChild(n);
-  })();
-  const toast = (msg) => {
-    const t=byId("toast"), m=byId("toastMsg");
-    if (!t || !m){ alert(msg); return; }
-    m.textContent = msg; t.classList.remove("hidden");
-    setTimeout(()=> t.classList.add("hidden"), 1700);
-  };
-
-  /* ---------- Supabase (resilient init) ---------- */
-  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-  let supabase = window.supabase;
-
-  async function ensureSupabase(){
-    if (window.supabase) { supabase = window.supabase; return; }
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } });
-    supabase = window.supabase;
+const $  = (s, el=document)=> el.querySelector(s);
+const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+const byId = (id)=> document.getElementById(id);
+const toast = (msg)=> {
+  let t = byId("toast");
+  if (!t){
+    const div = document.createElement("div");
+    div.id="toast";
+    div.className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg border bg-white/90 dark:bg-black/70 text-sm shadow";
+    div.innerHTML = `<span id="toastMsg"></span>`;
+    document.body.appendChild(div);
+    t = div;
   }
-  async function finishOAuthAndCleanUrl(){
-    try{
-      const u = new URL(location.href);
-      const code = u.searchParams.get("code");
-      const err  = u.searchParams.get("error_description");
-      if (err) toast(decodeURIComponent(err));
-      if (code){
-        const { error } = await supabase.auth.exchangeCodeForSession({ code });
-        if (error) toast(error.message);
-        ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
-        history.replaceState({}, "", u.toString());
-      }
-      if (location.hash.includes("access_token")){
-        await supabase.auth.getSession();
-        history.replaceState({}, "", location.pathname + location.search);
-      }
-    }catch{}
-  }
-  async function getAuthHeaders(){
-    const h = { "Content-Type":"application/json" };
-    try{
-      const { data } = await supabase.auth.getSession();
-      const tok = data?.session?.access_token;
-      const uid = data?.session?.user?.id;
-      if (tok) h["Authorization"] = `Bearer ${tok}`;
-      if (uid) h["X-User-Id"]    = uid;
-    }catch{}
-    return h;
-  }
+  byId("toastMsg").textContent = msg;
+  t.classList.remove("hidden");
+  setTimeout(()=> t.classList.add("hidden"), 1800);
+};
 
-  /* ---------- Global state ---------- */
-  let AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
-  let LAST_OUTPUT=null;                   // quick publish source
-  let SCHED_QUEUE = [];                   // simple in-memory + localStorage mirror
-
-  function setAuthFlag(authed){ AUTHTED = !!authed; document.body.setAttribute("data-auth", authed ? "authed" : "guest"); }
-  function setPlan(plan){
-    CURRENT_PLAN = (PLAN_RANK[plan]!=null ? plan : "free");
-    document.body.setAttribute("data-plan", CURRENT_PLAN);
-    const label = `Plan: ${cap(CURRENT_PLAN)}`;
-    byId("planbadge")   && (byId("planbadge").textContent   = label);
-    byId("planbadge_m") && (byId("planbadge_m").textContent = label);
-    byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(CURRENT_PLAN));
-    const r = PLAN_RANK[CURRENT_PLAN] ?? 0;
-    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r < 1));
-    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r < 2));
-    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r < 3));
-  }
-  function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
-  function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden"));   $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
-
-  /* ---------- Status / quotas ---------- */
-  async function fetchStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      const authed = r.ok && j.scope==="user";
-      setAuthFlag(authed);
-      USER_ID = authed ? (j.userId || null) : null;
-      const plan = (j.plan || "free").toLowerCase();
-      setPlan(plan);
-
-      // manage billing buttons
-      ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
-        const el = byId(id); if (el) el.classList.toggle("hidden", !authed);
-      });
-
-      // quotas UI
-      if (!authed){
-        const cap = j.platform?.monthly?.cap ?? 5;
-        const used= j.platform?.monthly?.used ?? 0;
-        byId("demoQuota") && (byId("demoQuota").textContent = Math.max(0, cap - used));
-        paintGuestUi();
-      } else {
-        const cap = j.platform?.daily?.cap; // null => ∞
-        const used= j.platform?.daily?.used ?? 0;
-        byId("memberQuota") && (byId("memberQuota").textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
-        paintAuthedUi();
-      }
-
-      // toggle the two generate buttons
-      byId("generateBtn")?.classList.toggle("hidden", authed);
-      byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-
-      return j;
-    }catch(e){
-      setAuthFlag(false); setPlan("free"); paintGuestUi();
-      return null;
+// Supabase helpers (standalone so this file works even if loaded separately)
+async function getAuthHeaders(){
+  const h = { "Content-Type":"application/json" };
+  try{
+    if (!window.supabase){
+      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      window.supabase = createClient(
+        "https://ynkoavaeadlzlwylmfmu.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU",
+        { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+      );
     }
-  }
-
-  /* ---------- Router (fix #pricing / #optimizer navigation) ---------- */
-  function wireRouter(){
-    // assign id="optimizer" to the Article Optimizer fieldset if missing
-    try{
-      const legends = $$("fieldset > legend");
-      for (const lg of legends){
-        if (/article optimizer/i.test(lg.textContent||"")){
-          const fs = lg.parentElement; if (fs && !fs.id) fs.id = "optimizer";
-        }
-      }
-    }catch{}
-
-    // smooth-scroll anchors + prevent “just URL change” issue
-    $$('a[href^="#"]').forEach(a=>{
-      a.addEventListener("click", (e)=>{
-        const id = a.getAttribute("href");
-        if (!id || id==="#") return;
-        const el = document.querySelector(id);
-        if (el){
-          e.preventDefault();
-          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-          history.replaceState(null,"",id);
-        }
-      });
-    });
-
-    // handle direct hash on load (#pricing, #optimizer, #demo)
-    const go = (hash)=>{
-      if (!hash) return;
-      const el = document.querySelector(hash);
-      if (el){
-        setTimeout(()=> {
-          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-          // gentle highlight for optimizer
-          if (hash==="#optimizer"){ el.classList.add("ring-2","ring-blue-500/40"); setTimeout(()=> el.classList.remove("ring-2","ring-blue-500/40"), 1200); }
-        }, 60);
-      }
-    };
-    go(location.hash);
-    window.addEventListener("hashchange", ()=> go(location.hash));
-  }
-
-  /* ---------- Navbar + Auth dialog wiring ---------- */
-  function wireNavAndAuth(){
-    // mobile nav
-    const toggle = byId("navToggle");
-    const sheet  = byId("mobileNav");
-    const close  = byId("navClose");
-    toggle && toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-    close  && close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-    sheet  && sheet.addEventListener("click", (e)=>{ if(e.target===sheet) document.body.classList.remove("nav-open") });
-
-    // auth dialog openers
-    const dlg = byId("auth");
-    const openAuth = ()=> dlg?.showModal?.();
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
-    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
-
-    // google oauth
-    byId("authGoogle")?.addEventListener("click", async ()=>{
-      try{
-        await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
-      }catch(e){ toast(e?.message || "Google sign-in failed"); }
-    });
-    // magic link
-    byId("authSend")?.addEventListener("click", async ()=>{
-      const email = byId("authEmail")?.value?.trim();
-      if (!email) return toast("Enter your email");
-      try{
-        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        if (error) throw error;
-        toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message || "Sign-in error"); }
-    });
-    // logout
-    ["logoutBtn","logoutBtn_m"].forEach(id=>{
-      byId(id)?.addEventListener("click", async ()=>{
-        try{ await supabase.auth.signOut(); toast("Signed out"); }catch{}
-      });
-    });
-  }
-
-  /* ---------- Billing ---------- */
-  function wireBilling(){
-    // checkout
-    $$(".js-checkout").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const price = btn.getAttribute("data-price") || "";
-        if (!price) return toast("Missing price id");
-        const label = btn.textContent; btn.disabled=true; btn.textContent="Opening…";
-        try{
-          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-            method:"POST",
-            headers: await getAuthHeaders(),
-            body: JSON.stringify({
-              price,
-              success_url: `${SITE_ORIGIN}/?billing=success`,
-              cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
-            })
-          });
-          const j = await r.json();
-          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-          location.href = j.url;
-        }catch(e){ toast(e.message||"Checkout error"); btn.disabled=false; btn.textContent=label; }
-      });
-    });
-    // portal
-    ["manageBilling","manageBilling_m","manageBilling2","advisorPortal"].forEach(id=>{
-      const b = byId(id); if (!b) return;
-      b.addEventListener("click", async ()=>{
-        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
-        try{
-          const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
-            method:"POST", headers: await getAuthHeaders(),
-            body: JSON.stringify({ return_url: location.href })
-          });
-          const j = await r.json();
-          if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-          location.href = j.url;
-        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
-      });
-    });
-  }
-
-  /* ---------- Live stats & promo ---------- */
-  function wirePromo(){
-    ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
-      byId(id)?.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-      });
-    });
-  }
-  async function paintLive(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/stats/today`);
-      const j = await r.json();
-      if (r.ok && typeof j.today_count === "number"){
-        $$('[data-live-count], #liveCount').forEach(el=> el && (el.textContent = String(j.today_count)));
-      }
-    }catch{}
-  }
-
-  /* ---------- Generator ---------- */
-  const parseJsonLoose = (txt)=>{
-    if (!txt) return null;
-    let s = String(txt).trim();
-    s = s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim();
-    const a=s.indexOf("{"), b=s.lastIndexOf("}");
-    if (a>=0 && b>a) s=s.slice(a,b+1);
-    try{ return JSON.parse(s);}catch{}
-    s = s.replace(/,\s*([}\]])/g,"$1");
-    try{ return JSON.parse(s);}catch{}
-    return null;
-  };
-  function readToggles(form){
-    const g = n=> form.elements[n];
-    return {
-      opt: { humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked, svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked },
-      ch:  { linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
-      extras: { li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked }
-    };
-  }
-  function systemPrompt(tog){
-    return { role:"system", content:
-`You are a senior social copywriter.
-Return ONLY valid JSON with this shape:
-{
-  "outline": string,
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
+    const { data } = await window.supabase.auth.getSession();
+    const tok = data?.session?.access_token;
+    const uid = data?.session?.user?.id;
+    if (tok) h["Authorization"] = `Bearer ${tok}`;
+    if (uid) h["X-User-Id"] = uid;
+  }catch{}
+  return h;
 }
-Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
-Rules:
-- Keep platform-native, concise. X posts ≤ 280 chars where possible; if multiple, prefix "Post N:".
-- Provide 3–5 meaningful Instagram hashtags.
-- Do not include any prose outside the JSON.` };
-  }
-  function userPrompt(raw, form, tog){
-    const srcType = form.elements["sourceType"]?.value || "paragraph";
-    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return { role:"user", content:
-`${head}:
-${raw}
 
-Task:
-1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply the toggles and extras exactly.` };
-  }
-  function paintOutput(j){
-    const wrap = byId("demoOutput"); if (!wrap) return;
+/* ---------- Plan + integrations status paint ---------- */
+let CURRENT_PLAN = "free";
+function rank(plan){ return PLAN_RANK[plan] ?? 0; }
+
+async function refreshStatusAndIntegrations(){
+  try{
+    const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j?.error?.message || "Status error");
+    CURRENT_PLAN = (j.plan||"free").toLowerCase();
+
+    // Lock/Unlock optimizer UI
+    const lock = byId("optLock");
+    const authed = j.scope === "user";
+    const isFree = CURRENT_PLAN==="free";
+    if (lock) lock.classList.toggle("hidden", authed && !isFree);
+    $$(".only-authed").forEach(el=> el.classList.toggle("hidden", !authed));
+    $$(".only-guest").forEach(el=> el.classList.toggle("hidden", authed));
+
+    // Integrations paint
+    const notion = j.integrations?.notion;
+    byId("notionStatus") && (byId("notionStatus").textContent = notion?.connected ? `Connected${notion?.workspace_name?` — ${notion.workspace_name}`:""}` : "Not connected");
+    byId("connectNotion")?.classList.toggle("hidden", !authed || notion?.connected);
+    byId("disconnectNotion")?.classList.toggle("hidden", !authed || !notion?.connected);
+
+    const trello = j.integrations?.trello;
+    byId("trelloStatus") && (byId("trelloStatus").textContent = trello?.connected ? "Connected" : "Not connected");
+    byId("connectTrello")?.classList.toggle("hidden", !authed || trello?.connected);
+    // We don't have a server disconnect endpoint for Trello; hide button to avoid confusion.
+    const tDisc = byId("disconnectTrello"); if (tDisc) tDisc.classList.add("hidden");
+  }catch{}
+}
+
+/* ---------- Integrations: connect/disconnect handlers ---------- */
+function wireIntegrations(){
+  byId("connectNotion")?.addEventListener("click", async ()=>{
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await getAuthHeaders() });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Connect failed");
+      location.href = j.url;
+    }catch(e){ toast(e.message || "Notion connect error"); }
+  });
+  byId("disconnectNotion")?.addEventListener("click", async ()=>{
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
+      if (!r.ok) throw new Error("Disconnect failed");
+      toast("Notion disconnected");
+      refreshStatusAndIntegrations();
+    }catch(e){ toast(e.message || "Notion disconnect error"); }
+  });
+
+  byId("connectTrello")?.addEventListener("click", async ()=>{
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await getAuthHeaders() });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Connect failed");
+      location.href = j.url; // Trello handles fragment token → /token bridge in Worker
+    }catch(e){ toast(e.message || "Trello connect error"); }
+  });
+}
+
+/* ---------- Presets (save/load/delete) ---------- */
+function readGeneratorState(){
+  const f = byId("demoForm"); if (!f) return {};
+  const o = {};
+  // source
+  o.sourceType = f.elements["sourceType"]?.value || "paragraph";
+  o.sourceText = byId("sourceText")?.value || "";
+  // toggles
+  const pick = (n)=> !!f.elements[n]?.checked;
+  o.tog = {
+    ch_linkedin: pick("ch_linkedin"),
+    ch_x: pick("ch_x"),
+    ch_email: pick("ch_email"),
+    ch_instagram: pick("ch_instagram"),
+    ch_reddit: pick("ch_reddit"),
+    ch_facebook: pick("ch_facebook"),
+    ch_quora: pick("ch_quora"),
+    ch_tiktok: pick("ch_tiktok"),
+    li_article: pick("li_article"),
+    x_sequence: pick("x_sequence"),
+    opt_humanize: pick("opt_humanize"),
+    opt_lengthen: !!f.elements["opt_lengthen"]?.checked,
+    opt_faqs: pick("opt_faqs"),
+    opt_headings: pick("opt_headings"),
+    opt_meta: pick("opt_meta"),
+    opt_ab: pick("opt_ab"),
+    opt_seo: pick("opt_seo"),
+    opt_svg: pick("opt_svg")
+  };
+  // extras
+  o.extras = {
+    x_posts: f.elements["x_posts"]?.value || "4",
+    seo_keyword: f.elements["seo_keyword"]?.value || "",
+    seo_secondaries: f.elements["seo_secondaries"]?.value || "",
+    seo_intent: f.elements["seo_intent"]?.value || "informational"
+  };
+  return o;
+}
+function applyGeneratorState(s){
+  const f = byId("demoForm"); if (!f || !s) return;
+  if (s.sourceType) { const el=[...f.elements["sourceType"]].find(r=>r.value===s.sourceType); el && (el.checked=true); }
+  if (s.sourceText!=null) byId("sourceText").value = s.sourceText;
+  const set = (n,v)=>{ const el=f.elements[n]; if (!el) return; if (el.type==="checkbox") el.checked=!!v; else el.value=v; };
+  for (const [k,v] of Object.entries(s.tog||{})) set(k,v);
+  for (const [k,v] of Object.entries(s.extras||{})) set(k,v);
+}
+
+async function presetsLoad(){
+  try{
+    const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+    const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Load failed");
+    const list = j.presets || [];
+    const wrap = byId("presetList"); if (!wrap) return;
     wrap.innerHTML = "";
-    const add = (title, html, key=null)=>{
-      wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">${title}</strong>
-            <button class="btn copy" type="button">Copy</button>
-          </div>
-          ${html}
-        </div>`);
-      const card = wrap.lastElementChild;
-      const copyBtn = $(".btn.copy", card);
-      const pre = $("pre.content", card) || $("pre", card);
-      copyBtn?.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }catch{ toast("Copy failed"); }
+    if (!list.length){
+      wrap.innerHTML = `<div class="text-sm text-slate-500">No presets yet.</div>`;
+      return;
+    }
+    for (const p of list){
+      const row = document.createElement("div");
+      row.className = "flex items-center justify-between border rounded-lg px-3 py-2";
+      row.innerHTML = `
+        <div class="truncate">${p.title || "Untitled"}</div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-xs load">Load</button>
+          <button class="btn btn-xs danger del">Delete</button>
+        </div>`;
+      $(".load",row).addEventListener("click", ()=> applyGeneratorState(p.data));
+      $(".del",row).addEventListener("click", async ()=>{
+        try{
+          const r2 = await fetch(`${WORKER_BASE}/api/presets/delete`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({ id: p.id })
+          });
+          if (!r2.ok) throw new Error("Delete failed");
+          presetsLoad();
+        }catch(e){ toast(e.message || "Delete error"); }
       });
-      if (key && pre){ LAST_OUTPUT = LAST_OUTPUT || {}; LAST_OUTPUT[key] = pre.innerText; }
+      wrap.appendChild(row);
+    }
+  }catch(e){ /* silent */ }
+}
+function wirePresets(){
+  byId("presetSaveBtn")?.addEventListener("click", async ()=>{
+    const title = (byId("presetTitle")?.value || "Preset").trim();
+    const data = readGeneratorState();
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/presets/save`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ title, data })
+      });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Save failed");
+      toast("Preset saved ✅");
+      byId("presetTitle").value = "";
+      presetsLoad();
+    }catch(e){ toast(e.message || "Save error"); }
+  });
+}
+
+/* ---------- Batch inputs (Starter: 5, Creator/Business: 30) ---------- */
+function batchCap(){ return CURRENT_PLAN==="starter" ? 5 : (rank(CURRENT_PLAN)>=2 ? 30 : 5); }
+function wireBatch(){
+  const chk = byId("useBatch");
+  const help= byId("batchHelp");
+  const src = byId("sourceText");
+  const form= byId("demoForm");
+  if (!chk || !src || !form) return;
+
+  const paint = ()=>{
+    const cap = batchCap();
+    help && (help.textContent = `Paste up to ${cap} lines. Each line becomes one job in this run.`);
+  };
+  paint();
+
+  chk.addEventListener("change", paint);
+
+  // Preprocess before the main generator handler runs
+  form.addEventListener("submit", (e)=>{
+    if (!chk.checked) return;
+    // Transform the textarea into a single multi-item prompt the existing code can handle
+    const lines = (src.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    if (!lines.length) return;
+    const cap = batchCap();
+    const used = lines.slice(0, cap);
+    const rest = lines.length - used.length;
+    if (rest>0) toast(`Took first ${cap} lines (limit by plan). ${rest} skipped.`);
+    src.value = `BATCH INPUTS (${used.length}):\n` + used.map((t,i)=>`${i+1}. ${t}`).join("\n");
+  }, true); // capture: run before the other handler
+}
+
+/* ---------- Article Optimizer ---------- */
+function optimizerSystemPrompt(opts){
+  return {
+    role:"system",
+    content:
+`You are an expert SEO editor. Return ONLY valid JSON with:
+{
+  "html": string,               // full cleaned article HTML (h2/h3, p, lists)
+  "title": string,              // improved title
+  "meta_description": string,   // CTR-friendly meta (~150 chars)
+  "faq_jsonld": string,         // JSON-LD (FAQPage) or "" if none
+  "checks": { "alt": number, "links": number, "read_time": string } // simple checks
+}
+Respect flags: humanize:${opts.humanize}, headings:${opts.headings}, meta:${opts.meta}, faqs:${opts.faqs}, links:${opts.links}, check:${opts.check}.
+If input is HTML, preserve safe inline markup; never include <script> or external assets.`
+  };
+}
+function optimizerUserPrompt(src, opts){
+  return {
+    role:"user",
+    content:
+`Article (may include HTML):
+${src}
+
+Focus keyword: ${opts.kw||"-"}
+Secondary keywords: ${opts.kws||"-"}
+Tone: ${opts.tone||"helpful"}
+
+Tasks:
+- Rewrite for clarity and ${opts.tone||"helpful"} tone ${opts.humanize?"(light humanize)":"(no change)"}.
+- Structure with H2/H3 ${opts.headings?"(auto headings)":"(keep headings)"}.
+- ${opts.meta?"Provide improved title and meta description.": "Keep title/meta as-is if present."}
+- ${opts.faqs?"Add 3–6 FAQs with JSON-LD if relevant.": "No FAQs needed."}
+- ${opts.links?"Suggest reasonable internal/external anchors (inline if natural).": "Skip link suggestions."}
+- Run basic checks (alt, links, read time).
+Return ONLY the JSON object.`
+  };
+}
+function parseJsonLoose(txt){
+  if (!txt) return null;
+  let s = String(txt).trim();
+  s = s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim();
+  const a=s.indexOf("{"), b=s.lastIndexOf("}");
+  if (a>=0 && b>a) s=s.slice(a,b+1);
+  try{ return JSON.parse(s);}catch{}
+  s = s.replace(/,\s*([}\]])/g,"$1");
+  try{ return JSON.parse(s);}catch{}
+  return null;
+}
+
+function wireOptimizer(){
+  const form = byId("optForm"); if (!form) return;
+  const src  = byId("optSource");
+  const resW = byId("optResultWrap");
+  const prev = byId("optPreview");
+  const html = byId("optHtml");
+  const tabP = byId("optTabPreview");
+  const tabH = byId("optTabHtml");
+  const copyHtml = byId("optCopyHtml");
+  const copyMd   = byId("optCopyMd");
+  const dlHtml   = byId("optDownloadHtml");
+
+  function showPreview(){ tabP.classList.add("btn-primary"); tabH.classList.remove("btn-primary"); prev.classList.remove("hidden"); html.classList.add("hidden"); }
+  function showHtml(){ tabH.classList.add("btn-primary"); tabP.classList.remove("btn-primary"); prev.classList.add("hidden"); html.classList.remove("hidden"); }
+  tabP?.addEventListener("click", showPreview);
+  tabH?.addEventListener("click", showHtml);
+
+  byId("optClear")?.addEventListener("click", ()=>{ src.value=""; resW.classList.add("hidden"); prev.innerHTML=""; html.value=""; });
+
+  form.addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const raw = (src.value||"").trim(); if (!raw) return toast("Paste your article first");
+    const opts = {
+      kw: byId("optKw")?.value || "",
+      kws: byId("optKws")?.value || "",
+      tone: byId("optTone")?.value || "helpful",
+      humanize: byId("optHumanize")?.checked,
+      headings: byId("optHeadings")?.checked,
+      meta: byId("optMeta")?.checked,
+      faqs: byId("optFaqs")?.checked,
+      links: byId("optLinks")?.checked,
+      check: byId("optCheck")?.checked
     };
-    if (j.linkedin) add("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
-    if (Array.isArray(j.x) && j.x.length){
-      const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
-      add("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
-    }
-    if (j.email && (j.email.subject || j.email.body)){
-      add("Email", `
-        <div class="text-xs text-slate-400">Subject:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Body:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`, "email");
-    }
-    if (j.instagram){
-      const cap = j.instagram.caption||"";
-      const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-      add("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
-    }
-    if (j.reddit){
-      const subs = (j.reddit.communities||[]).map(s=> s.replace(/^r\//i,"")).map(s=>`r/${s}`).join(", ");
-      const starters = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-      add("Reddit", `
-        <div class="text-xs text-slate-400">Main post:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`, "reddit");
-    }
-    if (j.facebook){
-      add("Facebook", `
-        <div class="text-xs text-slate-400">Primary text:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`, "facebook");
-    }
-    if (j.quora){
-      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      add("Quora", `
-        <div class="text-xs text-slate-400">Answer:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`, "quora");
-    }
-    if (j.tiktok){
-      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      add("TikTok", `
-        <div class="text-xs text-slate-400">Script:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Hooks:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`, "tiktok");
-    }
-    // LinkedIn Article preview (if present)
-    if (j.linkedin_article_html && j.linkedin_article_html.trim()){
-      const safe = j.linkedin_article_html;
-      wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">LinkedIn Article</strong>
-            <button class="btn copy" type="button">Copy HTML</button>
-          </div>
-          <div class="mt-3 border rounded-lg p-3 bg-white/60 dark:bg-white/5 overflow-auto max-h-[420px]">
-            ${safe}
-          </div>
-        </div>`);
-      const last = wrap.lastElementChild;
-      $(".btn.copy", last)?.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText(j.linkedin_article_html); toast("Copied ✅"); }catch{ toast("Copy failed"); }
+    const btn = byId("optGenerate"); const old = btn?.textContent; btn && (btn.disabled=true, btn.textContent="Optimizing…");
+
+    try{
+      const messages = [ optimizerSystemPrompt(opts), optimizerUserPrompt(raw, opts) ];
+      const r = await fetch(`${WORKER_BASE}/api/generate`,{
+        method:"POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ plan: (CURRENT_PLAN==="free"?"free":"pro"), temperature: 0.4, messages })
       });
-    }
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error?.message || "Optimization failed");
+      const content = data?.choices?.[0]?.message?.content || "";
+      const j = parseJsonLoose(content);
+      if (!j?.html) throw new Error("Model didn't return HTML");
+
+      // Paint preview + HTML
+      prev.innerHTML = j.html;
+      html.value = `<!-- title: ${j.title||""} -->\n<!-- meta: ${j.meta_description||""} -->\n${j.html}\n${j.faq_jsonld?`\n<!-- FAQ JSON-LD -->\n<script type="application/ld+json">\n${j.faq_jsonld}\n</script>\n`:""}`;
+      resW.classList.remove("hidden");
+      showPreview();
+      toast("Optimized ✅");
+      window.__CRP_LAST_OPTIMIZED__ = { html: j.html, title: j.title, meta: j.meta_description, faq_jsonld: j.faq_jsonld||"" };
+    }catch(e){ toast(e.message || "Optimization error"); }
+    finally{ btn && (btn.disabled=false, btn.textContent=old||"Optimize Article"); }
+  });
+
+  copyHtml?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(byId("optHtml").value||""); toast("HTML copied ✅"); }catch{ toast("Copy failed"); }});
+  copyMd?.addEventListener("click", async ()=>{
+    // naive HTML→MD fallback (good enough for quick copy)
+    const tmp = document.createElement("div"); tmp.innerHTML = byId("optHtml").value||"";
+    const md = tmp.innerText; // quick text copy
+    try{ await navigator.clipboard.writeText(md); toast("Markdown copied ✅"); }catch{ toast("Copy failed"); }
+  });
+  dlHtml?.addEventListener("click", ()=>{
+    const blob = new Blob([byId("optHtml").value||""], { type:"text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="optimized-article.html"; a.click();
+    setTimeout(()=> URL.revokeObjectURL(url), 1500);
+  });
+
+  // Exports (Creator+)
+  byId("optExportNotion")?.addEventListener("click", async ()=>{
+    try{
+      const last = window.__CRP_LAST_OPTIMIZED__; if (!last) return toast("Optimize an article first");
+      const blocks = [
+        { type:"heading", text: last.title || "Optimized Article" },
+        { type:"paragraph", text: `Meta: ${last.meta||""}` },
+        { type:"paragraph", text: "HTML below:" },
+        { type:"paragraph", text: last.html.replace(/<[^>]+>/g,"").slice(0,1900) }
+      ];
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ title: last.title || "Optimized Article", blocks })
+      });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message || "Export error"); }
+  });
+  byId("optExportTrello")?.addEventListener("click", async ()=>{
+    try{
+      const last = window.__CRP_LAST_OPTIMIZED__; if (!last) return toast("Optimize an article first");
+      const desc = `Meta: ${last.meta||""}\n\n---\n\n${(last.html||"").replace(/<[^>]+>/g,"")}`;
+      // You may want to prompt user for board/list; here we assume user has a default Trello setup
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ board_id:"", list_id:"", title: last.title||"Optimized Article", description: desc.slice(0,4000) })
+      });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message || "Export error"); }
+  });
+}
+
+/* ---------- Project export (bundle latest generator outputs + optimized) ---------- */
+function wireProjectExport(){
+  const btnN = byId("projExportNotion");
+  const btnT = byId("projExportTrello");
+  if (!btnN && !btnT) return;
+
+  function grabLastOutputs(){
+    // We rely on cards rendered by generator (from earlier script). Gather their text.
+    const cards = $$("#demoOutput .card");
+    const chunks = [];
+    cards.forEach(c=>{
+      const title = $("strong", c)?.innerText || "Output";
+      const text = $("pre", c)?.innerText || "";
+      if (text.trim()) chunks.push(`### ${title}\n\n${text.trim()}`);
+    });
+    const opt = window.__CRP_LAST_OPTIMIZED__;
+    return { chunks, opt };
   }
-  function wireGenerator(){
-    const form = byId("demoForm");
-    const src  = byId("sourceText");
-    const out  = byId("demoOutput");
-    const clearBtn = byId("clearBtn");
-    const genGuest  = byId("generateBtn");
-    const genMember = byId("generateBtn_member");
-    if (!form || !src || !out) return;
 
-    clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
+  btnN?.addEventListener("click", async ()=>{
+    try{
+      const { chunks, opt } = grabLastOutputs();
+      if (!chunks.length && !opt) return toast("Generate or optimize something first");
+      const blocks = [];
+      if (opt){
+        blocks.push({ type:"heading", text: opt.title || "Optimized Article" });
+        blocks.push({ type:"paragraph", text: opt.meta || "" });
+        blocks.push({ type:"paragraph", text: (opt.html||"").replace(/<[^>]+>/g,"").slice(0,1800) });
+      }
+      chunks.forEach(t=> blocks.push({ type:"paragraph", text: t.slice(0,1900) }));
 
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); // prevents navigation (fixes your “can’t click” issue)
-      const raw = (src.value||"").trim();
-      if (!raw) return toast("Paste some content first");
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ title:"ContentRepurpose Project", blocks })
+      });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message || "Export error"); }
+  });
 
-      const btn = AUTHTED ? genMember : genGuest;
-      const oldText = btn?.textContent;
-      try{
-        btn && (btn.disabled=true, btn.textContent="Generating…");
-        out.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+  btnT?.addEventListener("click", async ()=>{
+    try{
+      const { chunks, opt } = grabLastOutputs();
+      if (!chunks.length && !opt) return toast("Generate or optimize something first");
+      let description = "";
+      if (opt){ description += `Optimized Article: ${opt.title||""}\n\n${(opt.html||"").replace(/<[^>]+>/g,"").slice(0,2000)}\n\n---\n\n`; }
+      description += chunks.join("\n\n---\n\n");
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ board_id:"", list_id:"", title:"ContentRepurpose Project", description: description.slice(0,4000) })
+      });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message || "Export error"); }
+  });
+}
 
-        const tog = readToggles(form);
-        const messages = [ systemPrompt(tog), userPrompt(raw, form, tog) ];
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+/* ---------- Presets + Batch small UI injection (if not present) ---------- */
+(function ensurePresetsBatchUI(){
+  const anchor = byId("demoOutput")?.previousElementSibling; // the generator card container
+  if (!anchor || byId("presetsPanel")) return;
+  const panel = document.createElement("div");
+  panel.id = "presetsPanel";
+  panel.className = "card p-5 md:p-6 mt-6";
+  panel.innerHTML = `
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <strong class="tracking-tight">Batch & Presets</strong>
+        <div class="text-xs text-slate-500">Starter: 5 lines/run · Creator/Business: 30 lines/run</div>
+      </div>
+      <label class="flex items-center gap-2">
+        <input id="useBatch" type="checkbox"> Use batch inputs
+      </label>
+    </div>
 
-        const r = await fetch(`${WORKER_BASE}/api/generate`,{
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ plan: lane, temperature: 0.5, messages })
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-        const content = data?.choices?.[0]?.message?.content || "";
-        const j = parseJsonLoose(content);
-        if (!j) throw new Error("Model did not return JSON");
-        paintOutput(j);
-        toast("Done ✅");
-        fetchStatus().catch(()=>{});
-      }catch(e){
-        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
-      }finally{
-        btn && (btn.disabled=false, btn.textContent = oldText || (AUTHTED ? "Generate" : "Generate (demo)"));
+    <div class="mt-3 text-xs text-slate-500" id="batchHelp">Paste up to 5 lines. Each line becomes one job in this run.</div>
+
+    <div class="mt-4 grid md:grid-cols-3 gap-3 only-authed hidden">
+      <label class="grid gap-1 md:col-span-2">
+        <span class="text-xs text-slate-500">Preset title</span>
+        <input id="presetTitle" class="border rounded-lg px-3 py-2" placeholder="e.g. LinkedIn thread + Email follow-up">
+      </label>
+      <button id="presetSaveBtn" class="btn btn-primary md:self-end" type="button">Save current as preset</button>
+    </div>
+
+    <div class="mt-3">
+      <div class="text-sm mb-2">Your presets</div>
+      <div id="presetList" class="grid gap-2"></div>
+    </div>
+  `;
+  anchor.parentNode.insertBefore(panel, anchor.nextSibling);
+})();
+
+/* ---------- Boot ---------- */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  wireIntegrations();
+  wirePresets();
+  wireBatch();
+  wireOptimizer();
+  wireProjectExport();
+  await refreshStatusAndIntegrations();
+  await presetsLoad();
+
+  // Also refresh when auth changes (if your earlier script emits it)
+  try{
+    window.supabase?.auth?.onAuthStateChange?.((_e)=>{ refreshStatusAndIntegrations(); presetsLoad(); });
+  }catch{}
+});
+</script>
+<!-- ===== /CRP ADD-ONS (Part 4) ===== -->
+<!-- ===== CRP ADD-ONS: Scheduler + Analytics + Unlock Overlays (Part 5) ===== -->
+<script type="module">
+/* This script augments the existing UI without breaking earlier logic. */
+
+const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+const $  = (s, el=document)=> el.querySelector(s);
+const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+const byId = (id)=> document.getElementById(id);
+const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+
+function toast(msg){
+  let t = byId("toast");
+  if (!t){
+    t = document.createElement("div");
+    t.id = "toast";
+    t.className = "fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg border bg-white/90 dark:bg-black/70 text-sm shadow hidden";
+    t.innerHTML = `<span id="toastMsg"></span>`;
+    document.body.appendChild(t);
+  }
+  byId("toastMsg").textContent = msg;
+  t.classList.remove("hidden");
+  setTimeout(()=> t.classList.add("hidden"), 1800);
+}
+
+/* ---------------- Unlock previews (for Free users) ---------------- */
+function addUnlockOverlay(el, {title, copy, cta="#pricing"}){
+  if (!el || el.querySelector(".preview-mask")) return;
+  el.style.position = "relative";
+  const mask = document.createElement("div");
+  mask.className = "preview-mask";
+  mask.innerHTML = `
+    <div class="cta card p-3 bg-white/90 dark:bg-black/70 border flex items-center gap-3">
+      <div>
+        <div class="font-semibold">${title||"Unlock this feature"}</div>
+        <div class="text-xs text-slate-500">${copy||"Upgrade to Starter or Creator to use this."}</div>
+      </div>
+      <a href="${cta}" class="btn btn-primary">See plans</a>
+    </div>`;
+  el.appendChild(mask);
+  el.classList.add("preview-locked");
+}
+function removeUnlockOverlay(el){
+  if (!el) return;
+  el.classList.remove("preview-locked");
+  const m = el.querySelector(".preview-mask"); if (m) m.remove();
+}
+
+/* ---------------- Detect plan from body data-plan ---------------- */
+function rankFromBody(){
+  const p = document.body.getAttribute("data-plan") || "free";
+  return PLAN_RANK[p] ?? 0;
+}
+
+/* ---------------- Scheduler (queue stored per user) ---------------- */
+function schedStorageKey(){
+  // per-user key; fallback to global
+  const uid = (window.__CRP_USER_ID__) || document.body.getAttribute("data-user-id") || "anon";
+  return `crp:schedule:${uid}`;
+}
+function readQueue(){
+  try{ return JSON.parse(localStorage.getItem(schedStorageKey())||"[]"); }catch{ return []; }
+}
+function writeQueue(list){
+  try{ localStorage.setItem(schedStorageKey(), JSON.stringify(list||[])); }catch{}
+}
+function uiQueueEmpty(vis){
+  byId("schedEmpty")?.classList.toggle("hidden", vis);
+  byId("schedList")?.classList.toggle("hidden", !vis);
+}
+function renderQueue(){
+  const list = readQueue();
+  const wrap = byId("schedList"); if (!wrap) return;
+  wrap.innerHTML = "";
+  if (!list.length){ uiQueueEmpty(false); return; }
+  uiQueueEmpty(true);
+  list.forEach((item, idx)=>{
+    const row = document.createElement("div");
+    row.className = "border rounded-lg p-3 grid gap-2";
+    row.innerHTML = `
+      <div class="flex items-center justify-between gap-2">
+        <div class="text-xs chip">${new Date(item.when).toLocaleString()}</div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="sel"> Select</label>
+          <button class="btn btn-xs danger del">Delete</button>
+        </div>
+      </div>
+      <div class="text-xs text-slate-500">${cap(item.channel)}</div>
+      <pre class="whitespace-pre-wrap text-sm">${item.text}</pre>
+    `;
+    $(".del",row).addEventListener("click", ()=>{
+      const cur = readQueue(); cur.splice(idx,1); writeQueue(cur); renderQueue(); updateAnalytics();
+    });
+    $(".sel",row).addEventListener("change", (e)=>{ item.__selected = e.target.checked; });
+    wrap.appendChild(row);
+  });
+}
+
+function wireScheduler(){
+  const addBtn  = byId("schedAdd");
+  const useLast = byId("schedUseLast");
+  const clear   = byId("schedClear");
+  const pubBtn  = byId("schedPublish");
+  if (!addBtn || !pubBtn) return;
+
+  // Lock display for free plan (view-only with overlay)
+  const container = addBtn.closest(".card");
+  const rnk = rankFromBody();
+  if (rnk < 1){ addUnlockOverlay(container, { title:"Scheduler (Starter+)", copy:"Queue posts and plan your week. Upgrade to use the scheduler." }); }
+  else removeUnlockOverlay(container);
+
+  addBtn.addEventListener("click", ()=>{
+    if (rankFromBody() < 1) return toast("Upgrade to Starter to use the Scheduler.");
+    const ch = byId("schedChannel")?.value || "linkedin";
+    const when = byId("schedWhen")?.value;
+    const text = byId("schedText")?.value?.trim();
+    if (!when) return toast("Pick a date & time");
+    if (!text) return toast("Paste some text");
+    const list = readQueue();
+    list.push({ channel: ch, when: new Date(when).toISOString(), text });
+    writeQueue(list);
+    renderQueue(); updateAnalytics();
+    toast("Added to queue ✅");
+  });
+
+  useLast?.addEventListener("click", ()=>{
+    // Try to pull last output from generator cards
+    const pre = $("#demoOutput pre"); 
+    if (!pre) return toast("Generate something first");
+    byId("schedText").value = pre.innerText.trim().slice(0, 2000);
+    toast("Filled from last output");
+  });
+
+  clear?.addEventListener("click", ()=>{
+    writeQueue([]); renderQueue(); updateAnalytics();
+  });
+
+  pubBtn.addEventListener("click", ()=>{
+    if (rankFromBody() < 1) return toast("Upgrade to Starter to publish from Scheduler.");
+    const list = readQueue();
+    const sel  = list.filter(x=>x.__selected);
+    const post = sel.length ? sel : list;
+    if (!post.length) return toast("Nothing selected.");
+    // Light “publish”: open intents (safer than APIs)
+    post.forEach(item=>{
+      const txt = item.text.slice(0, 10000);
+      if (item.channel==="x"){
+        window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(txt.slice(0,270))}`,"_blank");
+      } else if (item.channel==="linkedin"){
+        navigator.clipboard.writeText(txt).catch(()=>{});
+        window.open("https://www.linkedin.com/feed/","_blank");
+      } else if (item.channel==="reddit"){
+        const title = txt.split("\n")[0].slice(0,280);
+        window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(txt)}`,"_blank");
+      } else if (item.channel==="email"){
+        const subj = (txt.split("\n")[0] || "Draft").slice(0,120);
+        location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(txt)}`;
+      } else {
+        navigator.clipboard.writeText(txt).catch(()=>{});
+        toast(`Copied ${cap(item.channel)} text to clipboard`);
       }
     });
-  }
+    toast("Opened publishing intents");
+  });
 
-  /* ---------- Quick Publish + Integrations (Notion/Trello) ---------- */
-  async function ensureNotionConnected(){
-    const test = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-      method:"POST", headers: await getAuthHeaders(),
-      body: JSON.stringify({ title:"Connection test", blocks:[{type:"paragraph", text:"Hi from ContentRepurpose."}] })
-    });
-    if (test.status===400){ // likely not_connected
-      const start = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`,{ headers: await getAuthHeaders() });
-      const j = await start.json();
-      if (start.ok && j.url) { location.href = j.url; return false; }
-      toast(j?.error?.message || "Notion connect failed");
-      return false;
+  renderQueue();
+}
+
+/* ---------------- Analytics (basic + pro placeholders) ---------------- */
+function estimateReach(channel, len){
+  // Tiny heuristic for display only
+  const base = { linkedin: 150, x: 120, instagram: 100, facebook: 90, reddit: 80, email: 60, quora: 40, tiktok: 140 };
+  const k = base[channel] || 50;
+  const mult = Math.min(3, 1 + (len/280)); // more text → (slightly) higher
+  return Math.round(k * mult);
+}
+function updateAnalytics(){
+  const basic = byId("anaBasic");
+  const pro   = byId("anaPro");
+  const team  = byId("anaTeam");
+
+  // Basics: per-day posts & est. reach from queue
+  const q = readQueue();
+  const byDay = {};
+  let reach = 0;
+  q.forEach(i=>{
+    const d = new Date(i.when); const key = d.toISOString().slice(0,10);
+    byDay[key] = (byDay[key]||0)+1;
+    reach += estimateReach(i.channel, i.text.length);
+  });
+  const days = Object.entries(byDay).map(([d,c])=>`${d}: ${c}`).join(" · ");
+  basic && (basic.textContent = q.length ? `Queued posts: ${q.length}. ${days}. Est. reach: ~${reach.toLocaleString()}.` : "Connect accounts to see data.");
+
+  // Pro: per-channel breakdown (visible for Creator+)
+  const r = rankFromBody();
+  if (pro){
+    if (r < 2){
+      pro.textContent = "Unlock channel-level analytics with Creator plan.";
+    } else {
+      const perCh = {};
+      q.forEach(i=> perCh[i.channel] = (perCh[i.channel]||0)+1);
+      const parts = Object.entries(perCh).map(([ch,c])=> `${cap(ch)}: ${c}`).join(" · ");
+      pro.textContent = parts ? parts : "No queued posts yet.";
     }
-    return test.ok;
   }
-  async function ensureTrelloConnected(){
-    const test = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-      method:"POST", headers: await getAuthHeaders(),
-      body: JSON.stringify({ board_id:"", list_id:"", title:"Connection test", description:"" })
-    });
-    if (!test.ok){
-      // Start OAuth (the Worker will finish and redirect back)
-      const start = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`,{ headers: await getAuthHeaders() });
-      const j = await start.json();
-      if (start.ok && j.url){ location.href = j.url; return false; }
-      toast(j?.error?.message || "Trello connect failed");
-      return false;
+
+  // Team: simple message (Business only)
+  if (team){
+    team.textContent = (r<3) ? "Invite teammates to unlock org-wide analytics." : "Org analytics coming online as you post.";
+  }
+}
+
+/* ---------------- Lock specific premium areas with preview ---------------- */
+function paintLocks(){
+  const r = rankFromBody();
+
+  // Quick publish integrations: Creator+
+  const qpCard = byId("demo")?.querySelector(".only-authed + .plan-creator-plus, .plan-creator-plus");
+  if (qpCard){
+    if (r < 2) addUnlockOverlay(qpCard.closest(".card") || qpCard, { title:"Integrations (Creator+)", copy:"Export to Notion & Trello with Creator plan." });
+    else removeUnlockOverlay(qpCard.closest(".card") || qpCard);
+  }
+
+  // Analytics Pro: Creator+
+  const proCard = byId("anaPro")?.closest(".card");
+  if (proCard){
+    if (r < 2) addUnlockOverlay(proCard, { title:"Analytics Pro (Creator+)", copy:"Breakdown by channel with Creator plan." });
+    else removeUnlockOverlay(proCard);
+  }
+
+  // Team Analytics: Business
+  const teamCard = byId("anaTeam")?.closest(".card");
+  if (teamCard){
+    if (r < 3) addUnlockOverlay(teamCard, { title:"Team Analytics (Business)", copy:"Org-wide view, shared calendar & seats." });
+    else removeUnlockOverlay(teamCard);
+  }
+}
+
+/* ---------------- A11y tweaks ---------------- */
+function a11y(){
+  // Ensure all interactive elements have discernible text
+  $$("button, a").forEach(el=>{
+    if (!el.getAttribute("aria-label") && !el.textContent.trim()){
+      el.setAttribute("aria-label","Action");
     }
-    return true;
-  }
-  function wireQuickPublish(){
-    const qp = { x:byId("qp-x"), reddit:byId("qp-reddit"), linkedin:byId("qp-linkedin"), email:byId("qp-email") };
-    const need = (k)=> (LAST_OUTPUT && LAST_OUTPUT[k]) ? LAST_OUTPUT[k] : null;
+  });
+}
 
-    qp.x?.addEventListener("click", ()=>{
-      const text = need("x") || need("linkedin");
-      if (!text) return toast("Generate first");
-      const t = text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ");
-      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank");
-    });
-    qp.reddit?.addEventListener("click", ()=>{
-      const body = need("reddit") || need("linkedin") || need("x");
-      if (!body) return toast("Generate first");
-      const title = body.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,280);
-      window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank");
-    });
-    qp.linkedin?.addEventListener("click", async ()=>{
-      const text = need("linkedin") || need("x"); if (!text) return toast("Generate first");
-      try{ await navigator.clipboard.writeText(text); }catch{}
-      window.open("https://www.linkedin.com/feed/","_blank");
-    });
-    qp.email?.addEventListener("click", ()=>{
-      const em = need("email") || "";
-      const subj = (em.split("\n")[0]||"Your draft").slice(0,120);
-      const body = em;
-      location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
-    });
+/* ---------------- Boot ---------------- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    // expose user id from supabase (optional, helps per-user queue key)
+    window.supabase?.auth?.getUser().then(({ data })=>{
+      const uid = data?.user?.id; if (uid){ window.__CRP_USER_ID__ = uid; document.body.setAttribute("data-user-id", uid); }
+      renderQueue(); updateAnalytics();
+    }).catch(()=>{ renderQueue(); updateAnalytics(); });
+  }catch{ renderQueue(); updateAnalytics(); }
 
-    // Exports (Creator+)
-    byId("li-notion")?.addEventListener("click", async ()=>{
-      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required");
-      if (!LAST_OUTPUT) return toast("Generate something first");
-      const ok = await ensureNotionConnected(); if (!ok) return; // might redirect for OAuth
+  wireScheduler();
+  paintLocks();
+  a11y();
+
+  // Repaint locks & analytics if plan changes (earlier script fires onAuthStateChange)
+  try{
+    window.supabase?.auth?.onAuthStateChange?.((_e, _s)=>{ setTimeout(()=>{ renderQueue(); updateAnalytics(); paintLocks(); }, 200); });
+  }catch{}
+});
+</script>
+<!-- ===== /CRP ADD-ONS (Part 5) ===== -->
+
+<!-- Small CSS additions for buttons used above -->
+<style>
+  .btn.btn-xs{ padding:.25rem .5rem; font-size:.75rem; border-radius:.5rem }
+  .btn.danger{ border-color:rgba(244,63,94,.5) }
+</style>
+<!-- ===== CRP INTEGRATIONS + DEEP LINKS + AUTH GUARDS (Part 6) ===== -->
+<style>
+  .intg-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;padding:.3rem .6rem;border:1px solid rgba(148,163,184,.35);border-radius:9999px}
+  .intg-badge[data-state="connected"]{border-color:rgba(16,185,129,.5)}
+  .intg-dot{width:.45rem;height:.45rem;border-radius:9999px;background:#f59e0b}
+  .intg-badge[data-state="connected"] .intg-dot{background:#10b981}
+  .is-disabled{opacity:.55;pointer-events:none}
+</style>
+
+<script type="module">
+const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+const PLAN_RANK   = { free:0, starter:1, creator:2, business:3 };
+const $  = (s, el=document)=> el.querySelector(s);
+const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+const byId = (id)=> document.getElementById(id);
+const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+function toast(msg){
+  let t=byId("toast"); if(!t){ t=document.createElement("div"); t.id="toast"; t.className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-lg border bg-white/90 dark:bg-black/70 text-sm shadow"; t.innerHTML=`<span id="toastMsg"></span>`; document.body.appendChild(t); }
+  byId("toastMsg").textContent = msg;
+  t.classList.remove("hidden"); setTimeout(()=> t.classList.add("hidden"), 1800);
+}
+
+/* ---------------- Persist lightweight integration state (no secrets) ---------------- */
+function userScopedKey(suffix){
+  const uid = document.body.getAttribute("data-user-id") || window.__CRP_USER_ID__ || "anon";
+  return `crp:${suffix}:${uid}`;
+}
+function saveIntegrationsState(state){
+  try{ localStorage.setItem(userScopedKey("integrations"), JSON.stringify(state||{})); }catch{}
+}
+function readIntegrationsState(){
+  try{ return JSON.parse(localStorage.getItem(userScopedKey("integrations"))||"{}"); }catch{ return {}; }
+}
+
+/* Add small badges near Quick Publish (Creator+) if present */
+function ensureIntegrationBadges(){
+  const qp = byId("demo")?.querySelector(".plan-creator-plus");
+  if (!qp) return;
+  if (byId("badgeRow")) return;
+
+  const row = document.createElement("div");
+  row.id = "badgeRow";
+  row.className = "mt-3 flex items-center gap-2 text-xs";
+  row.innerHTML = `
+    <span class="intg-badge" id="badgeNotion" data-state="disconnected" title="Notion">
+      <span class="intg-dot" aria-hidden="true"></span> Notion <span class="st">• Connect</span>
+    </span>
+    <span class="intg-badge" id="badgeTrello" data-state="disconnected" title="Trello">
+      <span class="intg-dot" aria-hidden="true"></span> Trello <span class="st">• Connect</span>
+    </span>
+  `;
+  qp.parentElement?.insertBefore(row, qp);
+}
+
+/* Paint buttons + badges */
+function paintIntegrations(integrations, planRank){
+  ensureIntegrationBadges();
+  const n = integrations?.notion?.connected ? "connected" : "disconnected";
+  const t = integrations?.trello?.connected ? "connected" : "disconnected";
+
+  const bN = byId("badgeNotion"); const bT = byId("badgeTrello");
+  if (bN){ bN.dataset.state = n; bN.querySelector(".st").textContent = n==="connected" ? "• Connected" : "• Connect"; }
+  if (bT){ bT.dataset.state = t; bT.querySelector(".st").textContent = t==="connected" ? "• Connected" : "• Connect"; }
+
+  const btnNotion = byId("li-notion");
+  const btnTrello = byId("li-trello");
+  const needPlan = planRank < 2;
+
+  // Plan gate first
+  [btnNotion, btnTrello].forEach(b=>{
+    if (!b) return;
+    b.classList.toggle("is-disabled", needPlan);
+    b.title = needPlan ? "Creator+ required" : "";
+  });
+
+  // If plan ok but not connected, clicking badge or button starts OAuth
+  function wireConnect(el, which){
+    if (!el) return;
+    el.onclick = async (e)=>{
+      if (planRank < 2){ e.preventDefault(); location.hash="#pricing"; toast("Upgrade to Creator to use integrations."); return; }
+      const url = which==="notion"
+        ? `${WORKER_BASE}/api/integrations/notion/oauth/start`
+        : `${WORKER_BASE}/api/integrations/trello/oauth/start`;
       try{
-        const blocks = Object.entries(LAST_OUTPUT).slice(0,6).map(([k,v])=> ({ type:"paragraph", text:`[${k.toUpperCase()}]\n${v}` }));
-        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-          method:"POST", headers: await getAuthHeaders(),
-          body: JSON.stringify({ title:"ContentRepurpose Export", blocks })
-        });
+        const r = await fetch(url, { headers: await getAuthHeaders() });
         const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
-        window.open(j.url, "_blank");
-      }catch(e){ toast(e.message); }
-    });
-    byId("li-trello")?.addEventListener("click", async ()=>{
-      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required");
-      if (!LAST_OUTPUT) return toast("Generate something first");
-      const ok = await ensureTrelloConnected(); if (!ok) return; // might redirect for OAuth
-      try{
-        // For first export we create a simple card into the user’s last-used list (handled by Worker defaults)
-        const desc = Object.entries(LAST_OUTPUT).map(([k,v])=>`### ${k.toUpperCase()}\n${v}`).join("\n\n");
-        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-          method:"POST", headers: await getAuthHeaders(),
-          body: JSON.stringify({ board_id:"", list_id:"", title:"ContentRepurpose Draft", description: desc })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-        window.open(j.url, "_blank");
-      }catch(e){ toast(e.message); }
-    });
+        if (!r.ok || !j.url) throw new Error(j?.error?.message || "Connect failed");
+        location.href = j.url;
+      }catch(err){ toast(err.message||"Connect error"); }
+    };
   }
 
-  /* ---------- Scheduler (Starter+) ---------- */
-  function loadQueue(){ try{ SCHED_QUEUE = JSON.parse(localStorage.getItem("crp_queue")||"[]"); }catch{ SCHED_QUEUE=[]; } }
-  function saveQueue(){ localStorage.setItem("crp_queue", JSON.stringify(SCHED_QUEUE)); }
-  function paintQueue(){
-    const list = byId("schedList"); const empty=byId("schedEmpty"); if (!list) return;
-    list.innerHTML = "";
-    if (!SCHED_QUEUE.length){ empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-    SCHED_QUEUE.forEach((item,i)=>{
-      const dt = new Date(item.when||Date.now()).toLocaleString();
-      list.insertAdjacentHTML("beforeend", `
-        <label class="flex items-start gap-3 p-3 border rounded-xl">
-          <input type="checkbox" data-idx="${i}" class="mt-1">
-          <div class="grow">
-            <div class="text-xs text-slate-500">${item.channel} — ${dt}</div>
-            <div class="text-sm mt-1 whitespace-pre-wrap">${(item.text||"").slice(0,500)}</div>
-          </div>
-          <button class="btn" data-del="${i}" type="button">Delete</button>
-        </label>`);
-    });
-    $$('button[data-del]').forEach(b=> b.addEventListener("click", ()=>{
-      const i = +b.getAttribute("data-del"); SCHED_QUEUE.splice(i,1); saveQueue(); paintQueue();
-    }));
-  }
-  function wireScheduler(){
-    if (PLAN_RANK[CURRENT_PLAN] < 1) return; // hidden if not Starter+
-    const chSel = byId("schedChannel"); const when = byId("schedWhen");
-    const txt   = byId("schedText");
-    const add   = byId("schedAdd"); const useLast = byId("schedUseLast");
-    const pub   = byId("schedPublish"); const clr = byId("schedClear");
-    loadQueue(); paintQueue();
-
-    add?.addEventListener("click", ()=>{
-      if (!txt.value.trim()) return toast("Paste some text first");
-      SCHED_QUEUE.push({ channel: chSel.value, when: when.value ? new Date(when.value).toISOString() : new Date().toISOString(), text: txt.value.trim() });
-      saveQueue(); paintQueue(); toast("Added to queue");
-    });
-    useLast?.addEventListener("click", ()=>{
-      const prefer = LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.email || "";
-      if (!prefer) return toast("Generate something first");
-      txt.value = prefer;
-      toast("Loaded last output");
-    });
-    clr?.addEventListener("click", ()=>{ if (confirm("Clear all scheduled items?")){ SCHED_QUEUE=[]; saveQueue(); paintQueue(); } });
-    pub?.addEventListener("click", ()=>{
-      const checks = $$('input[type="checkbox"][data-idx]:checked');
-      if (!checks.length) return toast("Select items to publish");
-      checks.forEach(c=>{
-        const i = +c.getAttribute("data-idx");
-        const it = SCHED_QUEUE[i]; if (!it) return;
-        // "Publish" simulation: open relevant targets or copy
-        if (it.channel==="x"){
-          const t = it.text.slice(0,270);
-          window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t)}`,"_blank");
-        } else if (it.channel==="linkedin"){
-          navigator.clipboard.writeText(it.text).catch(()=>{});
-          window.open("https://www.linkedin.com/feed/","_blank");
-        } else if (it.channel==="reddit"){
-          const title = it.text.split("\n")[0].slice(0,280);
-          window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(it.text)}`,"_blank");
-        } else if (it.channel==="email"){
-          location.href = `mailto:?subject=${encodeURIComponent("Draft")}&body=${encodeURIComponent(it.text)}`;
-        }
-      });
-      toast("Opened publish windows");
-    });
+  if (planRank >= 2){
+    if (n!=="connected") wireConnect(byId("li-notion"), "notion"), wireConnect(bN, "notion");
+    if (t!=="connected") wireConnect(byId("li-trello"), "trello"), wireConnect(bT, "trello");
   }
 
-  /* ---------- Advisor ---------- */
-  function wireAdvisor(){
-    const form = byId("advisorForm");
-    const result = byId("advisorResult");
-    const reason = byId("advisorReason");
-    const pickStarter  = byId("advisorStarter");
-    const pickCreator  = byId("advisorCreator");
-    const pickBusiness = byId("advisorBusiness");
-    const btn = byId("advisorSuggest");
-    if (!form || !btn) return;
+  // When connected, “Export” buttons will gather latest content (wired below)
+}
 
-    btn.addEventListener("click", ()=>{
-      const vol = form.elements["volume"]?.value || "under100";
-      const need= form.elements["needs"]?.value  || "none";
-      let plan="starter", why="Balanced power & price";
-      if (need==="pro" || vol==="100to300") { plan="creator"; why="Pro analytics + integrations"; }
-      if (need==="team" || vol==="300plus") { plan="business"; why="Team seats & org analytics"; }
-      if (need==="none" && vol==="under100") { plan="starter"; why="Plenty for under 100/month"; }
-      reason.textContent = why; result.classList.remove("hidden");
-      [pickStarter, pickCreator, pickBusiness].forEach(x=> x?.classList.remove("ring-2","ring-black/20","dark:ring-white/20"));
-      (plan==="starter"? pickStarter : plan==="creator"? pickCreator : pickBusiness)?.classList.add("ring-2","ring-black/20","dark:ring-white/20");
-      result.scrollIntoView({ behavior:"smooth", block:"start" });
-    });
-  }
+/* Export handlers (No-op if not Creator+) */
+function wireExports(){
+  const btnNotion = byId("li-notion");
+  const btnTrello = byId("li-trello");
+  const getLast = ()=> {
+    const pre = $("#demoOutput .card pre.content") || $("#demoOutput .card pre");
+    const title = (pre?.innerText?.split("\n")[0] || "ContentRepurpose Export").slice(0,120);
+    const body  = pre?.innerText || "";
+    return { title, body };
+  };
 
-  /* ---------- Misc ---------- */
-  function wireMisc(){
-    const y = byId("year"); y && (y.textContent = new Date().getFullYear());
+  btnNotion?.addEventListener("click", async ()=>{
+    if (rankFromBody()<2) return toast("Creator plan required");
+    const { title, body } = getLast();
+    if (!body) return toast("Generate something first");
     try{
-      const u = new URL(location.href);
-      const ok = u.searchParams.get("billing")==="success";
-      const no = u.searchParams.get("billing")==="cancel";
-      if (ok) toast("Billing updated — thank you!");
-      if (no) toast("Billing cancelled");
-      if (ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
-    }catch{}
+      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+        method:"POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ title, blocks: body.split(/\n\n+/).map(p=>({ type:"paragraph", text:p })) })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message||"Notion export failed");
+      toast("Sent to Notion ✅");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message||"Export error"); }
+  });
+
+  btnTrello?.addEventListener("click", async ()=>{
+    if (rankFromBody()<2) return toast("Creator plan required");
+    const { title, body } = getLast();
+    if (!body) return toast("Generate something first");
+    // Minimal: user chooses a list once elsewhere (for demo, create to default board/list via Trello UI)
+    try{
+      // If you have UI to pick list_id, plug it here; using placeholder requires your front-end addition:
+      const listId = localStorage.getItem(userScopedKey("trello:list")) || "";
+      if (!listId) { toast("Choose a Trello list in Integrations first"); return; }
+      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+        method:"POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ list_id: listId, title, description: body })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message||"Trello export failed");
+      toast("Card created on Trello ✅");
+      window.open(j.url, "_blank");
+    }catch(e){ toast(e.message||"Export error"); }
+  });
+}
+
+/* Helper: headers with Supabase token */
+async function getAuthHeaders(){
+  const h = { "Content-Type":"application/json" };
+  try{
+    const { data } = await window.supabase.auth.getSession();
+    const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
+    if (tok) h["Authorization"] = `Bearer ${tok}`; if (uid){ h["X-User-Id"] = uid; document.body.setAttribute("data-user-id", uid); }
+  }catch{}
+  return h;
+}
+function rankFromBody(){ const p = document.body.getAttribute("data-plan") || "free"; return PLAN_RANK[p] ?? 0; }
+
+/* Fetch status → paint plan + integrations; persist lightweight “connected:true/false” only */
+async function refreshPlanAndIntegrations(){
+  try{
+    const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j?.error?.message || "Status error");
+
+    // Plan was already painted by earlier boot; but resync if changed
+    const plan = (j.plan||"free").toLowerCase();
+    document.body.setAttribute("data-plan", plan);
+
+    // Persist integrations meta (no secrets)
+    const isN = !!j.integrations?.notion?.connected;
+    const isT = !!j.integrations?.trello?.connected;
+    const saved = readIntegrationsState();
+    const next  = { notion: isN, trello: isT };
+    if (saved.notion !== isN || saved.trello !== isT) saveIntegrationsState(next);
+
+    paintIntegrations({ notion:{connected:isN}, trello:{connected:isT} }, rankFromBody());
+  }catch{
+    // fallback to local cached state for badge paint
+    const saved = readIntegrationsState();
+    paintIntegrations({ notion:{connected:!!saved.notion}, trello:{connected:!!saved.trello} }, rankFromBody());
   }
+}
 
-  /* ---------- Boot ---------- */
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    await ensureSupabase();
-    await finishOAuthAndCleanUrl();
+/* ---------------- “Deep-link” routing for #demo / #optimizer / #pricing ---------------- */
+function smoothScrollTo(id){
+  const el = document.querySelector(id);
+  if (!el) return;
+  try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+}
+function handleDeepLink(){
+  const h = (location.hash||"").toLowerCase();
+  if (!h) return;
+  if (h==="#demo" || h.startsWith("#demo")) smoothScrollTo("#demo");
+  if (h==="#pricing" || h.startsWith("#pricing")) smoothScrollTo("#pricing");
+  if (h==="#optimizer" || h.startsWith("#optimizer")){
+    // Focus the optimizer textarea if present
+    smoothScrollTo("#optimizer");
+    const t = byId("optArticleInput") || $('#optimizer textarea');
+    t && t.focus();
+  }
+}
 
-    wireRouter();
-    wireNavAndAuth();
-    wireBilling();
-    wirePromo();
-    wireGenerator();
-    wireAdvisor();
-    wireQuickPublish();
-    wireMisc();
+/* ---------------- Auth guardrails ---------------- */
+function wireAuthGuards(){
+  // Any element with data-requires-auth will open sign-in if guest
+  const requires = $$("[data-requires-auth]");
+  requires.forEach(el=>{
+    el.addEventListener("click", (e)=>{
+      if (document.body.getAttribute("data-auth")!=="authed"){
+        e.preventDefault();
+        const dlg = byId("auth");
+        dlg?.showModal?.();
+      }
+    });
+  });
 
-    await fetchStatus();
-    await paintLive();
-    setInterval(paintLive, 30000);
-
-    supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session);
-      USER_ID = session?.user?.id || null;
-      fetchStatus().catch(()=>{});
-      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
+  // Ensure all “Sign in” triggers are wired
+  ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=>{
+    const el = byId(id);
+    if (!el) return;
+    el.addEventListener("click", (e)=>{
+      e.preventDefault();
+      byId("auth")?.showModal?.();
     });
   });
 }
-</script>
 
-<!-- Finisher: a11y + focus + ready -->
-<style>
-  :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
-</style>
-<script>
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      document.body.classList.add('__ready');
-      var t=document.getElementById('toast');
-      if(t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
-    }catch{}
-  });
+/* ---------------- Listen to auth changes to re-paint integrations ---------------- */
+function bootIntegrationListeners(){
+  try{
+    window.supabase?.auth?.onAuthStateChange?.((_evt, session)=>{
+      if (session?.user?.id){
+        document.body.setAttribute("data-user-id", session.user.id);
+      } else {
+        document.body.removeAttribute("data-user-id");
+      }
+      // Refresh badges after sign-in/out
+      setTimeout(refreshPlanAndIntegrations, 300);
+    });
+  }catch{}
+}
+
+/* ---------------- Boot ---------------- */
+document.addEventListener("visibilitychange", ()=>{ if (document.visibilityState==="visible") refreshPlanAndIntegrations(); });
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+  wireAuthGuards();
+  handleDeepLink();
+  await refreshPlanAndIntegrations();
+  wireExports();
+
+  // Also handle hash changes after load
+  window.addEventListener("hashchange", handleDeepLink);
+
+  // If you want a periodic gentle refresh of integration badges:
+  setInterval(()=>{ if (document.visibilityState==="visible") refreshPlanAndIntegrations(); }, 60000);
+
+  bootIntegrationListeners();
+});
 </script>
-<!-- ===== /CRP APP BOOT (FINAL) ===== -->
+<!-- ===== /CRP INTEGRATIONS + DEEP LINKS + AUTH GUARDS (Part 6) ===== -->
 </body>
-</html>
+<html>
