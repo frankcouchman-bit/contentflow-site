@@ -28,7 +28,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Global CSS (kept compact; dark-friendly) -->
+  <!-- Global CSS -->
   <style>
     :root{ --brandA:#7AA2FF; --brandB:#FF2D2D; --ink:#0a0d18 }
     html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -61,34 +61,55 @@
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .icon { width: 1rem; height: 1rem; display: inline-block; vertical-align: -0.15em; }
+    .touch-target{min-height:40px;min-width:40px}
+
+    /* Plan-gating helpers */
+    .only-guest{display:revert}
+    .only-authed{display:none}
+    .plan-free-only{display:none}
+    .plan-starter-plus{display:none}
+    .plan-creator-plus{display:none}
+    .plan-business-only{display:none}
+    body[data-auth="authed"] .only-guest{display:none}
+    body[data-auth="authed"] .only-authed{display:revert}
+    body[data-plan="free"] .plan-free-only{display:revert}
+    body[data-plan="starter"] .plan-starter-plus,
+    body[data-plan="creator"] .plan-starter-plus,
+    body[data-plan="business"] .plan-starter-plus{display:revert}
+    body[data-plan="creator"] .plan-creator-plus,
+    body[data-plan="business"] .plan-creator-plus{display:revert}
+    body[data-plan="business"] .plan-business-only{display:revert}
   </style>
 
-  <!-- JSON-LD (Organization + WebSite + App) -->
+  <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 
-  <!-- IMPORTANT: Worker base (your Cloudflare Worker) -->
+  <!-- Worker base -->
   <script>
-    // Point all fetches at your Worker
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
-    // Optional identity flags used by the bootstrap code later
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- ✅ Supabase v2 (added; non-destructive) -->
+  <!-- Supabase v2 auth (magic link + Google OAuth) — hardened -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Supabase project config (as requested)
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-    // Create client (exposed globally)
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    // 1) Init
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true   // handles magic-link redirect on this page
+      }
+    });
 
-    // Global helpers used by other scripts (non-destructive: only added if absent)
-    window.getAuth = window.getAuth || (async () => {
+    // 2) Helpers
+    window.getAuth = async () => {
       try {
         const { data } = await window.supabase.auth.getSession();
         const s = data?.session;
@@ -100,63 +121,73 @@
       } catch {
         return { token:"", userId:null, email:null };
       }
-    });
-
-    window.getAuthHeaders = window.getAuthHeaders || (async () => {
+    };
+    window.getAuthHeaders = async () => {
       const { token, userId } = await window.getAuth();
       const h = { "Content-Type": "application/json" };
       if (token)  h["Authorization"] = `Bearer ${token}`;
       if (userId) h["X-User-Id"]    = userId;
       return h;
-    });
+    };
 
-    // Minimal UI wiring for Sign in / Sign out buttons (additive only)
-    function paintAuthUI(authed) {
-      const show = (id) => document.getElementById(id)?.classList.remove("hidden");
-      const hide = (id) => document.getElementById(id)?.classList.add("hidden");
-      const has = (id) => !!document.getElementById(id);
-
-      if (has("loginBtn"))     (authed ? hide("loginBtn")     : show("loginBtn"));
-      if (has("loginBtn_m"))   (authed ? hide("loginBtn_m")   : show("loginBtn_m"));
-      if (has("logoutBtn"))    (authed ? show("logoutBtn")    : hide("logoutBtn"));
-      if (has("logoutBtn_m"))  (authed ? show("logoutBtn_m")  : hide("logoutBtn_m"));
-      if (has("manageBilling"))   authed ? show("manageBilling")   : hide("manageBilling");
-      if (has("manageBilling_m")) authed ? show("manageBilling_m") : hide("manageBilling_m");
-      if (has("planbadge"))    document.getElementById("planbadge").textContent = authed ? "Plan: Member" : "Plan: Free";
-      if (has("planbadge_m"))  document.getElementById("planbadge_m").textContent = authed ? "Plan: Member" : "Plan: Free";
+    // 3) Minimal UI paint to avoid “Plan: Member”
+    function paintAuthBadge({authed, plan="free"}){
+      document.body.setAttribute("data-auth", authed ? "authed" : "guest");
+      document.body.setAttribute("data-plan", plan);
+      const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
+      const set = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = `Plan: ${pretty}`;
+      };
+      set("planbadge"); set("planbadge_m");
+      const show = (id, on) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("hidden", !on);
+      };
+      show("loginBtn", !authed); show("loginBtn_m", !authed);
+      show("logoutBtn", authed); show("logoutBtn_m", authed);
+      show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
     }
 
-    // Email magic link sign-in (prompt-based; you can swap to OAuth later without changing existing HTML)
-    function wireAuthButtons() {
-      const loginEls  = ["loginBtn","loginBtn_m","heroSignIn"].map(id => document.getElementById(id)).filter(Boolean);
-      const logoutEls = ["logoutBtn","logoutBtn_m"].map(id => document.getElementById(id)).filter(Boolean);
-
-      loginEls.forEach(btn => btn.addEventListener("click", async () => {
-        const email = prompt("Enter your email to sign in via magic link:");
-        if (!email) return;
-        const { error } = await window.supabase.auth.signInWithOtp({ email });
-        alert(error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.");
-      }));
-
-      logoutEls.forEach(btn => btn.addEventListener("click", async () => {
-        await window.supabase.auth.signOut();
-      }));
+    // 4) Magic link sender (uses current origin; ensure this origin is whitelisted in Supabase)
+    async function doSendMagicLink() {
+      const email = document.getElementById("authEmail")?.value?.trim();
+      const note  = document.getElementById("authNote");
+      if (!email) { if (note) note.textContent = "Enter a valid email."; return; }
+      const redirectTo = window.SITE_ORIGIN || window.location.origin;
+      const { error } = await window.supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+      note.textContent = error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.";
     }
+    window.doSendMagicLink = doSendMagicLink;
 
-    // Keep UI in sync with auth state (does not modify your existing DOM beyond hiding/showing)
-    window.supabase.auth.onAuthStateChange((_event, session) => {
-      paintAuthUI(!!session);
-    });
-
-    // Initial paint + wiring after DOM is ready
+    // 5) Wire on load
     document.addEventListener("DOMContentLoaded", async () => {
-      wireAuthButtons();
+      // Dialog buttons
+      document.getElementById("authSend")?.addEventListener("click", doSendMagicLink);
+      document.getElementById("authGoogle")?.addEventListener("click", async () => {
+        try {
+          await window.supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: window.SITE_ORIGIN || window.location.origin }});
+        } catch(e){ const note=document.getElementById("authNote"); if (note) note.textContent = e?.message || "Google sign-in failed."; }
+      });
+
+      // Top-level buttons
+      const openAuth = () => { const dlg = document.getElementById("auth"); dlg?.showModal?.(); };
+      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id => document.getElementById(id)?.addEventListener("click", openAuth));
+      ["logoutBtn","logoutBtn_m"].forEach(id => document.getElementById(id)?.addEventListener("click", async ()=>{ await window.supabase.auth.signOut(); }));
+
+      // Initial paint
       const { data } = await window.supabase.auth.getSession();
-      paintAuthUI(!!data?.session);
+      const authed = !!data?.session;
+      paintAuthBadge({ authed, plan:"free" });
+
+      // Live plan paint after sign-in/out
+      window.supabase.auth.onAuthStateChange((_event, session) => {
+        paintAuthBadge({ authed: !!session, plan:"free" });
+      });
     });
   </script>
 </head>
-<body class="min-h-full" data-auth="guest">
+<body class="min-h-full" data-auth="guest" data-plan="free">
   <!-- Decorative halos -->
   <div class="halo" style="left:-14rem; top:-10rem;"></div>
   <div class="halo h2"></div>
@@ -176,17 +207,17 @@
       </a>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80" data-nav="demo">Live Demo</a>
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
-        <a href="#pricing" class="hover:opacity-80" data-nav="pricing">Pricing</a>
+        <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
-          <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
+          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden">Sign out</button>
         </div>
       </nav>
 
@@ -202,7 +233,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white" data-nav="pricing">See pricing</a>
+          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
         </div>
       </div>
     </div>
@@ -215,31 +246,33 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10" data-nav="demo_m">Live Demo</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
           <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
           <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
           <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
-          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10" data-nav="pricing_m">Pricing</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
           <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
           <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
-          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
-          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Sign out</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest">Sign in</button>
+          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden">Sign out</button>
         </div>
       </div>
     </div>
   </header>
 
   <!-- ===== HERO + CTA rail ===== -->
-  <section class="relative">
+  <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <!-- Left: copy + CTAs -->
       <div>
+        <!-- BADGE: show demo note to guests, plan badge to members -->
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+          <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+          <span class="only-authed hidden">Signed in — <strong id="heroPlanName">Free</strong> plan active</span>
         </div>
 
         <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
@@ -253,15 +286,10 @@
 
         <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90" data-action="scroll-demo" id="ctaTryDemo">
-            Try the Live Demo
-          </a>
-          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" data-nav="pricing">
-            See pricing
-          </a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60" data-action="open-auth">
-            Sign in
-          </button>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
+          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
 
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -353,7 +381,7 @@
       </div>
     </div>
 
-    <!-- Live activity strip -->
+    <!-- Live activity strip (hero) -->
     <div class="mt-8 md:mt-10">
       <div class="max-w-7xl mx-auto px-4 md:px-5">
         <div class="card p-4 md:p-5">
@@ -361,35 +389,38 @@
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <strong class="tracking-tight">Generations today</strong>
-              <span id="liveCount" class="chip">–</span>
+              <span class="chip" data-live-count>–</span>
             </div>
             <div class="text-xs text-slate-500">Real results update every 30s</div>
           </div>
           <div class="mt-3 overflow-hidden">
-            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
+            <div class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite" data-live-feed></div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- ===== LIVE DEMO ===== -->
+  <!-- ===== LIVE DEMO / GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Live Demo</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
+          <!-- Copy changes by auth state -->
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
             No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
+          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
+            Signed in — your plan limits apply per day/month by tier.
           </p>
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
-          <button id="heroSignIn" class="btn btn-primary">Sign in</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
 
-      <!-- Demo CTA rail (upsell + sign-in) -->
+      <!-- Demo/Member CTA rail -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2 text-sm">
@@ -397,13 +428,13 @@
             <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="copyPromoBtn2" class="btn">Copy code</button>
+            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
             <a class="btn btn-primary" href="#pricing">Upgrade</a>
           </div>
         </div>
       </div>
 
-      <!-- Demo Form -->
+      <!-- Generator Form -->
       <div class="card p-5 md:p-6">
         <form id="demoForm" class="grid gap-6" autocomplete="off">
           <!-- Source selector -->
@@ -442,6 +473,12 @@
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG image ideas</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> Check SEO basics (title/meta/alt-text)</label>
+            </div>
+            <!-- Daily caps by plan (helper chips) -->
+            <div class="mt-2 text-[12px] text-slate-500">
+              <span class="chip">Starter: up to 5/day</span>
+              <span class="chip">Creator: up to 15/day</span>
+              <span class="chip">Business: up to 30/day</span>
             </div>
           </fieldset>
 
@@ -495,11 +532,22 @@
 
           <!-- Actions -->
           <div class="flex flex-wrap items-center gap-3">
-            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">
+            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">
+              Generate (demo)
+            </button>
+            <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
               Generate
             </button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-            <div class="text-sm text-slate-500">You have <span id="demoQuota">—</span> demo runs left.</div>
+
+            <!-- Quota copy varies -->
+            <div class="text-sm text-slate-500 only-guest">
+              You have <span id="demoQuota">—</span> demo runs left this month.
+            </div>
+            <div class="text-sm text-slate-500 only-authed hidden">
+              You have <span id="memberQuota">—</span> runs left today.
+            </div>
+
             <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
           </div>
         </form>
@@ -510,8 +558,102 @@
         <!-- Channel cards will be injected here -->
       </div>
 
-      <!-- Live strip -->
-      <div class="mt-8 md:mt-10">
+      <!-- ===== QUICK PUBLISH (Authed only; Free can use, guests cannot) ===== -->
+      <div class="mt-10 card p-5 only-authed hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Quick publish</strong>
+          <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
+        </div>
+        <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button id="qp-x" class="btn">Post to X</button>
+          <button id="qp-reddit" class="btn">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
+          <button id="qp-email" class="btn">Send email draft</button>
+        </div>
+
+        <!-- Creator+ integrations -->
+        <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
+          <button id="li-notion" class="btn">Export to Notion</button>
+          <button id="li-trello" class="btn">Send to Trello</button>
+        </div>
+        <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
+          Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
+        </div>
+      </div>
+
+      <!-- ===== SCHEDULER (Starter+) ===== -->
+      <div class="mt-10 card p-5 plan-starter-plus">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Scheduler</strong>
+          <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
+        </div>
+
+        <!-- Composer -->
+        <div class="mt-4 grid md:grid-cols-4 gap-3">
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">Channel</span>
+            <select id="schedChannel" class="border rounded-lg px-3 py-2">
+              <option value="linkedin">LinkedIn</option>
+              <option value="x">X (Twitter)</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="reddit">Reddit</option>
+              <option value="email">Email</option>
+            </select>
+          </label>
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">When</span>
+            <input id="schedWhen" type="datetime-local" class="border rounded-lg px-3 py-2" />
+          </label>
+          <div class="md:col-span-2 grid grid-cols-2 gap-2 items-end">
+            <button id="schedAdd" class="btn btn-primary" type="button">Add to queue</button>
+            <button id="schedUseLast" class="btn" type="button">Add from last output</button>
+          </div>
+        </div>
+
+        <label class="grid gap-1 mt-3">
+          <span class="text-xs text-slate-500">Text</span>
+          <textarea id="schedText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Paste content (or generate first and use 'Add from last output')"></textarea>
+        </label>
+
+        <!-- Queue -->
+        <div class="mt-5">
+          <div class="flex items-center justify-between">
+            <strong class="text-sm">Queue</strong>
+            <div class="flex items-center gap-2">
+              <button id="schedPublish" class="btn" type="button">Publish selected</button>
+              <button id="schedClear" class="btn" type="button">Clear all</button>
+            </div>
+          </div>
+          <div id="schedEmpty" class="text-sm text-slate-500 mt-3">Nothing scheduled yet.</div>
+          <div id="schedList" class="mt-3 grid gap-3"></div>
+        </div>
+      </div>
+
+      <!-- ===== ANALYTICS ===== -->
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <!-- Starter+: basics -->
+        <div class="card p-5 plan-starter-plus">
+          <strong class="tracking-tight">Analytics (basics)</strong>
+          <div class="text-xs text-slate-500 mt-1">Per-day posts & estimated reach.</div>
+          <div id="anaBasic" class="mt-3 text-sm text-slate-400">Connect accounts to see data.</div>
+        </div>
+        <!-- Creator+: per-channel -->
+        <div class="card p-5 plan-creator-plus">
+          <strong class="tracking-tight">Analytics Pro</strong>
+          <div class="text-xs text-slate-500 mt-1">Breakdown by channel.</div>
+          <div id="anaPro" class="mt-3 text-sm text-slate-400">Coming online as you post.</div>
+        </div>
+        <!-- Business: team -->
+        <div class="card p-5 plan-business-only">
+          <strong class="tracking-tight">Team Analytics</strong>
+          <div class="text-xs text-slate-500 mt-1">Org-wide view, shared calendar.</div>
+          <div id="anaTeam" class="mt-3 text-sm text-slate-400">Invite teammates to populate.</div>
+        </div>
+      </div>
+
+      <!-- Live strip (section-local, unique IDs) -->
+      <div class="mt-10">
         <div class="card p-4 md:p-5">
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-2">
@@ -528,7 +670,6 @@
       </div>
     </div>
   </section>
-
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -544,10 +685,10 @@
           <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month of <strong>Creator</strong>.</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="copyPromoBtn_pr" class="btn">Copy code</button>
-          <a href="#demo" class="btn">Try Demo</a>
-          <button id="heroSignIn_pr" class="btn">Sign in</button>
-          <a href="#pricing" class="btn btn-primary">See plans</a>
+          <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
+          <a href="#demo" class="btn only-guest">Try Demo</a>
+          <button id="manageBilling2" class="btn hidden only-authed" type="button">Manage billing</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
 
@@ -560,7 +701,7 @@
           <ul class="mt-4 text-sm space-y-2">
             <li>• Demo (no login): <strong>5 runs / month</strong></li>
             <li>• Free account: <strong>5 runs / day</strong></li>
-            <li>• 1× <strong>Article Optimizer</strong> (once after verification)</li>
+            <li>• 1× <strong>Article Optimizer</strong> (after verification)</li>
             <li>• BYOK: <strong>5 / day</strong></li>
             <li>• CSV/Markdown export</li>
           </ul>
@@ -584,7 +725,7 @@
           </ul>
           <button
             data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-            class="subBtn mt-6 w-full btn btn-primary"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
             type="button">Get Starter</button>
         </div>
 
@@ -607,7 +748,7 @@
           </ul>
           <button
             data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-            class="subBtn mt-6 w-full btn btn-primary"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
             type="button">Get Creator</button>
         </div>
 
@@ -629,7 +770,7 @@
           </ul>
           <button
             data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-            class="subBtn mt-6 w-full btn"
+            class="mt-6 w-full btn js-checkout subBtn"
             type="button">Get Business</button>
         </div>
       </div>
@@ -699,7 +840,7 @@
       </div>
     </div>
 
-    <!-- FAQ JSON-LD (kept near the section for clarity) -->
+    <!-- FAQ JSON-LD -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -708,1271 +849,38 @@
         {
           "@type": "Question",
           "name": "What counts as a “generation”?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line." }
         },
         {
           "@type": "Question",
           "name": "Is the Article Optimizer included?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes for all paid plans (daily caps by tier). Free users get one verified run."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Yes for all paid plans (daily caps by tier). Free users get one verified run." }
         },
         {
           "@type": "Question",
           "name": "What is BYOK?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext." }
         },
         {
           "@type": "Question",
           "name": "Can I cancel anytime?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle." }
         },
         {
           "@type": "Question",
           "name": "Do you support teams?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports." }
         },
         {
           "@type": "Question",
           "name": "Which platforms can you export to?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."
-          }
+          "acceptedAnswer": { "@type": "Answer","text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram." }
         }
       ]
     }
     </script>
   </section>
-<script>
-/* ========= ContentRepurpose.pro — App wiring (Part 6/8) ========= */
 
-/* NOTE: Auth helpers come from Part 1 (Supabase). We only reference them here to avoid duplicates. */
-
-// --- CONFIG ---
-const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
-
-// --- tiny utils ---
-const $ = (q, r=document) => r.querySelector(q);
-const $$ = (q, r=document) => [...r.querySelectorAll(q)];
-const byId = (id) => document.getElementById(id);
-const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-
-function showToast(msg){
-  const t = byId("toast"), m = byId("toastMsg");
-  if (!t || !m) return alert(msg);
-  m.textContent = msg;
-  t.classList.remove("hidden");
-  setTimeout(()=> t.classList.add("hidden"), 1800);
-}
-
-// Use global auth headers from Part 1; fallback to anonymous
-async function getAuthHeaders(){
-  if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-  return { "Content-Type":"application/json" };
-}
-function extractJSON(txt){
-  try { return JSON.parse(txt); } catch {}
-  const m = String(txt||"").match(/\{[\s\S]*\}$/);
-  if (!m) return null;
-  try { return JSON.parse(m[0]); } catch { return null; }
-}
-
-// --- NAV: burger + smooth anchor ---
-(function navWire(){
-  const toggle = byId("navToggle");
-  const sheet  = byId("mobileNav");
-  const close  = byId("navClose");
-  if (toggle && sheet){
-    toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-  }
-  if (close){
-    close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-  }
-  // smooth scroll for internal anchors
-  $$('a[href^="#"]').forEach(a=>{
-    a.addEventListener("click", (e)=>{
-      const id = a.getAttribute("href");
-      if (!id || id==="#" ) return;
-      const el = $(id);
-      if (el){
-        e.preventDefault();
-        el.scrollIntoView({ behavior:"smooth", block:"start" });
-        document.body.classList.remove("nav-open");
-        history.replaceState(null,"",id);
-      }
-    });
-  });
-})();
-
-// --- Promo copy buttons (header + pricing rail) ---
-["copyPromoBtn", "copyPromoBtn_pr"].forEach(id=>{
-  const btn = byId(id);
-  if (!btn) return;
-  btn.addEventListener("click", async ()=>{
-    try { await navigator.clipboard.writeText("CONTENTOFF90"); showToast("Code copied ✅"); }
-    catch { showToast("Copy failed"); }
-  });
-});
-
-// --- Sign-in modal triggers (hero + pricing rail + header) ---
-["heroSignIn", "heroSignIn_pr", "loginBtn", "loginBtn_m"].forEach(id=>{
-  const b = byId(id);
-  if(!b) return;
-  b.addEventListener("click", ()=>{
-    // Part 1 wires magic-link prompt; if you have a <dialog id="auth"> it will still work
-    const dlg = byId("auth");
-    if (dlg && typeof dlg.showModal==="function") dlg.showModal();
-  });
-});
-
-// --- Manage Billing (Stripe portal) ---
-["manageBilling","manageBilling2","manageBilling_m"].forEach(id=>{
-  const b = byId(id);
-  if(!b) return;
-  b.classList.remove("hidden");
-  b.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
-        method:"POST", headers: await getAuthHeaders(),
-        body: JSON.stringify({ return_url: location.origin })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Billing error"); }
-  });
-});
-
-// --- Checkout buttons (plans) ---
-$$(".subBtn").forEach(btn=>{
-  btn.addEventListener("click", async ()=>{
-    const price = btn.getAttribute("data-price");
-    if(!price) return;
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ price, success_url: `${location.origin}/?billing=success`, cancel_url: `${location.origin}/?billing=cancel` })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Checkout error"); }
-  });
-});
-
-// --- Live stats ticker (light) ---
-(async function liveStats(){
-  const countEl = byId("liveCount");
-  if (!countEl) return;
-  async function tick(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/stats/today`);
-      const j = await r.json();
-      if (r.ok && typeof j.today_count === "number"){
-        countEl.textContent = j.today_count.toString();
-      }
-    }catch{}
-  }
-  tick();
-  setInterval(tick, 30000);
-})();
-
-// --- DEMO: form -> generate ---
-(function demoWire(){
-  const form = byId("demoForm");
-  const src  = byId("sourceText");
-  const outWrap = byId("demoOutput");
-  const quotaEl = byId("demoQuota");
-  const generateBtn = byId("generateBtn");
-  const clearBtn = byId("clearBtn");
-
-  if (!form || !src || !outWrap) return;
-
-  clearBtn?.addEventListener("click", ()=>{
-    src.value = "";
-    outWrap.innerHTML = "";
-  });
-
-  // basic “remaining” paint from status endpoint (guest or authed)
-  (async function paintQuota(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (r.ok){
-        if (j.scope==="ip"){
-          const cap = j.platform?.monthly?.cap ?? 5;
-          const used = j.platform?.monthly?.used ?? 0;
-          const left = Math.max(0, cap - used);
-          if (quotaEl) quotaEl.textContent = left;
-        } else {
-          const capD = j.platform?.daily?.cap ?? 5;
-          const usedD = j.platform?.daily?.used ?? 0;
-          const left = (capD==null) ? "∞" : Math.max(0, capD - usedD);
-          if (quotaEl) quotaEl.textContent = left;
-        }
-      }
-    }catch{}
-  })();
-
-  function readToggles(){
-    const g = (n)=> form.elements[n];
-    return {
-      // optimizers
-      opt: {
-        humanize:  g("opt_humanize")?.checked,
-        lengthen:  g("opt_lengthen")?.checked,
-        faqs:      g("opt_faqs")?.checked,
-        headings:  g("opt_headings")?.checked,
-        svg:       g("opt_svg")?.checked,
-        seo:       g("opt_seo")?.checked
-      },
-      // channels
-      ch: {
-        linkedin:  g("ch_linkedin")?.checked,
-        x:         g("ch_x")?.checked,
-        email:     g("ch_email")?.checked,
-        instagram: g("ch_instagram")?.checked,
-        reddit:    g("ch_reddit")?.checked,
-        facebook:  g("ch_facebook")?.checked,
-        quora:     g("ch_quora")?.checked,
-        tiktok:    g("ch_tiktok")?.checked,
-      },
-      // channel extras
-      extras: {
-        li_article: g("li_article")?.checked,
-        x_sequence: g("x_sequence")?.checked,
-        x_posts:    g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked,
-        rdt_comments:    g("rdt_comments")?.checked,
-        tt_hooks:   g("tt_hooks")?.checked,
-        tt_onscreen:g("tt_onscreen")?.checked
-      }
-    };
-  }
-
-  function systemPrompt(tog){
-    // Strict JSON envelope for robust parsing
-    return {
-      role:"system",
-      content:
-`You are a senior social copywriter.
-Return ONLY valid JSON with this shape:
-{
-  "outline": string,
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Respect these toggles: 
-- Humanize: ${tog.opt.humanize ? "on" : "off"}
-- Lengthen: ${tog.opt.lengthen ? "on" : "off"}
-- Add FAQs: ${tog.opt.faqs ? "on" : "off"}
-- Auto-headings: ${tog.opt.headings ? "on" : "off"}
-- SVG ideas: ${tog.opt.svg ? "on" : "off"}
-- SEO basics: ${tog.opt.seo ? "on" : "off"}
-- X posts max: ${tog.extras.x_posts}
-- X sequence format: ${tog.extras.x_sequence ? "on (Post 1…N)" : "off"}
-- LinkedIn Article: ${tog.extras.li_article ? "on" : "off"}
-- Reddit communities: ${tog.extras.rdt_communities ? "include" : "skip"}
-- Reddit starter comments: ${tog.extras.rdt_comments ? "include" : "skip"}
-- TikTok hooks: ${tog.extras.tt_hooks ? "3 variants" : "1 variant"}
-- TikTok on-screen text: ${tog.extras.tt_onscreen ? "include" : "skip"}
-
-Rules:
-- Keep posts concise, skimmable and platform-native.
-- X posts ≤ 280 chars when possible; if a thread is required, prefix "Post N:" per item.
-- Provide meaningful hashtags (3–5) for Instagram.
-- If a field/channel wasn't requested, set it to null; do NOT invent.
-- NO prose outside the JSON.`
-    };
-  }
-
-  function userPrompt(raw, tog){
-    const srcType = form.elements["sourceType"]?.value || "paragraph";
-    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return {
-      role:"user",
-      content:
-`${head}:
-${raw}
-
-Task:
-1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`
-    };
-  }
-
-  function paintOutput(j){
-    outWrap.innerHTML = ""; // clear first
-    // LinkedIn
-    if (j.linkedin){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-li"/></svg>LinkedIn</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>
-        </div>`);
-    }
-    // X
-    if (Array.isArray(j.x) && j.x.length){
-      const seq = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-x"/></svg>X (Twitter)</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>
-          <div class="text-xs text-slate-500 mt-2">Sequence format: “Post 1 … Post N”.</div>
-        </div>`);
-    }
-    // Email
-    if (j.email && (j.email.subject || j.email.body)){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-mail"/></svg>Email</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Subject:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Body:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>
-        </div>`);
-    }
-    // Instagram
-    if (j.instagram){
-      const cap = j.instagram.caption||"";
-      const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-ig"/></svg>Instagram</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>
-        </div>`);
-    }
-    // Reddit
-    if (j.reddit){
-      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-      const starters = (j.reddit.starter_comments||[]).map((c,i)=>`• ${c}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-reddit"/></svg>Reddit</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Main post:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${subs || "—"}</pre>
-          <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${starters || "—"}</pre>
-        </div>`);
-    }
-    // Facebook
-    if (j.facebook){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-fb"/></svg>Facebook</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Primary text:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>
-        </div>`);
-    }
-    // Quora
-    if (j.quora){
-      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-quora"/></svg>Quora</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Answer:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${follow || "—"}</pre>
-        </div>`);
-    }
-    // TikTok
-    if (j.tiktok){
-      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-tt"/></svg>TikTok</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Script:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Hooks:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${hooks || "—"}</pre>
-          <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${ons || "—"}</pre>
-        </div>`);
-    }
-
-    // copy buttons inside outputs
-    $$(".card .btn.copy", outWrap).forEach(b=>{
-      b.addEventListener("click", async ()=>{
-        const pre = b.closest(".card")?.querySelector("pre.content");
-        if (!pre) return;
-        try{ await navigator.clipboard.writeText(pre.innerText); showToast("Copied ✅"); }
-        catch{ showToast("Copy failed"); }
-      });
-    });
-  }
-
-  form.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    const raw = (src.value||"").trim();
-    if (!raw){ showToast("Paste some content first"); return; }
-
-    try{
-      generateBtn.disabled = true; generateBtn.textContent = "Generating…";
-      outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-
-      const tog = readToggles();
-      const messages = [ systemPrompt(tog), userPrompt(raw, tog) ];
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ plan: "free", temperature: 0.5, messages })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-
-      const content = data?.choices?.[0]?.message?.content || "";
-      const j = extractJSON(content);
-      if (!j) throw new Error("Model did not return JSON");
-
-      paintOutput(j);
-      showToast("Done ✅");
-    }catch(e){
-      outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
-    }finally{
-      generateBtn.disabled = false; generateBtn.textContent = "Generate";
-    }
-  });
-})();
-
-// --- Footer year ---
-(function(){ const y = byId("year"); if (y) y.textContent = new Date().getFullYear(); })();
-</script>
-
-<script>
-/* ========= ContentRepurpose.pro — Member wiring (Part 7/8) ========= */
-
-(function memberBoot(){
-  const elMember = byId("memberView");
-  if (!elMember) return; // safety if member section not present
-
-  // Use global auth headers from Part 1 if present
-  async function getAuthHeadersLocal(){
-    if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-    return { "Content-Type":"application/json" };
-  }
-
-  // ---- PLAN + QUOTA PAINT ----
-  async function paintStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Status error");
-
-      // Header badges
-      const plan = (j.plan || "free").toLowerCase();
-      if (byId("memberPlanBadge")) byId("memberPlanBadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
-
-      // Header manage billing visibility for paid
-      if (plan !== "free"){
-        ["manageBilling2","manageBilling","manageBilling_m"].forEach(id => byId(id)?.classList.remove("hidden"));
-      }
-
-      // Top quota chips
-      const qc = byId("quotaCards");
-      if (qc){
-        const pd = j.platform?.daily || {used:0, cap:null};
-        const pm = j.platform?.monthly || {used:0, cap:null};
-        const bd = j.byok?.daily || {used:0, cap:0};
-        const bm = j.byok?.monthly || {used:0, cap:0};
-        qc.innerHTML = `
-          <div class="stat"><div class="text-xs text-slate-500">Platform • Today</div><div class="k">${pd.used}/${pd.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">Platform • This month</div><div class="k">${pm.used}/${pm.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • Today</div><div class="k">${bd.used}/${bd.cap ?? "—"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • This month</div><div class="k">${bm.used}/${bm.cap ?? "—"}</div></div>
-        `;
-      }
-
-      // “Today: x/y” chip near Create
-      const q = byId("quotaMember");
-      if (q){
-        const used = j.platform?.daily?.used ?? 0;
-        const cap  = j.platform?.daily?.cap ?? 5;
-        q.textContent = `Today: ${used}/${cap ?? "∞"}`;
-      }
-
-      // Feature list
-      const fl = byId("featureList");
-      if (fl){
-        let feats = [];
-        if (plan==="free"){
-          feats = [
-            "5 runs/day • signed-in",
-            "Article Optimizer • one-time trial",
-            "Export CSV/Markdown",
-            "BYOK: 5/day"
-          ];
-        } else if (plan==="starter"){
-          feats = [
-            "200 generations/month",
-            "Batch (up to 5 lines/run)",
-            "10 saved presets",
-            "Scheduler (queue & calendar)",
-            "Analytics (basics)",
-            "BYOK: 50/month (+5 daily headroom)"
-          ];
-        } else if (plan==="creator"){
-          feats = [
-            "500 generations/month",
-            "Unlimited presets",
-            "Project pack export",
-            "Notion & Trello export",
-            "Buffer queue",
-            "Analytics Pro (per-channel)",
-            "BYOK: 150/month (+10 daily)"
-          ];
-        } else {
-          feats = [
-            "Unlimited (fair use)",
-            "3 seats included",
-            "White-label export",
-            "Team presets & shared calendar",
-            "Priority support",
-            "Team Analytics (org-wide)",
-            "BYOK: 300/month (+30 daily)"
-          ];
-        }
-        fl.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
-      }
-
-      // Integrations badges (if already connected)
-      const iNotion = j.integrations?.notion?.connected;
-      const iTrello = j.integrations?.trello?.connected;
-      if (byId("notionState")) byId("notionState").textContent = iNotion ? "Connected" : "Disconnected";
-      if (byId("trelloState")) byId("trelloState").textContent = iTrello ? "Connected" : "Disconnected";
-      if (iNotion){ byId("connectNotion")?.classList.add("hidden"); byId("disconnectNotion")?.classList.remove("hidden"); }
-      if (iTrello){ byId("connectTrello")?.classList.add("hidden"); byId("disconnectTrello")?.classList?.remove("hidden"); } // (disconnectTrello not in DOM in this rev)
-
-      // Team section visibility (Business)
-      const teamCard = byId("teamCard");
-      if (teamCard){
-        teamCard.style.display = (plan==="business") ? "" : "none";
-        if (plan==="business") refreshOrgMembers();
-      }
-
-      // White-label toggle
-      const wl = byId("whitelabel");
-      const wlLabel = byId("wlLabel");
-      if (wl && wlLabel){
-        const enabled = !!(j.org && j.org.white_label);
-        wl.checked = enabled;
-        wlLabel.classList.remove("hidden");
-      }
-    }catch(e){ /* non-fatal */ }
-  }
-  paintStatus();
-
-  // ---- BYOK SAVE/GET ----
-  byId("save_m")?.addEventListener("click", async ()=>{
-    const provider = byId("byok_provider_m")?.value || "";
-    const key      = byId("byok_key_m")?.value?.trim() || "";
-    const base     = byId("byok_base_m")?.value?.trim() || "";
-    const model    = byId("model_m")?.value?.trim() || "";
-    if (!key){ showToast("Add your API key first"); return; }
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/byok/save`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify({ provider, key, base, model })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Could not save");
-      showToast("BYOK saved ✅");
-    }catch(e){ showToast(e.message || "Save failed"); }
-  });
-
-  (async function hydrateBYOK(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/byok/get`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) return;
-      if (byId("byok_provider_m")) byId("byok_provider_m").value = j.provider || "";
-      if (byId("byok_key_m"))      byId("byok_key_m").value      = j.key || "";
-      if (byId("byok_base_m"))     byId("byok_base_m").value     = j.base || "";
-      if (byId("model_m"))         byId("model_m").value         = j.model || "";
-    }catch{}
-  })();
-
-  // ---- MEMBER GENERATE (platform & BYOK) ----
-  const gsrc   = byId("source_m");
-  const gst    = byId("status_m");
-  const outIds = {
-    li: "out-li_m", liArticle: "out-li-article_m",
-    x: "out-x_m",
-    emSubj: "out-em-subj_m", emBody:"out-em-body_m",
-    ig: "out-ig_m",
-    reddit: "out-reddit_m", redditSubs:"out-reddit-subs_m", redditCom:"out-reddit-comments_m",
-    fb: "out-fb_m", fbMeta:"out-fb-meta_m",
-    quora: "out-quora_m", quoraP:"out-quora-prompts_m",
-    tt: "out-tt_m", ttOn: "out-tt-onscreen_m"
-  };
-  function clearMemberOutputs(){
-    Object.values(outIds).forEach(id => {
-      const el = byId(id);
-      if (!el) return;
-      if (el.tagName==="UL") el.innerHTML = "";
-      else el.textContent = "";
-    });
-  }
-  function readMemberToggles(){
-    return {
-      opt: {
-        humanize:  byId("opt_humanize_m")?.checked,
-        lengthen:  byId("opt_lengthen_m")?.checked,
-        faqs:      byId("opt_faqs_m")?.checked,
-        headings:  byId("opt_headings_m")?.checked,
-        svg:       byId("opt_svg_m")?.checked,
-        seo:       byId("opt_seo_m")?.checked
-      }
-    };
-  }
-
-  function sysMember(){
-    return {
-      role:"system",
-      content:
-`You are a social + editorial repurposer. Return ONLY valid JSON with keys:
-{
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hashtags 3–5; NO prose outside JSON.`
-    };
-  }
-  function usrMember(src){
-    return { role:"user", content:`Source:\n${src}\n\nGenerate for LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. If missing context, be conservative.` };
-  }
-  function paintMember(j){
-    // LI
-    if (j.linkedin && byId(outIds.li)) byId(outIds.li).textContent = j.linkedin;
-    if (j.linkedin_article_html && byId(outIds.liArticle)) byId(outIds.liArticle).innerHTML = j.linkedin_article_html;
-
-    // X
-    if (Array.isArray(j.x) && j.x.length && byId(outIds.x)){
-      byId(outIds.x).textContent = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
-    }
-
-    // Email
-    if (j.email){
-      if (byId(outIds.emSubj)) byId(outIds.emSubj).textContent = j.email.subject || "";
-      if (byId(outIds.emBody)) byId(outIds.emBody).textContent = j.email.body || "";
-    }
-
-    // IG
-    if (j.instagram){
-      const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-      if (byId(outIds.ig)) byId(outIds.ig).textContent = `${j.instagram.caption||""}\n\n${tags}`;
-    }
-
-    // Reddit
-    if (j.reddit){
-      if (byId(outIds.reddit)) byId(outIds.reddit).textContent = `**${j.reddit.title||""}**\n\n${j.reddit.body||""}`;
-      if (byId(outIds.redditSubs)) byId(outIds.redditSubs).innerHTML = (j.reddit.communities||[]).slice(0,8).map(s=>`<li>r/${s}</li>`).join("");
-      if (byId(outIds.redditCom)) byId(outIds.redditCom).textContent = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-    }
-
-    // FB
-    if (j.facebook){
-      if (byId(outIds.fb)) byId(outIds.fb).textContent = j.facebook.primary || "";
-      if (byId(outIds.fbMeta)) byId(outIds.fbMeta).textContent = `${j.facebook.meta?.headline||""}\n${j.facebook.meta?.description||""}`;
-    }
-
-    // Quora
-    if (j.quora){
-      if (byId(outIds.quora)) byId(outIds.quora).textContent = j.quora.answer || "";
-      if (byId(outIds.quoraP)) byId(outIds.quoraP).textContent = (j.quora.followups||[]).map(x=>`• ${x}`).join("\n");
-    }
-
-    // TikTok
-    if (j.tiktok){
-      if (byId(outIds.tt)) byId(outIds.tt).textContent = j.tiktok.script || "";
-      if (byId(outIds.ttOn)) byId(outIds.ttOn).textContent = (j.tiktok.onscreen||[]).map(x=>`• ${x}`).join("\n");
-    }
-  }
-
-  async function runMember({ lane="platform" }={}){
-    const raw = (gsrc?.value||"").trim();
-    if (!raw){ showToast("Paste an idea, excerpt, or URL first"); return; }
-    const btn = (lane==="byok") ? byId("run-byok_m") : byId("run_m");
-    try{
-      btn && (btn.disabled=true, btn.textContent="Generating…");
-      gst && (gst.textContent="Working…");
-      clearMemberOutputs();
-
-      const messages = [ sysMember(readMemberToggles()), usrMember(raw) ];
-      const body = { messages, temperature: 0.4 };
-      if (lane==="byok"){ body.plan = "byok"; body.use_byok = true; }
-      else { body.plan = "member"; }
-
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify(body)
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-
-      const content = data?.choices?.[0]?.message?.content || "";
-      const j = (function(){ try { return JSON.parse(content); } catch { return null; } })() || (function(){
-        const m = String(content||"").match(/\{[\s\S]*\}$/); if (!m) return null;
-        try { return JSON.parse(m[0]); } catch { return null; }
-      })();
-      if (!j) throw new Error("Model did not return JSON");
-
-      paintMember(j); 
-      gst && (gst.textContent="Done ✅");
-      bumpAnalytics("generation"); // local analytics
-    }catch(e){
-      gst && (gst.textContent = `Error: ${e.message || e}`);
-    }finally{
-      btn && (btn.disabled=false, btn.textContent = (lane==="byok") ? "Generate with your BYOK" : "Generate");
-      paintStatus();
-    }
-  }
-
-  byId("run_m")?.addEventListener("click", ()=> runMember({ lane:"platform" }));
-  byId("run-byok_m")?.addEventListener("click", ()=> runMember({ lane:"byok" }));
-  byId("clear_m")?.addEventListener("click", ()=>{
-    gsrc && (gsrc.value = "");
-    clearMemberOutputs();
-    gst && (gst.textContent="";
-    );
-  });
-
-  // ---- EXPORTS (Notion, Trello) ----
-  // Notion: simple page composed from LinkedIn + X
-  byId("li-notion")?.classList.remove("hidden");
-  byId("li-notion")?.addEventListener("click", async ()=>{
-    const title = "LinkedIn draft";
-    const blocks = [];
-    const li = byId(outIds.li)?.textContent || "";
-    const x  = byId(outIds.x)?.textContent || "";
-    if (li) blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: li });
-    if (x)  blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: x });
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify({ title, blocks })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
-      showToast("Sent to Notion ✅");
-      window.open(j.url, "_blank");
-    }catch(e){ showToast(e.message || "Notion export failed"); }
-  });
-
-  // Trello: open modal and send
-  const trelloBtn = byId("li-trello");
-  const trelloDialog = byId("trelloModal");
-  if (trelloBtn && trelloDialog){
-    trelloBtn.classList.remove("hidden");
-    trelloBtn.addEventListener("click", ()=> trelloDialog.showModal());
-    byId("trelloConfirm")?.addEventListener("click", async ()=>{
-      const board_id = byId("trelloBoardId")?.value?.trim();
-      const list_id  = byId("trelloListId")?.value?.trim();
-      if (!list_id){ showToast("Enter List ID"); return; }
-      const title = "Social Draft";
-      const description = [
-        "LinkedIn:\n"+(byId(outIds.li)?.textContent||""),
-        "\nX:\n"+(byId(outIds.x)?.textContent||"")
-      ].join("\n");
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-          method:"POST", headers: await getAuthHeadersLocal(),
-          body: JSON.stringify({ board_id, list_id, title, description })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-        showToast("Sent to Trello ✅");
-        trelloDialog.close();
-        if (j.url) window.open(j.url, "_blank");
-      }catch(e){ showToast(e.message || "Trello export failed"); }
-    });
-  }
-
-  // Connect Trello / Notion
-  byId("connectTrello")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Trello OAuth failed");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Trello connect failed"); }
-  });
-  byId("connectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Notion OAuth failed");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Notion connect failed"); }
-  });
-  byId("disconnectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers: await getAuthHeadersLocal() });
-      if (!r.ok){ const j = await r.json(); throw new Error(j?.error?.message || "Disconnect failed"); }
-      showToast("Notion disconnected");
-      paintStatus();
-    }catch(e){ showToast(e.message || "Notion disconnect failed"); }
-  });
-
-  // ---- EMAIL PREVIEW ----
-  const emailDlg = byId("emailPreview");
-  byId("publish-em_m")?.addEventListener("click", ()=>{
-    if (!emailDlg) return;
-    byId("emailSubjEdit").value = byId(outIds.emSubj)?.textContent || "";
-    byId("emailBodyEdit").value = byId(outIds.emBody)?.textContent || "";
-    emailDlg.showModal();
-  });
-  byId("emailSendBtn")?.addEventListener("click", ()=>{
-    const subj = encodeURIComponent(byId("emailSubjEdit").value || "");
-    const body = encodeURIComponent(byId("emailBodyEdit").value || "");
-    location.href = `mailto:?subject=${subj}&body=${body}`;
-  });
-
-  // ---- COPY buttons (member) ----
-  function simpleCopy(id, btnId){
-    const b = byId(btnId);
-    if (!b) return;
-    b.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText(byId(id)?.textContent || ""); showToast("Copied ✅"); }
-      catch{ showToast("Copy failed"); }
-    });
-  }
-  simpleCopy(outIds.li, "copy-li_m");
-  simpleCopy(outIds.x,  "copy-x_m");
-  simpleCopy(outIds.emSubj, "copy-em_m"); // copies subject only; body is in preview modal
-  simpleCopy(outIds.ig, "copy-ig_m");
-  simpleCopy(outIds.reddit, "copy-reddit_m");
-  simpleCopy(outIds.fb, "copy-fb_m");
-  simpleCopy(outIds.quora, "copy-quora_m");
-  simpleCopy(outIds.tt, "copy-tt_m");
-
-  // ---- Scheduler (local-only queue UI) ----
-  const schedKey = "crp_scheduler_queue_v1";
-  const schedList = byId("schedList");
-  function loadSched(){ try{ return JSON.parse(localStorage.getItem(schedKey)||"[]"); }catch{return [];} }
-  function saveSched(arr){ localStorage.setItem(schedKey, JSON.stringify(arr)); }
-  function paintSched(){
-    const items = loadSched().sort((a,b)=> new Date(a.when) - new Date(b.when));
-    if (!schedList) return;
-    schedList.innerHTML = items.map((it,i)=> `<li class="p-2 rounded-lg border flex items-center justify-between"><span class="text-xs">${new Date(it.when).toLocaleString()} • ${it.channel}</span><button data-i="${i}" class="btn text-xs">Remove</button></li>`).join("");
-    $$("button[data-i]", schedList).forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const i = Number(btn.getAttribute("data-i"));
-        const arr = loadSched(); arr.splice(i,1); saveSched(arr); paintSched();
-      });
-    });
-  }
-  byId("schedSave")?.addEventListener("click", ()=>{
-    const ch = byId("schedChannel")?.value || "linkedin";
-    const when = byId("schedWhen")?.value;
-    const content = byId("schedContent")?.value?.trim() || "";
-    if (!when || !content){ showToast("Pick date/time and paste content"); return; }
-    const arr = loadSched(); arr.push({ channel: ch, when, content }); saveSched(arr); paintSched(); showToast("Added to queue ✅");
-  });
-  byId("schedClear")?.addEventListener("click", ()=>{
-    byId("schedContent").value = ""; showToast("Cleared");
-  });
-  paintSched();
-
-  // ---- Analytics (local only; augments with live count) ----
-  const anCount = byId("anCount");
-  const anTop   = byId("anTop");
-  const anRecent = byId("anRecent");
-  const anChart = byId("anChart"); // placeholder box
-  const analyticsKey = "crp_local_analytics_v1";
-  function getAn(){ try{ return JSON.parse(localStorage.getItem(analyticsKey)||"{}"); }catch{return{}}; }
-  function setAn(obj){ localStorage.setItem(analyticsKey, JSON.stringify(obj)); }
-  function bumpAnalytics(kind){
-    const an = getAn();
-    an.events = an.events || [];
-    an.events.push({ t: Date.now(), kind });
-    setAn(an);
-    paintAnalytics();
-  }
-  function paintAnalytics(){
-    const an = getAn();
-    const events = (an.events||[]).filter(e => Date.now() - e.t < 1000*60*60*24*90); // last 90d
-    const byDay = {};
-    events.forEach(e=>{
-      const d = new Date(e.t).toISOString().slice(0,10);
-      byDay[d] = (byDay[d]||0)+1;
-    });
-    const total = events.length;
-    if (anCount) anCount.textContent = String(total);
-    if (anTop) anTop.textContent = "LinkedIn"; // placeholder until real per-channel telemetry
-    if (anRecent) anRecent.innerHTML = events.slice(-5).reverse().map(e=>`<li class="p-2 rounded-lg border text-xs">Generated • ${new Date(e.t).toLocaleString()}</li>`).join("");
-    if (anChart){ anChart.textContent = "Volume (local): " + Object.values(byDay).slice(-7).join(", ");
-    }
-  }
-  paintAnalytics();
-  window.bumpAnalytics = bumpAnalytics; // used by generator painting
-
-  // ---- Presets (save/load/delete) ----
-  const presetList = byId("presetList"); // optional: if you add a list
-  async function loadPresets(){
-    if (!presetList) return;
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Load presets failed");
-      const arr = j.presets || [];
-      presetList.innerHTML = arr.length ? arr.map(p=>`<li class="p-2 rounded-lg border flex items-center justify-between">
-        <span class="text-xs">${p.title}</span>
-        <div class="flex gap-2">
-          <button data-id="${p.id}" class="btn text-xs loadPreset">Load</button>
-          <button data-id="${p.id}" class="btn text-xs delPreset">Delete</button>
-        </div>
-      </li>`).join("") : `<li class="text-xs text-slate-500">No presets yet</li>`;
-      $$(".loadPreset", presetList).forEach(b=> b.addEventListener("click", ()=> showToast("Preset load stub (map to UI fields)")));
-      $$(".delPreset", presetList).forEach(b=> b.addEventListener("click", async ()=>{
-        const id = b.getAttribute("data-id");
-        const r = await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ id }) });
-        if (!r.ok){ const jj = await r.json(); showToast(jj?.error?.message || "Delete failed"); return; }
-        showToast("Preset deleted"); loadPresets();
-      }));
-    }catch(e){ /* non-fatal */ }
-  }
-  loadPresets();
-
-  // ---- Teams (Business)
-  async function refreshOrgMembers(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/org/members`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Org members error");
-      const list = byId("seatList");
-      if (list){
-        list.innerHTML = (j.members||[]).map(m=> `<li class="p-2 rounded-lg border text-xs flex items-center justify-between">
-          <span>${m.email || m.user_id}</span>
-          ${j.owner_id===m.user_id ? `<span class="chip">Owner</span>` : `<button data-id="${m.user_id}" class="btn text-xs removeSeat">Remove</button>`}
-        </li>`).join("") + (j.invites && j.invites.length ? `<li class="p-2 rounded-lg border text-xs">Invites: ${j.invites.map(i=>i.email).join(", ")}</li>` : "");
-        $$(".removeSeat", list).forEach(b=>{
-          b.addEventListener("click", async ()=>{
-            const uid = b.getAttribute("data-id");
-            const r2 = await fetch(`${WORKER_BASE}/api/org/remove`, {
-              method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ user_id: uid })
-            });
-            if (!r2.ok){ const jj = await r2.json(); showToast(jj?.error?.message || "Remove failed"); return; }
-            showToast("Removed"); refreshOrgMembers();
-          });
-        });
-      }
-    }catch(e){ /* non-fatal */ }
-  }
-  byId("inviteBtn")?.addEventListener("click", async ()=>{
-    try{
-      // ensure org exists
-      await fetch(`${WORKER_BASE}/api/org/ensure`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ name:"Your Team" }) });
-      const email = byId("inviteEmail")?.value?.trim();
-      if (!email){ showToast("Enter an email"); return; }
-      const r = await fetch(`${WORKER_BASE}/api/org/invite`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ email }) });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Invite failed");
-      showToast("Invite sent ✅");
-      byId("inviteEmail").value = "";
-      refreshOrgMembers();
-    }catch(e){ showToast(e.message || "Invite failed"); }
-  });
-
-})();
-</script>
-
-<script>
-/* ========= ContentRepurpose.pro — Final polish (Part 8/8) ========= */
-
-(function finalPolish(){
-  // --- Shortcuts to shared helpers from earlier parts ---
-  const $  = (sel, el=document) => el.querySelector(sel);
-  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const byId = id => document.getElementById(id);
-  const noop = ()=>{};
-  const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-
-  // --- Safe toast (reuses Part 6’s showToast if present) ---
-  function toast(msg){
-    if (typeof window.showToast === "function") return window.showToast(msg);
-    console.log("[toast]", msg);
-  }
-
-  // --- Smooth scroll to anchors/sections ---
-  function smoothScrollTo(el){
-    try{ el?.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el?.scrollIntoView(); }
-  }
-
-  // --- Tiny router: #demo, #pricing, #signin, #member ---
-  async function routeFromHash(){
-    const h = (location.hash||"").replace(/^#/, "").toLowerCase();
-    if (!h) return;
-
-    if (h==="demo"){
-      const v = byId("demoView") || byId("hero") || byId("demo");
-      smoothScrollTo(v);
-      byId("source")?.focus();
-      return;
-    }
-    if (h==="pricing"){
-      const v = byId("pricing") || byId("plans");
-      smoothScrollTo(v);
-      return;
-    }
-    if (h==="signin" || h==="login"){
-      if (typeof window.doSignIn === "function") return window.doSignIn().catch(noop);
-      toast("Sign-in is available from the top-right button.");
-      return;
-    }
-    if (h==="member" || h==="dashboard"){
-      const v = byId("memberView") || byId("hero");
-      smoothScrollTo(v);
-      return;
-    }
-  }
-  window.addEventListener("hashchange", routeFromHash);
-  routeFromHash();
-
-  // --- “Try Demo” / hero buttons ---
-  const tryDemoBtns = $$('[data-action="try-demo"]');
-  tryDemoBtns.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      location.hash = "demo";
-      const pre = btn.getAttribute("data-prefill");
-      if (pre && byId("source")) byId("source").value = pre;
-    });
-  });
-
-  // --- “Sign in” buttons (header + hero) ---
-  const signInBtns = $$('[data-action="sign-in"]');
-  signInBtns.forEach(b=>{
-    b.addEventListener("click", async ()=>{
-      if (typeof window.doSignIn === "function"){
-        try{ await window.doSignIn(); }catch(e){ toast(e.message||"Sign-in failed"); }
-      }else{
-        location.hash = "signin";
-      }
-    });
-  });
-
-  // --- “Copy code” (coupon, snippets) ---
-  $$('[data-copy]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const val = btn.getAttribute("data-copy") || btn.textContent.trim();
-      try{ await navigator.clipboard.writeText(val); toast("Copied ✓"); }
-      catch{ toast("Copy failed"); }
-    });
-  });
-
-  // --- FAQ accordion (keyboard + a11y) ---
-  $$('.faq-item').forEach(item=>{
-    const header = $('.faq-q', item);
-    const panel  = $('.faq-a', item);
-    if (!header || !panel) return;
-    const id = header.id || ('faq_' + Math.random().toString(36).slice(2));
-    header.id = id;
-    header.setAttribute('role','button');
-    header.setAttribute('tabindex','0');
-    header.setAttribute('aria-expanded','false');
-    panel.setAttribute('role','region');
-    panel.setAttribute('aria-labelledby', id);
-    panel.hidden = true;
-
-    function toggle(){
-      const open = header.getAttribute('aria-expanded') === 'true';
-      header.setAttribute('aria-expanded', String(!open));
-      panel.hidden = open;
-    }
-    header.addEventListener('click', toggle);
-    header.addEventListener('keydown', (e)=>{
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-      if (e.key === 'ArrowDown'){ e.preventDefault(); header.parentElement?.nextElementSibling?.querySelector?.('.faq-q')?.focus(); }
-      if (e.key === 'ArrowUp'){ e.preventDefault(); header.parentElement?.previousElementSibling?.querySelector?.('.faq-q')?.focus(); }
-    });
-  });
-
-  // --- Pricing CTAs → checkout
-  async function getAuthHeaders(){
-    if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-    return { "Content-Type":"application/json" };
-  }
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-
-  $$('[data-checkout="stripe"]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const price = btn.getAttribute("data-price") || "";
-      if (!price){ toast("Missing price id on button"); return; }
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
-      try{
-        const body = {
-          price,
-          success_url: location.origin + "/?billing=success",
-          cancel_url:  location.origin + "/?billing=cancel"
-        };
-        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify(body)
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No checkout URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open checkout");
-        btn.disabled = false; btn.textContent = old;
-      }
-    });
-  });
-
-  // --- Manage billing (Customer Portal) ---
-  $$('[data-portal="stripe"]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ return_url: location.href })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No portal URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open billing portal");
-        btn.disabled = false; btn.textContent = old;
-      }
-    });
-  });
-
-  // --- Auto-apply referral codes from ?ref=...
-  (async function applyReferral(){
-    try{
-      const u = new URL(location.href);
-      const ref = u.searchParams.get("ref");
-      if (!ref) return;
-      fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`).catch(()=>{});
-    }catch{}
-  })();
-
-  // --- Intersection polish: fade-in sections on scroll (CSS classes must exist) ---
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if (e.isIntersecting){ e.target.classList.add("reveal-in"); io.unobserve(e.target); }
-    });
-  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.15 });
-  $$('.reveal').forEach(el=> io.observe(el));
-
-  // --- Handle billing query params (success/cancel) ---
-  (function billingBanner(){
-    const u = new URL(location.href);
-    const ok   = u.searchParams.get("billing")==="success";
-    const fail = u.searchParams.get("billing")==="cancel";
-    if (ok)   toast("Billing updated — thank you!");
-    if (fail) toast("Billing cancelled");
-    if (ok || fail){
-      u.searchParams.delete("billing");
-      history.replaceState({}, "", u.toString());
-    }
-  })();
-
-  // --- Guard: prevent full page jump for in-page primary nav ---
-  $$('a[href^="#"]').forEach(a=>{
-    a.addEventListener("click", (e)=>{
-      const id = a.getAttribute("href")?.slice(1);
-      if (!id) return;
-      const el = byId(id);
-      if (!el) return;
-      e.preventDefault();
-      smoothScrollTo(el);
-      history.pushState({}, "", `#${id}`);
-    });
-  });
-
-  if (location.hash === "#demo") {
-    setTimeout(()=> routeFromHash(), 0);
-  }
-
-  // Normalize external links
-  $$('a[target="_blank"]').forEach(a=> a.setAttribute("rel","noopener"));
-
-  // Keyboard: close any <dialog> with Escape
-  window.addEventListener("keydown", (e)=>{
-    if (e.key==="Escape"){
-      $$('dialog[open]').forEach(d=> d.close());
-    }
-  });
-
-  // UTM persistence (7 days)
-  (function persistUTM(){
-    const u = new URL(location.href);
-    const keys = ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"];
-    let touched = false;
-    const store = JSON.parse(localStorage.getItem("crp_utm")||"{}");
-    keys.forEach(k=>{
-      if (u.searchParams.has(k)){ store[k] = u.searchParams.get(k); touched = true; }
-    });
-    if (touched){
-      store._ts = Date.now();
-      localStorage.setItem("crp_utm", JSON.stringify(store));
-    }
-  })();
-
-})();
-</script>
   <!-- ===== GLOBAL SVG SPRITE (icons used in cards) ===== -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
     <symbol id="i-li" viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.4-2.7 4.9-2.7 5.2 0 6.2 3.4 6.2 7.8V24h-5v-7.1c0-1.7 0-3.9-2.4-3.9s-2.8 1.9-2.8 3.8V24H8z"/></symbol>
@@ -1990,7 +898,7 @@ Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hash
     <div class="px-4 py-2 rounded-xl bg-black text-white shadow"> <span id="toastMsg">Done</span> </div>
   </div>
 
-  <!-- ===== AUTH DIALOG (email magic link) ===== -->
+  <!-- ===== AUTH DIALOG (email magic link + Google) ===== -->
   <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
@@ -1999,7 +907,10 @@ Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hash
       </div>
       <p class="text-sm text-slate-500">Enter your email to receive a magic link.</p>
       <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
-      <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+        <button id="authGoogle" class="btn" type="button">Continue with Google</button>
+      </div>
       <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
     </form>
   </dialog>
@@ -2051,6 +962,784 @@ Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hash
       </nav>
     </div>
   </footer>
+<script type="module" id="crp-app-js">
+/* ContentRepurpose.pro — unified boot (auth + plan + generator + publish + scheduler) */
 
+if (!window.__CRP_V2_BOOT__) {
+  window.__CRP_V2_BOOT__ = true;
+
+  /* ==================== Short helpers ==================== */
+  const $  = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  const byId = (id) => document.getElementById(id);
+  const sleep = (ms)=> new Promise(r=>setTimeout(r, ms));
+  const cap   = (s)=> (s||"").slice(0,1).toUpperCase() + (s||"").slice(1);
+  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+
+  function toast(msg){
+    try { const t=byId("toast"); const m=byId("toastMsg");
+      if (!t||!m) return alert(msg);
+      m.textContent = msg; t.classList.remove("hidden");
+      setTimeout(()=> t.classList.add("hidden"), 1800);
+    } catch { alert(msg); }
+  }
+  const once = (el, evt, fn)=>{ if (!el) return; const k="__once_"+evt; if (el[k]) return; el.addEventListener(evt, fn); el[k]=true; };
+
+  /* ==================== Supabase init + OAuth finish ==================== */
+  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+
+  let supabase = window.supabase;
+  async function ensureSupabase(){
+    if (window.supabase) { supabase = window.supabase; return; }
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    supabase = window.supabase;
+  }
+
+  async function finishOAuthIfNeeded(){
+    try{
+      const u = new URL(location.href);
+      const code = u.searchParams.get("code");
+      const err  = u.searchParams.get("error_description");
+      if (err) toast(decodeURIComponent(err));
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession({ code });
+        if (error) toast(error.message);
+        // Clean sensitive params
+        ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
+        history.replaceState({}, "", u.toString());
+      }
+      // Magic link flows sometimes return tokens in hash; make sure session is loaded & clean hash
+      if (location.hash.includes("access_token")) {
+        await supabase.auth.getSession();
+        history.replaceState({}, "", location.pathname + location.search);
+      }
+    }catch{ /* ignore */ }
+  }
+
+  async function getAuthHeaders(){
+    const h = { "Content-Type":"application/json" };
+    try{
+      const { data } = await supabase.auth.getSession();
+      const tok = data?.session?.access_token;
+      const uid = data?.session?.user?.id;
+      if (tok) h["Authorization"] = `Bearer ${tok}`;
+      if (uid) h["X-User-Id"] = uid;
+    }catch{}
+    return h;
+  }
+
+  /* ==================== Plan + gating ==================== */
+  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+  let CURRENT_PLAN = "free";
+  let AUTHTED = false;
+  let USER_ID = null;
+  let LAST_OUTPUT = null; // cache last generation (per page session)
+
+  function showGuest(v){
+    $$(".only-guest").forEach(el => el.classList.toggle("hidden", !v));
+    $$(".only-authed").forEach(el => el.classList.toggle("hidden", v));
+  }
+  function applyPlanGates(plan){
+    const r = PLAN_RANK[plan] ?? 0;
+    // Hide all plan sections first
+    $$(".plan-starter-plus").forEach(el => el.classList.add("hidden"));
+    $$(".plan-creator-plus").forEach(el => el.classList.add("hidden"));
+    $$(".plan-business-only").forEach(el => el.classList.add("hidden"));
+    if (r >= 1) $$(".plan-starter-plus").forEach(el => el.classList.remove("hidden"));
+    if (r >= 2) $$(".plan-creator-plus").forEach(el => el.classList.remove("hidden"));
+    if (r >= 3) $$(".plan-business-only").forEach(el => el.classList.remove("hidden"));
+    // Quick publish is authed-only; Scheduler is Starter+
+    // (covered by classes above + only-authed)
+  }
+  function paintPlanBadges(plan){
+    const label = `Plan: ${cap(plan)}`;
+    byId("planbadge")   && (byId("planbadge").textContent   = label);
+    byId("planbadge_m") && (byId("planbadge_m").textContent = label);
+    byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(plan));
+  }
+
+  async function fetchStatusAndPaint(){
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message || "Status error");
+
+      AUTHTED = j.scope === "user";
+      USER_ID = AUTHTED ? j.userId || null : null;
+      const plan = (j.plan || "free").toLowerCase();
+      CURRENT_PLAN = (PLAN_RANK[plan] != null ? plan : "free");
+
+      // Auth gating
+      showGuest(!AUTHTED);
+      // Plan label
+      paintPlanBadges(CURRENT_PLAN);
+
+      // Hero badge swap
+      const heroBadgeGuest = $('#hero [class*="only-guest"]');
+      const heroBadgeAuth  = $('#hero [class*="only-authed"]');
+      heroBadgeGuest && heroBadgeGuest.classList.toggle("hidden", AUTHTED);
+      heroBadgeAuth  && heroBadgeAuth.classList.toggle("hidden", !AUTHTED);
+
+      // Manage billing visibility
+      ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+        const el = byId(id); if (!el) return;
+        el.classList.toggle("hidden", !AUTHTED);
+      });
+
+      // Quotas
+      // Guests: monthly demo left; Members: daily left (∞ if null cap)
+      const demoEl = byId("demoQuota");
+      const memEl  = byId("memberQuota");
+      if (!AUTHTED){
+        const cap = j.platform?.monthly?.cap ?? 5;
+        const used= j.platform?.monthly?.used ?? 0;
+        demoEl && (demoEl.textContent = Math.max(0, cap - used));
+      } else {
+        const cap = j.platform?.daily?.cap; // null ⇒ ∞
+        const used= j.platform?.daily?.used ?? 0;
+        memEl && (memEl.textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
+      }
+
+      // Plan-gated blocks
+      applyPlanGates(CURRENT_PLAN);
+
+      // Toggle the correct Generate button text for UX
+      byId("generateBtn")?.classList.toggle("hidden", AUTHTED);
+      byId("generateBtn_member")?.classList.toggle("hidden", !AUTHTED);
+    }catch(e){
+      // Default to guest/free if status fails
+      showGuest(true); paintPlanBadges("free"); applyPlanGates("free");
+    }
+  }
+
+  /* ==================== Navbar / auth dialog wiring ==================== */
+  function wireAuthDialog(){
+    const dlg = byId("auth");
+    if (!dlg) return;
+    const send = byId("authSend");
+    const emailEl = byId("authEmail");
+    const gBtn = byId("authGoogle");
+
+    once(send, "click", async ()=>{
+      const email = emailEl?.value?.trim();
+      if (!email) return toast("Enter your email");
+      try{
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options:{ emailRedirectTo: SITE_ORIGIN }
+        });
+        if (error) throw error;
+        toast("Check your email for the magic link.");
+      }catch(e){ toast(e.message || "Sign-in error"); }
+    });
+    once(gBtn, "click", async ()=>{
+      try{
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options:{ redirectTo: SITE_ORIGIN }
+        });
+        if (error) throw error;
+      }catch(e){ toast(e.message || "Google sign-in failed"); }
+    });
+    once(emailEl, "keydown", (e)=>{ if (e.key==="Enter"){ e.preventDefault(); send?.click(); }});
+  }
+  function wireAuthButtons(){
+    // open auth
+    $$(".js-open-auth").forEach(b => once(b, "click", ()=> byId("auth")?.showModal()));
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=>{
+      const el = byId(id); el && once(el, "click", ()=> byId("auth")?.showModal());
+    });
+    // logout
+    ["logoutBtn","logoutBtn_m"].forEach(id=>{
+      const el = byId(id); el && once(el, "click", async ()=>{
+        try{ await supabase.auth.signOut(); toast("Signed out"); }catch{}
+      });
+    });
+  }
+  function wireBilling(){
+    $$(".js-checkout").forEach(btn=>{
+      once(btn,"click", async()=>{
+        const price = btn.getAttribute("data-price") || "";
+        if (!price) return toast("Missing price id");
+        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+            method:"POST",
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({
+              price,
+              success_url: `${SITE_ORIGIN}/?billing=success`,
+              cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
+            })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+          location.href = j.url;
+        }catch(e){ toast(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
+      });
+    });
+    ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+      const b = byId(id); if (!b) return;
+      once(b, "click", async ()=>{
+        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({ return_url: location.href })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Portal error");
+          location.href = j.url;
+        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
+      });
+    });
+  }
+
+  /* ==================== Live stats & promo copy ==================== */
+  async function paintLive(){
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/stats/today`);
+      const j = await r.json();
+      if (r.ok && typeof j.today_count === "number"){
+        $$('[id="liveCount"]').forEach(el=> el.textContent = String(j.today_count));
+      }
+    }catch{}
+  }
+  ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
+    const el = byId(id);
+    el && once(el,"click", async()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }});
+  });
+
+  /* ==================== Generator ==================== */
+  function readToggles(form){
+    const g = (n)=> form.elements[n];
+    return {
+      opt: {
+        humanize:  g("opt_humanize")?.checked,
+        lengthen:  g("opt_lengthen")?.checked,
+        faqs:      g("opt_faqs")?.checked,
+        headings:  g("opt_headings")?.checked,
+        svg:       g("opt_svg")?.checked,
+        seo:       g("opt_seo")?.checked
+      },
+      ch: {
+        linkedin:  g("ch_linkedin")?.checked,
+        x:         g("ch_x")?.checked,
+        email:     g("ch_email")?.checked,
+        instagram: g("ch_instagram")?.checked,
+        reddit:    g("ch_reddit")?.checked,
+        facebook:  g("ch_facebook")?.checked,
+        quora:     g("ch_quora")?.checked,
+        tiktok:    g("ch_tiktok")?.checked,
+      },
+      extras: {
+        li_article: g("li_article")?.checked,
+        x_sequence: g("x_sequence")?.checked,
+        x_posts:    g("x_posts")?.value || "4",
+        rdt_communities: g("rdt_communities")?.checked,
+        rdt_comments:    g("rdt_comments")?.checked,
+        tt_hooks:   g("tt_hooks")?.checked,
+        tt_onscreen:g("tt_onscreen")?.checked
+      }
+    };
+  }
+  function systemPrompt(tog){
+    return {
+      role:"system",
+      content:
+`You are a senior social copywriter.
+Return ONLY valid JSON with this shape:
+{
+  "outline": string,
+  "linkedin": string|null,
+  "x": string[]|null,
+  "email": { "subject": string, "body": string }|null,
+  "instagram": { "caption": string, "hashtags": string[] }|null,
+  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
+  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
+  "quora": { "answer": string, "followups": string[] }|null,
+  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
+  "linkedin_article_html": string|null
+}
+Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
+Rules:
+- Keep platform-native, concise. X posts ≤ 280 chars when possible; if multiple, prefix "Post N:".
+- Provide 3–5 meaningful Instagram hashtags.
+- Do not include any prose outside the JSON.`
+    };
+  }
+  function userPrompt(raw, form, tog){
+    const srcType = form.elements["sourceType"]?.value || "paragraph";
+    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
+    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
+    return {
+      role:"user",
+      content:
+`${head}:
+${raw}
+
+Task:
+1) Create a one-line outline.
+2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
+3) Apply the toggles and extras exactly.`
+    };
+  }
+  function parseJsonLoose(txt){
+    if (!txt) return null;
+    let s = String(txt).trim();
+    // Strip fences ```json ... ```
+    s = s.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+    // Grab outermost braces to be safe
+    const first = s.indexOf("{"); const last = s.lastIndexOf("}");
+    if (first >= 0 && last > first) s = s.slice(first, last+1);
+    try { return JSON.parse(s); } catch {}
+    // Remove trailing commas (simple)
+    s = s.replace(/,\s*([}\]])/g, "$1");
+    try { return JSON.parse(s); } catch {}
+    return null;
+  }
+
+  function paintOutput(j){
+    const outWrap = byId("demoOutput");
+    if (!outWrap) return;
+    outWrap.innerHTML = ""; // clear
+
+    const addCard = (title, inner, channelKey=null) => {
+      outWrap.insertAdjacentHTML("beforeend", `
+        <div class="card p-5">
+          <div class="flex justify-between items-center gap-2 flex-wrap">
+            <strong class="tracking-tight">${title}</strong>
+            <button class="btn copy" type="button">Copy</button>
+          </div>
+          ${inner}
+        </div>`);
+      const card = outWrap.lastElementChild;
+      const copyBtn = $(".btn.copy", card);
+      const pre = $("pre.content", card) || $("pre", card);
+      copyBtn && once(copyBtn, "click", async ()=>{
+        try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }
+        catch{ toast("Copy failed"); }
+      });
+      // Cache for Quick Publish / Scheduler
+      if (channelKey && pre) {
+        LAST_OUTPUT = LAST_OUTPUT || {};
+        LAST_OUTPUT[channelKey] = pre.innerText;
+      }
+    };
+
+    if (j.linkedin){
+      addCard("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
+    }
+    if (Array.isArray(j.x) && j.x.length){
+      const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
+      addCard("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
+    }
+    if (j.email && (j.email.subject || j.email.body)){
+      addCard("Email", `
+        <div class="text-xs text-slate-400">Subject:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Body:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`, "email");
+    }
+    if (j.instagram){
+      const cap = j.instagram.caption||"";
+      const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
+      addCard("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
+    }
+    if (j.reddit){
+      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+      const starters = (j.reddit.starter_comments||[]).map((c)=>`• ${c}`).join("\n");
+      addCard("Reddit", `
+        <div class="text-xs text-slate-400">Main post:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
+        <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`, "reddit");
+    }
+    if (j.facebook){
+      addCard("Facebook", `
+        <div class="text-xs text-slate-400">Primary text:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`, "facebook");
+    }
+    if (j.quora){
+      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
+      addCard("Quora", `
+        <div class="text-xs text-slate-400">Answer:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`, "quora");
+    }
+    if (j.tiktok){
+      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+      addCard("TikTok", `
+        <div class="text-xs text-slate-400">Script:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Hooks:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
+        <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`, "tiktok");
+    }
+  }
+
+  function wireGenerator(){
+    const form = byId("demoForm");
+    const src  = byId("sourceText");
+    const outWrap = byId("demoOutput");
+    const clearBtn = byId("clearBtn");
+    const genBtnGuest  = byId("generateBtn");
+    const genBtnMember = byId("generateBtn_member");
+    if (!form || !src || !outWrap) return;
+
+    once(clearBtn, "click", ()=>{ src.value=""; outWrap.innerHTML=""; LAST_OUTPUT=null; });
+
+    once(form, "submit", async (e)=>{
+      e.preventDefault();
+      const raw = (src.value||"").trim();
+      if (!raw){ toast("Paste some content first"); return; }
+
+      const btn = AUTHTED ? genBtnMember : genBtnGuest;
+      try{
+        btn.disabled = true; btn.textContent = "Generating…";
+        outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+
+        const tog = readToggles(form);
+        const messages = [ systemPrompt(tog), userPrompt(raw, form, tog) ];
+
+        // Lane: guests always "free"; members use "pro" only if on Starter+ for priority models
+        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+
+        const r = await fetch(`${WORKER_BASE}/api/generate`,{
+          method:"POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({
+            plan: lane, temperature: 0.5, messages
+          })
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
+
+        const content = data?.choices?.[0]?.message?.content || "";
+        const j = parseJsonLoose(content);
+        if (!j) throw new Error("Model did not return JSON");
+        paintOutput(j);
+        toast("Done ✅");
+
+        // Refresh quotas and status UI after success
+        fetchStatusAndPaint().catch(()=>{});
+      }catch(e){
+        outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
+      }finally{
+        btn.disabled = false; btn.textContent = AUTHTED ? "Generate" : "Generate (demo)";
+      }
+    });
+  }
+
+  /* ==================== Quick Publish (authed only) ==================== */
+  function qpEnsureLast(which){
+    if (!LAST_OUTPUT || !LAST_OUTPUT[which]) { toast("Generate first, then try again."); return null; }
+    return LAST_OUTPUT[which];
+  }
+  function wireQuickPublish(){
+    const btnX   = byId("qp-x");
+    const btnRd  = byId("qp-reddit");
+    const btnLi  = byId("qp-linkedin");
+    const btnEm  = byId("qp-email");
+    if (btnX) once(btnX,"click", ()=>{
+      const text = qpEnsureLast("x"); if (!text) return;
+      const t = text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ");
+      const url = `https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`;
+      window.open(url,"_blank");
+    });
+    if (btnRd) once(btnRd,"click", ()=>{
+      const body = qpEnsureLast("reddit") || qpEnsureLast("linkedin") || qpEnsureLast("x");
+      if (!body) return;
+      // Try to extract a title if present in the first line
+      const firstLine = body.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,280);
+      const text = body;
+      const url = `https://www.reddit.com/submit?title=${encodeURIComponent(firstLine)}&text=${encodeURIComponent(text)}`;
+      window.open(url,"_blank");
+    });
+    if (btnLi) once(btnLi,"click", async ()=>{
+      const text = qpEnsureLast("linkedin") || qpEnsureLast("x"); if (!text) return;
+      try{ await navigator.clipboard.writeText(text); toast("Copied for LinkedIn ✅"); }catch{}
+      window.open("https://www.linkedin.com/feed/","_blank");
+    });
+    if (btnEm) once(btnEm,"click", ()=>{
+      const em = LAST_OUTPUT?.email;
+      if (em && typeof em === "string"){
+        const parts = em.split("\n");
+        const subj = parts[0].slice(0,120);
+        const body = parts.slice(1).join("\n");
+        location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+        return;
+      }
+      // else try dialog fields if we rendered email card
+      byId("emailSubjEdit") && (byId("emailSubjEdit").value = "");
+      byId("emailBodyEdit") && (byId("emailBodyEdit").value = qpEnsureLast("email") || "");
+      byId("emailPreview")?.showModal();
+    });
+  }
+
+  /* ==================== Notion / Trello (Creator+) ==================== */
+  function wireIntegrations(){
+    const btnNotion = byId("li-notion");
+    const btnTrello = byId("li-trello");
+    const trelloDialog = byId("trelloModal");
+
+    if (btnNotion) once(btnNotion, "click", async ()=>{
+      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required.");
+      const blocks = [];
+      const li = LAST_OUTPUT?.linkedin || "";
+      const x  = LAST_OUTPUT?.x || "";
+      if (li) blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: li });
+      if (x)  blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: x });
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ title:"Social Drafts", blocks })
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
+        toast("Sent to Notion ✅");
+        j.url && window.open(j.url, "_blank");
+      }catch(e){ toast(e.message || "Notion export failed"); }
+    });
+
+    if (btnTrello && trelloDialog){
+      once(btnTrello, "click", ()=>{
+        if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required.");
+        trelloDialog.showModal();
+      });
+      const confirm = byId("trelloConfirm");
+      once(confirm, "click", async ()=>{
+        const board_id = byId("trelloBoardId")?.value?.trim();
+        const list_id  = byId("trelloListId")?.value?.trim();
+        if (!list_id) return toast("Enter List ID");
+        const title = "Social Draft";
+        const description = [
+          "LinkedIn:\n"+(LAST_OUTPUT?.linkedin||""),
+          "\nX:\n"+(LAST_OUTPUT?.x||"")
+        ].join("\n");
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({ board_id, list_id, title, description })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+          toast("Sent to Trello ✅");
+          trelloDialog.close();
+          j.url && window.open(j.url, "_blank");
+        }catch(e){ toast(e.message || "Trello export failed"); }
+      });
+    }
+  }
+
+  /* ==================== Scheduler (Starter+) — local queue ==================== */
+  const SKEY = ()=> `crp:sched:${USER_ID || "anon"}`;
+  const loadQueue = ()=> { try{ return JSON.parse(localStorage.getItem(SKEY())||"[]"); }catch{ return []; } };
+  const saveQueue = (q)=> { try{ localStorage.setItem(SKEY(), JSON.stringify(q)); }catch{} };
+
+  function renderQueue(){
+    const wrap = byId("schedList");
+    const empty= byId("schedEmpty");
+    if (!wrap) return;
+    const q = loadQueue();
+    wrap.innerHTML = "";
+    if (!q.length){ empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+    q.forEach((item, idx)=>{
+      const html = `
+        <div class="border rounded-xl p-3 grid md:grid-cols-12 gap-3 items-start">
+          <label class="md:col-span-1 flex items-start gap-2 text-sm">
+            <input type="checkbox" data-idx="${idx}" ${item.selected?"checked":""} />
+            <span class="mono text-[11px]">${item.channel}</span>
+          </label>
+          <div class="md:col-span-3 text-xs text-slate-500">${new Date(item.when).toLocaleString()}</div>
+          <div class="md:col-span-7 text-sm whitespace-pre-wrap">${item.text}</div>
+          <div class="md:col-span-1 text-right">
+            <button class="btn" data-del="${idx}" type="button">Remove</button>
+          </div>
+        </div>`;
+      wrap.insertAdjacentHTML("beforeend", html);
+    });
+    // Wire checkboxes + del
+    $$('input[type="checkbox"][data-idx]', wrap).forEach(cb=>{
+      once(cb,"change", ()=>{
+        const q = loadQueue(); const i = Number(cb.getAttribute("data-idx")||"0");
+        if (q[i]){ q[i].selected = cb.checked; saveQueue(q); }
+      });
+    });
+    $$('button[data-del]', wrap).forEach(b=>{
+      once(b,"click", ()=>{
+        const q = loadQueue(); const i = Number(b.getAttribute("data-del")||"0");
+        q.splice(i,1); saveQueue(q); renderQueue();
+      });
+    });
+  }
+
+  function wireScheduler(){
+    const gate = PLAN_RANK[CURRENT_PLAN] >= 1; // Starter+
+    // If not starter+, nothing to wire
+    const add = byId("schedAdd"); const useLast = byId("schedUseLast");
+    const ch  = byId("schedChannel"); const when = byId("schedWhen"); const text = byId("schedText");
+    const pub = byId("schedPublish"); const clr = byId("schedClear");
+    if (!add || !gate) return;
+
+    once(add, "click", ()=>{
+      const payload = (text.value||"").trim();
+      const w = when.value ? new Date(when.value) : new Date(Date.now()+5*60*1000);
+      if (!payload) return toast("Add some text first");
+      const q = loadQueue();
+      q.push({ channel: ch.value, when: w.toISOString(), text: payload, selected: true });
+      saveQueue(q); renderQueue(); toast("Added to queue");
+    });
+    once(useLast, "click", ()=>{
+      if (!LAST_OUTPUT) return toast("Generate first");
+      const key = ch.value;
+      const val = LAST_OUTPUT[key] || LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
+      if (!val) return toast("No output to use for this channel yet");
+      byId("schedText").value = val;
+      toast("Filled from last output");
+    });
+    once(pub, "click", ()=>{
+      const q = loadQueue();
+      const toPub = q.filter(i=> i.selected);
+      if (!toPub.length) return toast("Select some items first");
+      toPub.forEach(item=>{
+        // Open appropriate composer
+        const txt = item.text;
+        const when = new Date(item.when);
+        const inPast = when.getTime() < Date.now();
+        // For now: immediate publish via native composers; scheduling is "local" (user must confirm).
+        switch(item.channel){
+          case "x":
+            window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(txt.slice(0,270))}`,"_blank");
+            break;
+          case "reddit":
+            const f = txt.split("\n")[0].slice(0,280);
+            window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(f)}&text=${encodeURIComponent(txt)}`,"_blank");
+            break;
+          case "linkedin":
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            window.open("https://www.linkedin.com/feed/","_blank");
+            break;
+          case "email":
+            window.open(`mailto:?subject=${encodeURIComponent(txt.split("\n")[0].slice(0,120))}&body=${encodeURIComponent(txt)}`,"_self");
+            break;
+          case "instagram":
+          case "facebook":
+          default:
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            toast(`Copied ${item.channel} text — paste into the app.`);
+            break;
+        }
+      });
+      // Remove published ones
+      const remain = q.filter(i=> !i.selected);
+      saveQueue(remain); renderQueue();
+    });
+    once(clr, "click", ()=>{ saveQueue([]); renderQueue(); });
+    renderQueue();
+  }
+
+  /* ==================== Nav, anchors, year, billing params ==================== */
+  function wireNavAndMisc(){
+    const toggle = byId("navToggle");
+    const sheet  = byId("mobileNav");
+    const close  = byId("navClose");
+    toggle && once(toggle, "click", ()=> document.body.classList.add("nav-open"));
+    close  && once(close,  "click", ()=> document.body.classList.remove("nav-open"));
+    $$('a[href^="#"]').forEach(a=>{
+      once(a,"click",(e)=>{
+        const id = a.getAttribute("href");
+        if (!id || id==="#") return;
+        const el = $(id);
+        if (el){
+          e.preventDefault();
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          document.body.classList.remove("nav-open");
+          history.replaceState(null,"",id);
+        }
+      });
+    });
+    const y = byId("year"); y && (y.textContent = new Date().getFullYear());
+    try{
+      const u = new URL(location.href);
+      const ok   = u.searchParams.get("billing")==="success";
+      const fail = u.searchParams.get("billing")==="cancel";
+      if (ok)   toast("Billing updated — thank you!");
+      if (fail) toast("Billing cancelled");
+      if (ok || fail){ u.searchParams.delete("billing"); history.replaceState({}, "", u.toString()); }
+    }catch{}
+  }
+
+  /* ==================== Boot ==================== */
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    await ensureSupabase();
+    await finishOAuthIfNeeded();
+
+    wireAuthDialog();
+    wireAuthButtons();
+    wireBilling();
+    wireNavAndMisc();
+
+    wireGenerator();
+    wireQuickPublish();
+    wireIntegrations();
+
+    await fetchStatusAndPaint();
+    await paintLive();
+    setInterval(paintLive, 30000);
+
+    // React to auth changes
+    supabase.auth.onAuthStateChange((_event, session)=>{
+      AUTHTED = !!session;
+      USER_ID = session?.user?.id || null;
+      fetchStatusAndPaint().catch(()=>{});
+      // Close auth dialog if open
+      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
+    });
+  });
+}
+</script>
+<!-- ===== PLAN GATES + A11Y FINISHER ===== -->
+<style id="plan-gates-finisher">
+  /* Default safe state until plan is known */
+  .only-authed{ display:none; }
+  .plan-starter-plus,
+  .plan-creator-plus,
+  .plan-business-only{ display:none; }
+
+  /* Optional: hide elements until app paints (avoid FOUC); remove/add via JS */
+  .js-hide-until-ready{ visibility:hidden; }
+  body.__ready .js-hide-until-ready{ visibility:visible; }
+
+  /* Keyboard focus */
+  :focus-visible{
+    outline: 2px solid var(--brandA);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  // Mark app ready → show any .js-hide-until-ready items
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      document.body.classList.add('__ready');
+      // Toast is live region for SR users
+      var t = document.getElementById('toast');
+      if (t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
+    }catch(e){}
+  });
+</script>
+<!-- ===== /PLAN GATES + A11Y FINISHER ===== -->
 </body>
 </html>
