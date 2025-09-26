@@ -61,37 +61,116 @@
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .icon { width: 1rem; height: 1rem; display: inline-block; vertical-align: -0.15em; }
+    .touch-target{min-height:40px;min-width:40px}
   </style>
 
-  <!-- JSON-LD -->
+  <!-- JSON-LD (Organization + WebSite + App) -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 
-  <!-- IMPORTANT: Worker + site identity -->
+  <!-- Worker base -->
   <script>
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- Supabase (ESM v2) + config (no duplicates) -->
+  <!-- Supabase v2 auth (magic link + Google OAuth) -->
   <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // === Your provided credentials ===
+    // Supabase — use your real anon key (public) exactly as given
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-    // Create singleton client once
-    if (!window.supabase) {
-      window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
+    // Client
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Auth helpers exposed globally
+    window.getAuth = async () => {
+      try {
+        const { data } = await window.supabase.auth.getSession();
+        const s = data?.session;
+        return {
+          token:  s?.access_token || "",
+          userId: s?.user?.id || null,
+          email:  s?.user?.email || null
+        };
+      } catch {
+        return { token:"", userId:null, email:null };
+      }
+    };
+    window.getAuthHeaders = async () => {
+      const { token, userId } = await window.getAuth();
+      const h = { "Content-Type": "application/json" };
+      if (token)  h["Authorization"] = `Bearer ${token}`;
+      if (userId) h["X-User-Id"]    = userId;
+      return h;
+    };
+
+    // Paint minimal auth UI
+    function paintAuthUI(authed) {
+      const show = (id) => document.getElementById(id)?.classList.remove("hidden");
+      const hide = (id) => document.getElementById(id)?.classList.add("hidden");
+      const has  = (id) => !!document.getElementById(id);
+
+      if (has("loginBtn"))     (authed ? hide("loginBtn")     : show("loginBtn"));
+      if (has("loginBtn_m"))   (authed ? hide("loginBtn_m")   : show("loginBtn_m"));
+      if (has("logoutBtn"))    (authed ? show("logoutBtn")    : hide("logoutBtn"));
+      if (has("logoutBtn_m"))  (authed ? show("logoutBtn_m")  : hide("logoutBtn_m"));
+      if (has("manageBilling"))   authed ? show("manageBilling")   : hide("manageBilling");
+      if (has("manageBilling_m")) authed ? show("manageBilling_m") : hide("manageBilling_m");
+
+      if (has("planbadge"))   document.getElementById("planbadge").textContent   = authed ? "Plan: Member" : "Plan: Free";
+      if (has("planbadge_m")) document.getElementById("planbadge_m").textContent = authed ? "Plan: Member" : "Plan: Free";
+    }
+
+    // Dialog-based sign-in flow
+    async function doSendMagicLink() {
+      const email = document.getElementById("authEmail")?.value?.trim();
+      const note  = document.getElementById("authNote");
+      if (!email) { if (note) note.textContent = "Enter a valid email."; return; }
+      const redirectTo = window.location.origin; // deep-link back here
+      const { error } = await window.supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+      if (note) note.textContent = error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.";
+    }
+
+    // Expose an imperative helper some buttons call
+    window.doSignIn = async () => {
+      const dlg = document.getElementById("auth");
+      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+    };
+
+    // Wire dialog buttons after DOM is ready
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Magic link
+      document.getElementById("authSend")?.addEventListener("click", doSendMagicLink);
+
+      // Google OAuth
+      document.getElementById("authGoogle")?.addEventListener("click", async () => {
+        try{
+          await window.supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: { redirectTo: window.location.origin }
+          });
+        }catch(e){
+          const note = document.getElementById("authNote");
+          if (note) note.textContent = e?.message || "Google sign-in failed.";
         }
       });
-    }
+
+      // Top-level sign-in/sign-out buttons
+      const loginEls  = ["loginBtn","loginBtn_m","heroSignIn"].map(id => document.getElementById(id)).filter(Boolean);
+      const logoutEls = ["logoutBtn","logoutBtn_m"].map(id => document.getElementById(id)).filter(Boolean);
+
+      loginEls.forEach(btn => btn.addEventListener("click", () => window.doSignIn()));
+      logoutEls.forEach(btn => btn.addEventListener("click", async () => { await window.supabase.auth.signOut(); }));
+
+      // Initial state + live updates
+      const { data } = await window.supabase.auth.getSession();
+      paintAuthUI(!!data?.session);
+      window.supabase.auth.onAuthStateChange((_event, session) => paintAuthUI(!!session));
+    });
   </script>
 </head>
 <body class="min-h-full" data-auth="guest">
@@ -100,27 +179,30 @@
   <div class="halo h2"></div>
   <div class="halo h3"></div>
 
-  <!-- ===== HEADER / NAV ===== -->
+  <!-- Top nav (desktop + mobile trigger) -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
         <svg width="36" height="36" viewBox="0 0 48 48" class="rounded-xl" aria-hidden="true">
           <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
+          <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
+          <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
+          <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/>
         </svg>
         <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
       </a>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80" data-nav="demo">Live Demo</a>
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
         <a href="#templates" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
-        <a href="#pricing" class="hover:opacity-80" data-nav="pricing">Pricing</a>
+        <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" data-portal="stripe">Manage billing</button>
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn"  class="px-3 py-1 rounded-lg border">Sign in</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
         </div>
       </nav>
@@ -137,7 +219,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white" data-nav="pricing">See pricing</a>
+          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
         </div>
       </div>
     </div>
@@ -150,25 +232,25 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10" data-nav="demo_m">Live Demo</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
           <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
           <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
           <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
-          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10" data-nav="pricing_m">Pricing</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
           <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
-          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden" data-portal="stripe">Manage billing</button>
-          <button id="loginBtn_m"  class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
+          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
           <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Sign out</button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
-  <section id="hero" class="relative">
+  <!-- ===== HERO + CTA rail ===== -->
+  <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <!-- Left: copy + CTAs -->
       <div>
@@ -186,14 +268,15 @@
           Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
         </p>
 
+        <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90" data-action="scroll-demo" id="ctaTryDemo">
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90" id="ctaTryDemo">
             Try the Live Demo
           </a>
-          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50" data-nav="pricing">
+          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">
             See pricing
           </a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60" data-action="open-auth">
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">
             Sign in
           </button>
         </div>
@@ -287,7 +370,7 @@
       </div>
     </div>
 
-    <!-- Live activity strip -->
+    <!-- Live activity strip (hero) -->
     <div class="mt-8 md:mt-10">
       <div class="max-w-7xl mx-auto px-4 md:px-5">
         <div class="card p-4 md:p-5">
@@ -295,12 +378,12 @@
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <strong class="tracking-tight">Generations today</strong>
-              <span id="liveCount" class="chip">–</span>
+              <span class="chip" data-live-count>–</span>
             </div>
             <div class="text-xs text-slate-500">Real results update every 30s</div>
           </div>
           <div class="mt-3 overflow-hidden">
-            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
+            <div class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite" data-live-feed></div>
           </div>
         </div>
       </div>
@@ -318,7 +401,8 @@
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
-          <button id="heroSignIn" class="btn btn-primary" data-action="open-auth">Sign in</button>
+          <!-- avoid duplicate IDs; this button opens the auth dialog via script -->
+          <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
         </div>
       </div>
 
@@ -330,7 +414,7 @@
             <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="copyPromoBtn2" class="btn">Copy code</button>
+            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
             <a class="btn btn-primary" href="#pricing">Upgrade</a>
           </div>
         </div>
@@ -443,69 +527,24 @@
         <!-- Channel cards will be injected here -->
       </div>
 
-      <!-- Live strip -->
+      <!-- Live strip (section-local, unique IDs) -->
       <div class="mt-8 md:mt-10">
         <div class="card p-4 md:p-5">
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <strong class="tracking-tight">Generations today</strong>
-              <span id="liveCount2" class="chip">–</span>
+              <span id="liveCount" class="chip">–</span>
             </div>
             <div class="text-xs text-slate-500">Real results update every 30s</div>
           </div>
           <div class="mt-3 overflow-hidden">
-            <div id="liveFeed2" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
+            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- ===== AUTH DIALOG (Google + Magic Link) ===== -->
-  <dialog id="auth" class="rounded-2xl p-0 w-[92vw] max-w-md backdrop:backdrop-blur">
-    <form method="dialog" class="hidden"></form>
-    <div class="p-5 md:p-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold">Sign in</h3>
-        <button id="authClose" class="px-3 py-1 rounded-lg border">Close</button>
-      </div>
-      <p class="mt-2 text-sm text-slate-500">Use Google or get a magic link by email.</p>
-
-      <div class="mt-4 grid gap-3">
-        <button id="btnGoogle" class="btn btn-primary w-full flex items-center justify-center gap-2">
-          <svg viewBox="0 0 24 24" class="w-4 h-4" aria-hidden="true"><path fill="currentColor" d="M21.6 12.227c0-.638-.057-1.252-.164-1.84H12v3.48h5.382a4.6 4.6 0 0 1-1.998 3.017v2.51h3.236c1.893-1.744 2.98-4.307 2.98-7.167Z"/><path fill="currentColor" d="M12 22c2.7 0 4.964-.893 6.619-2.406l-3.236-2.51c-.9.603-2.05.963-3.383.963-2.602 0-4.805-1.757-5.594-4.115H3.03v2.588A10 10 0 0 0 12 22Z"/><path fill="currentColor" d="M6.406 13.932A6.01 6.01 0 0 1 6.093 12c0-.67.115-1.32.313-1.932V7.48H3.03A10 10 0 0 0 2 12c0 1.6.38 3.114 1.03 4.52l3.376-2.588Z"/><path fill="currentColor" d="M12 5.958c1.468 0 2.786.505 3.826 1.494l2.87-2.87C16.961 2.952 14.699 2 12 2A10 10 0 0 0 3.03 7.48l3.376 2.588C7.195 7.71 9.398 5.958 12 5.958Z"/></svg>
-          Continue with Google
-        </button>
-
-        <div class="text-center text-xs text-slate-500">— or —</div>
-
-        <label class="text-sm">Email</label>
-        <input id="authEmail" type="email" class="w-full rounded-lg border p-3" placeholder="you@domain.com" autocomplete="email">
-        <button id="btnMagic" class="btn w-full">Send magic link</button>
-        <div id="authStatus" class="text-xs text-slate-500 mt-1" aria-live="polite"></div>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden">
-    <div class="px-4 py-2 rounded-xl bg-black text-white text-sm shadow-lg">
-      <span id="toastMsg">Done</span>
-    </div>
-  </div>
-
-  <!-- Icons (used in outputs) -->
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-    <symbol id="i-li" viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm4.5 7H6v8h2.5v-8Zm.2-2.5a1.7 1.7 0 1 0-3.4 0a1.7 1.7 0 0 0 3.4 0ZM20 18v-4.6c0-2.46-1.32-3.6-3.07-3.6c-1.41 0-2.05.77-2.41 1.31V10H12v8h2.52v-4.45c0-1.17.22-2.3 1.67-2.3c1.43 0 1.45 1.33 1.45 2.37V18H20Z"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h18v18H3z" fill-opacity=".02"/><path fill="currentColor" d="M17.53 6.47L12 12l5.53 5.53l-1.06 1.06L10.94 13.06L6.47 17.59L5.41 16.53L9.94 12L5.41 7.47l1.06-1.06l4.47 4.53l5.53-5.53z"/></symbol>
-    <symbol id="i-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm8 6L4 8v10h16V8l-8 4Z"/></symbol>
-    <symbol id="i-ig" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm5 5a5 5 0 1 0 0 10a5 5 0 0 0 0-10Zm6.5-.75a1.25 1.25 0 1 0 0 2.5a1.25 1.25 0 0 0 0-2.5Z"/></symbol>
-    <symbol id="i-reddit" viewBox="0 0 24 24"><path fill="currentColor" d="M14.5 3l-1 3.5l3.5.8a2.5 2.5 0 1 1-.3 1.2l-3.9-.9l-1 3.2a6 6 0 1 1-1.1-.3l1.1-3.6l5.1 1.1a2.5 2.5 0 1 1 .6 4.9a6.8 6.8 0 1 1-9.8 0"/></symbol>
-    <symbol id="i-fb" viewBox="0 0 24 24"><path fill="currentColor" d="M13 10V7.5c0-.8.7-1.5 1.5-1.5H17V3h-2.5A4.5 4.5 0 0 0 10 7.5V10H8v3h2v8h3v-8h2.2l.8-3H13Z"/></symbol>
-    <symbol id="i-quora" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C7 2 3 6 3 11s4 9 9 9c1.9 0 3.6-.6 5-1.6l2.1 2.1l1.4-1.4l-2.1-2.1c1-1.4 1.6-3.1 1.6-5C20 6 17 2 12 2Zm0 3c3.3 0 6 2.7 6 6c0 3.4-2.7 6-6 6s-6-2.6-6-6c0-3.3 2.7-6 6-6Z"/></symbol>
-    <symbol id="i-tt" viewBox="0 0 24 24"><path fill="currentColor" d="M16 3h3a6 6 0 0 1-6 6v5a5 5 0 1 1-5-5c.3 0 .7 0 1 .1V12a3 3 0 1 0 3 3V3h4Z"/></symbol>
-  </svg>
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -521,10 +560,10 @@
           <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month of <strong>Creator</strong>.</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="copyPromoBtn_pr" class="btn">Copy code</button>
+          <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
           <a href="#demo" class="btn">Try Demo</a>
-          <button id="heroSignIn_pr" class="btn" data-action="open-auth">Sign in</button>
-          <button class="btn btn-primary" data-checkout="stripe" data-price="price_1S7y77JYjIKHzKcjKQYjiqZH">See plans</button>
+          <button id="manageBilling2" class="btn hidden" type="button">Manage billing</button>
+          <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
         </div>
       </div>
 
@@ -559,7 +598,10 @@
             <li>• <strong>Analytics</strong> (basics)</li>
             <li>• <strong>Article Optimizer</strong>: up to 5 / day</li>
           </ul>
-          <button data-checkout="stripe" data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="subBtn mt-6 w-full btn btn-primary" type="button">Get Starter</button>
+          <button
+            data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
+            type="button">Get Starter</button>
         </div>
 
         <!-- CREATOR (featured) -->
@@ -579,7 +621,10 @@
             <li>• <strong>Analytics Pro</strong> (per-channel)</li>
             <li>• <strong>Article Optimizer</strong>: up to 15 / day</li>
           </ul>
-          <button data-checkout="stripe" data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="subBtn mt-6 w-full btn btn-primary" type="button">Get Creator</button>
+          <button
+            data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
+            type="button">Get Creator</button>
         </div>
 
         <!-- BUSINESS -->
@@ -598,7 +643,10 @@
             <li>• <strong>Team Analytics</strong> (org-wide)</li>
             <li>• <strong>Article Optimizer</strong>: up to 30 / day</li>
           </ul>
-          <button data-checkout="stripe" data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="subBtn mt-6 w-full btn" type="button">Get Business</button>
+          <button
+            data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
+            class="mt-6 w-full btn js-checkout subBtn"
+            type="button">Get Business</button>
         </div>
       </div>
 
@@ -669,662 +717,461 @@
 
     <!-- FAQ JSON-LD -->
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-      {"@type":"Question","name":"What counts as a “generation”?","acceptedAnswer":{"@type":"Answer","text":"Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."}},
-      {"@type":"Question","name":"Is the Article Optimizer included?","acceptedAnswer":{"@type":"Answer","text":"Yes for all paid plans (daily caps by tier). Free users get one verified run."}},
-      {"@type":"Question","name":"What is BYOK?","acceptedAnswer":{"@type":"Answer","text":"Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."}},
-      {"@type":"Question","name":"Can I cancel anytime?","acceptedAnswer":{"@type":"Answer","text":"Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."}},
-      {"@type":"Question","name":"Do you support teams?","acceptedAnswer":{"@type":"Answer","text":"Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."}},
-      {"@type":"Question","name":"Which platforms can you export to?","acceptedAnswer":{"@type":"Answer","text":"Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."}}
-    ]}
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What counts as a “generation”?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the Article Optimizer included?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes for all paid plans (daily caps by tier). Free users get one verified run."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is BYOK?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I cancel anytime?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you support teams?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which platforms can you export to?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."
+          }
+        }
+      ]
+    }
     </script>
   </section>
 
-  <!-- ===== MEMBER DASHBOARD (clean) ===== -->
-  <section id="memberView" class="relative scroll-mt-24 hidden">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Dashboard</h2>
-          <div class="mt-1 text-sm text-slate-500 flex items-center gap-2">
-            <span id="memberPlanBadge" class="px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border">Plan: Free</span>
-            <span id="quotaMember" class="chip">Today: —/—</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="manageBilling2" class="btn hidden" data-portal="stripe">Manage billing</button>
-          <button id="goDemo" class="btn">Go to Live Demo</button>
-        </div>
+  <!-- ===== GLOBAL SVG SPRITE (icons used in cards) ===== -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="i-li" viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.4-2.7 4.9-2.7 5.2 0 6.2 3.4 6.2 7.8V24h-5v-7.1c0-1.7 0-3.9-2.4-3.9s-2.8 1.9-2.8 3.8V24H8z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.9 2H22l-7.7 8.8L23.3 22H16l-5.4-6.6L4.5 22H1.4l8.4-9.6L.9 2H8l4.9 5.9L18.9 2zM17 20h1.9L7.1 4H5.1L17 20z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></symbol>
+    <symbol id="i-ig" viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zM18 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></symbol>
+    <symbol id="i-reddit" viewBox="0 0 24 24"><path d="M22 12.5c0-1.1-.9-2-2-2-.6 0-1.1.2-1.5.6-1.2-.8-2.8-1.3-4.6-1.4l.8-3.8 2.7.6c0 1 .8 1.8 1.8 1.8a1.8 1.8 0 1 0 0-3.6c-.7 0-1.2.3-1.6.8l-3.5-.8c-.3-.1-.6.1-.7.4l-1 4.6c-1.8.1-3.4.6-4.6 1.4-.4-.4-1-.6-1.6-.6-1.1 0-2 .9-2 2 0 .8.5 1.5 1.2 1.8-.1.4-.2.8-.2 1.2 0 2.8 3.1 5.1 7 5.4h1.7c3.9-.3 7-2.6 7-5.4 0-.4-.1-.8-.2-1.2.7-.3 1.2-1 1.2-1.8zM8.5 14a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM12 20c-2 0-3.9-.6-5.2-1.6-.3-.2-.3-.6 0-.8.2-.3.6-.3.8 0 1 .8 2.7 1.3 4.4 1.3s3.4-.5 4.4-1.3c.2-.2.6-.2.8 0 .3.2.3.6 0 .8C15.9 19.4 14 20 12 20z"/></symbol>
+    <symbol id="i-fb" viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.3v-2.9h2.3V9.2c0-2.3 1.4-3.5 3.4-3.5.98 0 2 .17 2 .17v2.2h-1.1c-1.1 0-1.4.68-1.4 1.4v1.7h2.6l-.4 2.9h-2.2v7A10 10 0 0 0 22 12z"/></symbol>
+    <symbol id="i-quora" viewBox="0 0 24 24"><path d="M12 2C6.7 2 3 6 3 12s3.7 10 9 10c1.7 0 3.3-.4 4.6-1.2l1.7 2.2h2.9l-3-3.9c1.7-1.8 2.8-4.4 2.8-7.1 0-6-3.7-10-9-10zm0 2c4.3 0 7 3.2 7 8s-2.7 8-7 8-7-3.2-7-8 2.7-8 7-8zm2.4 12.7c-.7.5-1.7.8-2.7.8-2.7 0-4.5-2-4.5-5.5s1.8-5.5 4.5-5.5S16.2 8.5 16.2 12c0 1.5-.3 2.8-.8 3.7l1.6 2.1h-1.9l-1.1-1.4z"/></symbol>
+    <symbol id="i-tt" viewBox="0 0 24 24"><path d="M15.5 3c.3 2.2 1.7 3.7 3.8 4v3.1c-1.4.1-2.6-.4-3.8-1.2v5.7c0 3.9-3.1 7-7 7S1.5 18.5 1.5 14.6c0-3.8 2.9-6.8 6.6-7v3.4c-1.8.1-3.2 1.6-3.2 3.6 0 2 .1 3.6 3 3.6 1.7 0 3.1-1.5 3.1-3.2V3h4.5z"/></symbol>
+  </svg>
+
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] hidden">
+    <div class="px-4 py-2 rounded-xl bg-black text-white shadow"> <span id="toastMsg">Done</span> </div>
+  </div>
+
+  <!-- ===== AUTH DIALOG (email magic link) ===== -->
+  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Sign in</h3>
+        <button class="btn" value="cancel">Close</button>
       </div>
+      <p class="text-sm text-slate-500">Enter your email to receive a magic link.</p>
+      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
+      <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+      <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
+    </form>
+  </dialog>
 
-      <!-- Quotas -->
-      <div id="quotaCards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <!-- filled by JS -->
+  <!-- ===== EMAIL PREVIEW DIALOG ===== -->
+  <dialog id="emailPreview" class="rounded-xl p-0 w-[92vw] max-w-2xl">
+    <form method="dialog" class="p-5 grid gap-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Email preview</h3>
+        <button class="btn" value="cancel">Close</button>
       </div>
-
-      <!-- Feature list -->
-      <div class="card p-5 mt-6">
-        <h3 class="font-semibold">Your features</h3>
-        <ul id="featureList" class="mt-3 text-sm space-y-2">
-          <!-- filled by JS -->
-        </ul>
+      <label class="text-xs text-slate-500">Subject</label>
+      <input id="emailSubjEdit" class="border rounded-lg px-3 py-2" />
+      <label class="text-xs text-slate-500 mt-2">Body</label>
+      <textarea id="emailBodyEdit" class="border rounded-lg px-3 py-2 min-h-[180px]"></textarea>
+      <div class="mt-3 flex items-center justify-end gap-2">
+        <button class="btn" value="cancel">Cancel</button>
+        <button id="emailSendBtn" class="btn btn-primary" type="button">Open in mail app</button>
       </div>
+    </form>
+  </dialog>
 
-      <!-- Integrations -->
-      <div class="grid md:grid-cols-2 gap-4 mt-6">
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Notion</h3>
-            <span id="notionState" class="chip">Disconnected</span>
-          </div>
-          <div class="mt-3 flex gap-2">
-            <button id="connectNotion" class="btn">Connect</button>
-            <button id="disconnectNotion" class="btn hidden">Disconnect</button>
-          </div>
-        </div>
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold">Trello</h3>
-            <span id="trelloState" class="chip">Disconnected</span>
-          </div>
-          <div class="mt-3 flex gap-2">
-            <button id="connectTrello" class="btn">Connect</button>
-            <!-- Trello disconnect optional -->
-          </div>
-        </div>
+  <!-- ===== TRELLO EXPORT DIALOG ===== -->
+  <dialog id="trelloModal" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form method="dialog" class="p-5 grid gap-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Send to Trello</h3>
+        <button class="btn" value="cancel">Close</button>
       </div>
-
-      <!-- Member Generator -->
-      <div class="card p-5 md:p-6 mt-6">
-        <h3 class="font-semibold">Generate content</h3>
-        <textarea id="source_m" class="w-full rounded-xl border p-4 min-h-[120px]" placeholder="Paste your idea, excerpt, or URL"></textarea>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <button id="run_m" class="btn btn-primary">Generate</button>
-          <button id="run-byok_m" class="btn">Generate with your BYOK</button>
-          <button id="clear_m" class="btn">Clear</button>
-          <span id="status_m" class="text-xs text-slate-500"></span>
-        </div>
-
-        <!-- Outputs -->
-        <div class="grid md:grid-cols-2 gap-4 mt-6">
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>LinkedIn</strong>
-              <div class="flex gap-2">
-                <button id="copy-li_m" class="btn text-xs">Copy</button>
-                <button id="li-notion" class="btn text-xs hidden">Send to Notion</button>
-                <button id="li-trello" class="btn text-xs hidden">Send to Trello</button>
-              </div>
-            </div>
-            <pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-            <div class="mt-3">
-              <details class="p-3 rounded-lg border">
-                <summary class="text-sm font-semibold">LinkedIn Article (HTML)</summary>
-                <div id="out-li-article_m" class="prose prose-invert mt-3"></div>
-              </details>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>X (Twitter)</strong>
-              <button id="copy-x_m" class="btn text-xs">Copy</button>
-            </div>
-            <pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>Email</strong>
-              <button id="copy-em_m" class="btn text-xs">Copy subject</button>
-            </div>
-            <div class="grid gap-2 mt-3">
-              <div>
-                <div class="text-xs text-slate-400">Subject</div>
-                <pre id="out-em-subj_m" class="whitespace-pre-wrap text-sm"></pre>
-              </div>
-              <div>
-                <div class="text-xs text-slate-400">Body</div>
-                <pre id="out-em-body_m" class="whitespace-pre-wrap text-sm"></pre>
-              </div>
-              <button id="publish-em_m" class="btn">Preview & send</button>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>Instagram</strong>
-              <button id="copy-ig_m" class="btn text-xs">Copy</button>
-            </div>
-            <pre id="out-ig_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>Reddit</strong>
-              <button id="copy-reddit_m" class="btn text-xs">Copy</button>
-            </div>
-            <pre id="out-reddit_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-            <div class="mt-3">
-              <div class="text-xs text-slate-400">Suggested communities</div>
-              <ul id="out-reddit-subs_m" class="mt-1 text-sm grid grid-cols-2 gap-1"></ul>
-              <div class="text-xs text-slate-400 mt-3">Starter comments</div>
-              <pre id="out-reddit-comments_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
-            </div>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>Facebook</strong>
-              <button id="copy-fb_m" class="btn text-xs">Copy</button>
-            </div>
-            <pre id="out-fb_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-            <div class="text-xs text-slate-400 mt-3">Link preview</div>
-            <pre id="out-fb-meta_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>Quora</strong>
-              <button id="copy-quora_m" class="btn text-xs">Copy</button>
-            </div>
-            <pre id="out-quora_m" class="whitespace-pre-wrap text-sm mt-3"></pre>
-            <div class="text-xs text-slate-400 mt-3">Follow-up prompts</div>
-            <pre id="out-quora-prompts_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
-          </div>
-
-          <div class="card p-4">
-            <div class="flex items-center justify-between">
-              <strong>TikTok</strong>
-              <button id="copy-tt_m" class="btn text-xs">Copy</button>
-            </div>
-            <div class="text-xs text-slate-400 mt-2">Script</div>
-            <pre id="out-tt_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
-            <div class="text-xs text-slate-400 mt-3">On-screen plan</div>
-            <pre id="out-tt-onscreen_m" class="whitespace-pre-wrap text-sm mt-1"></pre>
-          </div>
-        </div>
+      <label class="text-xs text-slate-500">Board ID (optional)</label>
+      <input id="trelloBoardId" class="border rounded-lg px-3 py-2" placeholder="e.g. 5ab123..." />
+      <label class="text-xs text-slate-500">List ID <span class="text-red-500">*</span></label>
+      <input id="trelloListId" class="border rounded-lg px-3 py-2" placeholder="e.g. 5ac456..." />
+      <div class="mt-3 flex items-center justify-end gap-2">
+        <button class="btn" value="cancel">Cancel</button>
+        <button id="trelloConfirm" class="btn btn-primary" type="button">Send to Trello</button>
       </div>
+    </form>
+  </dialog>
 
-      <!-- Email Preview Modal -->
-      <dialog id="emailPreview" class="rounded-2xl p-0 w-[92vw] max-w-lg backdrop:backdrop-blur">
-        <div class="p-5 md:p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-bold">Email preview</h3>
-            <button class="px-3 py-1 rounded-lg border" onclick="this.closest('dialog').close()">Close</button>
-          </div>
-          <label class="block text-sm mt-3">Subject</label>
-          <input id="emailSubjEdit" class="w-full rounded-lg border p-3" />
-          <label class="block text-sm mt-3">Body</label>
-          <textarea id="emailBodyEdit" class="w-full rounded-lg border p-3 min-h-[160px]"></textarea>
-          <div class="mt-4 flex gap-2">
-            <button id="emailSendBtn" class="btn btn-primary">Open in mail client</button>
-          </div>
-        </div>
-      </dialog>
-
-      <!-- Trello Modal -->
-      <dialog id="trelloModal" class="rounded-2xl p-0 w-[92vw] max-w-md backdrop:backdrop-blur">
-        <div class="p-5 md:p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-bold">Send to Trello</h3>
-            <button class="px-3 py-1 rounded-lg border" onclick="this.closest('dialog').close()">Close</button>
-          </div>
-          <div class="grid gap-3 mt-3">
-            <label class="text-sm">Board ID (optional)</label>
-            <input id="trelloBoardId" class="w-full rounded-lg border p-3" placeholder="optional" />
-            <label class="text-sm">List ID</label>
-            <input id="trelloListId" class="w-full rounded-lg border p-3" placeholder="required" />
-          </div>
-          <div class="mt-4 flex gap-2">
-            <button id="trelloConfirm" class="btn btn-primary">Create card</button>
-          </div>
-        </div>
-      </dialog>
-
-      <!-- Scheduler + Analytics -->
-      <div class="grid lg:grid-cols-2 gap-6 mt-6">
-        <div class="card p-5">
-          <h3 class="font-semibold">Scheduler</h3>
-          <div class="grid gap-2 mt-3">
-            <label class="text-sm">Channel</label>
-            <select id="schedChannel" class="rounded-lg border p-2 w-full">
-              <option>linkedin</option><option>x</option><option>email</option><option>instagram</option>
-              <option>reddit</option><option>facebook</option><option>quora</option><option>tiktok</option>
-            </select>
-            <label class="text-sm mt-2">When</label>
-            <input id="schedWhen" type="datetime-local" class="rounded-lg border p-2 w-full"/>
-            <label class="text-sm mt-2">Content</label>
-            <textarea id="schedContent" class="rounded-lg border p-2 min-h-[100px]" placeholder="Paste content to queue"></textarea>
-            <div class="mt-2 flex gap-2">
-              <button id="schedSave" class="btn btn-primary">Add to queue</button>
-              <button id="schedClear" class="btn">Clear</button>
-            </div>
-            <ul id="schedList" class="mt-3 grid gap-2"></ul>
-          </div>
-        </div>
-
-        <div class="card p-5">
-          <h3 class="font-semibold">Analytics</h3>
-          <div class="grid sm:grid-cols-3 gap-3 mt-3">
-            <div class="stat"><div class="text-xs text-slate-500">Total</div><div id="anCount" class="k">0</div></div>
-            <div class="stat"><div class="text-xs text-slate-500">Top channel</div><div id="anTop" class="k">—</div></div>
-            <div class="stat"><div class="text-xs text-slate-500">Recent</div><div class="k">Last 5</div></div>
-          </div>
-          <ul id="anRecent" class="mt-3 grid gap-2"></ul>
-          <div id="anChart" class="mt-3 p-3 rounded-lg border text-xs text-slate-500">Volume:</div>
-        </div>
-      </div>
-
-      <!-- Presets -->
-      <div class="card p-5 mt-6">
-        <h3 class="font-semibold">Saved presets</h3>
-        <ul id="presetList" class="mt-3 grid gap-2">
-          <li class="text-xs text-slate-500">Loading…</li>
-        </ul>
-      </div>
-
-      <!-- Team (Business) -->
-      <div id="teamCard" class="card p-5 mt-6" style="display:none">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold">Team</h3>
-          <label class="flex items-center gap-2 text-sm">
-            <input id="whitelabel" type="checkbox" disabled />
-            <span id="wlLabel" class="hidden">White-label enabled</span>
-          </label>
-        </div>
-        <div class="mt-3">
-          <div class="flex gap-2">
-            <input id="inviteEmail" class="rounded-lg border p-2 flex-1" placeholder="Invite email" />
-            <button id="inviteBtn" class="btn">Invite</button>
-          </div>
-          <ul id="seatList" class="mt-3 grid gap-2"></ul>
-        </div>
-      </div>
+  <!-- ===== FOOTER ===== -->
+  <footer class="mt-20 border-t border-white/30">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
+      <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
+      <nav class="flex items-center gap-4 opacity-80">
+        <a href="#pricing" class="hover:opacity-100">Pricing</a>
+        <a href="/blog" class="hover:opacity-100">Blog</a>
+        <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
+      </nav>
     </div>
-  </section>
-<script>
-/* ========= ContentRepurpose.pro — Auth + App wiring (Unified, fixed) =========
-   This script replaces/merges previous scattered JS. It:
-   - Initializes Supabase v2 client (URL/ANON pulled from window.SUPABASE_* set in Part 1)
-   - Wires Google OAuth (fixes “page not found” by using exact redirect + state handling)
-   - Wires Magic Link (Email OTP) with a working “Send link” button
-   - Propagates auth to the Worker (Authorization + X-User-Id headers)
-   - Paints plan/quotas/dashboard; toggles Sign in/Sign out live
-   - Fixes generation flow + “Maximum call stack size exceeded” by removing duplicate listeners & recursion traps
-*/
+  </footer>
+<!-- ===== APP JS (auth, billing, generator, integrations) ===== -->
+<script type="module" id="crp-app-js">
+/* ContentRepurpose.pro — single boot script (no duplicate listeners) */
 
-(function(){
-  // ---- Guards to avoid duplicate bindings ----
-  if (window.__CRP_WIRED__) return;
-  window.__CRP_WIRED__ = true;
+if (!window.__CRP_BOOTED__) {
+  window.__CRP_BOOTED__ = true;
 
-  // ---- Helpers ----
-  const $  = (q, r=document) => r.querySelector(q);
-  const $$ = (q, r=document) => [...r.querySelectorAll(q)];
+  /* ---------- Shortcuts ---------- */
+  const $  = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
   const byId = (id) => document.getElementById(id);
-  function toast(msg){ try{ window.showToast?.(msg) }catch{}; console.log("[toast]", msg); }
+  const noop = ()=>{};
+  const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
+
   const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
   const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-  // ---- Supabase init (v2) ----
-  // (Defined in Part 1: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>)
-  const SUPABASE_URL  = window.SUPABASE_URL;
-  const SUPABASE_ANON = window.SUPABASE_ANON;
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth: {
-      persistSession: true,
-      detectSessionInUrl: true,
-      autoRefreshToken: true,
-      storageKey: "crp_auth_v1"
-    }
-  });
-  window._sb = sb; // debug hook
-
-  // ---- Auth modal elements (from Part 3) ----
-  const authDlg = byId("auth");
-  const emailInp = byId("authEmail");
-  const magicBtn = byId("sendMagic");
-  const googleBtn = byId("googleBtn");
-  const closeAuthBtn = byId("authClose");
-  const loginButtons = ["heroSignIn","heroSignIn_pr","loginBtn","loginBtn_m"].map(byId).filter(Boolean);
-  const logoutButtons = ["logoutBtn","logoutBtn_m"].map(byId).filter(Boolean);
-  const manageBillingBtns = ["manageBilling","manageBilling2","manageBilling_m"].map(byId).filter(Boolean);
-  const planBadges = ["planbadge","planbadge_m","memberPlanBadge"].map(byId).filter(Boolean);
-
-  // ---- UI toggles ----
-  async function getSession(){
-    const { data:{ session } } = await sb.auth.getSession();
-    return session || null;
+  function toast(msg){
+    try {
+      if (typeof window.showToast === "function") return window.showToast(msg);
+    } catch {}
+    alert(msg);
   }
-  async function getUser(){
-    const { data:{ user } } = await sb.auth.getUser();
-    return user || null;
-  }
+
   async function getAuthHeaders(){
-    const session = await getSession();
-    const user = await getUser();
-    const h = { "Content-Type":"application/json" };
-    if (session?.access_token) h["Authorization"] = `Bearer ${session.access_token}`;
-    if (user?.id) h["X-User-Id"] = user.id;
-    // Optional hint for Worker (used by /api/whoami)
-    if (user?.user_metadata?.plan) h["X-Plan"] = String(user.user_metadata.plan).toLowerCase();
-    return h;
-  }
-  window.getAuthHeaders = getAuthHeaders; // used by other parts
-
-  function setNavSignedIn(signedIn){
-    // Header nav
-    if (byId("loginBtn"))   byId("loginBtn").classList.toggle("hidden", signedIn);
-    if (byId("loginBtn_m")) byId("loginBtn_m").classList.toggle("hidden", signedIn);
-    if (byId("logoutBtn"))  byId("logoutBtn").classList.toggle("hidden", !signedIn);
-    if (byId("logoutBtn_m"))byId("logoutBtn_m").classList.toggle("hidden", !signedIn);
-    // CTA in hero
-    const heroBtn = byId("heroSignIn");
-    if (heroBtn) heroBtn.textContent = signedIn ? "Sign out" : "Sign in";
-    heroBtn?.setAttribute("data-action", signedIn ? "sign-out" : "open-auth");
+    try {
+      if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
+    } catch {}
+    return { "Content-Type":"application/json" };
   }
 
-  function setMemberVisibility(signedIn){
-    const dash = byId("memberView");
-    if (!dash) return;
-    dash.classList.toggle("hidden", !signedIn);
+  /* ---------- Auth (Supabase v2) ---------- */
+  // We assume Part 1 already created window.supabase and basic auth helpers.
+  // Here we wire UI safely (once) and add Google OAuth in the same dialog.
+
+  function once(el, evt, fn){
+    if (!el || !evt || !fn) return;
+    const key = `__once_${evt}`;
+    if (el[key]) return;
+    el.addEventListener(evt, fn);
+    el[key] = true;
   }
 
-  // ---- Paint plan/quotas/badges from Worker ----
-  async function paintStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Status error");
-      const plan = (j.plan || "free").toLowerCase();
-      planBadges.forEach(b=>{
-        if (!b) return;
-        const t = plan.charAt(0).toUpperCase()+plan.slice(1);
-        // header badges use "Plan: Free"
-        if (b.id==="planbadge" || b.id==="planbadge_m") b.textContent = `Plan: ${t}`;
-        else b.textContent = `Plan: ${t}`;
-      });
-      // show manage billing for paid
-      manageBillingBtns.forEach(b=> b?.classList.toggle("hidden", plan==="free"));
+  function paintAuthUI2(authed){
+    // Desktop
+    byId("loginBtn")    && byId("loginBtn").classList.toggle("hidden", !!authed);
+    byId("logoutBtn")   && byId("logoutBtn").classList.toggle("hidden", !authed);
+    byId("manageBilling") && byId("manageBilling").classList.toggle("hidden", !authed);
+    byId("planbadge")   && (byId("planbadge").textContent = authed ? "Plan: Member" : "Plan: Free");
 
-      // quota chips on member card
-      const qc = byId("quotaCards");
-      if (qc){
-        const pd = j.platform?.daily || {used:0, cap:null};
-        const pm = j.platform?.monthly || {used:0, cap:null};
-        const bd = j.byok?.daily || {used:0, cap:0};
-        const bm = j.byok?.monthly || {used:0, cap:0};
-        qc.innerHTML = `
-          <div class="stat"><div class="text-xs text-slate-500">Platform • Today</div><div class="k">${pd.used}/${pd.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">Platform • This month</div><div class="k">${pm.used}/${pm.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • Today</div><div class="k">${bd.used}/${bd.cap ?? "—"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • This month</div><div class="k">${bm.used}/${bm.cap ?? "—"}</div></div>
-        `;
-      }
-      const q = byId("quotaMember");
-      if (q){
-        const used = j.platform?.daily?.used ?? 0;
-        const cap  = j.platform?.daily?.cap ?? "∞";
-        q.textContent = `Today: ${used}/${cap}`;
-      }
+    // Mobile
+    byId("loginBtn_m")  && byId("loginBtn_m").classList.toggle("hidden", !!authed);
+    byId("logoutBtn_m") && byId("logoutBtn_m").classList.toggle("hidden", !authed);
+    byId("manageBilling_m") && byId("manageBilling_m").classList.toggle("hidden", !authed);
+    byId("planbadge_m") && (byId("planbadge_m").textContent = authed ? "Plan: Member" : "Plan: Free");
 
-      // features list per plan
-      const fl = byId("featureList");
-      if (fl){
-        let feats = [];
-        if (plan==="free"){
-          feats = [
-            "5 runs/day • signed-in",
-            "Article Optimizer • one-time trial",
-            "Export CSV/Markdown",
-            "BYOK: 5/day"
-          ];
-        } else if (plan==="starter"){
-          feats = [
-            "200 generations/month",
-            "Batch (up to 5 lines/run)",
-            "10 saved presets",
-            "Scheduler (queue & calendar)",
-            "Analytics (basics)",
-            "BYOK: 50/month (+5 daily headroom)"
-          ];
-        } else if (plan==="creator"){
-          feats = [
-            "500 generations/month",
-            "Unlimited presets",
-            "Project pack export",
-            "Notion & Trello export",
-            "Buffer queue",
-            "Analytics Pro (per-channel)",
-            "BYOK: 150/month (+10 daily)"
-          ];
-        } else { // business
-          feats = [
-            "Unlimited (fair use)",
-            "3 seats included",
-            "White-label export",
-            "Team presets & shared calendar",
-            "Priority support",
-            "Team Analytics (org-wide)",
-            "BYOK: 300/month (+30 daily)"
-          ];
-        }
-        fl.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
-      }
+    // Pricing rail extra
+    byId("manageBilling2") && byId("manageBilling2").classList.toggle("hidden", !authed);
+  }
 
-      // Integrations paint if present
-      if (byId("notionState")) byId("notionState").textContent = j.integrations?.notion?.connected ? "Connected" : "Disconnected";
-      if (byId("trelloState")) byId("trelloState").textContent = j.integrations?.trello?.connected ? "Connected" : "Disconnected";
-      if (j.integrations?.notion?.connected){
-        byId("connectNotion")?.classList.add("hidden");
-        byId("disconnectNotion")?.classList.remove("hidden");
-      }
-      if (j.integrations?.trello?.connected){
-        byId("connectTrello")?.classList.add("hidden");
-      }
+  function openAuthDialog(){
+    const dlg = byId("auth");
+    if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+    else toast("Sign-in available via the top-right button.");
+  }
 
-      // Team card (Business)
-      const teamCard = byId("teamCard");
-      if (teamCard){
-        const isBiz = plan==="business";
-        teamCard.style.display = isBiz ? "" : "none";
-      }
-    }catch(e){
-      console.warn("paintStatus:", e);
+  function wireAuthDialog(){
+    const dlg = byId("auth");
+    if (!dlg) return;
+
+    // Ensure Google button exists
+    if (!byId("authGoogle")){
+      const form = $('form[method="dialog"]', dlg);
+      const googleBtn = document.createElement("button");
+      googleBtn.id = "authGoogle";
+      googleBtn.type = "button";
+      googleBtn.className = "btn";
+      googleBtn.textContent = "Continue with Google";
+      form && form.insertBefore(googleBtn, byId("authSend"));
     }
-  }
 
-  // ---- Route helpers ----
-  function openAuth(){
-    if (authDlg && typeof authDlg.showModal==="function") authDlg.showModal();
-    else location.hash = "signin";
-  }
-  function closeAuth(){
-    try{ authDlg?.close() }catch{}
-  }
-
-  // ---- Magic Link (Email OTP) ----
-  if (magicBtn){
-    magicBtn.addEventListener("click", async ()=>{
-      const email = (emailInp?.value||"").trim();
-      if (!email) return toast("Enter email first");
-      magicBtn.disabled = true; magicBtn.textContent = "Sending…";
+    // Magic link
+    const sendBtn = byId("authSend");
+    const emailEl = byId("authEmail");
+    once(sendBtn, "click", async ()=>{
+      const email = emailEl?.value?.trim();
+      if (!email) return toast("Enter your email first.");
       try{
-        const redirectTo = SITE_ORIGIN + "/?auth=magic";
-        const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+        const { error } = await window.supabase.auth.signInWithOtp({ email });
         if (error) throw error;
-        toast("Magic link sent. Check your inbox.");
-        closeAuth();
-      }catch(e){ toast(e.message || "Could not send link"); }
-      finally{ magicBtn.disabled = false; magicBtn.textContent = "Send magic link"; }
+        toast("Check your email for the magic link.");
+      }catch(e){ toast(e.message || "Sign-in error"); }
     });
-  }
 
-  // ---- Google OAuth ----
-  if (googleBtn){
-    googleBtn.addEventListener("click", async ()=>{
-      googleBtn.disabled = true; googleBtn.textContent = "Opening Google…";
+    once(emailEl, "keydown", (e)=>{
+      if (e.key === "Enter") { e.preventDefault(); byId("authSend")?.click(); }
+    });
+
+    // Google OAuth
+    const googleBtn = byId("authGoogle");
+    once(googleBtn, "click", async ()=>{
       try{
-        const redirectTo = SITE_ORIGIN + "/?auth=google";
-        const { data, error } = await sb.auth.signInWithOAuth({
+        const { error } = await window.supabase.auth.signInWithOAuth({
           provider: "google",
-          options: {
-            redirectTo,
-            queryParams: { access_type:"offline", prompt:"consent" }
-          }
+          options: { redirectTo: SITE_ORIGIN }
         });
         if (error) throw error;
-        // Browser will navigate; keep modal closed now
-        closeAuth();
       }catch(e){ toast(e.message || "Google sign-in failed"); }
-      finally{ googleBtn.disabled = false; googleBtn.textContent = "Continue with Google"; }
     });
   }
 
-  // ---- Handle OAuth return (Google/Magic) ----
-  (async function handleOAuthReturn(){
-    // supabase-js v2 auto-detects session in URL and stores it
-    const u = new URL(location.href);
-    const authtag = u.searchParams.get("auth");
-    if (!authtag) return;
-    // Clean the URL so refreshes don't loop
-    u.searchParams.delete("auth");
-    history.replaceState({}, "", u.toString());
-    const session = await getSession();
-    if (session){
-      toast("Signed in ✅");
-      setNavSignedIn(true);
-      setMemberVisibility(true);
-      await paintStatus();
-      // Scroll to dashboard for a clean post-auth experience
-      byId("memberView")?.scrollIntoView({ behavior:"smooth", block:"start" });
-    }
-  })();
+  function wireAuthButtons(){
+    // Prefer new class hook to avoid duplicate IDs
+    $$(".js-open-auth").forEach(btn => once(btn, "click", openAuthDialog));
 
-  // ---- Sign-in triggers (open modal), Sign-out actions ----
-  loginButtons.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const signedOut = !byId("logoutBtn") || byId("logoutBtn").classList.contains("hidden");
-      if (signedOut) openAuth(); else doSignOut();
+    // Back-compat: also catch legacy IDs if present (ensure once)
+    ["heroSignIn","heroSignIn_pr","loginBtn","loginBtn_m"].forEach(id=>{
+      const el = byId(id);
+      el && once(el, "click", openAuthDialog);
     });
-  });
-  if (byId("heroSignIn")){
-    byId("heroSignIn").addEventListener("click", ()=>{
-      const isSignOut = byId("heroSignIn").getAttribute("data-action")==="sign-out";
-      if (isSignOut) doSignOut(); else openAuth();
+
+    // Logout
+    ["logoutBtn","logoutBtn_m"].forEach(id=>{
+      const el = byId(id);
+      el && once(el, "click", async ()=>{
+        try{ await window.supabase.auth.signOut(); toast("Signed out"); }
+        catch{ /* ignore */ }
+      });
     });
   }
-  logoutButtons.forEach(btn=>{
-    btn.addEventListener("click", ()=> doSignOut());
-  });
-  async function doSignOut(){
+
+  function wireBilling(){
+    // Checkout buttons (pricing)
+    $$(".js-checkout").forEach(btn=>{
+      once(btn, "click", async ()=>{
+        const price = btn.getAttribute("data-price") || "";
+        if (!price) return toast("Missing price id on button");
+        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+            method:"POST",
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({
+              price,
+              success_url: `${SITE_ORIGIN}/?billing=success`,
+              cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
+            })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+          location.href = j.url;
+        }catch(e){
+          toast(e.message || "Unable to open checkout");
+          btn.disabled = false; btn.textContent = old;
+        }
+      });
+    });
+
+    // Manage billing (all spots)
+    ["manageBilling","manageBilling2","manageBilling_m"].forEach(id=>{
+      const b = byId(id);
+      if (!b) return;
+      b.classList.remove("hidden");
+      once(b, "click", async ()=>{
+        const old = b.textContent; b.disabled = true; b.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
+            method:"POST",
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({ return_url: location.href })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Portal error");
+          location.href = j.url;
+        }catch(e){
+          toast(e.message || "Unable to open billing portal");
+          b.disabled = false; b.textContent = old;
+        }
+      });
+    });
+  }
+
+  // Reflect auth state on load + changes
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    wireAuthDialog();
+    wireAuthButtons();
+    wireBilling();
+
     try{
-      await sb.auth.signOut();
-      toast("Signed out");
-      setNavSignedIn(false);
-      setMemberVisibility(false);
-      planBadges.forEach(b=> b && (b.textContent="Plan: Free"));
-    }catch(e){ toast(e.message || "Sign-out failed"); }
-  }
+      const { data } = await window.supabase.auth.getSession();
+      paintAuthUI2(!!data?.session);
+    }catch{ /* ignore */ }
 
-  // ---- On auth state change: keep UI + Worker headers in sync ----
-  sb.auth.onAuthStateChange(async (event, session)=>{
-    const signedIn = !!session;
-    setNavSignedIn(signedIn);
-    setMemberVisibility(signedIn);
-    if (signedIn) await paintStatus();
+    window.supabase.auth.onAuthStateChange((_event, session)=>{
+      paintAuthUI2(!!session);
+      // Close dialog if open
+      try{ $$('dialog[open]#auth').forEach(d => d.close()); }catch{}
+      // Refresh quotas
+      try{ paintQuota(); }catch{}
+    });
   });
 
-  // ---- Initial paint on load ----
-  (async function boot(){
-    const session = await getSession();
-    const signedIn = !!session;
-    setNavSignedIn(signedIn);
-    setMemberVisibility(signedIn);
-    await paintStatus();
+  /* ---------- Live stats (supports duplicate IDs) ---------- */
+  async function paintLive(){
+    const countEls = document.querySelectorAll('[id="liveCount"]'); // attribute selector gets all duplicates
+    if (!countEls.length) return;
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/stats/today`);
+      const j = await r.json();
+      if (r.ok && typeof j.today_count === "number"){
+        countEls.forEach(el => { el.textContent = String(j.today_count); });
+      }
+    }catch{ /* ignore */ }
+  }
+  paintLive(); setInterval(paintLive, 30000);
+
+  /* ---------- Promo copy buttons ---------- */
+  ["copyPromoBtn","copyPromoBtn_pr","copyPromoBtn2"].forEach(id=>{
+    const btn = byId(id);
+    btn && once(btn, "click", async ()=>{
+      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }
+      catch{ toast("Copy failed"); }
+    });
+  });
+
+  /* ---------- Smooth anchors + mobile nav ---------- */
+  (function navWire(){
+    const toggle = byId("navToggle");
+    const sheet  = byId("mobileNav");
+    const close  = byId("navClose");
+    toggle && once(toggle, "click", ()=> document.body.classList.add("nav-open"));
+    close  && once(close,  "click", ()=> document.body.classList.remove("nav-open"));
+
+    $$('a[href^="#"]').forEach(a=>{
+      once(a, "click", (e)=>{
+        const id = a.getAttribute("href");
+        if (!id || id==="#") return;
+        const el = $(id);
+        if (el){
+          e.preventDefault();
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          document.body.classList.remove("nav-open");
+          history.replaceState(null,"",id);
+        }
+      });
+    });
   })();
 
-  // ===================== GENERATION (Demo + Member) =====================
-
-  // Common JSON extractor (non-recursive; prevents call stack issues)
-  function extractJSONSafe(txt){
-    if (!txt) return null;
-    try { return JSON.parse(txt); } catch {}
-    // Fallback: try to find a top-level JSON object block
-    const start = txt.indexOf("{");
-    const end   = txt.lastIndexOf("}");
-    if (start>=0 && end>start){
-      const sub = txt.slice(start, end+1);
-      try { return JSON.parse(sub); } catch {}
-    }
-    return null;
-  }
-
-  // Live Demo wiring
-  (function wireDemo(){
+  /* ---------- Demo generator ---------- */
+  (function demoWire(){
     const form = byId("demoForm");
     const src  = byId("sourceText");
     const outWrap = byId("demoOutput");
-    const generateBtn = byId("generateBtn");
     const quotaEl = byId("demoQuota");
+    const generateBtn = byId("generateBtn");
     const clearBtn = byId("clearBtn");
-
     if (!form || !src || !outWrap) return;
 
-    // Avoid duplicate submit handler
-    if (form.__wired) return; form.__wired = true;
-
-    clearBtn?.addEventListener("click", ()=>{
+    once(clearBtn, "click", ()=>{
       src.value = "";
       outWrap.innerHTML = "";
     });
 
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const raw = (src.value||"").trim();
-      if (!raw){ toast("Paste some content first"); return; }
+    async function paintQuota(){
+      if (!quotaEl) return;
       try{
-        generateBtn.disabled = true; generateBtn.textContent = "Generating…";
-        outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+        const j = await r.json();
+        if (!r.ok) return;
+        if (j.scope==="ip"){
+          const cap = j.platform?.monthly?.cap ?? 5;
+          const used = j.platform?.monthly?.used ?? 0;
+          quotaEl.textContent = Math.max(0, cap - used);
+        } else {
+          const used = j.platform?.daily?.used ?? 0;
+          const cap  = j.platform?.daily?.cap == null ? null : j.platform.daily.cap;
+          quotaEl.textContent = cap==null ? "∞" : Math.max(0, cap - used);
+        }
+      }catch{ quotaEl.textContent = "—"; }
+    }
+    window.paintQuota = paintQuota; // for auth state refresh
+    paintQuota();
 
-        // read toggles (limited demo version)
-        const g = (n)=> form.elements[n];
-        const toggles = {
-          ch: {
-            linkedin:  g("ch_linkedin")?.checked,
-            x:         g("ch_x")?.checked,
-            email:     g("ch_email")?.checked,
-            instagram: g("ch_instagram")?.checked,
-            reddit:    g("ch_reddit")?.checked,
-            facebook:  g("ch_facebook")?.checked,
-            quora:     g("ch_quora")?.checked,
-            tiktok:    g("ch_tiktok")?.checked,
-          },
-          extras: {
-            li_article: g("li_article")?.checked,
-            x_sequence: g("x_sequence")?.checked,
-            x_posts:    g("x_posts")?.value || "4",
-            rdt_communities: g("rdt_communities")?.checked,
-            rdt_comments:    g("rdt_comments")?.checked,
-            tt_hooks: g("tt_hooks")?.checked,
-            tt_onscreen: g("tt_onscreen")?.checked,
-          },
-          opt: {
-            humanize:  g("opt_humanize")?.checked,
-            lengthen:  g("opt_lengthen")?.checked,
-            faqs:      g("opt_faqs")?.checked,
-            headings:  g("opt_headings")?.checked,
-            svg:       g("opt_svg")?.checked,
-            seo:       g("opt_seo")?.checked
-          }
-        };
+    function readToggles(){
+      const g = (n)=> form.elements[n];
+      return {
+        opt: {
+          humanize:  g("opt_humanize")?.checked,
+          lengthen:  g("opt_lengthen")?.checked,
+          faqs:      g("opt_faqs")?.checked,
+          headings:  g("opt_headings")?.checked,
+          svg:       g("opt_svg")?.checked,
+          seo:       g("opt_seo")?.checked
+        },
+        ch: {
+          linkedin:  g("ch_linkedin")?.checked,
+          x:         g("ch_x")?.checked,
+          email:     g("ch_email")?.checked,
+          instagram: g("ch_instagram")?.checked,
+          reddit:    g("ch_reddit")?.checked,
+          facebook:  g("ch_facebook")?.checked,
+          quora:     g("ch_quora")?.checked,
+          tiktok:    g("ch_tiktok")?.checked,
+        },
+        extras: {
+          li_article: g("li_article")?.checked,
+          x_sequence: g("x_sequence")?.checked,
+          x_posts:    g("x_posts")?.value || "4",
+          rdt_communities: g("rdt_communities")?.checked,
+          rdt_comments:    g("rdt_comments")?.checked,
+          tt_hooks:   g("tt_hooks")?.checked,
+          tt_onscreen:g("tt_onscreen")?.checked
+        }
+      };
+    }
 
-        // Messages (system+user) — same shape expected by Worker
-        const messages = [
-          {
-            role:"system",
-            content:
+    function systemPrompt(tog){
+      return {
+        role:"system",
+        content:
 `You are a senior social copywriter.
 Return ONLY valid JSON with this shape:
 {
@@ -1339,79 +1186,158 @@ Return ONLY valid JSON with this shape:
   "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
   "linkedin_article_html": string|null
 }
+Respect these toggles: 
+- Humanize: ${tog.opt.humanize ? "on" : "off"}
+- Lengthen: ${tog.opt.lengthen ? "on" : "off"}
+- Add FAQs: ${tog.opt.faqs ? "on" : "off"}
+- Auto-headings: ${tog.opt.headings ? "on" : "off"}
+- SVG ideas: ${tog.opt.svg ? "on" : "off"}
+- SEO basics: ${tog.opt.seo ? "on" : "off"}
+- X posts max: ${tog.extras.x_posts}
+- X sequence format: ${tog.extras.x_sequence ? "on (Post 1…N)" : "off"}
+- LinkedIn Article: ${tog.extras.li_article ? "on" : "off"}
+- Reddit communities: ${tog.extras.rdt_communities ? "include" : "skip"}
+- Reddit starter comments: ${tog.extras.rdt_comments ? "include" : "skip"}
+- TikTok hooks: ${tog.extras.tt_hooks ? "3 variants" : "1 variant"}
+- TikTok on-screen text: ${tog.extras.tt_onscreen ? "include" : "skip"}
+
 Rules:
 - Keep posts concise, skimmable and platform-native.
-- X posts ≤ 280 chars when possible; use "Post 1..N" if threaded.
-- IG hashtags 3–5.
-- Only requested channels; others null.
-- No prose outside JSON.`
-          },
-          {
-            role:"user",
-            content:
-`Source:
+- X posts ≤ 280 chars when possible; if a thread is required, prefix "Post N:" per item.
+- Provide meaningful hashtags (3–5) for Instagram.
+- If a field/channel wasn't requested, set it to null; do NOT invent.
+- NO prose outside the JSON.`
+      };
+    }
+
+    function userPrompt(raw, tog){
+      const srcType = form.elements["sourceType"]?.value || "paragraph";
+      const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
+      const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
+      return {
+        role:"user",
+        content:
+`${head}:
 ${raw}
 
 Task:
 1) Create a one-line outline.
-2) Generate only for selected channels.
-3) Apply all toggles and extras exactly.`
-          }
-        ];
+2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
+3) Apply the toggles and extras exactly.`
+      };
+    }
 
+    function paintOutput(j){
+      outWrap.innerHTML = ""; // clear
+      const addCard = (title, inner) => {
+        outWrap.insertAdjacentHTML("beforeend", `
+          <div class="card p-5">
+            <div class="flex justify-between items-center gap-2 flex-wrap">
+              <strong class="tracking-tight">${title}</strong>
+              <button class="btn copy" type="button">Copy</button>
+            </div>
+            ${inner}
+          </div>`);
+        const card = outWrap.lastElementChild;
+        const copyBtn = $(".btn.copy", card);
+        const pre = $("pre.content", card);
+        copyBtn && once(copyBtn, "click", async ()=>{
+          try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }
+          catch{ toast("Copy failed"); }
+        });
+      };
+
+      if (j.linkedin){
+        addCard("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`);
+      }
+      if (Array.isArray(j.x) && j.x.length){
+        const seq = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
+        addCard("X (Twitter)", `
+          <pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>
+          <div class="text-xs text-slate-500 mt-2">Sequence format: “Post 1 … Post N”.</div>`);
+      }
+      if (j.email && (j.email.subject || j.email.body)){
+        addCard("Email", `
+          <div class="text-xs text-slate-400">Subject:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
+          <div class="text-xs text-slate-400 mt-3">Body:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`);
+      }
+      if (j.instagram){
+        const cap = j.instagram.caption||"";
+        const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
+        addCard("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`);
+      }
+      if (j.reddit){
+        const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+        const starters = (j.reddit.starter_comments||[]).map((c)=>`• ${c}`).join("\n");
+        addCard("Reddit", `
+          <div class="text-xs text-slate-400">Main post:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
+          <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
+          <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`);
+      }
+      if (j.facebook){
+        addCard("Facebook", `
+          <div class="text-xs text-slate-400">Primary text:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
+          <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`);
+      }
+      if (j.quora){
+        const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
+        addCard("Quora", `
+          <div class="text-xs text-slate-400">Answer:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
+          <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`);
+      }
+      if (j.tiktok){
+        const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+        const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+        addCard("TikTok", `
+          <div class="text-xs text-slate-400">Script:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
+          <div class="text-xs text-slate-400 mt-3">Hooks:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
+          <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
+          <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`);
+      }
+    }
+
+    once(form, "submit", async (e)=>{
+      e.preventDefault();
+      const raw = (src.value||"").trim();
+      if (!raw){ toast("Paste some content first"); return; }
+
+      try{
+        generateBtn.disabled = true; generateBtn.textContent = "Generating…";
+        outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+
+        const tog = readToggles();
+        const messages = [ systemPrompt(tog), userPrompt(raw, tog) ];
         const r = await fetch(`${WORKER_BASE}/api/generate`,{
           method:"POST",
           headers: await getAuthHeaders(),
-          body: JSON.stringify({ plan:"free", temperature:0.5, messages })
+          body: JSON.stringify({ plan: "free", temperature: 0.5, messages })
         });
         const data = await r.json();
         if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
 
         const content = data?.choices?.[0]?.message?.content || "";
-        const j = extractJSONSafe(content);
+        // tolerant JSON extraction
+        let j = null;
+        try { j = JSON.parse(content); } catch {
+          const m = String(content||"").match(/\{[\s\S]*\}$/);
+          if (m) { try{ j = JSON.parse(m[0]); }catch{} }
+        }
         if (!j) throw new Error("Model did not return JSON");
 
-        // paint output (simple)
-        function preCard(title, inner){
-          return `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong class="tracking-tight">${title}</strong><button class="btn copy">Copy</button></div><pre class="whitespace-pre-wrap text-sm mt-3 content">${inner}</pre></div>`;
-        }
-        const blocks = [];
-        if (j.linkedin) blocks.push(preCard("LinkedIn", j.linkedin));
-        if (Array.isArray(j.x) && j.x.length) blocks.push(preCard("X (Twitter)", j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n")));
-        if (j.email) blocks.push(`<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>Email</strong><button class="btn copy">Copy</button></div><div class="text-xs text-slate-400">Subject:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre><div class="text-xs text-slate-400 mt-3">Body:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre></div>`);
-        if (j.instagram){
-          const tags = (j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ");
-          blocks.push(preCard("Instagram", (j.instagram.caption||"") + "\n\n" + tags));
-        }
-        if (j.reddit){
-          const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-          const starters = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-          blocks.push(`<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>Reddit</strong><button class="btn copy">Copy</button></div><div class="text-xs text-slate-400">Main post:</div><pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre><div class="text-xs text-slate-400 mt-3">Suggested communities:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${subs || "—"}</pre><div class="text-xs text-slate-400 mt-3">Starter comments:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${starters || "—"}</pre></div>`);
-        }
-        if (j.facebook){
-          blocks.push(`<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>Facebook</strong><button class="btn copy">Copy</button></div><div class="text-xs text-slate-400">Primary text:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre><div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre></div>`);
-        }
-        if (j.quora){
-          const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-          blocks.push(`<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>Quora</strong><button class="btn copy">Copy</button></div><div class="text-xs text-slate-400">Answer:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre><div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${follow || "—"}</pre></div>`);
-        }
-        if (j.tiktok){
-          const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-          const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-          blocks.push(`<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>TikTok</strong><button class="btn copy">Copy</button></div><div class="text-xs text-slate-400">Script:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre><div class="text-xs text-slate-400 mt-3">Hooks:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${hooks || "—"}</pre><div class="text-xs text-slate-400 mt-3">On-screen plan:</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${ons || "—"}</pre></div>`);
-        }
-
-        outWrap.innerHTML = blocks.join("");
-
-        // Copy buttons
-        $$(".card .btn.copy", outWrap).forEach(b=>{
-          b.addEventListener("click", async ()=>{
-            const pre = b.closest(".card")?.querySelector("pre.content");
-            if (!pre) return;
-            try{ await navigator.clipboard.writeText(pre.innerText); toast("Copied ✅"); }
-            catch{ toast("Copy failed"); }
-          });
-        });
+        paintOutput(j);
+        toast("Done ✅");
+        paintQuota();
       }catch(e){
         outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
       }finally{
@@ -1420,250 +1346,24 @@ Task:
     });
   })();
 
-  // Member Generator wiring (platform + BYOK)
-  (function wireMember(){
-    const gsrc = byId("source_m");
-    const gst  = byId("status_m");
-    const btnPlatform = byId("run_m");
-    const btnBYOK     = byId("run-byok_m");
-    const btnClear    = byId("clear_m");
-
-    if (btnClear && !btnClear.__wired){
-      btnClear.__wired = true;
-      btnClear.addEventListener("click", ()=>{
-        if (gsrc) gsrc.value = "";
-        // Clear outputs
-        ["out-li_m","out-li-article_m","out-x_m","out-em-subj_m","out-em-body_m","out-ig_m",
-         "out-reddit_m","out-reddit-subs_m","out-reddit-comments_m","out-fb_m","out-fb-meta_m",
-         "out-quora_m","out-quora-prompts_m","out-tt_m","out-tt-onscreen_m"].forEach(id=>{
-          const el = byId(id); if (!el) return;
-          if (el.tagName==="UL") el.innerHTML = ""; else el.textContent = "";
-        });
-        if (gst) gst.textContent = "";
-      });
-    }
-
-    async function runMember(lane){
-      const raw = (gsrc?.value||"").trim();
-      if (!raw){ toast("Paste an idea, excerpt, or URL first"); return; }
-      const btn = (lane==="byok") ? btnBYOK : btnPlatform;
-      try{
-        btn && (btn.disabled=true, btn.textContent="Generating…");
-        gst && (gst.textContent="Working…");
-
-        const messages = [
-          {
-            role:"system",
-            content:
-`You are a social + editorial repurposer. Return ONLY valid JSON with keys:
-{
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hashtags 3–5; NO prose outside JSON.`
-          },
-          { role:"user", content:`Source:\n${raw}\n\nGenerate for LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. If missing context, be conservative.` }
-        ];
-
-        const body = { messages, temperature: 0.4 };
-        if (lane==="byok"){ body.plan = "byok"; body.use_byok = true; } else { body.plan = "member"; }
-
-        const r = await fetch(`${WORKER_BASE}/api/generate`,{
-          method:"POST", headers: await getAuthHeaders(), body: JSON.stringify(body)
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-
-        const content = data?.choices?.[0]?.message?.content || "";
-        const j = extractJSONSafe(content);
-        if (!j) throw new Error("Model did not return JSON");
-
-        // Paint member outputs
-        if (j.linkedin && byId("out-li_m")) byId("out-li_m").textContent = j.linkedin;
-        if (j.linkedin_article_html && byId("out-li-article_m")) byId("out-li-article_m").innerHTML = j.linkedin_article_html;
-        if (Array.isArray(j.x) && j.x.length && byId("out-x_m")) byId("out-x_m").textContent = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
-        if (j.email){
-          byId("out-em-subj_m") && (byId("out-em-subj_m").textContent = j.email.subject || "");
-          byId("out-em-body_m") && (byId("out-em-body_m").textContent  = j.email.body || "");
-        }
-        if (j.instagram){
-          const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-          byId("out-ig_m") && (byId("out-ig_m").textContent = `${j.instagram.caption||""}\n\n${tags}`);
-        }
-        if (j.reddit){
-          byId("out-reddit_m") && (byId("out-reddit_m").textContent = `**${j.reddit.title||""}**\n\n${j.reddit.body||""}`);
-          byId("out-reddit-subs_m") && (byId("out-reddit-subs_m").innerHTML = (j.reddit.communities||[]).slice(0,8).map(s=>`<li>r/${s}</li>`).join(""));
-          byId("out-reddit-comments_m") && (byId("out-reddit-comments_m").textContent = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n"));
-        }
-        if (j.facebook){
-          byId("out-fb_m") && (byId("out-fb_m").textContent = j.facebook.primary || "");
-          byId("out-fb-meta_m") && (byId("out-fb-meta_m").textContent = `${j.facebook.meta?.headline||""}\n${j.facebook.meta?.description||""}`);
-        }
-        if (j.quora){
-          byId("out-quora_m") && (byId("out-quora_m").textContent = j.quora.answer || "");
-          byId("out-quora-prompts_m") && (byId("out-quora-prompts_m").textContent = (j.quora.followups||[]).map(x=>`• ${x}`).join("\n"));
-        }
-        if (j.tiktok){
-          byId("out-tt_m") && (byId("out-tt_m").textContent = j.tiktok.script || "");
-          byId("out-tt-onscreen_m") && (byId("out-tt-onscreen_m").textContent = (j.tiktok.onscreen||[]).map(x=>`• ${x}`).join("\n"));
-        }
-
-        // Copy bindings (bind once)
-        function simpleCopy(id, btnId){
-          const b = byId(btnId);
-          if (!b || b.__wired) return;
-          b.__wired = true;
-          b.addEventListener("click", async ()=>{
-            try{ await navigator.clipboard.writeText(byId(id)?.textContent || ""); toast("Copied ✅"); }
-            catch{ toast("Copy failed"); }
-          });
-        }
-        simpleCopy("out-li_m", "copy-li_m");
-        simpleCopy("out-x_m",  "copy-x_m");
-        simpleCopy("out-em-subj_m", "copy-em_m");
-        simpleCopy("out-ig_m", "copy-ig_m");
-        simpleCopy("out-reddit_m","copy-reddit_m");
-        simpleCopy("out-fb_m","copy-fb_m");
-        simpleCopy("out-quora_m","copy-quora_m");
-        simpleCopy("out-tt_m","copy-tt_m");
-
-        gst && (gst.textContent="Done ✅");
-        // Refresh status after successful run
-        await paintStatus();
-      }catch(e){
-        gst && (gst.textContent = `Error: ${e.message || e}`);
-      }finally{
-        btn && (btn.disabled=false, btn.textContent = (lane==="byok") ? "Generate with your BYOK" : "Generate");
-      }
-    }
-
-    if (btnPlatform && !btnPlatform.__wired){
-      btnPlatform.__wired = true;
-      btnPlatform.addEventListener("click", ()=> runMember("platform"));
-    }
-    if (btnBYOK && !btnBYOK.__wired){
-      btnBYOK.__wired = true;
-      btnBYOK.addEventListener("click", ()=> runMember("byok"));
-    }
+  /* ---------- Email preview dialog (mailto) ---------- */
+  (function emailPreviewWire(){
+    const dlg = byId("emailPreview");
+    const send = byId("emailSendBtn");
+    once(send, "click", ()=>{
+      const subj = encodeURIComponent(byId("emailSubjEdit")?.value || "");
+      const body = encodeURIComponent(byId("emailBodyEdit")?.value || "");
+      location.href = `mailto:?subject=${subj}&body=${body}`;
+    });
   })();
 
-  // ===================== Billing buttons (Stripe) =====================
-  $$('[data-checkout="stripe"]').forEach(btn=>{
-    if (btn.__wired) return; btn.__wired = true;
-    btn.addEventListener("click", async ()=>{
-      const price = btn.getAttribute("data-price") || "";
-      if (!price){ toast("Missing price id on button"); return; }
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
-      try{
-        const body = {
-          price,
-          success_url: SITE_ORIGIN + "/?billing=success",
-          cancel_url:  SITE_ORIGIN + "/?billing=cancel"
-        };
-        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify(body)
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No checkout URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open checkout");
-        btn.disabled = false; btn.textContent = old;
-      }
-    });
-  });
+  /* ---------- Notion & Trello export (appear on member UI; safe no-ops on marketing page) ---------- */
+  (function integrationsWire(){
+    const btnNotion = byId("li-notion");
+    const btnTrello = byId("li-trello");
+    const trelloDialog = byId("trelloModal");
 
-  $$('[data-portal="stripe"]').forEach(btn=>{
-    if (btn.__wired) return; btn.__wired = true;
-    btn.addEventListener("click", async ()=>{
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ return_url: location.href })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No portal URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open billing portal");
-        btn.disabled = false; btn.textContent = old;
-      }
-    });
-  });
-
-  // ===================== Integrations =====================
-  byId("connectTrello")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await getAuthHeaders() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Trello OAuth failed");
-      location.href = j.url;
-    }catch(e){ toast(e.message || "Trello connect failed"); }
-  });
-  byId("connectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await getAuthHeaders() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Notion OAuth failed");
-      location.href = j.url;
-    }catch(e){ toast(e.message || "Notion connect failed"); }
-  });
-  byId("disconnectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers: await getAuthHeaders() });
-      if (!r.ok){ const jj = await r.json(); throw new Error(jj?.error?.message || "Disconnect failed"); }
-      toast("Notion disconnected");
-      paintStatus();
-    }catch(e){ toast(e.message || "Notion disconnect failed"); }
-  });
-
-  // Trello export
-  const trelloBtn = byId("li-trello");
-  const trelloDialog = byId("trelloModal");
-  if (trelloBtn && trelloDialog && !trelloBtn.__wired){
-    trelloBtn.__wired = true;
-    trelloBtn.classList.remove("hidden");
-    trelloBtn.addEventListener("click", ()=> trelloDialog.showModal());
-    byId("trelloConfirm")?.addEventListener("click", async ()=>{
-      const board_id = byId("trelloBoardId")?.value?.trim();
-      const list_id  = byId("trelloListId")?.value?.trim();
-      if (!list_id){ toast("Enter List ID"); return; }
-      const title = "Social Draft";
-      const description = [
-        "LinkedIn:\n"+(byId("out-li_m")?.textContent||""),
-        "\nX:\n"+(byId("out-x_m")?.textContent||"")
-      ].join("\n");
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-          method:"POST", headers: await getAuthHeaders(),
-          body: JSON.stringify({ board_id, list_id, title, description })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-        toast("Sent to Trello ✅");
-        trelloDialog.close();
-        if (j.url) window.open(j.url, "_blank");
-      }catch(e){ toast(e.message || "Trello export failed"); }
-    });
-  }
-
-  // Notion export
-  if (byId("li-notion") && !byId("li-notion").__wired){
-    const b = byId("li-notion");
-    b.__wired = true;
-    b.classList.remove("hidden");
-    b.addEventListener("click", async ()=>{
+    btnNotion && once(btnNotion, "click", async ()=>{
       const title = "LinkedIn draft";
       const blocks = [];
       const li = byId("out-li_m")?.textContent || "";
@@ -1678,211 +1378,55 @@ Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hash
         const j = await r.json();
         if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
         toast("Sent to Notion ✅");
-        window.open(j.url, "_blank");
+        j.url && window.open(j.url, "_blank");
       }catch(e){ toast(e.message || "Notion export failed"); }
     });
-  }
 
-  // Email preview: open in mail client
-  if (byId("publish-em_m") && !byId("publish-em_m").__wired){
-    byId("publish-em_m").__wired = true;
-    byId("publish-em_m").addEventListener("click", ()=>{
-      const dlg = byId("emailPreview");
-      if (!dlg) return;
-      byId("emailSubjEdit").value = byId("out-em-subj_m")?.textContent || "";
-      byId("emailBodyEdit").value = byId("out-em-body_m")?.textContent || "";
-      dlg.showModal();
-    });
-    byId("emailSendBtn")?.addEventListener("click", ()=>{
-      const subj = encodeURIComponent(byId("emailSubjEdit").value || "");
-      const body = encodeURIComponent(byId("emailBodyEdit").value || "");
-      location.href = `mailto:?subject=${subj}&body=${body}`;
-    });
-  }
-
-  // Manage Billing (header quick access)
-  manageBillingBtns.forEach(btn=>{
-    if (!btn || btn.__wired) return; btn.__wired = true;
-    btn.addEventListener("click", async ()=>{
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
-          method:"POST", headers: await getAuthHeaders(),
-          body: JSON.stringify({ return_url: location.origin })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-        location.href = j.url;
-      }catch(e){ toast(e.message || "Billing error"); }
-    });
-  });
-
-  // Quick “Go to Demo” button in dashboard
-  if (byId("goDemo") && !byId("goDemo").__wired){
-    byId("goDemo").__wired = true;
-    byId("goDemo").addEventListener("click", ()=> {
-      byId("demo")?.scrollIntoView({ behavior:"smooth", block:"start" });
-    });
-  }
-
-})();
-</script>
-<!-- Final polish: lightweight router, smooth scrolling, live stats, a11y helpers, misc utilities -->
-<script>
-/* ========= ContentRepurpose.pro — Part 6 polish =========
-   - Hash router for sections (#demo, #member, #pricing, #signin, etc.)
-   - Smooth scrolling for in-page nav links
-   - Live homepage ticker (/api/stats)
-   - Dialog focus trap + Esc handling (auth & small modals)
-   - Copy/Download helpers, debounce, textarea autosize, linkify
-   - Prevent double clicks / re-entry; single wiring guard
-*/
-
-(function(){
-  if (window.__CRP_POLISH__) return; window.__CRP_POLISH__ = true;
-
-  const $  = (q, r=document) => r.querySelector(q);
-  const $$ = (q, r=document) => [...r.querySelectorAll(q)];
-  const byId = (id)=> document.getElementById(id);
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-
-  /* ---------------------- Utils ---------------------- */
-  function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-  function throttle(fn, ms=200){ let t=0; return (...a)=>{ const n=Date.now(); if (n-t>=ms){ t=n; fn(...a); } }; }
-  async function copyText(txt){ try{ await navigator.clipboard.writeText(txt||""); showToast("Copied ✅"); }catch{ showToast("Copy failed"); } }
-  function dlFile(name, mime, data){
-    const blob = new Blob([data], {type:mime});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = name; a.click();
-    setTimeout(()=> URL.revokeObjectURL(url), 1000);
-  }
-  function autosizeTA(ta){
-    const fit = ()=>{ ta.style.height = "auto"; ta.style.height = (ta.scrollHeight+2)+"px"; };
-    ta.addEventListener("input", fit, { passive:true }); fit();
-  }
-  function linkify(text){
-    if (!text) return "";
-    return text.replace(/(https?:\/\/[^\s)]+)|(www\.[^\s)]+)/gi, (m)=>{
-      const href = m.startsWith("http") ? m : "https://"+m;
-      return `<a class="text-blue-400 underline break-all" target="_blank" rel="noopener" href="${href}">${m}</a>`;
-    });
-  }
-  window.showToast = window.showToast || ((msg)=> {
-    // minimal toast, used by previous parts
-    let t = byId("crp_toast"); if (!t){
-      t = document.createElement("div"); t.id="crp_toast";
-      t.style.cssText="position:fixed;left:50%;top:16px;transform:translateX(-50%);background:#111827;color:#e5e7eb;padding:10px 14px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);z-index:9999;font:13px/1.3 system-ui;opacity:0;transition:.2s";
-      document.body.appendChild(t);
+    if (btnTrello && trelloDialog){
+      once(btnTrello, "click", ()=> trelloDialog.showModal());
+      const confirm = byId("trelloConfirm");
+      once(confirm, "click", async ()=>{
+        const board_id = byId("trelloBoardId")?.value?.trim();
+        const list_id  = byId("trelloListId")?.value?.trim();
+        if (!list_id) return toast("Enter List ID");
+        const title = "Social Draft";
+        const description = [
+          "LinkedIn:\n"+(byId("out-li_m")?.textContent||""),
+          "\nX:\n"+(byId("out-x_m")?.textContent||"")
+        ].join("\n");
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({ board_id, list_id, title, description })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+          toast("Sent to Trello ✅");
+          trelloDialog.close();
+          j.url && window.open(j.url, "_blank");
+        }catch(e){ toast(e.message || "Trello export failed"); }
+      });
     }
-    t.textContent = msg;
-    requestAnimationFrame(()=>{ t.style.opacity="1"; });
-    clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.opacity="0"; }, 2200);
-  });
+  })();
 
-  /* ---------------------- Smooth scroll ---------------------- */
-  function inPage(href){ try{ const u=new URL(href, location.href); return u.origin===location.origin && u.pathname===location.pathname && !!u.hash; }catch{ return false; } }
-  document.addEventListener("click", (e)=>{
-    const a = e.target.closest("a[href]");
-    if (!a) return;
-    if (inPage(a.getAttribute("href"))){
-      e.preventDefault();
-      const id = a.hash.slice(1);
-      const el = byId(id) || $(`[data-route="${id}"]`);
-      if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
-      history.pushState({}, "", "#"+id);
-      highlightNav(id);
-    }
-  }, { passive:false });
+  /* ---------- Footer year ---------- */
+  (function(){ const y = byId("year"); if (y) y.textContent = new Date().getFullYear(); })();
 
-  /* ---------------------- Tiny router ---------------------- */
-  function routeTo(hash){
-    const id = (hash||"").replace(/^#/, "") || ""; if (!id) return;
-    const el = byId(id) || $(`[data-route="${id}"]`);
-    if (el) el.scrollIntoView({ behavior:"smooth", block:"start" });
-    highlightNav(id);
-    // Open auth modal if #signin
-    if (id==="signin"){
-      const dlg = byId("auth");
-      if (dlg && typeof dlg.showModal==="function") dlg.showModal();
-    }
-  }
-  function highlightNav(id){
-    $$('[data-nav]').forEach(x=>{
-      x.classList.toggle("text-white", x.getAttribute("data-nav")===id);
-      x.classList.toggle("opacity-60", x.getAttribute("data-nav")!==id);
-    });
-  }
-  window.addEventListener("hashchange", ()=> routeTo(location.hash));
-  document.addEventListener("DOMContentLoaded", ()=> {
-    if (location.hash) routeTo(location.hash);
-  });
-
-  /* ---------------------- Live stats ticker ---------------------- */
-  async function paintStats(){
+  /* ---------- Handle billing URL params ---------- */
+  (function billingBanner(){
     try{
-      const r = await fetch(`${WORKER_BASE}/api/stats`, { headers:{ "Accept":"application/json" } });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Stats error");
-      const n = j.today_count ?? 0;
-      const el = byId("tickerCount"); if (el) el.textContent = n.toLocaleString();
-    }catch(_e){}
-  }
-  paintStats();
-  setInterval(paintStats, 15000);
+      const u = new URL(location.href);
+      const ok   = u.searchParams.get("billing")==="success";
+      const fail = u.searchParams.get("billing")==="cancel";
+      if (ok)   toast("Billing updated — thank you!");
+      if (fail) toast("Billing cancelled");
+      if (ok || fail){ u.searchParams.delete("billing"); history.replaceState({}, "", u.toString()); }
+    }catch{ /* ignore */ }
+  })();
 
-  /* ---------------------- Dialog focus trap + Esc ---------------------- */
-  const focusable = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
-  function trap(dlg){
-    function boundTab(e){
-      if (e.key!=="Tab") return;
-      const nodes = $$(`${focusable}`, dlg).filter(n=> !n.hasAttribute("disabled") && n.offsetParent!==null);
-      if (!nodes.length) return;
-      const first = nodes[0], last = nodes[nodes.length-1];
-      if (e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
-    }
-    function onEsc(e){ if (e.key==="Escape"){ e.stopPropagation(); try{ dlg.close() }catch{} } }
-    dlg.addEventListener("keydown", boundTab);
-    dlg.addEventListener("keydown", onEsc);
-    dlg.addEventListener("close", ()=>{
-      dlg.removeEventListener("keydown", boundTab);
-      dlg.removeEventListener("keydown", onEsc);
-    }, { once:true });
-  }
-  // Attach to known dialogs
-  ["auth","emailPreview","trelloModal"].forEach(id=>{
-    const d = byId(id);
-    if (d && !d.__trap){
-      d.__trap = true;
-      d.addEventListener("show", ()=> trap(d));
-      d.addEventListener("close", ()=> {/* no-op */});
-      // Some browsers don't emit "show" for <dialog>; trap immediately
-      trap(d);
-    }
-  });
-
-  /* ---------------------- Inputs polish ---------------------- */
-  // Autosize all textareas with data-autosize, or known ids
-  $$('textarea[data-autosize], #sourceText, #source_m, #emailBodyEdit').forEach(ta => autosizeTA(ta));
-
-  // Prevent double submit buttons globally
-  document.addEventListener("submit", (e)=>{
-    const btn = e.submitter;
-    if (btn && !btn.disabled){
-      btn.disabled = true;
-      const old = btn.textContent;
-      btn.textContent = btn.getAttribute("data-busy") || "Working…";
-      setTimeout(()=>{ btn.disabled=false; btn.textContent=old; }, 6000); // fallback re-enable
-    }
-  });
-
-  // Linkify any preview areas with data-linkify
-  $$("[data-linkify]").forEach(el=>{
-    el.innerHTML = linkify(el.textContent);
-  });
-
-  /* ---------------------- Expose quick helpers for other parts ---------------------- */
-  window.crpUtils = { debounce, throttle, copyText, dlFile, linkify, autosizeTA };
-
-})();
+  /* ---------- Normalize external links ---------- */
+  $$('a[target="_blank"]').forEach(a=> a.setAttribute("rel","noopener"));
+}
 </script>
 </body>
-<html>
+</html>
