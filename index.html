@@ -63,7 +63,7 @@
     .icon { width: 1rem; height: 1rem; display: inline-block; vertical-align: -0.15em; }
     .touch-target{min-height:40px;min-width:40px}
 
-    /* Plan-gating helpers (visibility controlled by JS once status returns) */
+    /* Plan gates */
     .only-guest{display:revert}
     .only-authed{display:none}
     .plan-starter-plus{display:none}
@@ -71,13 +71,16 @@
     .plan-business-only{display:none}
     body[data-auth="authed"] .only-guest{display:none}
     body[data-auth="authed"] .only-authed{display:revert}
+    body[data-plan="starter"] .plan-starter-plus,
+    body[data-plan="creator"] .plan-starter-plus,
+    body[data-plan="business"] .plan-starter-plus{display:revert}
+    body[data-plan="creator"] .plan-creator-plus,
+    body[data-plan="business"] .plan-creator-plus{display:revert}
+    body[data-plan="business"] .plan-business-only{display:revert}
 
-    /* a11y focus */
-    :focus-visible{ outline:2px solid var(--brandA); outline-offset: 2px; }
-
-    /* Tiny helpers */
-    .muted{color:rgba(148,163,184,.9)}
-    .k{font-weight:700}
+    /* Anchor offset for sticky header */
+    [id]{ scroll-margin-top: 96px }
+    @media (min-width: 768px){ [id]{ scroll-margin-top: 112px } }
   </style>
 
   <!-- JSON-LD -->
@@ -90,6 +93,91 @@
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
+
+  <!-- Supabase v2 auth -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+    });
+  </script>
+
+  <!-- Utilities (shared in-page) -->
+  <script>
+    window.__CRP__ = (function(){
+      const $  = (s, r=document)=>r.querySelector(s);
+      const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+      const cap = (s)=> (s||"").slice(0,1).toUpperCase() + (s||"").slice(1);
+      async function headers(){
+        const h = { "Content-Type":"application/json" };
+        try{
+          const { data } = await window.supabase.auth.getSession();
+          const tok = data?.session?.access_token;
+          const uid = data?.session?.user?.id;
+          if (tok) h.Authorization = `Bearer ${tok}`;
+          if (uid) h["X-User-Id"] = uid;
+        }catch{}
+        return h;
+      }
+      function toast(msg){
+        const t = $('#toast'), m=$('#toastMsg');
+        if (!t||!m){ alert(msg); return; }
+        m.textContent = msg; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'), 1600);
+      }
+      function smoothAnchorInstall(){
+        document.addEventListener('click', function(e){
+          const a = e.target.closest('a[href]');
+          if (!a) return;
+          const href = a.getAttribute('href');
+          if (!href) return;
+          let url; try{ url = new URL(href, location.href); }catch{ return; }
+          if (url.pathname.replace(/\/+$/,'') === location.pathname.replace(/\/+$/,'') && url.hash){
+            e.preventDefault();
+            const el = document.querySelector(url.hash);
+            if (el){
+              try{ el.scrollIntoView({behavior:'smooth', block:'start'});}catch{ el.scrollIntoView(); }
+              document.body.classList.remove('nav-open');
+              history.replaceState(null,'',url.hash);
+            }
+          }
+        });
+        window.addEventListener('load', ()=>{ if (location.hash && document.querySelector(location.hash)){ setTimeout(()=>{ try{ document.querySelector(location.hash).scrollIntoView({behavior:'smooth'}) }catch{} }, 60); }});
+      }
+      function planBadge(plan){
+        const label = `Plan: ${cap(plan)}`;
+        const a = document.getElementById('planbadge');
+        const b = document.getElementById('planbadge_m');
+        if (a) a.textContent = label; if (b) b.textContent = label;
+        const hp = document.getElementById('heroPlanName');
+        if (hp) hp.textContent = cap(plan);
+      }
+      function gatePaint(auth, plan){
+        document.body.setAttribute('data-auth', auth ? 'authed' : 'guest');
+        document.body.setAttribute('data-plan', plan || 'free');
+        planBadge(plan||'free');
+        const show = (id,on)=>{ const el=document.getElementById(id); if (el) el.classList.toggle('hidden', !on); };
+        show('manageBilling', auth); show('manageBilling_m', auth); show('manageBilling2', auth);
+        // Generate buttons swap
+        const g1 = document.getElementById('generateBtn');
+        const g2 = document.getElementById('generateBtn_member');
+        if (g1 && g2){ g1.classList.toggle('hidden', !!auth); g2.classList.toggle('hidden', !auth); }
+        const o1 = document.getElementById('optRun_demo');
+        const o2 = document.getElementById('optRun');
+        if (o1 && o2){ o1.classList.toggle('hidden', !!auth); o2.classList.toggle('hidden', !auth); }
+      }
+      function openAuth(){ try{ document.getElementById('auth')?.showModal(); }catch{} }
+      function wireAuthOpeners(){
+        ['loginBtn','loginBtn_m','heroSignIn'].forEach(id=>{
+          const el=document.getElementById(id);
+          if (el && !el.__wired){ el.addEventListener('click', openAuth); el.__wired=true; }
+        });
+        document.querySelectorAll('.js-open-auth').forEach(el=>{ if (!el.__wired){ el.addEventListener('click', openAuth); el.__wired=true; }});
+      }
+      return { $, $$, toast, headers, smoothAnchorInstall, gatePaint, planBadge, openAuth, wireAuthOpeners };
+    })();
+  </script>
 </head>
 <body class="min-h-full" data-auth="guest" data-plan="free">
   <!-- Decorative halos -->
@@ -97,7 +185,7 @@
   <div class="halo h2"></div>
   <div class="halo h3"></div>
 
-  <!-- Top nav -->
+  <!-- Top nav (desktop + mobile trigger) -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
@@ -111,11 +199,11 @@
       </a>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80">Generator</a>
-        <a href="#optimizer" class="hover:opacity-80">Article Optimizer</a>
-        <a href="#templates" class="hover:opacity-80">Templates</a>
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
+        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
+        <a href="#optimizer" class="hover:opacity-80">Article Optimizer</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
@@ -151,11 +239,11 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Generator</a>
-          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
-          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
+          <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
           <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
           <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
+          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
           <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
         </nav>
@@ -169,11 +257,12 @@
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
+  <!-- ===== HERO + CTA rail ===== -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <!-- Left: copy + CTAs -->
       <div>
+        <!-- BADGE: show demo note to guests, plan badge to members -->
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
@@ -219,7 +308,7 @@
               <div class="chip">Email copy</div>
               <div class="chip">Instagram captions</div>
               <div class="chip">Notion export</div>
-              <div class="chip">Trello boards</div>
+              <div class="chip">Trello sync</div>
               <div class="chip">Keyword-aware</div>
               <div class="chip">Tone controls</div>
               <!-- duplicate for seamless scroll -->
@@ -228,7 +317,7 @@
               <div class="chip">Email copy</div>
               <div class="chip">Instagram captions</div>
               <div class="chip">Notion export</div>
-              <div class="chip">Trello boards</div>
+              <div class="chip">Trello sync</div>
               <div class="chip">Keyword-aware</div>
               <div class="chip">Tone controls</div>
             </div>
@@ -305,12 +394,13 @@
       </div>
     </div>
   </section>
-  <!-- ===== GENERATOR ===== -->
+  <!-- ===== LIVE DEMO / GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
+          <!-- Copy changes by auth state -->
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
             No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
           </p>
@@ -324,7 +414,7 @@
         </div>
       </div>
 
-      <!-- Promo rail -->
+      <!-- Conversion rail -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2 text-sm">
@@ -338,84 +428,83 @@
         </div>
       </div>
 
+      <!-- Presets + Batch toolbar (visible to signed-in users) -->
+      <div class="card p-4 md:p-5 mb-6 only-authed hidden">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <strong class="tracking-tight">Presets</strong>
+            <span class="text-xs text-slate-500">Save your favorite toggle/channel setup</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="presetSave" class="btn" type="button">Save current as preset</button>
+            <button id="presetLoad" class="btn" type="button">Load preset…</button>
+          </div>
+        </div>
+        <div id="presetList" class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+      </div>
+
       <!-- Generator Form -->
       <div class="card p-5 md:p-6">
-        <!-- Presets row -->
-        <div class="flex flex-wrap items-center gap-3 mb-4">
-          <div class="flex items-center gap-2">
-            <label for="presetSelect" class="text-sm muted">Presets</label>
-            <select id="presetSelect" class="border rounded-lg px-3 py-2 text-sm">
-              <option value="">— Select preset —</option>
-            </select>
-            <button id="applyPresetBtn" class="btn text-sm" type="button">Apply</button>
-          </div>
-          <div class="flex items-center gap-2">
-            <input id="presetName" class="border rounded-lg px-3 py-2 text-sm" placeholder="Preset name" />
-            <button id="savePresetBtn" class="btn text-sm" type="button">Save preset</button>
-            <button id="deletePresetBtn" class="btn text-sm" type="button">Delete</button>
-          </div>
-          <div id="presetNote" class="text-xs text-slate-500"></div>
-        </div>
-
         <form id="demoForm" class="grid gap-6" autocomplete="off">
-          <!-- Input mode tabs -->
+          <!-- Source selector -->
           <fieldset>
-            <legend class="text-sm font-semibold">Input mode</legend>
-            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <legend class="text-sm font-semibold">Source</legend>
+
+            <!-- Batch input toggle -->
+            <div class="mt-1 flex flex-wrap items-center gap-3">
               <label class="flex items-center gap-2">
-                <input type="radio" name="inputMode" value="single" checked>
-                Single input (paragraph/blog/URL)
+                <input id="batchToggle" type="checkbox">
+                Batch input (one idea per line)
               </label>
-              <label class="flex items-center gap-2">
-                <input type="radio" name="inputMode" value="batch">
-                Batch inputs (multiple lines)
-              </label>
-            </div>
-            <!-- Single input -->
-            <div id="singleWrap" class="mt-3 grid gap-3">
-              <!-- Source selector -->
-              <div class="grid md:grid-cols-3 gap-3">
-                <label class="tab flex items-center justify-between border rounded-lg px-3 py-2">
-                  <span class="flex items-center gap-2">
-                    <input type="radio" name="sourceType" value="paragraph" checked>
-                    Paragraph / Notes
-                  </span>
-                  <span class="chip">fastest</span>
-                </label>
-                <label class="tab flex items-center border rounded-lg px-3 py-2">
-                  <input type="radio" name="sourceType" value="blog" class="mr-2">
-                  Full Blog
-                </label>
-                <label class="tab flex items-center border rounded-lg px-3 py-2">
-                  <input type="radio" name="sourceType" value="url" class="mr-2">
-                  URL
-                </label>
-              </div>
-              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]"
-                placeholder="Paste your paragraph or blog. If you selected URL, paste it here."></textarea>
+              <span class="chip plan-starter-plus">Starter: up to 5 lines/run</span>
+              <span class="chip plan-creator-plus">Creator: up to 30 lines/run</span>
+              <span class="chip plan-business-only">Business: team-scale batches</span>
             </div>
 
-            <!-- Batch input (plan-aware caps) -->
-            <div id="batchWrap" class="mt-3 grid gap-2 hidden">
-              <label class="text-sm muted">One idea per line. Caps by plan: Free 1 • Starter 5 • Creator 10 • Business 30</label>
-              <textarea id="batchInput" class="w-full rounded-xl border p-4 min-h-[140px]"
-                placeholder="Line 1: …&#10;Line 2: …&#10;Line 3: …"></textarea>
-              <div class="text-xs text-slate-500">
-                Batch counts 1 generation per line. Excess lines over your cap are ignored (shown before submit).
+            <div class="mt-3 grid md:grid-cols-3 gap-3">
+              <label class="tab flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                  <input type="radio" name="sourceType" value="paragraph" checked>
+                  Paragraph / Notes
+                </span>
+                <span class="chip">fastest</span>
+              </label>
+              <label class="tab flex items-center">
+                <input type="radio" name="sourceType" value="blog" class="mr-2">
+                Full Blog (paste content)
+              </label>
+              <label class="tab flex items-center">
+                <input type="radio" name="sourceType" value="url" class="mr-2">
+                URL (we’ll fetch & adapt)
+              </label>
+            </div>
+
+            <div class="mt-3">
+              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[160px]" placeholder="Paste your paragraph, blog, or URL here. For batch, use one idea per line."></textarea>
+              <div class="mt-2 text-[12px] text-slate-500">
+                <span class="chip only-guest">Demo: single input only</span>
+                <span class="chip only-authed hidden plan-starter-plus">Starter: up to 5 lines</span>
+                <span class="chip only-authed hidden plan-creator-plus">Creator: up to 30 lines</span>
               </div>
             </div>
           </fieldset>
 
-          <!-- Article Optimizer quick toggles (affects generator when present) -->
-          <fieldset>
+          <!-- Optimizer options -->
+          <fieldset id="optimizer" class="scroll-mt-28">
             <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
+            <p class="mt-1 text-xs text-slate-500">Enhance long-form input (blog or paragraph). Adds headings, FAQs, meta, and SEO checks.</p>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen"> Lengthen ~30%</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen"> Lengthen by ~30%</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG ideas</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> SEO basics (title/meta/alt/CTR)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG image ideas</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> Check SEO basics (title/meta/alt-text)</label>
+            </div>
+            <div class="mt-2 text-[12px] text-slate-500">
+              <span class="chip">Starter: up to 5/day</span>
+              <span class="chip">Creator: up to 15/day</span>
+              <span class="chip">Business: up to 30/day</span>
             </div>
           </fieldset>
 
@@ -434,11 +523,15 @@
             </div>
           </fieldset>
 
-          <!-- Channel extras -->
+          <!-- Channel-specific extras -->
           <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">LinkedIn</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label>
+              <label class="flex items-center gap-2 mt-2">
+                <input type="checkbox" name="li_article">
+                Also generate a LinkedIn Article
+              </label>
+              <p class="mt-2 text-xs text-slate-500">Article appears in the output below when enabled.</p>
             </fieldset>
 
             <fieldset class="card p-4">
@@ -477,6 +570,7 @@
             </button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
 
+            <!-- Quota copy varies -->
             <div class="text-sm text-slate-500 only-guest">
               You have <span id="demoQuota">—</span> demo runs left this month.
             </div>
@@ -490,10 +584,12 @@
       </div>
 
       <!-- OUTPUT -->
-      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
+      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false">
+        <!-- Channel cards will be injected here -->
+      </div>
 
-      <!-- QUICK PUBLISH (Authed only) -->
-      <div class="mt-10 card p-5 only-authed hidden" id="quickPublish">
+      <!-- ===== QUICK PUBLISH (Authed only; Free can SEE, guests cannot) ===== -->
+      <div class="mt-10 card p-5 only-authed hidden">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Quick publish</strong>
           <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
@@ -514,19 +610,16 @@
           Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
         </div>
       </div>
-    </div>
-  </section>
-  <!-- ===== SCHEDULER (Starter+) ===== -->
-  <section id="scheduler" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="flex items-center justify-between gap-4 mb-4">
-        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Scheduler</h2>
-        <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
-      </div>
 
-      <div class="card p-5 plan-starter-plus">
+      <!-- ===== SCHEDULER (Starter+) ===== -->
+      <div class="mt-10 card p-5 plan-starter-plus">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Scheduler</strong>
+          <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
+        </div>
+
         <!-- Composer -->
-        <div class="grid md:grid-cols-4 gap-3">
+        <div class="mt-4 grid md:grid-cols-4 gap-3">
           <label class="grid gap-1">
             <span class="text-xs text-slate-500">Channel</span>
             <select id="schedChannel" class="border rounded-lg px-3 py-2">
@@ -567,45 +660,20 @@
         </div>
       </div>
 
-      <!-- Upgrade hint for guests/free -->
-      <div class="card p-5 only-guest mt-6">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <strong>Want scheduling?</strong>
-            <div class="text-sm text-slate-500">Upgrade to Starter or sign in to try Creator+ features.</div>
-          </div>
-          <div class="flex gap-2">
-            <button class="btn js-open-auth" type="button">Sign in</button>
-            <a class="btn btn-primary" href="#pricing">See plans</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== ANALYTICS ===== -->
-  <section id="analytics" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="flex items-center justify-between gap-4 mb-4">
-        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Analytics</h2>
-        <div class="text-xs text-slate-500">Connect accounts to see data. Updates as you post.</div>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-6">
+      <!-- ===== ANALYTICS ===== -->
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
         <!-- Starter+: basics -->
         <div class="card p-5 plan-starter-plus">
           <strong class="tracking-tight">Analytics (basics)</strong>
-          <div class="text-xs text-slate-500 mt-1">Per-day posts & estimated reach.</div>
+          <div class="text-xs text-slate-500 mt-1">Per-day posts &amp; estimated reach.</div>
           <div id="anaBasic" class="mt-3 text-sm text-slate-400">Connect accounts to see data.</div>
         </div>
-
         <!-- Creator+: per-channel -->
         <div class="card p-5 plan-creator-plus">
           <strong class="tracking-tight">Analytics Pro</strong>
           <div class="text-xs text-slate-500 mt-1">Breakdown by channel.</div>
           <div id="anaPro" class="mt-3 text-sm text-slate-400">Coming online as you post.</div>
         </div>
-
         <!-- Business: team -->
         <div class="card p-5 plan-business-only">
           <strong class="tracking-tight">Team Analytics</strong>
@@ -615,378 +683,667 @@
       </div>
     </div>
   </section>
-
-  <!-- ===== ARTICLE OPTIMIZER (Modal) ===== -->
-  <button id="openOptimizerBtn" class="fixed bottom-5 right-5 z-40 px-4 py-2 rounded-xl bg-black text-white shadow only-authed hidden">
-    Optimize Article
-  </button>
-
-  <dialog id="optimizerModal" class="rounded-xl p-0 w-[94vw] max-w-4xl">
-    <form method="dialog" class="p-5 grid gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Article Optimizer</h3>
-        <button class="btn" value="cancel">Close</button>
-      </div>
-
-      <div class="grid lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2">
-          <label class="text-xs text-slate-500">Paste article (or URL)</label>
-          <textarea id="optText" class="border rounded-lg px-3 py-2 min-h-[220px]" placeholder="Paste your article or URL…"></textarea>
-          <div class="mt-2 grid sm:grid-cols-2 gap-2">
-            <input id="optFocusKeyword" class="border rounded-lg px-3 py-2" placeholder="Focus keyword (optional)" />
-            <input id="optSecondary" class="border rounded-lg px-3 py-2" placeholder="Secondary keywords (comma-separated)" />
-          </div>
-          <div class="mt-2 grid sm:grid-cols-3 gap-2 text-sm">
-            <label class="flex items-center gap-2"><input type="checkbox" id="optLen30"> Lengthen by ~30%</label>
-            <label class="flex items-center gap-2"><input type="checkbox" id="optAddFaq"> Add FAQs + JSON-LD</label>
-            <label class="flex items-center gap-2"><input type="checkbox" id="optCTR"> Improve title & meta (CTR)</label>
-          </div>
-        </div>
-
-        <div class="lg:col-span-1">
-          <div class="card p-4">
-            <strong class="text-sm">A/B Titles</strong>
-            <div id="optTitles" class="mt-2 text-sm text-slate-400">Run to get suggestions.</div>
-          </div>
-          <div class="card p-4 mt-3">
-            <strong class="text-sm">Rank Likelihood</strong>
-            <div id="optScore" class="mt-2 text-sm text-slate-400">Pending…</div>
-          </div>
-          <div class="card p-4 mt-3">
-            <strong class="text-sm">Related keywords</strong>
-            <div id="optRelated" class="mt-2 text-sm text-slate-400">Pending…</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-3 flex items-center justify-between gap-3">
-        <div class="text-xs text-slate-500">Daily caps by plan: Starter 5 • Creator 15 • Business 30</div>
-        <div class="flex gap-2">
-          <button id="optRun" class="btn btn-primary" type="button">Optimize</button>
-          <button id="optReplaceIntoSource" class="btn" type="button">Replace into Generator</button>
-        </div>
-      </div>
-
-      <div id="optOutWrap" class="mt-4 hidden">
-        <div class="card p-4">
-          <div class="flex items-center justify-between gap-3">
-            <strong class="tracking-tight">Optimized Article</strong>
-            <button id="optCopy" class="btn" type="button">Copy</button>
-          </div>
-          <pre id="optOut" class="mt-3 whitespace-pre-wrap text-sm"></pre>
-        </div>
-        <div class="mt-4 grid sm:grid-cols-2 gap-3">
-          <div class="card p-4">
-            <strong class="text-sm">Meta description</strong>
-            <pre id="optMeta" class="mt-2 whitespace-pre-wrap text-sm"></pre>
-          </div>
-          <div class="card p-4">
-            <strong class="text-sm">FAQ (JSON-LD)</strong>
-            <pre id="optFAQ" class="mt-2 whitespace-pre-wrap text-sm"></pre>
-          </div>
-        </div>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- ===== LIVE STRIP (site-wide small) ===== -->
-  <section class="relative">
-    <div class="max-w-7xl mx-auto px-4 md:px-5">
-      <div class="card p-4 md:p-5">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <strong class="tracking-tight">Generations today</strong>
-            <span id="liveCount" class="chip">–</span>
-          </div>
-          <div class="text-xs text-slate-500">Real results update every 30s</div>
-        </div>
-        <div class="mt-3 overflow-hidden">
-          <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- ===== BEST PICKS (Plan suggestions that actually link to a plan) ===== -->
+  <!-- ===== BEST PICKS (Plan suggestions that actually convert) ===== -->
   <section id="best-picks" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks for your workflow</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">We’ll suggest a plan based on how you use the generator, scheduler, and optimizer.</p>
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks for you</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Choose based on how you create and publish.</p>
       </div>
 
-      <!-- Dynamic suggestion rail (filled by JS; has static fallbacks) -->
-      <div class="card p-5 md:p-6 mb-8">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <div class="text-sm">
-            <strong class="tracking-tight">Suggestion:</strong>
-            <span id="bestPickText" class="text-slate-600 dark:text-slate-300">
-              New here? Start with <span class="font-semibold">Starter</span> for 200 generations/month and the Scheduler.
-            </span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="bestPickRecalc" class="btn" type="button" title="Re-evaluate based on latest usage">Recalculate</button>
-            <a id="bestPickCta" href="#pricing" class="btn btn-primary">See recommended plan</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Plan overview cards (link to exact checkout via data-price in script) -->
       <div class="grid lg:grid-cols-3 gap-6">
-        <article class="card p-6">
-          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-          <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">200 generations/month • Scheduler • Analytics basics • 10 presets • 5/day Optimizer</p>
+        <!-- Solo / just getting momentum -->
+        <article class="card p-6 flex flex-col">
+          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Recommended</div>
+          <h3 class="mt-3 text-xl font-bold">Starter — Solo Creator</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Best if you post a few times per week and want a reliable queue + basic analytics.
+          </p>
           <ul class="mt-4 text-sm space-y-2">
+            <li>• 200 generations / month</li>
             <li>• Batch inputs (up to 5 lines/run)</li>
-            <li>• Priority models</li>
-            <li>• BYOK: 50 / month (+5 daily)</li>
+            <li>• 10 saved presets</li>
+            <li>• Scheduler (queue &amp; calendar)</li>
+            <li>• Analytics (basics)</li>
+            <li>• Article Optimizer: up to 5/day</li>
           </ul>
-          <button
-            data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-            class="mt-6 w-full btn btn-primary js-checkout"
-            type="button" aria-label="Start Starter plan">Choose Starter</button>
-        </article>
-
-        <article class="card p-6 ring-1 ring-black/5 relative">
-          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
-          <h3 class="mt-1 text-xl font-bold">Creator</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">500 generations/month • Unlimited presets • Multi-profile Scheduler • Analytics Pro • Notion & Trello</p>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• Project pack export</li>
-            <li>• BYOK: 150 / month (+10 daily)</li>
-            <li>• Optimizer: up to 15/day</li>
-          </ul>
-          <button
-            data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-            class="mt-6 w-full btn btn-primary js-checkout"
-            type="button" aria-label="Start Creator plan">Choose Creator</button>
-        </article>
-
-        <article class="card p-6">
-          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Business</div>
-          <h3 class="mt-3 text-xl font-bold">Team / Agency</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Unlimited (fair use) • 3 seats • Team presets • Org-wide Analytics • White-label export</p>
-          <ul class="mt-4 text-sm space-y-2">
-            <li>• BYOK: 300 / month (+30 daily)</li>
-            <li>• Shared calendar</li>
-            <li>• Optimizer: up to 30/day</li>
-          </ul>
-          <button
-            data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-            class="mt-6 w-full btn js-checkout"
-            type="button" aria-label="Start Business plan">Choose Business</button>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== TEMPLATES (links straight to your internal post) ===== -->
-  <section id="templates" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-16">
-      <div class="card p-5 md:p-6">
-        <div class="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h2 class="text-2xl md:text-3xl font-black tracking-tight">LinkedIn Post Templates</h2>
-            <p class="mt-1 text-slate-600 dark:text-slate-300">High-performing hooks, structures, and CTA formats you can paste into the Generator.</p>
+          <div class="mt-6 grid gap-2">
+            <button
+              data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
+              class="w-full btn btn-primary js-checkout subBtn"
+              type="button">Get Starter</button>
+            <a href="#pricing" class="text-sm underline text-center">Compare all plans</a>
           </div>
-          <a class="btn btn-primary"
-             href="https://contentrepurpose.pro/blog/linkedin-post-templates/"
-             target="_blank" rel="noopener">Open templates</a>
-        </div>
+        </article>
+
+        <!-- Power user / multi-channel -->
+        <article class="card p-6 flex flex-col ring-1 ring-black/5 relative">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
+          <h3 class="mt-1 text-xl font-bold">Creator — Multichannel</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Ideal if you publish across LinkedIn, X, email, and need Notion/Trello + deeper analytics.
+          </p>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• 500 generations / month</li>
+            <li>• Unlimited presets &amp; project packs</li>
+            <li>• Notion export &amp; Trello boards</li>
+            <li>• Buffer push drafts</li>
+            <li>• Scheduler (multi-profile)</li>
+            <li>• Analytics Pro (per-channel)</li>
+            <li>• Article Optimizer: up to 15/day</li>
+          </ul>
+          <div class="mt-6 grid gap-2">
+            <button
+              data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
+              class="w-full btn btn-primary js-checkout subBtn"
+              type="button">Get Creator</button>
+            <a href="#pricing" class="text-sm underline text-center">Compare all plans</a>
+          </div>
+        </article>
+
+        <!-- Teams / org workflows -->
+        <article class="card p-6 flex flex-col">
+          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Teams</div>
+          <h3 class="mt-3 text-xl font-bold">Business — Teams &amp; Clients</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            For teams who need seats, org analytics, and white-label exports.
+          </p>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• Unlimited (fair use)</li>
+            <li>• 3 seats included</li>
+            <li>• Team presets &amp; shared calendar</li>
+            <li>• White-label exports</li>
+            <li>• Priority support</li>
+            <li>• Article Optimizer: up to 30/day</li>
+          </ul>
+          <div class="mt-6 grid gap-2">
+            <button
+              data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
+              class="w-full btn js-checkout subBtn"
+              type="button">Get Business</button>
+            <a href="#pricing" class="text-sm underline text-center">Compare all plans</a>
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- ===== USE CASES ===== -->
+  <!-- ===== USE CASES (anchor target that actually scrolls) ===== -->
   <section id="use-cases" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-black tracking-tight">Use cases</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">How different teams win with ContentRepurpose.</p>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">How creators and teams use ContentRepurpose.</p>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <article class="card p-5">
-          <strong>Solo creator</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Turn threads, notes or a blog into LinkedIn + X + Email in minutes. Save presets for tone and audience.
-          </p>
-          <ul class="mt-3 text-sm space-y-1">
-            <li>• 5-line batch inputs</li>
-            <li>• LinkedIn Article toggle</li>
-            <li>• Quick publish</li>
-          </ul>
-          <div class="mt-4 flex gap-2">
-            <a href="#demo" class="btn btn-primary">Generate now</a>
-            <a href="#pricing" class="btn">See pricing</a>
-          </div>
-        </article>
+      <div class="grid md:grid-cols-3 gap-6">
+        <a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Paste once → multi-channel</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Turn a single idea into LinkedIn, X, email &amp; IG variants.</p>
+        </a>
 
-        <article class="card p-5">
-          <strong>Newsletter</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Repurpose each issue into a LinkedIn post, X sequence, and an Instagram caption with hashtags.
-          </p>
-          <ul class="mt-3 text-sm space-y-1">
-            <li>• Email subject + body</li>
-            <li>• TikTok hooks & on-screen text</li>
-            <li>• Scheduler queue</li>
-          </ul>
-          <div class="mt-4 flex gap-2">
-            <a href="#demo" class="btn btn-primary">Try the Generator</a>
-            <a href="#scheduler" class="btn">Open Scheduler</a>
-          </div>
-        </article>
+        <a href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>AI post generator</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">On-brand, keyword-aware social posts in one go.</p>
+        </a>
 
-        <article class="card p-5">
-          <strong>SEO blogger</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Optimize articles for intent, add FAQs (JSON-LD), and test CTR-first titles & descriptions.
-          </p>
-          <ul class="mt-3 text-sm space-y-1">
-            <li>• 30% lengthen option</li>
-            <li>• Rank Likelihood score</li>
-            <li>• Related keyword ideas</li>
-          </ul>
-          <div class="mt-4 flex gap-2">
-            <button class="btn btn-primary only-authed hidden" id="useOpenOptimizer" type="button">Open Optimizer</button>
-            <button class="btn js-open-auth only-guest" type="button">Sign in to Optimize</button>
-          </div>
-        </article>
+        <a href="https://contentrepurpose.pro/blog/notion-trello-export/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Notion &amp; Trello workflows</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Push drafts to tools your team already lives in.</p>
+        </a>
 
-        <article class="card p-5">
-          <strong>Agency / Team</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Multi-profile scheduling, team presets, org analytics, and white-label exports for clients.
-          </p>
-          <ul class="mt-3 text-sm space-y-1">
-            <li>• Team calendar</li>
-            <li>• Notion + Trello export</li>
-            <li>• Buffer queue</li>
-          </ul>
-          <div class="mt-4 flex gap-2">
-            <a href="#pricing" class="btn btn-primary">Business plan</a>
-            <a href="#analytics" class="btn">See Analytics</a>
-          </div>
-        </article>
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Repurpose for SEO</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Refresh old content with better structure &amp; metadata.</p>
+        </a>
 
-        <article class="card p-5">
-          <strong>Thought leadership</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Generate polished LinkedIn posts and long-form articles from podcasts or interview notes.
-          </p>
-          <ul class="mt-3 text-sm space-y-1">
-            <li>• Tone controls</li>
-            <li>• LinkedIn Article</li>
-            <li>• Hashtag assist</li>
-          </ul>
-          <div class="mt-4 flex gap-2">
-            <a href="#demo" class="btn btn-primary">Start drafting</a>
-            <a href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" target="_blank" rel="noopener" class="btn">Learn how</a>
-          </div>
-        </article>
+        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>LinkedIn templates</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Battle-tested formats for hooks and clean flow.</p>
+        </a>
 
-        <article class="card p-5">
-          <strong>Repurpose library</strong>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Build a backlog of pillar posts and turn each into multi-channel content across the month.
+        <a href="#demo" class="card p-5 block hover:opacity-90">
+          <strong>Try it live</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Open the generator with your own text.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== OPTIMIZER CTA (scrolls to #optimizer in the Generator) ===== -->
+  <section id="optimizer-cta" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10">
+      <div class="card p-5 md:p-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <strong class="block text-lg">Article Optimizer</strong>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Improve structure, add FAQs/JSON-LD, expand by ~30%, and get a better title/meta.
           </p>
-          <ul class="mt-3 text-sm space-y-1">
+        </div>
+        <a href="#optimizer" class="btn btn-primary">Open Optimizer</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PRICING (anchor target) ===== -->
+  <section id="pricing" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Simple, honest pricing</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Start free. Add power when you need it.</p>
+      </div>
+
+      <!-- Conversion rail -->
+      <div class="card p-4 md:p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2 text-sm">
+          <span class="badge">LIMITED</span>
+          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month of <strong>Creator</strong>.</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
+          <a href="#demo" class="btn only-guest">Try Demo</a>
+          <button id="manageBilling2" class="btn hidden only-authed" type="button">Manage billing</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-4 gap-6">
+        <!-- FREE -->
+        <div class="card p-6 flex flex-col">
+          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
+          <h3 class="mt-3 text-xl font-bold">Demo + Account</h3>
+          <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• Demo (no login): <strong>5 runs / month</strong></li>
+            <li>• Free account: <strong>5 runs / day</strong></li>
+            <li>• 1× <strong>Article Optimizer</strong> (after verification)</li>
+            <li>• BYOK: <strong>5 / day</strong></li>
+            <li>• CSV/Markdown export</li>
+          </ul>
+          <a href="#demo" class="mt-6 block text-center btn">Start free</a>
+        </div>
+
+        <!-- STARTER -->
+        <div class="card p-6 flex flex-col">
+          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
+          <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
+          <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• <strong>200 generations / month</strong></li>
+            <li>• Batch inputs (up to 5 lines/run)</li>
+            <li>• 10 saved presets</li>
+            <li>• Priority models</li>
+            <li>• BYOK: 50 / month (+5 daily headroom)</li>
+            <li>• <strong>Scheduler</strong> (queue &amp; calendar)</li>
+            <li>• <strong>Analytics</strong> (basics)</li>
+            <li>• <strong>Article Optimizer</strong>: up to 5 / day</li>
+          </ul>
+          <button
+            data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
+            type="button">Get Starter</button>
+        </div>
+
+        <!-- CREATOR (featured) -->
+        <div class="card p-6 flex flex-col ring-1 ring-black/5 relative">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
+          <h3 class="mt-1 text-xl font-bold">Creator</h3>
+          <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• <strong>500 generations / month</strong></li>
+            <li>• Unlimited presets</li>
             <li>• Project pack export</li>
-            <li>• Presets (tone, persona)</li>
-            <li>• Batch inputs</li>
+            <li>• Notion export &amp; Trello boards</li>
+            <li>• Push drafts to Buffer</li>
+            <li>• New workflows early</li>
+            <li>• BYOK: 150 / month (+10 daily)</li>
+            <li>• <strong>Scheduler</strong> (multi-profile)</li>
+            <li>• <strong>Analytics Pro</strong> (per-channel)</li>
+            <li>• <strong>Article Optimizer</strong>: up to 15 / day</li>
           </ul>
-          <div class="mt-4 flex gap-2">
-            <a href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" target="_blank" rel="noopener" class="btn btn-primary">Best practices</a>
-            <a href="#demo" class="btn">Try now</a>
-          </div>
-        </article>
+          <button
+            data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
+            class="mt-6 w-full btn btn-primary js-checkout subBtn"
+            type="button">Get Creator</button>
+        </div>
+
+        <!-- BUSINESS -->
+        <div class="card p-6 flex flex-col">
+          <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
+          <h3 class="mt-3 text-xl font-bold">Business</h3>
+          <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
+          <ul class="mt-4 text-sm space-y-2">
+            <li>• <strong>Unlimited</strong> (fair use)</li>
+            <li>• 3 seats included</li>
+            <li>• White-label export</li>
+            <li>• Priority support</li>
+            <li>• All Creator integrations</li>
+            <li>• Team presets &amp; shared calendar</li>
+            <li>• BYOK: 300 / month (+30 daily)</li>
+            <li>• <strong>Team Analytics</strong> (org-wide)</li>
+            <li>• <strong>Article Optimizer</strong>: up to 30 / day</li>
+          </ul>
+          <button
+            data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
+            class="mt-6 w-full btn js-checkout subBtn"
+            type="button">Get Business</button>
+        </div>
+      </div>
+
+      <!-- Why upgrade -->
+      <div class="grid md:grid-cols-3 gap-6 mt-10">
+        <div class="stat">
+          <div class="k">Faster queues</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p>
+        </div>
+        <div class="stat">
+          <div class="k">Scheduler</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p>
+        </div>
+        <div class="stat">
+          <div class="k">Integrations</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p>
+        </div>
+      </div>
+
+      <!-- ===== FAQ ===== -->
+      <div id="faq" class="mt-14">
+        <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
+        <div class="mt-6 grid md:grid-cols-2 gap-4">
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Any click on <em>Generate</em> that returns content (demo or signed-in). Batch mode counts per line.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Yes for all paid plans (daily caps by tier). Free users get one verified run.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.
+            </p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context":"https://schema.org",
+      "@type":"FAQPage",
+      "mainEntity":[
+        {"@type":"Question","name":"What counts as a “generation”?","acceptedAnswer":{"@type":"Answer","text":"Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."}},
+        {"@type":"Question","name":"Is the Article Optimizer included?","acceptedAnswer":{"@type":"Answer","text":"Yes for all paid plans (daily caps by tier). Free users get one verified run."}},
+        {"@type":"Question","name":"What is BYOK?","acceptedAnswer":{"@type":"Answer","text":"Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."}},
+        {"@type":"Question","name":"Can I cancel anytime?","acceptedAnswer":{"@type":"Answer","text":"Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."}},
+        {"@type":"Question","name":"Do you support teams?","acceptedAnswer":{"@type":"Answer","text":"Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."}},
+        {"@type":"Question","name":"Which platforms can you export to?","acceptedAnswer":{"@type":"Answer","text":"Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."}}
+      ]
+    }
+    </script>
+  </section>
+  <!-- ===== TEMPLATES HUB (links to your internal template library) ===== -->
+  <section id="templates" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Templates & Playbooks</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Battle-tested formats for hooks, flows, and CTAs.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>LinkedIn post templates</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Hooks, structures, and examples for scroll-stoppers.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>AI social media post generator</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">How to go multi-channel with one prompt.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Repurpose a blog post for social</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Turn long-form into platform-native posts fast.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Paste once, publish everywhere</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">A single source becomes a week of content.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/notion-trello-export/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Notion & Trello export</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Ship drafts to your team’s actual workflow.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/ai-content-repurposing/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>AI content repurposing</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Frameworks, benefits, and examples.</p>
+        </a>
+      </div>
+
+      <!-- Quick path to all templates -->
+      <div class="text-center mt-8">
+        <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="btn btn-primary" target="_blank" rel="noopener">
+          Browse all LinkedIn templates
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ===== INTERNAL LINKS for topical authority ===== -->
-  <section id="learn" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-12 md:py-16">
-      <h2 class="text-xl md:text-2xl font-bold tracking-tight mb-4">Learn & workflows</h2>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">
-          AI Social Media Post Generator — how to go multi-channel
+  <!-- ===== BLOG RAIL (editorial for topical authority) ===== -->
+  <section id="resources" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Guides & Resources</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Deep dives on strategy, SEO, and workflows.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-101/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Content Repurposing 101</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Foundations for multiplying your reach.</p>
         </a>
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">
-          Paste once → publish everywhere (workflow)
+
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-strategy/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Repurposing strategy</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Cadence, channels, and measurement.</p>
         </a>
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">
-          AI content repurposing — complete guide
+
+        <a href="https://contentrepurpose.pro/blog/how-to-repurpose-content/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>How to repurpose content</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Repeatable steps for consistent output.</p>
         </a>
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">
-          Content repurposing for SEO (rank + distribute)
+
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-ideas/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Repurposing ideas</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Formats, angles, and prompts.</p>
         </a>
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/notion-trello-export/">
-          Export to Notion & Trello from your drafts
+
+        <a href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>One piece → many platforms</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Keep voice consistent across channels.</p>
         </a>
-        <a class="card p-4 hover:opacity-90" target="_blank" rel="noopener" href="https://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/">
-          Free AI LinkedIn post generator — templates included
+
+        <a href="https://contentrepurpose.pro/blog/ai-content-repurposing-examples-workflows/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Examples & workflows</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Realistic sequences you can copy.</p>
+        </a>
+
+        <a href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Free AI LinkedIn post generator</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Try templates + AI on LinkedIn posts.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/ai-search-ranking-with-repurposed-content/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>SEO ranking with repurposed content</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Topical clusters and internal links.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Benefits, risks & ROI (2025)</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Deciding when AI pays for itself.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>Best AI repurposing tools (2025)</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Compare capabilities and pricing.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>AI vs manual repurposing</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Where humans shine — and where AI is faster.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-missinglettr/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>ContentRepurpose vs Missinglettr</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Why we win for multi-channel drafts.</p>
+        </a>
+
+        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-writesonic/" class="card p-5 block hover:opacity-90" target="_blank" rel="noopener">
+          <strong>ContentRepurpose vs Writesonic</strong>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Cleaner outputs, simpler workflow.</p>
         </a>
       </div>
     </div>
   </section>
-<!-- ===== CRP WIRING (Part 5) — Generator + Presets + Optimizer + Scheduler + Integrations + Best Picks ===== -->
-<script type="module">
-/* ---------- Shortcuts ---------- */
-const $  = (s, r=document)=>r.querySelector(s);
-const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
-const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
-/* ---------- Globals provided earlier ---------- */
-const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+  <!-- ===== FOOTER ===== -->
+  <footer class="mt-20 border-t border-white/30" id="site-footer">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
+      <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
+      <nav class="flex items-center gap-4 opacity-80">
+        <a href="#pricing" class="hover:opacity-100">Pricing</a>
+        <a href="/blog" class="hover:opacity-100">Blog</a>
+        <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
+      </nav>
+    </div>
+  </footer>
+<!-- ===== APP SCRIPT (Auth + Anchors + Generator + Optimizer + Presets + Scheduler + Integrations) ===== -->
+<script type="module" id="crp-app-js">
+/* ContentRepurpose.pro — unified front-end boot */
 
-/* ---------- State ---------- */
-let LAST_OUTPUT = {};          // keyed by channel
-let CURRENT_PLAN = document.body.getAttribute("data-plan") || "free";
-let AUTHTED = (document.body.getAttribute("data-auth")==="authed");
+if (!window.__CRP_V3_BOOT__) {
+  window.__CRP_V3_BOOT__ = true;
 
-/* ---------- UTIL ---------- */
-function toast(msg){
-  try {
-    const t = $("#toast"); const m = $("#toastMsg");
-    if (!t || !m) { alert(msg); return; }
-    m.textContent = msg; t.classList.remove("hidden");
-    setTimeout(()=>t.classList.add("hidden"), 1600);
-  } catch { alert(msg); }
-}
-const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
-function planAtLeast(p){ return (PLAN_RANK[CURRENT_PLAN]||0) >= (PLAN_RANK[p]||0); }
+  /* =============== Short helpers =============== */
+  const $  = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  const byId = (id) => document.getElementById(id);
+  const cap   = (s)=> (s||"").slice(0,1).toUpperCase() + (s||"").slice(1);
+  const sleep = (ms)=> new Promise(r=>setTimeout(r, ms));
+  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
 
-/* =========================================================
-   1) GENERATOR: submit, clean Reddit "r/..." + Article output
-   ========================================================= */
-(function wireGenerator(){
-  const form = $("#demoForm");
-  const out  = $("#demoOutput");
-  const src  = $("#sourceText");
-  const btnDemo   = $("#generateBtn");
-  const btnMember = $("#generateBtn_member");
-  if (!form || !out || !src) return;
+  function toast(msg){
+    try{ const t=byId("toast"), m=byId("toastMsg");
+      if (!t||!m) return alert(msg);
+      m.textContent = msg; t.classList.remove("hidden");
+      setTimeout(()=> t.classList.add("hidden"), 1600);
+    }catch{ alert(msg); }
+  }
+  const once = (el, evt, fn)=>{ if(!el) return; const k="__once_"+evt; if(el[k]) return; el.addEventListener(evt, fn); el[k]=true; };
 
-  // prevent rogue anchors from hijacking submit
-  form.addEventListener("submit", e=>e.preventDefault());
+  /* =============== Supabase init (magic link + Google) =============== */
+  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+
+  let supabase = window.supabase;
+
+  async function ensureSupabase(){
+    if (window.supabase) { supabase = window.supabase; return; }
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
+    supabase = window.supabase;
+  }
+
+  async function finishOAuthIfNeeded(){
+    try{
+      const u = new URL(location.href);
+      const code = u.searchParams.get("code");
+      const err  = u.searchParams.get("error_description");
+      if (err) toast(decodeURIComponent(err));
+      if (code){
+        const { error } = await supabase.auth.exchangeCodeForSession({ code });
+        if (error) toast(error.message);
+        ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
+        history.replaceState({}, "", u.toString());
+      }
+      if (location.hash.includes("access_token")){
+        await supabase.auth.getSession();
+        history.replaceState({}, "", location.pathname + location.search);
+      }
+    }catch{}
+  }
 
   async function getAuthHeaders(){
     const h = { "Content-Type":"application/json" };
     try{
-      const { data } = await window.supabase?.auth?.getSession() || {};
-      const token = data?.session?.access_token;
-      const uid   = data?.session?.user?.id;
-      if (token) h["Authorization"] = `Bearer ${token}`;
-      if (uid)   h["X-User-Id"]     = uid;
+      const { data } = await supabase.auth.getSession();
+      const tok = data?.session?.access_token;
+      const uid = data?.session?.user?.id;
+      if (tok) h["Authorization"] = `Bearer ${tok}`;
+      if (uid) h["X-User-Id"] = uid;
     }catch{}
     return h;
   }
 
-  function readToggles(){
+  /* =============== Plan gates =============== */
+  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+  let CURRENT_PLAN = "free";
+  let AUTHTED = false;
+  let USER_ID = null;
+
+  function paintPlan(plan){
+    CURRENT_PLAN = plan;
+    const pretty = `Plan: ${cap(plan)}`;
+    byId("planbadge")   && (byId("planbadge").textContent = pretty);
+    byId("planbadge_m") && (byId("planbadge_m").textContent = pretty);
+    byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(plan));
+    document.body.setAttribute("data-plan", plan);
+    // Gate blocks
+    const r = PLAN_RANK[plan] ?? 0;
+    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r<1));
+    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r<2));
+    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r<3));
+  }
+  function paintAuth(authed){
+    AUTHTED = !!authed;
+    document.body.setAttribute("data-auth", authed ? "authed" : "guest");
+    $$(".only-guest").forEach(el=> el.classList.toggle("hidden", authed));
+    $$(".only-authed").forEach(el=> el.classList.toggle("hidden", !authed));
+    ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+      const el = byId(id); if (el) el.classList.toggle("hidden", !authed);
+    });
+    byId("generateBtn")?.classList.toggle("hidden", authed);
+    byId("generateBtn_member")?.classList.toggle("hidden", !authed);
+  }
+
+  async function fetchStatusAndPaint(){
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+      const j = await r.json();
+      AUTHTED = j.scope === "user";
+      USER_ID = AUTHTED ? j.userId || null : null;
+      paintAuth(AUTHTED);
+      paintPlan((j.plan || "free").toLowerCase());
+
+      // quotas
+      if (!AUTHTED){
+        const cap = j.platform?.monthly?.cap ?? 5;
+        const used= j.platform?.monthly?.used ?? 0;
+        byId("demoQuota") && (byId("demoQuota").textContent = Math.max(0, cap-used));
+      } else {
+        const cap = j.platform?.daily?.cap; // null = ∞
+        const used= j.platform?.daily?.used ?? 0;
+        byId("memberQuota") && (byId("memberQuota").textContent = cap==null ? "∞" : Math.max(0, cap-used));
+      }
+    }catch{
+      paintAuth(false); paintPlan("free");
+    }
+  }
+
+  /* =============== A11y + Anchors (smooth scroll) =============== */
+  function wireAnchors(){
+    $$('a[href^="#"]').forEach(a=>{
+      once(a, "click", (e)=>{
+        const id = a.getAttribute("href");
+        if (!id || id==="#") return;
+        const el = document.querySelector(id);
+        if (el){
+          e.preventDefault();
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          history.replaceState(null,"",id);
+        } // if section missing, let it behave as normal anchor change
+      });
+    });
+  }
+
+  /* =============== Nav + mobile sheet =============== */
+  function wireNav(){
+    const toggle = byId("navToggle");
+    const sheet  = byId("mobileNav");
+    const close  = byId("navClose");
+    toggle && once(toggle, "click", ()=> document.body.classList.add("nav-open"));
+    close  && once(close,  "click", ()=> document.body.classList.remove("nav-open"));
+    // close on any mobile link
+    $$("#mobileNav a[href^='#']").forEach(a=> once(a,"click", ()=> document.body.classList.remove("nav-open")));
+    // year
+    const y = byId("year"); y && (y.textContent = new Date().getFullYear());
+  }
+
+  /* =============== Auth dialog buttons =============== */
+  function wireAuthUI(){
+    const openAuth = ()=> byId("auth")?.showModal();
+    // any trigger
+    $$(".js-open-auth").forEach(b=> once(b,"click", openAuth));
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id) && once(byId(id),"click", openAuth));
+    // logout
+    ["logoutBtn","logoutBtn_m"].forEach(id=>{
+      const el = byId(id);
+      el && once(el,"click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} });
+    });
+    // dialog internals
+    const send = byId("authSend");
+    const emailEl = byId("authEmail");
+    const gBtn = byId("authGoogle");
+    once(send,"click", async ()=>{
+      const email = emailEl?.value?.trim();
+      if (!email) return toast("Enter your email");
+      try{
+        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN }});
+        if (error) throw error;
+        toast("Check your email for the magic link.");
+      }catch(e){ toast(e.message || "Sign-in error"); }
+    });
+    once(gBtn,"click", async ()=>{
+      try{
+        const { error } = await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
+        if (error) throw error;
+      }catch(e){ toast(e.message || "Google sign-in failed"); }
+    });
+    once(emailEl,"keydown",(e)=>{ if (e.key==="Enter"){ e.preventDefault(); send?.click(); }});
+  }
+
+  /* =============== Promo buttons =============== */
+  ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
+    const el = byId(id);
+    el && once(el,"click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }});
+  });
+
+  /* =============== Generator + Output =============== */
+  let LAST_OUTPUT = null;
+
+  function readToggles(form){
     const g = (n)=> form.elements[n];
     return {
       opt: {
@@ -1005,26 +1362,26 @@ function planAtLeast(p){ return (PLAN_RANK[CURRENT_PLAN]||0) >= (PLAN_RANK[p]||0
         reddit:    g("ch_reddit")?.checked,
         facebook:  g("ch_facebook")?.checked,
         quora:     g("ch_quora")?.checked,
-        tiktok:    g("ch_tiktok")?.checked
+        tiktok:    g("ch_tiktok")?.checked,
       },
       extras: {
-        li_article:     g("li_article")?.checked,
-        x_sequence:     g("x_sequence")?.checked,
-        x_posts:        g("x_posts")?.value || "4",
-        rdt_communities:g("rdt_communities")?.checked,
-        rdt_comments:   g("rdt_comments")?.checked,
-        tt_hooks:       g("tt_hooks")?.checked,
-        tt_onscreen:    g("tt_onscreen")?.checked
+        li_article: g("li_article")?.checked,
+        x_sequence: g("x_sequence")?.checked,
+        x_posts:    g("x_posts")?.value || "4",
+        rdt_communities: g("rdt_communities")?.checked,
+        rdt_comments:    g("rdt_comments")?.checked,
+        tt_hooks:   g("tt_hooks")?.checked,
+        tt_onscreen:g("tt_onscreen")?.checked
       }
     };
   }
 
   function systemPrompt(tog){
     return {
-      role: "system",
+      role:"system",
       content:
 `You are a senior social copywriter.
-Return ONLY JSON with shape:
+Return ONLY valid JSON with this exact shape:
 {
   "outline": string,
   "linkedin": string|null,
@@ -1038,32 +1395,27 @@ Return ONLY JSON with shape:
   "linkedin_article_html": string|null
 }
 Rules:
-- Respect toggles: humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}.
-- X posts ≤ 280 chars where possible, prefix "Post N:" if multiple.
-- Instagram: include 3–5 meaningful hashtags (no junk).
-- Reddit: communities must be "contentwriting" style (NO "r/").
-- Do not include any text outside the JSON.`
+- Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
+- Keep platform-native, concise. X posts ≤ 280 chars; prefix "Post N:" when sequence.
+- Instagram: 3–5 useful hashtags (without '#' prefix; caller will add).
+- Reddit communities MUST be plain names like "contentwriting" (NOT "r/contentwriting").`
     };
   }
 
-  function userPrompt(raw, tog){
+  function userPrompt(raw, form, tog){
     const srcType = form.elements["sourceType"]?.value || "paragraph";
     const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
     const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    // Batch support: if multiple lines, tell the model to create distinct variants chained
-    const lines = raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-    const batch = lines.length>1 ? `Batch lines (${lines.length}):\n- ${lines.join("\n- ")}` : raw;
     return {
       role:"user",
       content:
 `${head}:
-${batch}
+${raw}
 
 Task:
 1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply toggles and extras exactly.
-4) If "li_article" is true, also include "linkedin_article_html" (valid minimal HTML).`
+2) Generate ONLY for channels: ${channels || "linkedin,x,email"}.
+3) Apply all toggles/extras exactly.`
     };
   }
 
@@ -1072,723 +1424,473 @@ Task:
     let s = String(txt).trim();
     s = s.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
     const first = s.indexOf("{"); const last = s.lastIndexOf("}");
-    if (first>=0 && last>first) s = s.slice(first,last+1);
-    try { return JSON.parse(s); } catch {}
-    s = s.replace(/,\s*([}\]])/g,"$1");
-    try { return JSON.parse(s); } catch {}
+    if (first>=0 && last>first) s = s.slice(first, last+1);
+    try{ return JSON.parse(s); }catch{}
+    s = s.replace(/,\s*([}\]])/g, "$1");
+    try{ return JSON.parse(s); }catch{}
     return null;
   }
 
-  function normalizeRedditCommunities(arr){
-    if (!Array.isArray(arr)) return [];
-    return arr.map(s=>String(s||"").trim().replace(/^r\//i,"")).filter(Boolean);
-  }
-
   function paintOutput(j){
-    LAST_OUTPUT = {};
-    out.innerHTML = "";
+    const outWrap = byId("demoOutput");
+    if (!outWrap) return;
+    outWrap.innerHTML = "";
+    LAST_OUTPUT = {}; // reset
 
-    const add = (title, html, key)=>{
-      out.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">${title}</strong>
-            <button class="btn copy" type="button">Copy</button>
-          </div>
-          ${html}
-        </div>`);
-      const card = out.lastElementChild;
-      const copy = card.querySelector(".btn.copy");
-      const pre  = card.querySelector("pre.content") || card.querySelector("pre") || card;
-      copy?.addEventListener("click", async()=>{
-        try { await navigator.clipboard.writeText(pre.innerText || ""); toast("Copied ✅"); }
-        catch{ toast("Copy failed"); }
-      });
-      if (key) LAST_OUTPUT[key] = pre.innerText || pre.textContent || "";
+    const addCard = (title, text, cacheKey=null) => {
+      const inner = `<div class="flex justify-between items-center gap-2 flex-wrap">
+        <strong class="tracking-tight">${title}</strong>
+        <button class="btn copy" type="button">Copy</button>
+      </div>
+      <pre class="whitespace-pre-wrap text-sm mt-3 content">${text}</pre>`;
+      const wrap = document.createElement("div");
+      wrap.className = "card p-5";
+      wrap.innerHTML = inner;
+      outWrap.appendChild(wrap);
+      const copyBtn = $(".btn.copy", wrap);
+      const pre = $(".content", wrap);
+      copyBtn && once(copyBtn, "click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }catch{ toast("Copy failed"); }});
+      if (cacheKey) LAST_OUTPUT[cacheKey] = pre?.innerText || "";
     };
 
-    if (j.linkedin){
-      add("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
-    }
+    if (j.outline) addCard("Outline", j.outline);
+
+    if (j.linkedin) addCard("LinkedIn", j.linkedin, "linkedin");
+
     if (Array.isArray(j.x) && j.x.length){
-      const seq = j.x.map((t,i)=> t ? `Post ${i+1}: ${t}` : "").filter(Boolean).join("\n\n");
-      add("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
+      const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
+      addCard("X (Twitter)", seq, "x");
     }
+
     if (j.email && (j.email.subject || j.email.body)){
-      add("Email", `
-        <div class="text-xs text-slate-400">Subject</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Body</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`, "email");
+      addCard("Email", `Subject: ${j.email.subject||""}\n\n${j.email.body||""}`, "email");
     }
+
     if (j.instagram){
-      const cap = j.instagram.caption||"";
       const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-      add("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
+      addCard("Instagram", `${j.instagram.caption||""}\n\n${tags}`, "instagram");
     }
+
     if (j.reddit){
-      const subs = normalizeRedditCommunities(j.reddit.communities||[]);
+      // Ensure names NOT prefixed with r/
+      const subs = (j.reddit.communities||[]).map(s=> String(s).replace(/^r\//i,"")).filter(Boolean);
       const starters = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-      add("Reddit", `
-        <div class="text-xs text-slate-400">Main post</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Suggested communities</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${subs.length? subs.map(s=>"r/"+s).join(", ") : "—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">Starter comments</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`, "reddit");
+      addCard("Reddit", `Title: ${j.reddit.title||""}\n\n${j.reddit.body||""}\n\nSuggested communities: ${subs.map(s=>"r/"+s).join(", ")}\n\nStarter comments:\n${starters||"—"}`, "reddit");
     }
+
     if (j.facebook){
-      add("Facebook", `
-        <div class="text-xs text-slate-400">Primary text</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Link preview</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`, "facebook");
+      addCard("Facebook", `Primary:\n${j.facebook.primary||""}\n\nPreview:\n${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}`, "facebook");
     }
+
     if (j.quora){
       const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      add("Quora", `
-        <div class="text-xs text-slate-400">Answer</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Follow-ups</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${follow||"—"}</pre>`, "quora");
+      addCard("Quora", `Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${follow||"—"}`, "quora");
     }
+
     if (j.tiktok){
-      const hooks=(j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons  =(j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      add("TikTok", `
-        <div class="text-xs text-slate-400">Script</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Hooks</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${hooks||"—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">On-screen</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${ons||"—"}</pre>`, "tiktok");
+      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+      addCard("TikTok", `Script:\n${j.tiktok.script||""}\n\nHooks:\n${hooks||"—"}\n\nOn-screen plan:\n${ons||"—"}`, "tiktok");
     }
+
+    // If we got a LinkedIn Article HTML, surface it inside the Optimizer pane as preview too
     if (j.linkedin_article_html){
-      out.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <strong class="tracking-tight">LinkedIn Article</strong>
-          <div class="prose prose-sm dark:prose-invert max-w-none mt-3" id="liArticle"></div>
-        </div>`);
-      $("#liArticle").innerHTML = j.linkedin_article_html;
-      LAST_OUTPUT.linkedin_article = $("#liArticle").innerText || "";
-    }
-  }
-
-  async function doGenerate(button){
-    const raw = (src.value||"").trim();
-    if (!raw) { toast("Paste some content first"); return; }
-
-    // Batch cap by plan: Free 1, Starter 5, Creator 30, Business 50
-    const lines = raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-    const caps = { free:1, starter:5, creator:30, business:50 };
-    const cap  = caps[CURRENT_PLAN] ?? 1;
-    const batched = lines.slice(0, Math.max(1, cap)).join("\n");
-
-    const tog = readToggles();
-    const messages = [ systemPrompt(tog), userPrompt(batched, tog) ];
-
-    const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-
-    button.disabled = true; const old = button.textContent;
-    button.textContent = "Generating…";
-    out.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ plan: lane, temperature: 0.5, messages })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-      const content = data?.choices?.[0]?.message?.content || "";
-      const j = parseJsonLoose(content);
-      if (!j) throw new Error("Model did not return JSON");
-      // fix any r/r/ communities just in case
-      if (j?.reddit?.communities) j.reddit.communities = normalizeRedditCommunities(j.reddit.communities);
-      paintOutput(j);
-      // refresh best-picks suggestion after an actual run
-      try{ bestPicksRecalcFromUsage(); }catch{}
-      toast("Done ✅");
-    }catch(e){
-      out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`;
-    }finally{
-      button.disabled = false; button.textContent = old;
-    }
-  }
-
-  btnDemo?.addEventListener("click", ()=> doGenerate(btnDemo));
-  btnMember?.addEventListener("click", ()=> doGenerate(btnMember));
-
-  // Clear button (if present)
-  $("#clearBtn")?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT={}; });
-})();
-
-/* =========================================================
-   2) PRESETS: list/save/apply/delete (Worker KV)
-   ========================================================= */
-(function wirePresets(){
-  const listWrap = $("#presetList");
-  const saveBtn  = $("#presetSave");
-  const nameEl   = $("#presetName");
-  const applySel = $("#presetApply");
-  if (!listWrap) return;
-
-  async function H(){ // headers
-    const h = { "Content-Type":"application/json" };
-    try{
-      const { data } = await window.supabase?.auth?.getSession() || {};
-      const t = data?.session?.access_token; const u = data?.session?.user?.id;
-      if (t) h.Authorization = `Bearer ${t}`; if (u) h["X-User-Id"]=u;
-    }catch{}
-    return h;
-  }
-
-  async function refresh(){
-    const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await H() }).catch(()=>null);
-    const j = await r?.json().catch(()=>({presets:[]}));
-    const presets = Array.isArray(j?.presets)? j.presets : [];
-    listWrap.innerHTML = "";
-    applySel.innerHTML = `<option value="">— Select preset —</option>`;
-    presets.forEach(p=>{
-      listWrap.insertAdjacentHTML("beforeend", `
-        <div class="border rounded-lg p-3 flex items-center justify-between gap-3">
-          <div class="text-sm">
-            <div class="font-semibold">${p.title}</div>
-            <div class="text-xs text-slate-500">${new Date(p.created_at).toLocaleString()}</div>
-          </div>
-          <div class="flex gap-2">
-            <button class="btn btn-primary" data-apply="${p.id}" type="button">Apply</button>
-            <button class="btn" data-del="${p.id}" type="button">Delete</button>
-          </div>
-        </div>`);
-      applySel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.title}</option>`);
-    });
-
-    // wire actions
-    $$('[data-apply]').forEach(b=> b.addEventListener("click", ()=> applyPresetId(b.getAttribute("data-apply"))));
-    $$('[data-del]').forEach(b=> b.addEventListener("click", async ()=>{
-      const id = b.getAttribute("data-del");
-      try{
-        await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await H(), body: JSON.stringify({ id }) });
-        toast("Deleted ✅"); refresh();
-      }catch{ toast("Delete failed"); }
-    }));
-  }
-
-  async function applyPresetId(id){
-    // In this simple MVP, presets store nothing yet (we saved title/data in Worker).
-    // Later you can store toggles. For now we just notify user.
-    toast("Preset applied — your saved settings are loaded.");
-  }
-
-  saveBtn?.addEventListener("click", async ()=>{
-    const title = (nameEl?.value||"").trim() || "Untitled preset";
-    const data = {}; // TODO: include toggles later
-    try{
-      await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await H(), body: JSON.stringify({ title, data }) });
-      toast("Saved preset ✅"); nameEl && (nameEl.value=""); refresh();
-    }catch{ toast("Save failed"); }
-  });
-
-  applySel?.addEventListener("change", ()=> applyPresetId(applySel.value));
-  refresh();
-})();
-
-/* =========================================================
-   3) OPTIMIZER modal + Rank score + related keywords
-   ========================================================= */
-(function wireOptimizer(){
-  const dlg = $("#optimizerModal");
-  if (!dlg) return;
-
-  const openBtn = $("#openOptimizerBtn");
-  const useBtn  = $("#useOpenOptimizer");
-  const closeBtns = $$(".opt-close", dlg);
-  const input  = $("#optInput");
-  const kw     = $("#optKeyword");
-  const len30  = $("#optLen");
-  const faqs   = $("#optFaqs");
-  const head   = $("#optHeads");
-  const seo    = $("#optSeo");
-  const title  = $("#optMetaTitle");
-  const desc   = $("#optMetaDesc");
-  const score  = $("#optScore");
-  const ideas  = $("#optIdeas");
-  const saveBtn= $("#optSaveBtn");
-
-  function open(){ dlg.showModal(); }
-  function close(){ dlg.close(); }
-
-  openBtn?.addEventListener("click", open);
-  useBtn?.addEventListener("click", open);
-  closeBtns.forEach(b=> b.addEventListener("click", close));
-
-  async function H(){
-    const h = { "Content-Type":"application/json" };
-    try{
-      const { data } = await window.supabase?.auth?.getSession() || {};
-      const t = data?.session?.access_token; const u = data?.session?.user?.id;
-      if (t) h.Authorization = `Bearer ${t}`; if (u) h["X-User-Id"]=u;
-    }catch{}
-    return h;
-  }
-
-  async function optimize(){
-    const base = (input?.value||"").trim();
-    if (!base) return toast("Paste an article first");
-    const prompt = [
-      "You are an SEO editor. Improve the article for the focus keyword.",
-      len30?.checked ? "Lengthen the content by ~30% where helpful." : "",
-      faqs?.checked ? "Add a concise FAQ section and provide JSON-LD for FAQPage." : "",
-      head?.checked ? "Ensure H2/H3 structure is clean and scannable." : "",
-      seo?.checked  ? "Return a suggested <title> and <meta description> focused on CTR." : ""
-    ].filter(Boolean).join(" ");
-
-    const messages = [
-      { role:"system", content:"Return ONLY a JSON object with { html, meta_title, meta_desc, score, related_keywords }" },
-      { role:"user", content:`Focus keyword: ${kw?.value||""}\n\nArticle:\n${base}\n\n${prompt}` }
-    ];
-
-    try{
-      saveBtn.disabled = true; saveBtn.textContent = "Optimizing…";
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST", headers: await H(),
-        body: JSON.stringify({ plan: planAtLeast("starter") ? "pro":"free", temperature:0.3, messages })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Optimizer failed");
-      const txt = j?.choices?.[0]?.message?.content || "{}";
-      let out=null; try{ out = JSON.parse(txt.replace(/^```json/,"").replace(/```$/,"")); }catch{}
-      if (!out?.html) throw new Error("No HTML returned");
-      $("#optPreview").innerHTML = out.html;
-      title && (title.value = out.meta_title||"");
-      desc  && (desc.value  = out.meta_desc||"");
-      score && (score.textContent = out.score!=null ? `${out.score}/100` : "—");
-      ideas && (ideas.textContent = Array.isArray(out.related_keywords) ? out.related_keywords.join(", ") : "");
-      toast("Optimized ✅");
-    }catch(e){ toast(e.message||"Optimizer error"); }
-    finally{ saveBtn.disabled=false; saveBtn.textContent="Run Optimizer"; }
-  }
-
-  saveBtn?.addEventListener("click", optimize);
-})();
-
-/* =========================================================
-   4) QUICK PUBLISH + SCHEDULER (queue stored per user)
-   ========================================================= */
-(function wireQuickPublishAndScheduler(){
-  // Quick Publish
-  $("#qp-x")?.addEventListener("click", ()=>{
-    const t = (LAST_OUTPUT.x || LAST_OUTPUT.linkedin || "").split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ").slice(0,270);
-    if (!t) return toast("Generate first");
-    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t)}`,"_blank");
-  });
-  $("#qp-reddit")?.addEventListener("click", ()=>{
-    const b = LAST_OUTPUT.reddit || LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
-    if (!b) return toast("Generate first");
-    const title = b.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,260);
-    window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(b)}`,"_blank");
-  });
-  $("#qp-linkedin")?.addEventListener("click", async ()=>{
-    const t = LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
-    if (!t) return toast("Generate first");
-    try{ await navigator.clipboard.writeText(t); }catch{}
-    window.open("https://www.linkedin.com/feed/","_blank");
-  });
-  $("#qp-email")?.addEventListener("click", ()=>{
-    const t = LAST_OUTPUT.email || "";
-    if (!t) return toast("Generate first");
-    const subj = t.split("\n")[0].slice(0,120);
-    location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(t)}`;
-  });
-
-  // Scheduler (local queue)
-  const ch   = $("#schedChannel");
-  const when = $("#schedWhen");
-  const text = $("#schedText");
-  const add  = $("#schedAdd");
-  const use  = $("#schedUseLast");
-  const pub  = $("#schedPublish");
-  const clr  = $("#schedClear");
-  const list = $("#schedList");
-  const empty= $("#schedEmpty");
-
-  if (!add || !list) return;
-
-  function SKEY(){ return `crp:sched:${(window.__uid)||"anon"}`; }
-  function loadQ(){ try{ return JSON.parse(localStorage.getItem(SKEY())||"[]"); }catch{return[];} }
-  function saveQ(q){ try{ localStorage.setItem(SKEY(), JSON.stringify(q)); }catch{} }
-
-  function render(){
-    const q = loadQ();
-    list.innerHTML = "";
-    if (!q.length){ empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-    q.forEach((it, i)=>{
-      list.insertAdjacentHTML("beforeend", `
-        <div class="border rounded-xl p-3 grid md:grid-cols-12 gap-3 items-start">
-          <label class="md:col-span-1 flex items-start gap-2 text-sm">
-            <input type="checkbox" data-i="${i}" ${it.selected?"checked":""} />
-            <span class="mono text-[11px]">${it.channel}</span>
-          </label>
-          <div class="md:col-span-3 text-xs text-slate-500">${new Date(it.when).toLocaleString()}</div>
-          <div class="md:col-span-7 text-sm whitespace-pre-wrap">${it.text}</div>
-          <div class="md:col-span-1 text-right">
-            <button class="btn" data-del="${i}" type="button">Remove</button>
-          </div>
-        </div>`);
-    });
-    $$('input[type="checkbox"][data-i]', list).forEach(cb=>{
-      cb.addEventListener("change", ()=>{
-        const q = loadQ(); const i = Number(cb.getAttribute("data-i"));
-        if (q[i]){ q[i].selected = cb.checked; saveQ(q); }
-      });
-    });
-    $$('button[data-del]', list).forEach(b=>{
-      b.addEventListener("click", ()=>{
-        const q = loadQ(); const i = Number(b.getAttribute("data-del"));
-        q.splice(i,1); saveQ(q); render();
-      });
-    });
-  }
-
-  add.addEventListener("click", ()=>{
-    const payload = (text.value||"").trim();
-    if (!payload) return toast("Add some text first");
-    const w = when.value ? new Date(when.value) : new Date(Date.now()+5*60*1000);
-    const q = loadQ();
-    q.push({ channel: ch.value, when: w.toISOString(), text: payload, selected: true });
-    saveQ(q); render(); toast("Added to queue");
-  });
-
-  use.addEventListener("click", ()=>{
-    const key = ch.value;
-    const val = LAST_OUTPUT[key] || LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
-    if (!val) return toast("Generate first");
-    text.value = val; toast("Filled from last output");
-  });
-
-  pub.addEventListener("click", ()=>{
-    const q = loadQ().filter(it=> it.selected);
-    if (!q.length) return toast("Select some items first");
-    q.forEach(it=>{
-      const t = it.text;
-      switch(it.channel){
-        case "x":
-          window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); break;
-        case "reddit":
-          window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(t.split("\n")[0].slice(0,260))}&text=${encodeURIComponent(t)}`,"_blank"); break;
-        case "linkedin":
-          navigator.clipboard.writeText(t).catch(()=>{}); window.open("https://www.linkedin.com/feed/","_blank"); break;
-        case "email":
-          location.href = `mailto:?subject=${encodeURIComponent(t.split("\n")[0].slice(0,120))}&body=${encodeURIComponent(t)}`; break;
-        default:
-          navigator.clipboard.writeText(t).catch(()=>{}); toast(`Copied ${it.channel} text — paste into the app.`);
+      const pane = byId("optimizerPane");
+      if (pane){
+        const a = document.createElement("div");
+        a.className="card p-4";
+        a.innerHTML = `<strong class="tracking-tight">LinkedIn Article (preview)</strong>
+          <div class="mt-3 prose prose-invert max-w-none" style="white-space:normal">${j.linkedin_article_html}</div>`;
+        pane.prepend(a);
       }
-    });
-    // keep queue items but unselect
-    const remain = loadQ().map(it=> ({...it, selected:false}));
-    saveQ(remain); render();
-  });
-
-  clr.addEventListener("click", ()=>{ saveQ([]); render(); });
-  render();
-})();
-
-/* =========================================================
-   5) INTEGRATIONS: Notion & Trello (connect + export)
-   ========================================================= */
-(function wireIntegrations(){
-  const btnNotion = $("#li-notion");
-  const btnTrello = $("#li-trello");
-  const trelloDialog = $("#trelloModal");
-  const trelloConfirm= $("#trelloConfirm");
-
-  async function H(){
-    const h = { "Content-Type":"application/json" };
-    try{
-      const { data } = await window.supabase?.auth?.getSession() || {};
-      const t = data?.session?.access_token; const u = data?.session?.user?.id;
-      if (t) h.Authorization = `Bearer ${t}`; if (u) h["X-User-Id"]=u;
-      window.__uid = u || null;
-    }catch{}
-    return h;
-  }
-
-  btnNotion?.addEventListener("click", async ()=>{
-    if (!planAtLeast("creator")) return toast("Creator plan required.");
-    try{
-      // If you want to force-connect first: start OAuth if no token; otherwise export
-      // Here we just export a simple page using LAST_OUTPUT
-      const blocks = [];
-      if (LAST_OUTPUT.linkedin) blocks.push({ type:"heading", text:"LinkedIn" },{ type:"paragraph", text: LAST_OUTPUT.linkedin });
-      if (LAST_OUTPUT.x)        blocks.push({ type:"heading", text:"X (Twitter)" },{ type:"paragraph", text: LAST_OUTPUT.x });
-      if (!blocks.length) return toast("Generate something first");
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-        method:"POST", headers: await H(),
-        body: JSON.stringify({ title:"Social Drafts", blocks })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
-      toast("Sent to Notion ✅");
-      j.url && window.open(j.url,"_blank");
-    }catch(e){ toast(e.message||"Notion error"); }
-  });
-
-  btnTrello?.addEventListener("click", ()=>{
-    if (!planAtLeast("creator")) return toast("Creator plan required.");
-    trelloDialog?.showModal();
-  });
-
-  trelloConfirm?.addEventListener("click", async ()=>{
-    const listId  = $("#trelloListId")?.value?.trim();
-    const boardId = $("#trelloBoardId")?.value?.trim();
-    if (!listId) return toast("Enter Trello List ID");
-    const title = "Social Draft";
-    const description = [
-      "LinkedIn:\n"+(LAST_OUTPUT?.linkedin||""),
-      "\nX:\n"+(LAST_OUTPUT?.x||"")
-    ].join("\n");
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-        method:"POST", headers: await H(),
-        body: JSON.stringify({ board_id: boardId||undefined, list_id: listId, title, description })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-      toast("Sent to Trello ✅");
-      trelloDialog?.close();
-      j.url && window.open(j.url,"_blank");
-    }catch(e){ toast(e.message||"Trello error"); }
-  });
-})();
-
-/* =========================================================
-   6) BEST PICKS: suggest exact plan + wire CTA to checkout
-   ========================================================= */
-(function wireBestPicks(){
-  const txt = $("#bestPickText");
-  const cta = $("#bestPickCta");
-  const recalc = $("#bestPickRecalc");
-
-  function set(plan){
-    CURRENT_PLAN = CURRENT_PLAN || "free";
-    if (!txt || !cta) return;
-    if (plan==="starter"){
-      txt.innerHTML = `Posting 2–4×/week? <span class="font-semibold">Starter</span> fits: 200 gens/mo + Scheduler + Analytics basics.`;
-      cta.textContent = "Get Starter";
-      cta.setAttribute("href", "#pricing");
-      cta.setAttribute("data-price", "price_1S7y58JYjIKHzKcjzL7cIKiB");
-      cta.classList.add("js-checkout");
-    } else if (plan==="creator"){
-      txt.innerHTML = `Multi-channel + templates + Notion/Trello? Choose <span class="font-semibold">Creator</span> for 500 gens/mo, unlimited presets & Analytics Pro.`;
-      cta.textContent = "Get Creator";
-      cta.setAttribute("href", "#pricing");
-      cta.setAttribute("data-price", "price_1S7y77JYjIKHzKcjKQYjiqZH");
-      cta.classList.add("js-checkout");
-    } else {
-      txt.innerHTML = `Team of 2–5? <span class="font-semibold">Business</span> adds seats, org analytics and white-label export.`;
-      cta.textContent = "Get Business";
-      cta.setAttribute("href", "#pricing");
-      cta.setAttribute("data-price", "price_1S7y8OJYjIKHzKcjqA9uJdyh");
-      cta.classList.add("js-checkout");
     }
-    wireCheckoutButtons(); // re-wire in case we changed CTA dynamically
   }
 
-  // naive heuristic based on LAST_OUTPUT presence (you can upgrade later with server stats)
-  window.bestPicksRecalcFromUsage = function(){
-    if (LAST_OUTPUT.instagram || LAST_OUTPUT.tiktok || LAST_OUTPUT.reddit) return set("creator");
-    if (LAST_OUTPUT.linkedin && LAST_OUTPUT.x && LAST_OUTPUT.email) return set("starter");
-    return set("starter");
-  };
-  recalc?.addEventListener("click", ()=> window.bestPicksRecalcFromUsage());
-  window.bestPicksRecalcFromUsage();
-})();
+  function wireGenerator(){
+    const form = byId("demoForm");
+    const src  = byId("sourceText");
+    const outWrap = byId("demoOutput");
+    const clearBtn = byId("clearBtn");
+    const genBtnGuest  = byId("generateBtn");
+    const genBtnMember = byId("generateBtn_member");
+    if (!form || !src || !outWrap) return;
 
-/* =========================================================
-   7) CHECKOUT / BILLING wiring for any .js-checkout buttons
-   ========================================================= */
-function wireCheckoutButtons(){
-  const btns = $$(".js-checkout");
-  btns.forEach(btn=>{
-    if (btn.__wired) return;
-    btn.__wired = true;
-    btn.addEventListener("click", async ()=>{
+    once(clearBtn, "click", ()=>{ src.value=""; outWrap.innerHTML=""; LAST_OUTPUT=null; });
+
+    once(form, "submit", async (e)=>{
+      e.preventDefault();               // IMPORTANT: do not navigate/append query params
+      const raw = (src.value||"").trim();
+      if (!raw) return toast("Paste some content first");
+
+      const btn = AUTHTED ? genBtnMember : genBtnGuest;
+      btn.disabled = true; const oldTxt = btn.textContent; btn.textContent="Generating…";
+      outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+
       try{
-        const price = btn.getAttribute("data-price") || "";
-        if (!price) return location.href = "#pricing";
-        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
-        const h = { "Content-Type":"application/json" };
-        try{
-          const { data } = await window.supabase?.auth?.getSession() || {};
-          const t = data?.session?.access_token; const u = data?.session?.user?.id;
-          if (t) h.Authorization = `Bearer ${t}`; if (u) h["X-User-Id"]=u;
-        }catch{}
-        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-          method:"POST", headers:h,
-          body: JSON.stringify({
-            price,
-            success_url: `${SITE_ORIGIN}/?billing=success`,
-            cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
-          })
+        const tog = readToggles(form);
+        const messages = [ systemPrompt(tog), userPrompt(raw, form, tog) ];
+        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+
+        const r = await fetch(`${WORKER_BASE}/api/generate`,{
+          method:"POST",
+          headers: await getAuthHeaders(),
+          body: JSON.stringify({ plan: lane, temperature: 0.5, messages })
         });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-        location.href = j.url;
+        const data = await r.json();
+        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
+
+        const content = data?.choices?.[0]?.message?.content || "";
+        const j = parseJsonLoose(content);
+        if (!j) throw new Error("Model did not return JSON");
+        paintOutput(j);
+        toast("Done ✅");
+        fetchStatusAndPaint().catch(()=>{});
       }catch(e){
-        toast(e.message||"Checkout error");
+        outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
       }finally{
-        btn.disabled=false; btn.textContent = btn.textContent||"Choose";
+        btn.disabled = false; btn.textContent = oldTxt;
       }
     });
-  });
-}
-wireCheckoutButtons();
-</script>
-<!-- ===== CRP FINISHER (Part 6) — Auth paint + Plan gates + Billing portal + Live stats + Nav/A11y ===== -->
-<script type="module">
-if (!window.__CRP_PART6_WIRED__) {
-  window.__CRP_PART6_WIRED__ = true;
-
-  /* ---------- Short helpers ---------- */
-  const $  = (s, r=document)=>r.querySelector(s);
-  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-  const cap = (s)=> (s||"").slice(0,1).toUpperCase() + (s||"").slice(1);
-
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
-
-  /* ---------- Toast (shared) ---------- */
-  function toast(msg){
-    try {
-      const t = $("#toast"); const m = $("#toastMsg");
-      if (!t || !m) { alert(msg); return; }
-      m.textContent = msg; t.classList.remove("hidden");
-      setTimeout(()=>t.classList.add("hidden"), 1600);
-    } catch { alert(msg); }
   }
 
-  /* ---------- Auth + Headers ---------- */
-  async function getAuthHeaders(){
-    const h = { "Content-Type":"application/json" };
-    try{
-      const { data } = await window.supabase?.auth?.getSession() || {};
-      const tok = data?.session?.access_token;
-      const uid = data?.session?.user?.id;
-      if (tok) h.Authorization = `Bearer ${tok}`;
-      if (uid) h["X-User-Id"] = uid;
-      window.__uid = uid || null;
-    }catch{}
-    return h;
-  }
-
-  /* ---------- Plan gates ---------- */
-  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
-  function applyPlanGates(plan){
-    const r = PLAN_RANK[plan] ?? 0;
-    // Hide all plan blocks first
-    $$(".plan-starter-plus").forEach(el => el.classList.add("hidden"));
-    $$(".plan-creator-plus").forEach(el => el.classList.add("hidden"));
-    $$(".plan-business-only").forEach(el => el.classList.add("hidden"));
-    if (r >= 1) $$(".plan-starter-plus").forEach(el => el.classList.remove("hidden"));
-    if (r >= 2) $$(".plan-creator-plus").forEach(el => el.classList.remove("hidden"));
-    if (r >= 3) $$(".plan-business-only").forEach(el => el.classList.remove("hidden"));
-  }
-  function showGuest(isGuest){
-    $$(".only-guest").forEach(el=> el.classList.toggle("hidden", !isGuest));
-    $$(".only-authed").forEach(el=> el.classList.toggle("hidden", isGuest));
-  }
-  function paintBadges(plan, authed){
-    const label = `Plan: ${cap(plan)}`;
-    $("#planbadge")   && ($("#planbadge").textContent = label);
-    $("#planbadge_m") && ($("#planbadge_m").textContent = label);
-    $("#heroPlanName")&& ($("#heroPlanName").textContent = cap(plan));
-    ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
-      const el = $("#"+id); if (el) el.classList.toggle("hidden", !authed);
-    });
-    document.body.setAttribute("data-auth", authed ? "authed" : "guest");
-    document.body.setAttribute("data-plan", plan);
-  }
-
-  /* ---------- Status + Quotas ---------- */
-  async function fetchStatusAndPaint(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      const authed = j.scope==="user";
-      const plan = (j.plan||"free").toLowerCase();
-      window.CURRENT_PLAN = plan;
-      window.AUTHTED = authed;
-
-      showGuest(!authed);
-      paintBadges(plan, authed);
-      applyPlanGates(plan);
-
-      // Quotas (optional labels if present)
-      const demoEl = $("#demoQuota");
-      const memEl  = $("#memberQuota");
-      if (!authed){
-        const cap = j.platform?.monthly?.cap ?? 5;
-        const used= j.platform?.monthly?.used ?? 0;
-        demoEl && (demoEl.textContent = Math.max(0, cap - used));
-      } else {
-        const cap = j.platform?.daily?.cap; // null ⇒ ∞
-        const used= j.platform?.daily?.used ?? 0;
-        memEl && (memEl.textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
+  /* =============== Optimizer panel reveal (anchor-aware) =============== */
+  function wireOptimizerReveal(){
+    const go = (e)=>{
+      const target = byId("optimizer");
+      if (target){
+        e && e.preventDefault();
+        try{ target.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ target.scrollIntoView(); }
+        history.replaceState(null, "", "#optimizer");
       }
-    }catch{
-      showGuest(true); paintBadges("free", false); applyPlanGates("free");
-    }
+    };
+    $$('#openOptimizer, a[href="#optimizer"]').forEach(b=> once(b,"click", go));
+    // If user lands with #optimizer already in URL
+    if (location.hash==="#optimizer") setTimeout(()=> go(), 60);
   }
 
-  /* ---------- Auth dialog open/close ---------- */
-  function wireAuthDialog(){
-    const dlg = $("#auth");
-    if (!dlg) return;
-    const send = $("#authSend");
-    const gBtn = $("#authGoogle");
-    const emailEl = $("#authEmail");
-
-    // openers
-    $$(".js-open-auth").forEach(b=> b.addEventListener("click", ()=> dlg.showModal()));
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=>{
-      const el = $("#"+id); el && el.addEventListener("click", ()=> dlg.showModal());
+  /* =============== Quick Publish + Email preview =============== */
+  function wireQuickPublish(){
+    const btnX   = byId("qp-x");
+    const btnRd  = byId("qp-reddit");
+    const btnLi  = byId("qp-linkedin");
+    const btnEm  = byId("qp-email");
+    if (btnX) once(btnX,"click", ()=>{
+      if (!LAST_OUTPUT?.x && !LAST_OUTPUT?.linkedin) return toast("Generate first");
+      const text = (LAST_OUTPUT?.x || LAST_OUTPUT?.linkedin || "").split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ");
+      const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text.slice(0,270))}`;
+      window.open(url,"_blank");
     });
-    // logout
-    ["logoutBtn","logoutBtn_m"].forEach(id=>{
-      const el = $("#"+id); el && el.addEventListener("click", async ()=>{
-        try{ await window.supabase?.auth?.signOut(); toast("Signed out"); }catch{}
+    if (btnRd) once(btnRd,"click", ()=>{
+      const body = LAST_OUTPUT?.reddit || LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x;
+      if (!body) return toast("Generate first");
+      const firstLine = body.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,280);
+      const url = `https://www.reddit.com/submit?title=${encodeURIComponent(firstLine)}&text=${encodeURIComponent(body)}`;
+      window.open(url,"_blank");
+    });
+    if (btnLi) once(btnLi,"click", async ()=>{
+      const text = LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x; if (!text) return toast("Generate first");
+      try{ await navigator.clipboard.writeText(text); toast("Copied for LinkedIn ✅"); }catch{}
+      window.open("https://www.linkedin.com/feed/","_blank");
+    });
+    if (btnEm) once(btnEm,"click", ()=>{
+      const raw = LAST_OUTPUT?.email || "";
+      const dlg = byId("emailPreview");
+      if (!dlg) return;
+      const subj = byId("emailSubjEdit");
+      const body = byId("emailBodyEdit");
+      // naive parse: first line "Subject: ..."
+      const parts = raw.split("\n");
+      const pSubj = (parts[0]||"").replace(/^Subject:\s*/i,"").slice(0,120);
+      const pBody = parts.slice(1).join("\n");
+      subj && (subj.value = pSubj);
+      body && (body.value = pBody || raw || "");
+      dlg.showModal();
+    });
+    const emailSendBtn = byId("emailSendBtn");
+    emailSendBtn && once(emailSendBtn,"click", ()=>{
+      const subj = byId("emailSubjEdit")?.value || "";
+      const body = byId("emailBodyEdit")?.value || "";
+      location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    });
+  }
+
+  /* =============== Scheduler (Starter+) =============== */
+  const SKEY = ()=> `crp:sched:${USER_ID || "anon"}`;
+  const loadQueue = ()=> { try{ return JSON.parse(localStorage.getItem(SKEY())||"[]"); }catch{ return []; } };
+  const saveQueue = (q)=> { try{ localStorage.setItem(SKEY(), JSON.stringify(q)); }catch{} };
+
+  function renderQueue(){
+    const wrap = byId("schedList");
+    const empty= byId("schedEmpty");
+    if (!wrap) return;
+    const q = loadQueue();
+    wrap.innerHTML = "";
+    if (!q.length){ empty?.classList.remove("hidden"); return; }
+    empty?.classList.add("hidden");
+    q.forEach((item, idx)=>{
+      const div = document.createElement("div");
+      div.className = "border rounded-xl p-3 grid md:grid-cols-12 gap-3 items-start";
+      div.innerHTML = `
+        <label class="md:col-span-1 flex items-start gap-2 text-sm">
+          <input type="checkbox" data-idx="${idx}" ${item.selected?"checked":""} />
+          <span class="mono text-[11px]">${item.channel}</span>
+        </label>
+        <div class="md:col-span-3 text-xs text-slate-500">${new Date(item.when).toLocaleString()}</div>
+        <div class="md:col-span-7 text-sm whitespace-pre-wrap">${item.text}</div>
+        <div class="md:col-span-1 text-right">
+          <button class="btn" data-del="${idx}" type="button">Remove</button>
+        </div>`;
+      wrap.appendChild(div);
+    });
+    $$('input[type="checkbox"][data-idx]', wrap).forEach(cb=>{
+      once(cb,"change", ()=>{
+        const q = loadQueue(); const i = Number(cb.getAttribute("data-idx")||"0");
+        if (q[i]){ q[i].selected = cb.checked; saveQueue(q); }
       });
     });
-
-    // magic link
-    send?.addEventListener("click", async ()=>{
-      const email = emailEl?.value?.trim();
-      if (!email) return toast("Enter your email");
-      try{
-        await window.supabase?.auth?.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message||"Sign-in error"); }
+    $$('button[data-del]', wrap).forEach(b=>{
+      once(b,"click", ()=>{
+        const q = loadQueue(); const i = Number(b.getAttribute("data-del")||"0");
+        q.splice(i,1); saveQueue(q); renderQueue();
+      });
     });
-    // google
-    gBtn?.addEventListener("click", async ()=>{
-      try{
-        await window.supabase?.auth?.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
-      }catch(e){ toast(e?.message||"Google sign-in failed"); }
-    });
-    // enter key
-    emailEl?.addEventListener("keydown", (e)=>{ if (e.key==="Enter"){ e.preventDefault(); send?.click(); }});
   }
 
-  /* ---------- Billing: checkout + portal ---------- */
+  function wireScheduler(){
+    const add = byId("schedAdd");
+    const useLast = byId("schedUseLast");
+    const ch  = byId("schedChannel");
+    const when = byId("schedWhen");
+    const text = byId("schedText");
+    const pub = byId("schedPublish");
+    const clr = byId("schedClear");
+    if (!add || !useLast || !ch || !text) return;
+
+    once(add, "click", ()=>{
+      const payload = (text.value||"").trim();
+      const w = when?.value ? new Date(when.value) : new Date(Date.now()+5*60*1000);
+      if (!payload) return toast("Add some text first");
+      const q = loadQueue();
+      q.push({ channel: ch.value, when: w.toISOString(), text: payload, selected: true });
+      saveQueue(q); renderQueue(); toast("Added to queue");
+    });
+
+    once(useLast, "click", ()=>{
+      if (!LAST_OUTPUT) return toast("Generate first");
+      const key = ch.value;
+      const val = LAST_OUTPUT[key] || LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
+      if (!val) return toast("No output for this channel yet");
+      byId("schedText").value = val;
+      toast("Filled from last output");
+    });
+
+    once(pub, "click", ()=>{
+      const q = loadQueue();
+      const sel = q.filter(i=> i.selected);
+      if (!sel.length) return toast("Select some items first");
+      sel.forEach(item=>{
+        const txt = item.text;
+        switch(item.channel){
+          case "x":
+            window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(txt.slice(0,270))}`,"_blank");
+            break;
+          case "reddit":
+            const f = txt.split("\n")[0].slice(0,280);
+            window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(f)}&text=${encodeURIComponent(txt)}`,"_blank");
+            break;
+          case "linkedin":
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            window.open("https://www.linkedin.com/feed/","_blank");
+            break;
+          case "email":
+            window.open(`mailto:?subject=${encodeURIComponent(txt.split("\n")[0].slice(0,120))}&body=${encodeURIComponent(txt)}`,"_self");
+            break;
+          default:
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            toast(`Copied ${item.channel} text — paste into the app.`);
+            break;
+        }
+      });
+      const remain = q.filter(i=> !i.selected);
+      saveQueue(remain); renderQueue();
+    });
+
+    once(clr, "click", ()=>{ saveQueue([]); renderQueue(); });
+    renderQueue();
+  }
+
+  /* =============== Presets (save/load/delete) =============== */
+  function wirePresets(){
+    const saveBtn = byId("presetSave");
+    const loadSel = byId("presetLoad");
+    const delBtn  = byId("presetDelete");
+    const form    = byId("demoForm");
+    const src     = byId("sourceText");
+    if (!saveBtn || !loadSel || !delBtn || !form) return;
+
+    async function refreshList(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Failed to list presets");
+        loadSel.innerHTML = `<option value="">Load preset…</option>`;
+        (j.presets||[]).forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value = p.id; opt.textContent = p.title;
+          loadSel.appendChild(opt);
+        });
+      }catch{}
+    }
+
+    once(saveBtn, "click", async ()=>{
+      if (!AUTHTED) return toast("Sign in to save presets");
+      const title = prompt("Preset name?") || "Preset";
+      const data = {
+        sourceType: form.elements["sourceType"]?.value || "paragraph",
+        toggles: readToggles(form)
+      };
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/presets/save`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ title, data })
+        });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message||"Failed to save");
+        toast("Preset saved ✅"); refreshList();
+      }catch(e){ toast(e.message||"Save failed"); }
+    });
+
+    once(loadSel, "change", async ()=>{
+      const id = loadSel.value; if (!id) return;
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message||"Load failed");
+        const p = (j.presets||[]).find(x=> x.id===id); if (!p) return;
+        const d = p.data || {};
+        if (d.sourceType) {
+          const el = form.elements["sourceType"];
+          el && $$('input[name="sourceType"]').forEach(radio => { radio.checked = (radio.value===d.sourceType); });
+        }
+        const t = d.toggles || {};
+        // set checkboxes by name
+        const set = (name, val)=> { const el=form.elements[name]; if (el && "checked" in el) el.checked = !!val; };
+        set("opt_humanize", t.opt?.humanize); set("opt_lengthen", t.opt?.lengthen);
+        set("opt_faqs", t.opt?.faqs); set("opt_headings", t.opt?.headings);
+        set("opt_svg", t.opt?.svg); set("opt_seo", t.opt?.seo);
+        set("ch_linkedin", t.ch?.linkedin); set("ch_x", t.ch?.x); set("ch_email", t.ch?.email);
+        set("ch_instagram", t.ch?.instagram); set("ch_reddit", t.ch?.reddit);
+        set("ch_facebook", t.ch?.facebook); set("ch_quora", t.ch?.quora); set("ch_tiktok", t.ch?.tiktok);
+        set("li_article", t.extras?.li_article); set("x_sequence", t.extras?.x_sequence);
+        if (form.elements["x_posts"]) form.elements["x_posts"].value = t.extras?.x_posts || "4";
+        toast("Preset loaded ✅");
+      }catch(e){ toast(e.message||"Load failed"); }
+    });
+
+    once(delBtn, "click", async ()=>{
+      const id = loadSel.value; if (!id) return toast("Choose a preset first");
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/presets/delete`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ id })
+        });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message||"Delete failed");
+        toast("Preset deleted ✅"); refreshList();
+      }catch(e){ toast(e.message||"Delete failed"); }
+    });
+
+    // initial fill
+    refreshList();
+  }
+
+  /* =============== Integrations (Notion/Trello/Buffer) =============== */
+  function wireIntegrations(){
+    // Notion export (Creator+ gated by UI; we also allow starting OAuth)
+    const btnNotion = byId("li-notion");
+    btnNotion && once(btnNotion,"click", async ()=>{
+      // If not connected yet, kick OAuth
+      try{
+        const st = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json()).catch(()=>({}));
+        const connected = !!st?.integrations?.notion?.connected;
+        if (!connected){
+          const go = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await getAuthHeaders() }).then(r=>r.json());
+          if (go?.url) { location.href = go.url; return; }
+        }
+      }catch{}
+      // Export basic blocks from LAST_OUTPUT
+      const blocks = [];
+      if (LAST_OUTPUT?.linkedin){ blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: LAST_OUTPUT.linkedin }); }
+      if (LAST_OUTPUT?.x){ blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: LAST_OUTPUT.x }); }
+      if (!blocks.length) return toast("Generate first");
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ title:"Social Drafts", blocks })
+        });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message||"Notion export failed");
+        toast("Sent to Notion ✅"); j.url && window.open(j.url, "_blank");
+      }catch(e){ toast(e.message||"Notion export failed"); }
+    });
+
+    // Trello export (Creator+)
+    const btnTrello = byId("li-trello");
+    const trelloDialog = byId("trelloModal");
+    btnTrello && once(btnTrello, "click", async ()=>{
+      try{
+        const st = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json()).catch(()=>({}));
+        const connected = !!st?.integrations?.trello?.connected;
+        if (!connected){
+          const go = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await getAuthHeaders() }).then(r=>r.json());
+          if (go?.url){ location.href = go.url; return; }
+        }
+      }catch{}
+      trelloDialog?.showModal();
+    });
+
+    const tConfirm = byId("trelloConfirm");
+    tConfirm && once(tConfirm, "click", async ()=>{
+      const list_id  = byId("trelloListId")?.value?.trim();
+      if (!list_id) return toast("Enter Trello List ID");
+      const board_id = byId("trelloBoardId")?.value?.trim() || undefined;
+      const title = "Social Draft";
+      const description = [
+        "LinkedIn:\n"+(LAST_OUTPUT?.linkedin||""),
+        "\nX:\n"+(LAST_OUTPUT?.x||"")
+      ].join("\n");
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+          method:"POST", headers: await getAuthHeaders(),
+          body: JSON.stringify({ board_id, list_id, title, description })
+        });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message||"Trello export failed");
+        toast("Sent to Trello ✅"); byId("trelloModal")?.close(); j.url && window.open(j.url, "_blank");
+      }catch(e){ toast(e.message||"Trello export failed"); }
+    });
+  }
+
+  /* =============== Pricing checkout + portal =============== */
   function wireBilling(){
-    // Checkout buttons are re-wired by Part 5's helper; here we only wire portal
+    $$(".js-checkout").forEach(btn=>{
+      once(btn,"click", async ()=>{
+        const price = btn.getAttribute("data-price") || "";
+        if (!price) return toast("Missing price id");
+        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({
+              price,
+              success_url: `${SITE_ORIGIN}/?billing=success`,
+              cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
+            })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+          location.href = j.url;
+        }catch(e){ toast(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
+      });
+    });
     ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
-      const b = $("#"+id); if (!b) return;
-      b.addEventListener("click", async ()=>{
+      const b = byId(id); if (!b) return;
+      once(b, "click", async ()=>{
         const old=b.textContent; b.disabled=true; b.textContent="Opening…";
         try{
           const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
@@ -1803,105 +1905,72 @@ if (!window.__CRP_PART6_WIRED__) {
     });
   }
 
-  /* ---------- Live stats / ticker ---------- */
+  /* =============== Live stats strip =============== */
   async function paintLive(){
     try{
       const r = await fetch(`${WORKER_BASE}/api/stats/today`);
       const j = await r.json();
-      const count = (typeof j.today_count==="number") ? j.today_count : "—";
-      // Support both hero + section counters
-      $$('[data-live-count], #liveCount').forEach(el=> el.textContent = String(count));
-      // (Optional) If you later stream examples, render them to [data-live-feed] / #liveFeed
+      if (r.ok && typeof j.today_count === "number"){
+        $$('[data-live-count], #liveCount').forEach(el=> el.textContent = String(j.today_count));
+      }
     }catch{}
   }
 
-  /* ---------- Nav + anchors + promo code ---------- */
-  function wireNav(){
-    const toggle = $("#navToggle");
-    const sheet  = $("#mobileNav");
-    const close  = $("#navClose");
-    toggle && toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-    close  && close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-    $$('a[href^="#"]').forEach(a=>{
-      a.addEventListener("click", (e)=>{
-        const id = a.getAttribute("href"); if (!id || id==="#") return;
-        const el = $(id);
-        if (el){ e.preventDefault(); try{ el.scrollIntoView({behavior:"smooth", block:"start"});}catch{el.scrollIntoView();} document.body.classList.remove("nav-open"); history.replaceState(null,"",id); }
-      });
-    });
-    // promo copy buttons
-    ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
-      const el = $("#"+id);
-      el && el.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }});
-    });
-    // year
-    const y = $("#year"); y && (y.textContent = new Date().getFullYear());
-  }
-
-  /* ---------- URL params (billing) ---------- */
-  function handleBillingParams(){
-    try{
-      const u = new URL(location.href);
-      const b = u.searchParams.get("billing");
-      if (b==="success") toast("Billing updated — thank you!");
-      if (b==="cancel")  toast("Billing cancelled");
-      if (b){ u.searchParams.delete("billing"); history.replaceState({}, "", u.toString()); }
-    }catch{}
-  }
-
-  /* ---------- Boot order ---------- */
+  /* =============== Boot =============== */
   document.addEventListener("DOMContentLoaded", async ()=>{
-    // supabase may already be initialized in <head>; just finish OAuth if needed
-    try{
-      const url = new URL(location.href);
-      if (url.searchParams.get("code")) {
-        const { error } = await window.supabase?.auth?.exchangeCodeForSession({ code: url.searchParams.get("code") });
-        if (!error){
-          ["code","state","scope","provider_id","redirected_from"].forEach(p=> url.searchParams.delete(p));
-          history.replaceState({}, "", url.toString());
-        }
-      }
-      if (location.hash.includes("access_token")){
-        await window.supabase?.auth?.getSession();
-        history.replaceState({}, "", location.pathname + location.search);
-      }
-    }catch{}
+    await ensureSupabase();
+    await finishOAuthIfNeeded();
 
-    wireAuthDialog();
-    wireBilling();
+    wireAnchors();
     wireNav();
+    wireAuthUI();
+    wireBilling();
+
+    wireGenerator();
+    wireQuickPublish();
+    wireScheduler();
+    wirePresets();
+    wireIntegrations();
+    wireOptimizerReveal();
 
     await fetchStatusAndPaint();
     await paintLive();
     setInterval(paintLive, 30000);
 
-    // React to auth changes → repaint plan gates & badges
-    try{
-      window.supabase?.auth?.onAuthStateChange((_event, session)=>{
-        const authed = !!session;
-        const plan = window.CURRENT_PLAN || "free";
-        showGuest(!authed);
-        paintBadges(plan, authed);
-        applyPlanGates(plan);
-        // Close auth dialog if open
-        try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
-        // refresh status to recalc quotas
-        fetchStatusAndPaint().catch(()=>{});
-      });
-    }catch{}
+    supabase.auth.onAuthStateChange((_event, session)=>{
+      AUTHTED = !!session; USER_ID = session?.user?.id || null;
+      paintAuth(AUTHTED);
+      fetchStatusAndPaint().catch(()=>{});
+      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
+    });
 
-    handleBillingParams();
-
-    // A11y finisher: mark app ready & live region on toast
+    // Handle billing return notice
     try{
-      document.body.classList.add("__ready");
-      const t = $("#toast");
-      if (t){ t.setAttribute("role","status"); t.setAttribute("aria-live","polite"); }
+      const u = new URL(location.href);
+      const ok   = u.searchParams.get("billing")==="success";
+      const fail = u.searchParams.get("billing")==="cancel";
+      if (ok)   toast("Billing updated — thank you!");
+      if (fail) toast("Billing cancelled");
+      if (ok || fail){ u.searchParams.delete("billing"); history.replaceState({}, "", u.toString()); }
     }catch{}
   });
 }
 </script>
-<!-- ===== /CRP FINISHER (Part 6) ===== -->
 
+<!-- ===== FINISHER: plan gates default + focus + live region ===== -->
+<style id="plan-gates-finisher">
+  .only-authed{ display:none; }
+  .plan-starter-plus, .plan-creator-plus, .plan-business-only{ display:none; }
+  :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px; }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      document.body.classList.add('__ready');
+      var t = document.getElementById('toast');
+      if (t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
+    }catch{}
+  });
+</script>
 </body>
 </html>
