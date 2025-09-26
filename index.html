@@ -63,20 +63,25 @@
     .icon { width: 1rem; height: 1rem; display: inline-block; vertical-align: -0.15em; }
     .touch-target{min-height:40px;min-width:40px}
 
-    /* Auth-aware visibility */
-    .guest-only{display:block}
-    .member-only{display:none}
-    body[data-auth="member"] .guest-only{display:none!important}
-    body[data-auth="member"] .member-only{display:block!important}
-
-    /* tiny stats cards */
-    .stat{ padding:1rem; border:1px dashed rgba(148,163,184,.35); border-radius:1rem }
-    .stat .k{ font-weight:700; margin-bottom:.25rem }
-    .bar{height:8px; border-radius:9999px; background:rgba(148,163,184,.25); overflow:hidden}
-    .bar > i{display:block; height:100%; background:linear-gradient(90deg,var(--brandA),var(--brandB))}
+    /* Plan-gating helpers */
+    .only-guest{display:revert}
+    .only-authed{display:none}
+    .plan-free-only{display:none}
+    .plan-starter-plus{display:none}
+    .plan-creator-plus{display:none}
+    .plan-business-only{display:none}
+    body[data-auth="authed"] .only-guest{display:none}
+    body[data-auth="authed"] .only-authed{display:revert}
+    body[data-plan="free"] .plan-free-only{display:revert}
+    body[data-plan="starter"] .plan-starter-plus,
+    body[data-plan="creator"] .plan-starter-plus,
+    body[data-plan="business"] .plan-starter-plus{display:revert}
+    body[data-plan="creator"] .plan-creator-plus,
+    body[data-plan="business"] .plan-creator-plus{display:revert}
+    body[data-plan="business"] .plan-business-only{display:revert}
   </style>
 
-  <!-- JSON-LD (Organization + WebSite + App) -->
+  <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
@@ -87,18 +92,23 @@
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- Supabase v2 auth (magic link + Google OAuth) -->
+  <!-- Supabase v2 auth (magic link + Google OAuth) — hardened -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // Supabase — use your real anon key (public)
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
 
-    // Client
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    // 1) Init
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true   // handles magic-link redirect on this page
+      }
+    });
 
-    // Auth helpers
+    // 2) Helpers
     window.getAuth = async () => {
       try {
         const { data } = await window.supabase.auth.getSession();
@@ -120,65 +130,60 @@
       return h;
     };
 
-    // Minimal auth UI (initial text gets refined by status fetch later)
-    function paintAuthUI(authed) {
-      const show = (id) => document.getElementById(id)?.classList.remove("hidden");
-      const hide = (id) => document.getElementById(id)?.classList.add("hidden");
-      const has  = (id) => !!document.getElementById(id);
-
-      if (has("loginBtn"))     (authed ? hide("loginBtn")     : show("loginBtn"));
-      if (has("loginBtn_m"))   (authed ? hide("loginBtn_m")   : show("loginBtn_m"));
-      if (has("logoutBtn"))    (authed ? show("logoutBtn")    : hide("logoutBtn"));
-      if (has("logoutBtn_m"))  (authed ? show("logoutBtn_m")  : hide("logoutBtn_m"));
-      if (has("manageBilling"))   authed ? show("manageBilling")   : hide("manageBilling");
-      if (has("manageBilling_m")) authed ? show("manageBilling_m") : hide("manageBilling_m"));
-
-      // Swap guest/member scaffolding
-      document.body.dataset.auth = authed ? "member" : "guest";
-
-      // Default labels before status loads
-      const pb = document.getElementById("planbadge");
-      const pbm= document.getElementById("planbadge_m");
-      if (pb)  pb.textContent  = authed ? "Plan: Member" : "Plan: Free";
-      if (pbm) pbm.textContent = authed ? "Plan: Member" : "Plan: Free";
+    // 3) Minimal UI paint to avoid “Plan: Member”
+    function paintAuthBadge({authed, plan="free"}){
+      document.body.setAttribute("data-auth", authed ? "authed" : "guest");
+      document.body.setAttribute("data-plan", plan);
+      const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
+      const set = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = `Plan: ${pretty}`;
+      };
+      set("planbadge"); set("planbadge_m");
+      const show = (id, on) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("hidden", !on);
+      };
+      show("loginBtn", !authed); show("loginBtn_m", !authed);
+      show("logoutBtn", authed); show("logoutBtn_m", authed);
+      show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
     }
 
-    // Dialog-based sign-in flow
+    // 4) Magic link sender (uses current origin; ensure this origin is whitelisted in Supabase)
     async function doSendMagicLink() {
       const email = document.getElementById("authEmail")?.value?.trim();
       const note  = document.getElementById("authNote");
       if (!email) { if (note) note.textContent = "Enter a valid email."; return; }
-      const redirectTo = window.location.origin;
+      const redirectTo = window.SITE_ORIGIN || window.location.origin;
       const { error } = await window.supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
-      if (note) note.textContent = error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.";
+      note.textContent = error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.";
     }
+    window.doSendMagicLink = doSendMagicLink;
 
-    window.doSignIn = async () => {
-      const dlg = document.getElementById("auth");
-      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
-    };
-
+    // 5) Wire on load
     document.addEventListener("DOMContentLoaded", async () => {
+      // Dialog buttons
       document.getElementById("authSend")?.addEventListener("click", doSendMagicLink);
-
       document.getElementById("authGoogle")?.addEventListener("click", async () => {
-        try{
-          await window.supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
-        }catch(e){
-          const note = document.getElementById("authNote");
-          if (note) note.textContent = e?.message || "Google sign-in failed.";
-        }
+        try {
+          await window.supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: window.SITE_ORIGIN || window.location.origin }});
+        } catch(e){ const note=document.getElementById("authNote"); if (note) note.textContent = e?.message || "Google sign-in failed."; }
       });
 
-      const loginEls  = ["loginBtn","loginBtn_m","heroSignIn"].map(id => document.getElementById(id)).filter(Boolean);
-      const logoutEls = ["logoutBtn","logoutBtn_m"].map(id => document.getElementById(id)).filter(Boolean);
+      // Top-level buttons
+      const openAuth = () => { const dlg = document.getElementById("auth"); dlg?.showModal?.(); };
+      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id => document.getElementById(id)?.addEventListener("click", openAuth));
+      ["logoutBtn","logoutBtn_m"].forEach(id => document.getElementById(id)?.addEventListener("click", async ()=>{ await window.supabase.auth.signOut(); }));
 
-      loginEls.forEach(btn => btn.addEventListener("click", () => window.doSignIn()));
-      logoutEls.forEach(btn => btn.addEventListener("click", async () => { await window.supabase.auth.signOut(); }));
-
+      // Initial paint
       const { data } = await window.supabase.auth.getSession();
-      paintAuthUI(!!data?.session);
-      window.supabase.auth.onAuthStateChange((_event, session) => paintAuthUI(!!session));
+      const authed = !!data?.session;
+      paintAuthBadge({ authed, plan:"free" });
+
+      // Live plan paint after sign-in/out
+      window.supabase.auth.onAuthStateChange((_event, session) => {
+        paintAuthBadge({ authed: !!session, plan:"free" });
+      });
     });
   </script>
 </head>
@@ -188,7 +193,7 @@
   <div class="halo h2"></div>
   <div class="halo h3"></div>
 
-  <!-- Top nav -->
+  <!-- Top nav (desktop + mobile trigger) -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
@@ -202,17 +207,17 @@
       </a>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80 guest-only">Live Demo</a>
-        <a href="#templates" class="hover:opacity-80 guest-only">Templates</a>
-        <a href="#use-cases" class="hover:opacity-80 guest-only">Use cases</a>
-        <a href="#best-picks" class="hover:opacity-80 guest-only">Best picks</a>
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
+        <a href="#templates" class="hover:opacity-80">Templates</a>
+        <a href="#use-cases" class="hover:opacity-80">Use cases</a>
+        <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
-          <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
+          <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden">Sign out</button>
         </div>
       </nav>
 
@@ -220,7 +225,7 @@
     </div>
 
     <!-- Promo strip -->
-    <div class="border-t border-white/40 bg-white/70 dark:bg-white/10 guest-only">
+    <div class="border-t border-white/40 bg-white/70 dark:bg-white/10">
       <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
@@ -241,30 +246,33 @@
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Live Demo</a>
-          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Templates</a>
-          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Use cases</a>
-          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10 guest-only">Best picks</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
+          <a href="#templates" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
+          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
+          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
           <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
           <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
-          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
-          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Sign out</button>
+          <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-guest">Sign in</button>
+          <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 only-authed hidden">Sign out</button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ===== HERO (guest emphasis) ===== -->
-  <section class="relative guest-only" id="hero">
+  <!-- ===== HERO + CTA rail ===== -->
+  <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
+      <!-- Left: copy + CTAs -->
       <div>
+        <!-- BADGE: show demo note to guests, plan badge to members -->
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+          <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+          <span class="only-authed hidden">Signed in — <strong id="heroPlanName">Free</strong> plan active</span>
         </div>
 
         <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
@@ -276,16 +284,12 @@
           Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
         </p>
 
+        <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90" id="ctaTryDemo">
-            Try the Live Demo
-          </a>
-          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">
-            See pricing
-          </a>
-          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">
-            Sign in
-          </button>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
+          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See pricing</a>
+          <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
 
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
@@ -295,6 +299,7 @@
           <span class="badge">BYOK</span>
         </div>
 
+        <!-- Trust strip -->
         <div class="mt-8 overflow-hidden">
           <div class="flex items-center gap-4 text-[11px] uppercase tracking-widest text-slate-500">
             <span class="chip">Creators</span>
@@ -304,13 +309,29 @@
           </div>
           <div class="relative mt-4">
             <div class="marquee opacity-70">
-              <div class="chip">LinkedIn-first</div><div class="chip">Editorial-friendly</div><div class="chip">Email copy</div><div class="chip">Instagram captions</div><div class="chip">Notion export</div><div class="chip">Trello sync</div><div class="chip">Keyword-aware</div><div class="chip">Tone controls</div>
-              <div class="chip">LinkedIn-first</div><div class="chip">Editorial-friendly</div><div class="chip">Email copy</div><div class="chip">Instagram captions</div><div class="chip">Notion export</div><div class="chip">Trello sync</div><div class="chip">Keyword-aware</div><div class="chip">Tone controls</div>
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
+              <!-- duplicate for seamless scroll -->
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Right: visual mocks -->
       <div class="relative">
         <div class="orbit" aria-hidden="true"></div>
         <div class="grid gap-4">
@@ -323,12 +344,38 @@
 ? instagram caption + hashtags</pre>
           </div>
           <div class="grid md:grid-cols-2 gap-4">
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">LinkedIn</div><div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">• Hook that earns the scroll<br>• 6–10 crisp lines, one CTA<br>• On-brand tone &amp; keywords</div></div>
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">X (Twitter)</div><div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">Two fast variants<br>Always ≤ 280 chars<br>Ready to post ✓</div></div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">LinkedIn</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
+                • Hook that earns the scroll<br>
+                • 6–10 crisp lines, one CTA<br>
+                • On-brand tone &amp; keywords
+              </div>
+            </div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">X (Twitter)</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
+                Two fast variants<br>
+                Always ≤ 280 chars<br>
+                Ready to post ✓
+              </div>
+            </div>
           </div>
           <div class="grid md:grid-cols-2 gap-4">
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">Email</div><div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Subject &amp; body prepped<br>Preview &amp; send from your client</div></div>
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">Instagram</div><div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Caption + 3–5 hashtags<br>Short, skimmable, on-brand</div></div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">Email</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
+                Subject &amp; body prepped<br>
+                Preview &amp; send from your client
+              </div>
+            </div>
+            <div class="mock p-4 card">
+              <div class="text-xs text-slate-400">Instagram</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
+                Caption + 3–5 hashtags<br>
+                Short, skimmable, on-brand
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -353,80 +400,27 @@
       </div>
     </div>
   </section>
-
-  <!-- ===== MEMBER DASHBOARD (shown when signed in) ===== -->
-  <section id="memberDash" class="member-only relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 pt-8">
-      <div class="flex items-end justify-between gap-4 mb-4">
-        <div>
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Dashboard</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-            Welcome back. Your plan: <span id="planNameTxt" class="font-semibold">Free</span>.
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="manageBilling_top" class="btn">Manage billing</button>
-          <a href="#pricing" class="btn btn-primary">Upgrade</a>
-        </div>
-      </div>
-
-      <!-- Quick stats -->
-      <div class="grid md:grid-cols-3 gap-4 mb-6">
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Platform runs today</div>
-          <div class="mt-1 text-2xl font-extrabold"><span id="statPlatDayUsed">–</span>/<span id="statPlatDayCap">∞</span></div>
-          <div class="bar mt-2"><i id="barPlatDay" style="width:0%"></i></div>
-        </div>
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">Platform this month</div>
-          <div class="mt-1 text-2xl font-extrabold"><span id="statPlatMonUsed">–</span>/<span id="statPlatMonCap">∞</span></div>
-          <div class="bar mt-2"><i id="barPlatMon" style="width:0%"></i></div>
-        </div>
-        <div class="card p-4">
-          <div class="text-sm text-slate-500">BYOK today / month</div>
-          <div class="mt-1 text-2xl font-extrabold"><span id="statByokDayUsed">–</span>/<span id="statByokDayCap">–</span> • <span id="statByokMonUsed">–</span>/<span id="statByokMonCap">–</span></div>
-          <div class="bar mt-2"><i id="barByokDay" style="width:0%"></i></div>
-        </div>
-      </div>
-
-      <!-- Integrations toolbar -->
-      <div class="card p-4 md:p-5 mb-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-3 text-sm">
-            <strong>Integrations</strong>
-            <button id="connectNotion" class="btn" type="button">Connect Notion</button>
-            <button id="connectTrello" class="btn" type="button">Connect Trello</button>
-          </div>
-          <div class="flex items-center gap-2 text-sm">
-            <span class="opacity-75">Export last:</span>
-            <button id="li-notion" class="btn" type="button">LinkedIn → Notion</button>
-            <button id="li-trello" class="btn" type="button">LinkedIn/X → Trello</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== GENERATOR (used by both guest + member) ===== -->
+  <!-- ===== LIVE DEMO / GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generate</h2>
-          <p id="genSub" class="mt-1 text-slate-500 dark:text-slate-300 text-sm guest-only">
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
+          <!-- Copy changes by auth state -->
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
             No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
           </p>
-          <p id="genSubMember" class="mt-1 text-slate-500 dark:text-slate-300 text-sm member-only">
-            Signed in — platform allowance resets daily. BYOK adds extra headroom.
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
+            Signed in — your plan limits apply per day/month by tier.
           </p>
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
-          <button class="btn btn-primary js-open-auth guest-only" type="button">Sign in</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
 
-      <!-- Upsell (still okay for members) -->
+      <!-- Demo/Member CTA rail -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2 text-sm">
@@ -440,9 +434,10 @@
         </div>
       </div>
 
-      <!-- Form -->
+      <!-- Generator Form -->
       <div class="card p-5 md:p-6">
         <form id="demoForm" class="grid gap-6" autocomplete="off">
+          <!-- Source selector -->
           <fieldset>
             <legend class="text-sm font-semibold">Source</legend>
             <div class="mt-2 grid md:grid-cols-3 gap-3">
@@ -468,6 +463,7 @@
             </div>
           </fieldset>
 
+          <!-- Optimizer options -->
           <fieldset>
             <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -478,8 +474,15 @@
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG image ideas</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> Check SEO basics (title/meta/alt-text)</label>
             </div>
+            <!-- Daily caps by plan (helper chips) -->
+            <div class="mt-2 text-[12px] text-slate-500">
+              <span class="chip">Starter: up to 5/day</span>
+              <span class="chip">Creator: up to 15/day</span>
+              <span class="chip">Business: up to 30/day</span>
+            </div>
           </fieldset>
 
+          <!-- Channels -->
           <fieldset>
             <legend class="text-sm font-semibold">Channels to generate</legend>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -494,6 +497,7 @@
             </div>
           </fieldset>
 
+          <!-- Channel-specific extras -->
           <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">LinkedIn</legend>
@@ -526,74 +530,130 @@
             </fieldset>
           </div>
 
-          <!-- Actions / Quota -->
+          <!-- Actions -->
           <div class="flex flex-wrap items-center gap-3">
-            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Generate</button>
+            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">
+              Generate (demo)
+            </button>
+            <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
+              Generate
+            </button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-            <div class="text-sm text-slate-500">You have <span id="demoQuota">—</span> <span id="quotaUnit">demo runs left this month</span>.</div>
-            <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
-          </div>
 
-          <!-- Member quick-publish (only visible when signed in) -->
-          <div class="member-only mt-3 flex flex-wrap gap-2 text-sm">
-            <span class="opacity-70">Quick publish:</span>
-            <button id="qpTweet" class="btn" type="button" title="Open X composer with text prefilled">Post to X</button>
-            <button id="qpReddit" class="btn" type="button" title="Open Reddit submit with title/body">Open Reddit submit</button>
-            <button id="qpCopyLI" class="btn" type="button" title="Copy & open LinkedIn">Copy for LinkedIn & open</button>
-            <button id="qpEmail" class="btn" type="button" title="Open email client with subject/body">Send email draft</button>
+            <!-- Quota copy varies -->
+            <div class="text-sm text-slate-500 only-guest">
+              You have <span id="demoQuota">—</span> demo runs left this month.
+            </div>
+            <div class="text-sm text-slate-500 only-authed hidden">
+              You have <span id="memberQuota">—</span> runs left today.
+            </div>
+
+            <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
           </div>
         </form>
       </div>
 
       <!-- OUTPUT -->
-      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
+      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false">
+        <!-- Channel cards will be injected here -->
+      </div>
 
-      <!-- Scheduler (member) -->
-      <div class="member-only mt-8 grid md:grid-cols-2 gap-6">
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong class="tracking-tight">Scheduler</strong>
-            <span class="text-xs opacity-70">Local preview</span>
-          </div>
-          <div class="mt-3 grid gap-2 text-sm">
-            <label class="flex items-center gap-2">
-              Channel
-              <select id="schChannel" class="border rounded px-2 py-1">
-                <option>LinkedIn</option>
-                <option>X</option>
-                <option>Reddit</option>
-                <option>Facebook</option>
-                <option>Instagram</option>
-                <option>Quora</option>
-                <option>TikTok</option>
-              </select>
-            </label>
-            <label class="flex items-center gap-2">
-              When
-              <input id="schWhen" type="datetime-local" class="border rounded px-2 py-1">
-            </label>
-            <label class="grid">
-              Text
-              <textarea id="schText" class="border rounded px-2 py-2 min-h-[100px]" placeholder="Paste content (or generate first and use 'Add from last output')"></textarea>
-            </label>
-            <div class="flex gap-2">
-              <button id="schAdd" class="btn btn-primary" type="button">Add to queue</button>
-              <button id="schAddLast" class="btn" type="button">Add from last output</button>
-            </div>
-          </div>
+      <!-- ===== QUICK PUBLISH (Authed only; Free can use, guests cannot) ===== -->
+      <div class="mt-10 card p-5 only-authed hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Quick publish</strong>
+          <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
+        </div>
+        <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button id="qp-x" class="btn">Post to X</button>
+          <button id="qp-reddit" class="btn">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
+          <button id="qp-email" class="btn">Send email draft</button>
         </div>
 
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong class="tracking-tight">Queue</strong>
-            <button id="schRunNow" class="btn" type="button">Publish selected</button>
-          </div>
-          <div id="schList" class="mt-3 grid gap-2 text-sm"></div>
+        <!-- Creator+ integrations -->
+        <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
+          <button id="li-notion" class="btn">Export to Notion</button>
+          <button id="li-trello" class="btn">Send to Trello</button>
+        </div>
+        <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
+          Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
         </div>
       </div>
 
-      <!-- Live strip -->
-      <div class="mt-8 md:mt-10">
+      <!-- ===== SCHEDULER (Starter+) ===== -->
+      <div class="mt-10 card p-5 plan-starter-plus">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Scheduler</strong>
+          <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
+        </div>
+
+        <!-- Composer -->
+        <div class="mt-4 grid md:grid-cols-4 gap-3">
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">Channel</span>
+            <select id="schedChannel" class="border rounded-lg px-3 py-2">
+              <option value="linkedin">LinkedIn</option>
+              <option value="x">X (Twitter)</option>
+              <option value="instagram">Instagram</option>
+              <option value="facebook">Facebook</option>
+              <option value="reddit">Reddit</option>
+              <option value="email">Email</option>
+            </select>
+          </label>
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">When</span>
+            <input id="schedWhen" type="datetime-local" class="border rounded-lg px-3 py-2" />
+          </label>
+          <div class="md:col-span-2 grid grid-cols-2 gap-2 items-end">
+            <button id="schedAdd" class="btn btn-primary" type="button">Add to queue</button>
+            <button id="schedUseLast" class="btn" type="button">Add from last output</button>
+          </div>
+        </div>
+
+        <label class="grid gap-1 mt-3">
+          <span class="text-xs text-slate-500">Text</span>
+          <textarea id="schedText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Paste content (or generate first and use 'Add from last output')"></textarea>
+        </label>
+
+        <!-- Queue -->
+        <div class="mt-5">
+          <div class="flex items-center justify-between">
+            <strong class="text-sm">Queue</strong>
+            <div class="flex items-center gap-2">
+              <button id="schedPublish" class="btn" type="button">Publish selected</button>
+              <button id="schedClear" class="btn" type="button">Clear all</button>
+            </div>
+          </div>
+          <div id="schedEmpty" class="text-sm text-slate-500 mt-3">Nothing scheduled yet.</div>
+          <div id="schedList" class="mt-3 grid gap-3"></div>
+        </div>
+      </div>
+
+      <!-- ===== ANALYTICS ===== -->
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <!-- Starter+: basics -->
+        <div class="card p-5 plan-starter-plus">
+          <strong class="tracking-tight">Analytics (basics)</strong>
+          <div class="text-xs text-slate-500 mt-1">Per-day posts & estimated reach.</div>
+          <div id="anaBasic" class="mt-3 text-sm text-slate-400">Connect accounts to see data.</div>
+        </div>
+        <!-- Creator+: per-channel -->
+        <div class="card p-5 plan-creator-plus">
+          <strong class="tracking-tight">Analytics Pro</strong>
+          <div class="text-xs text-slate-500 mt-1">Breakdown by channel.</div>
+          <div id="anaPro" class="mt-3 text-sm text-slate-400">Coming online as you post.</div>
+        </div>
+        <!-- Business: team -->
+        <div class="card p-5 plan-business-only">
+          <strong class="tracking-tight">Team Analytics</strong>
+          <div class="text-xs text-slate-500 mt-1">Org-wide view, shared calendar.</div>
+          <div id="anaTeam" class="mt-3 text-sm text-slate-400">Invite teammates to populate.</div>
+        </div>
+      </div>
+
+      <!-- Live strip (section-local, unique IDs) -->
+      <div class="mt-10">
         <div class="card p-4 md:p-5">
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-2">
@@ -610,8 +670,7 @@
       </div>
     </div>
   </section>
-
-  <!-- ===== PRICING (always visible) ===== -->
+  <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
@@ -619,6 +678,7 @@
         <p class="mt-2 text-slate-600 dark:text-slate-300">Start free. Add power when you need it.</p>
       </div>
 
+      <!-- Conversion rail -->
       <div class="card p-4 md:p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2 text-sm">
           <span class="badge">LIMITED</span>
@@ -626,9 +686,9 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
-          <a href="#demo" class="btn">Try Demo</a>
-          <button id="manageBilling2" class="btn hidden" type="button">Manage billing</button>
-          <button class="btn btn-primary js-open-auth guest-only" type="button">Sign in</button>
+          <a href="#demo" class="btn only-guest">Try Demo</a>
+          <button id="manageBilling2" class="btn hidden only-authed" type="button">Manage billing</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
 
@@ -669,7 +729,7 @@
             type="button">Get Starter</button>
         </div>
 
-        <!-- CREATOR -->
+        <!-- CREATOR (featured) -->
         <div class="card p-6 flex flex-col ring-1 ring-black/5 relative">
           <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
           <h3 class="mt-1 text-xl font-bold">Creator</h3>
@@ -717,43 +777,111 @@
 
       <!-- Why upgrade -->
       <div class="grid md:grid-cols-3 gap-6 mt-10">
-        <div class="stat"><div class="k">Faster queues</div><p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p></div>
-        <div class="stat"><div class="k">Scheduler</div><p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p></div>
-        <div class="stat"><div class="k">Integrations</div><p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p></div>
+        <div class="stat">
+          <div class="k">Faster queues</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p>
+        </div>
+        <div class="stat">
+          <div class="k">Scheduler</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p>
+        </div>
+        <div class="stat">
+          <div class="k">Integrations</div>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p>
+        </div>
       </div>
 
       <!-- ===== FAQ ===== -->
       <div id="faq" class="mt-14">
         <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
         <div class="mt-6 grid md:grid-cols-2 gap-4">
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Any click on <em>Generate</em> that returns content (demo or signed-in). Batch mode counts per line.</p></details>
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Yes for all paid plans (daily caps by tier). Free users get one verified run.</p></details>
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">What is BYOK?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">“Bring Your Own Key.” Use your own model API key for extra capacity. We never store your key in plaintext.</p></details>
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.</p></details>
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">Do you support teams?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.</p></details>
-          <details class="card p-4"><summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary><p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.</p></details>
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Any click on <em>Generate</em> that returns content (demo or signed-in). Batch mode counts per line.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Yes for all paid plans (daily caps by tier). Free users get one verified run.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              “Bring Your Own Key.” Use your own model API key for extra capacity. We never store your key in plaintext.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
+            </p>
+          </details>
+
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.
+            </p>
+          </details>
         </div>
       </div>
-
-      <!-- FAQ JSON-LD -->
-      <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          { "@type":"Question","name":"What counts as a “generation”?","acceptedAnswer":{"@type":"Answer","text":"Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."}},
-          { "@type":"Question","name":"Is the Article Optimizer included?","acceptedAnswer":{"@type":"Answer","text":"Yes for all paid plans (daily caps by tier). Free users get one verified run."}},
-          { "@type":"Question","name":"What is BYOK?","acceptedAnswer":{"@type":"Answer","text":"Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."}},
-          { "@type":"Question","name":"Can I cancel anytime?","acceptedAnswer":{"@type":"Answer","text":"Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."}},
-          { "@type":"Question","name":"Do you support teams?","acceptedAnswer":{"@type":"Answer","text":"Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."}},
-          { "@type":"Question","name":"Which platforms can you export to?","acceptedAnswer":{"@type":"Answer","text":"Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."}}
-        ]
-      }
-      </script>
     </div>
+
+    <!-- FAQ JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What counts as a “generation”?",
+          "acceptedAnswer": { "@type": "Answer","text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the Article Optimizer included?",
+          "acceptedAnswer": { "@type": "Answer","text": "Yes for all paid plans (daily caps by tier). Free users get one verified run." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is BYOK?",
+          "acceptedAnswer": { "@type": "Answer","text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I cancel anytime?",
+          "acceptedAnswer": { "@type": "Answer","text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you support teams?",
+          "acceptedAnswer": { "@type": "Answer","text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which platforms can you export to?",
+          "acceptedAnswer": { "@type": "Answer","text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram." }
+        }
+      ]
+    }
+    </script>
   </section>
 
-  <!-- SVG sprite + dialogs + footer (unchanged except IDs referenced by script) -->
+  <!-- ===== GLOBAL SVG SPRITE (icons used in cards) ===== -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
     <symbol id="i-li" viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.4-2.7 4.9-2.7 5.2 0 6.2 3.4 6.2 7.8V24h-5v-7.1c0-1.7 0-3.9-2.4-3.9s-2.8 1.9-2.8 3.8V24H8z"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.9 2H22l-7.7 8.8L23.3 22H16l-5.4-6.6L4.5 22H1.4l8.4-9.6L.9 2H8l4.9 5.9L18.9 2zM17 20h1.9L7.1 4H5.1L17 20z"/></symbol>
@@ -765,12 +893,12 @@
     <symbol id="i-tt" viewBox="0 0 24 24"><path d="M15.5 3c.3 2.2 1.7 3.7 3.8 4v3.1c-1.4.1-2.6-.4-3.8-1.2v5.7c0 3.9-3.1 7-7 7S1.5 18.5 1.5 14.6c0-3.8 2.9-6.8 6.6-7v3.4c-1.8.1-3.2 1.6-3.2 3.6 0 2 .1 3.6 3 3.6 1.7 0 3.1-1.5 3.1-3.2V3h4.5z"/></symbol>
   </svg>
 
-  <!-- TOAST -->
+  <!-- ===== TOAST ===== -->
   <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] hidden">
-    <div class="px-4 py-2 rounded-xl bg-black text-white shadow"><span id="toastMsg">Done</span></div>
+    <div class="px-4 py-2 rounded-xl bg-black text-white shadow"> <span id="toastMsg">Done</span> </div>
   </div>
 
-  <!-- AUTH DIALOG -->
+  <!-- ===== AUTH DIALOG (email magic link + Google) ===== -->
   <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
@@ -779,13 +907,15 @@
       </div>
       <p class="text-sm text-slate-500">Enter your email to receive a magic link.</p>
       <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
-      <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
-      <button id="authGoogle" class="btn" type="button">Continue with Google</button>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+        <button id="authGoogle" class="btn" type="button">Continue with Google</button>
+      </div>
       <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
     </form>
   </dialog>
 
-  <!-- EMAIL PREVIEW DIALOG -->
+  <!-- ===== EMAIL PREVIEW DIALOG ===== -->
   <dialog id="emailPreview" class="rounded-xl p-0 w-[92vw] max-w-2xl">
     <form method="dialog" class="p-5 grid gap-3">
       <div class="flex items-center justify-between">
@@ -803,7 +933,7 @@
     </form>
   </dialog>
 
-  <!-- TRELLO EXPORT DIALOG -->
+  <!-- ===== TRELLO EXPORT DIALOG ===== -->
   <dialog id="trelloModal" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-3">
       <div class="flex items-center justify-between">
@@ -821,7 +951,7 @@
     </form>
   </dialog>
 
-  <!-- FOOTER -->
+  <!-- ===== FOOTER ===== -->
   <footer class="mt-20 border-t border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
       <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
@@ -832,105 +962,208 @@
       </nav>
     </div>
   </footer>
-
-<!-- ===== APP JS (auth, billing, generator, integrations, scheduler) ===== -->
 <script type="module" id="crp-app-js">
-if (!window.__CRP_BOOTED__) {
-  window.__CRP_BOOTED__ = true;
+/* ContentRepurpose.pro — unified boot (auth + plan + generator + publish + scheduler) */
 
-  /* ---------- Shortcuts ---------- */
+if (!window.__CRP_V2_BOOT__) {
+  window.__CRP_V2_BOOT__ = true;
+
+  /* ==================== Short helpers ==================== */
   const $  = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
   const byId = (id) => document.getElementById(id);
-  const noop = ()=>{};
-  const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-
+  const sleep = (ms)=> new Promise(r=>setTimeout(r, ms));
+  const cap   = (s)=> (s||"").slice(0,1).toUpperCase() + (s||"").slice(1);
   const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
   const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
   function toast(msg){
-    try {
-      const t = byId("toast"), m = byId("toastMsg");
-      if (t && m){ m.textContent = msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"), 2000); return; }
-    } catch {}
-    alert(msg);
+    try { const t=byId("toast"); const m=byId("toastMsg");
+      if (!t||!m) return alert(msg);
+      m.textContent = msg; t.classList.remove("hidden");
+      setTimeout(()=> t.classList.add("hidden"), 1800);
+    } catch { alert(msg); }
+  }
+  const once = (el, evt, fn)=>{ if (!el) return; const k="__once_"+evt; if (el[k]) return; el.addEventListener(evt, fn); el[k]=true; };
+
+  /* ==================== Supabase init + OAuth finish ==================== */
+  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+
+  let supabase = window.supabase;
+  async function ensureSupabase(){
+    if (window.supabase) { supabase = window.supabase; return; }
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+    supabase = window.supabase;
+  }
+
+  async function finishOAuthIfNeeded(){
+    try{
+      const u = new URL(location.href);
+      const code = u.searchParams.get("code");
+      const err  = u.searchParams.get("error_description");
+      if (err) toast(decodeURIComponent(err));
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession({ code });
+        if (error) toast(error.message);
+        // Clean sensitive params
+        ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
+        history.replaceState({}, "", u.toString());
+      }
+      // Magic link flows sometimes return tokens in hash; make sure session is loaded & clean hash
+      if (location.hash.includes("access_token")) {
+        await supabase.auth.getSession();
+        history.replaceState({}, "", location.pathname + location.search);
+      }
+    }catch{ /* ignore */ }
   }
 
   async function getAuthHeaders(){
-    try {
-      if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-    } catch {}
-    return { "Content-Type":"application/json" };
+    const h = { "Content-Type":"application/json" };
+    try{
+      const { data } = await supabase.auth.getSession();
+      const tok = data?.session?.access_token;
+      const uid = data?.session?.user?.id;
+      if (tok) h["Authorization"] = `Bearer ${tok}`;
+      if (uid) h["X-User-Id"] = uid;
+    }catch{}
+    return h;
   }
 
-  /* ---------- Plan/status → labels + visibility ---------- */
-  async function refreshStatusAndUI(){
+  /* ==================== Plan + gating ==================== */
+  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+  let CURRENT_PLAN = "free";
+  let AUTHTED = false;
+  let USER_ID = null;
+  let LAST_OUTPUT = null; // cache last generation (per page session)
+
+  function showGuest(v){
+    $$(".only-guest").forEach(el => el.classList.toggle("hidden", !v));
+    $$(".only-authed").forEach(el => el.classList.toggle("hidden", v));
+  }
+  function applyPlanGates(plan){
+    const r = PLAN_RANK[plan] ?? 0;
+    // Hide all plan sections first
+    $$(".plan-starter-plus").forEach(el => el.classList.add("hidden"));
+    $$(".plan-creator-plus").forEach(el => el.classList.add("hidden"));
+    $$(".plan-business-only").forEach(el => el.classList.add("hidden"));
+    if (r >= 1) $$(".plan-starter-plus").forEach(el => el.classList.remove("hidden"));
+    if (r >= 2) $$(".plan-creator-plus").forEach(el => el.classList.remove("hidden"));
+    if (r >= 3) $$(".plan-business-only").forEach(el => el.classList.remove("hidden"));
+    // Quick publish is authed-only; Scheduler is Starter+
+    // (covered by classes above + only-authed)
+  }
+  function paintPlanBadges(plan){
+    const label = `Plan: ${cap(plan)}`;
+    byId("planbadge")   && (byId("planbadge").textContent   = label);
+    byId("planbadge_m") && (byId("planbadge_m").textContent = label);
+    byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(plan));
+  }
+
+  async function fetchStatusAndPaint(){
     try{
       const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
       const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message || "Status error");
 
-      const authed = j.scope === "user";
-      document.body.dataset.auth = authed ? "member" : "guest";
+      AUTHTED = j.scope === "user";
+      USER_ID = AUTHTED ? j.userId || null : null;
       const plan = (j.plan || "free").toLowerCase();
-      document.body.dataset.plan = plan;
+      CURRENT_PLAN = (PLAN_RANK[plan] != null ? plan : "free");
 
-      const labelPlan = "Plan: " + (plan.charAt(0).toUpperCase()+plan.slice(1));
-      ["planbadge","planbadge_m"].forEach(id => { const el=byId(id); if (el) el.textContent = labelPlan; });
-      const pn = byId("planNameTxt"); if (pn) pn.textContent = plan.charAt(0).toUpperCase()+plan.slice(1);
+      // Auth gating
+      showGuest(!AUTHTED);
+      // Plan label
+      paintPlanBadges(CURRENT_PLAN);
 
-      // Quota text unit + number
-      const quotaNum = byId("demoQuota");
-      const quotaUnit= byId("quotaUnit");
-      if (authed){
-        const used = j.platform?.daily?.used ?? 0;
-        const cap  = j.platform?.daily?.cap;
-        if (quotaNum) quotaNum.textContent = cap==null ? "∞" : Math.max(0, cap - used);
-        if (quotaUnit) quotaUnit.textContent = "runs left for today";
-      }else{
-        const usedM = j.platform?.monthly?.used ?? 0;
-        const capM  = j.platform?.monthly?.cap ?? 5;
-        if (quotaNum) quotaNum.textContent = Math.max(0, capM - usedM);
-        if (quotaUnit) quotaUnit.textContent = "demo runs left this month";
-      }
+      // Hero badge swap
+      const heroBadgeGuest = $('#hero [class*="only-guest"]');
+      const heroBadgeAuth  = $('#hero [class*="only-authed"]');
+      heroBadgeGuest && heroBadgeGuest.classList.toggle("hidden", AUTHTED);
+      heroBadgeAuth  && heroBadgeAuth.classList.toggle("hidden", !AUTHTED);
 
-      // Stats bars (member)
-      const pct = (u,c)=> !c || c===null ? 0 : Math.min(100, Math.round((u/c)*100));
-      if (authed){
-        const pdU = j.platform?.daily?.used ?? 0, pdC = j.platform?.daily?.cap ?? null;
-        const pmU = j.platform?.monthly?.used ?? 0, pmC = j.platform?.monthly?.cap ?? null;
-        const bdU = j.byok?.daily?.used ?? 0,     bdC = j.byok?.daily?.cap ?? 0;
-        const bmU = j.byok?.monthly?.used ?? 0,   bmC = j.byok?.monthly?.cap ?? 0;
-
-        byId("statPlatDayUsed") && (byId("statPlatDayUsed").textContent = pdU);
-        byId("statPlatDayCap")  && (byId("statPlatDayCap").textContent  = pdC==null ? "∞" : pdC);
-        byId("barPlatDay")      && (byId("barPlatDay").style.width = (pdC==null?0:pct(pdU,pdC))+"%");
-
-        byId("statPlatMonUsed") && (byId("statPlatMonUsed").textContent = pmU);
-        byId("statPlatMonCap")  && (byId("statPlatMonCap").textContent  = pmC==null ? "∞" : pmC);
-        byId("barPlatMon")      && (byId("barPlatMon").style.width = (pmC==null?0:pct(pmU,pmC))+"%");
-
-        byId("statByokDayUsed") && (byId("statByokDayUsed").textContent = bdU);
-        byId("statByokDayCap")  && (byId("statByokDayCap").textContent  = bdC || 0);
-        byId("statByokMonUsed") && (byId("statByokMonUsed").textContent = bmU);
-        byId("statByokMonCap")  && (byId("statByokMonCap").textContent  = bmC || 0);
-        byId("barByokDay")      && (byId("barByokDay").style.width = (bdC?pct(bdU,bdC):0)+"%");
-      }
-
-      // Show manage billing buttons when authed
-      ["manageBilling2","manageBilling_top","manageBilling","manageBilling_m"].forEach(id=>{
-        const el = byId(id); if (el) el.classList.toggle("hidden", !authed);
+      // Manage billing visibility
+      ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+        const el = byId(id); if (!el) return;
+        el.classList.toggle("hidden", !AUTHTED);
       });
+
+      // Quotas
+      // Guests: monthly demo left; Members: daily left (∞ if null cap)
+      const demoEl = byId("demoQuota");
+      const memEl  = byId("memberQuota");
+      if (!AUTHTED){
+        const cap = j.platform?.monthly?.cap ?? 5;
+        const used= j.platform?.monthly?.used ?? 0;
+        demoEl && (demoEl.textContent = Math.max(0, cap - used));
+      } else {
+        const cap = j.platform?.daily?.cap; // null ⇒ ∞
+        const used= j.platform?.daily?.used ?? 0;
+        memEl && (memEl.textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
+      }
+
+      // Plan-gated blocks
+      applyPlanGates(CURRENT_PLAN);
+
+      // Toggle the correct Generate button text for UX
+      byId("generateBtn")?.classList.toggle("hidden", AUTHTED);
+      byId("generateBtn_member")?.classList.toggle("hidden", !AUTHTED);
     }catch(e){
-      // Non-fatal
+      // Default to guest/free if status fails
+      showGuest(true); paintPlanBadges("free"); applyPlanGates("free");
     }
   }
 
-  /* ---------- Billing buttons ---------- */
+  /* ==================== Navbar / auth dialog wiring ==================== */
+  function wireAuthDialog(){
+    const dlg = byId("auth");
+    if (!dlg) return;
+    const send = byId("authSend");
+    const emailEl = byId("authEmail");
+    const gBtn = byId("authGoogle");
+
+    once(send, "click", async ()=>{
+      const email = emailEl?.value?.trim();
+      if (!email) return toast("Enter your email");
+      try{
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options:{ emailRedirectTo: SITE_ORIGIN }
+        });
+        if (error) throw error;
+        toast("Check your email for the magic link.");
+      }catch(e){ toast(e.message || "Sign-in error"); }
+    });
+    once(gBtn, "click", async ()=>{
+      try{
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options:{ redirectTo: SITE_ORIGIN }
+        });
+        if (error) throw error;
+      }catch(e){ toast(e.message || "Google sign-in failed"); }
+    });
+    once(emailEl, "keydown", (e)=>{ if (e.key==="Enter"){ e.preventDefault(); send?.click(); }});
+  }
+  function wireAuthButtons(){
+    // open auth
+    $$(".js-open-auth").forEach(b => once(b, "click", ()=> byId("auth")?.showModal()));
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=>{
+      const el = byId(id); el && once(el, "click", ()=> byId("auth")?.showModal());
+    });
+    // logout
+    ["logoutBtn","logoutBtn_m"].forEach(id=>{
+      const el = byId(id); el && once(el, "click", async ()=>{
+        try{ await supabase.auth.signOut(); toast("Signed out"); }catch{}
+      });
+    });
+  }
   function wireBilling(){
     $$(".js-checkout").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
+      once(btn,"click", async()=>{
         const price = btn.getAttribute("data-price") || "";
-        if (!price) return toast("Missing price id on button");
+        if (!price) return toast("Missing price id");
         const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
         try{
           const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
@@ -945,19 +1178,13 @@ if (!window.__CRP_BOOTED__) {
           const j = await r.json();
           if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
           location.href = j.url;
-        }catch(e){
-          toast(e.message || "Unable to open checkout");
-          btn.disabled = false; btn.textContent = old;
-        }
+        }catch(e){ toast(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
       });
     });
-
-    // Manage billing (all placements)
-    ["manageBilling","manageBilling2","manageBilling_m","manageBilling_top"].forEach(id=>{
-      const b = byId(id);
-      if (!b) return;
-      b.addEventListener("click", async ()=>{
-        const old = b.textContent; b.disabled = true; b.textContent = "Opening…";
+    ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+      const b = byId(id); if (!b) return;
+      once(b, "click", async ()=>{
+        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
         try{
           const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
             method:"POST", headers: await getAuthHeaders(),
@@ -966,151 +1193,63 @@ if (!window.__CRP_BOOTED__) {
           const j = await r.json();
           if (!r.ok) throw new Error(j?.error?.message || "Portal error");
           location.href = j.url;
-        }catch(e){
-          toast(e.message || "Unable to open billing portal");
-          b.disabled = false; b.textContent = old;
-        }
+        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
       });
     });
   }
 
-  /* ---------- Live stats ---------- */
+  /* ==================== Live stats & promo copy ==================== */
   async function paintLive(){
     try{
       const r = await fetch(`${WORKER_BASE}/api/stats/today`);
       const j = await r.json();
       if (r.ok && typeof j.today_count === "number"){
-        $$('#liveCount, [data-live-count]').forEach(el => el.textContent = String(j.today_count));
+        $$('[id="liveCount"]').forEach(el=> el.textContent = String(j.today_count));
       }
     }catch{}
   }
-  paintLive(); setInterval(paintLive, 30000);
-
-  /* ---------- Promo copy buttons ---------- */
-  ["copyPromoBtn","copyPromoBtn_pr","copyPromoBtn2"].forEach(id=>{
-    const btn = byId(id);
-    btn && btn.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }
-      catch{ toast("Copy failed"); }
-    });
+  ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
+    const el = byId(id);
+    el && once(el,"click", async()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }});
   });
 
-  /* ---------- Smooth anchors + mobile nav ---------- */
-  (function navWire(){
-    const toggle = byId("navToggle");
-    const sheet  = byId("mobileNav");
-    const close  = byId("navClose");
-    toggle && toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-    close  && close.addEventListener("click",  ()=> document.body.classList.remove("nav-open"));
-    $$('a[href^="#"]').forEach(a=>{
-      a.addEventListener("click", (e)=>{
-        const id = a.getAttribute("href");
-        if (!id || id==="#") return;
-        const el = $(id);
-        if (el){
-          e.preventDefault();
-          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-          document.body.classList.remove("nav-open");
-          history.replaceState(null,"",id);
-        }
-      });
-    });
-  })();
-
-  /* ---------- JSON extraction helper (robust) ---------- */
-  function extractJSON(text){
-    // Try raw parse first
-    try{ return JSON.parse(text); }catch{}
-    // Try fenced code block
-    const fence = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-    if (fence){
-      try{ return JSON.parse(fence[1]); }catch{}
-    }
-    // Try to find first balanced { ... }
-    let depth=0, start=-1;
-    const s = String(text);
-    for (let i=0;i<s.length;i++){
-      const ch = s[i];
-      if (ch==="{"){ if (depth===0) start=i; depth++; }
-      else if (ch==="}"){ depth--; if (depth===0 && start>=0){ const slice = s.slice(start,i+1); try{ return JSON.parse(slice); }catch{} start=-1; } }
-    }
-    // Try last { ... } to end (original heuristic)
-    const m = s.match(/\{[\s\S]*\}$/);
-    if (m){ try{ return JSON.parse(m[0]); }catch{} }
-    return null;
+  /* ==================== Generator ==================== */
+  function readToggles(form){
+    const g = (n)=> form.elements[n];
+    return {
+      opt: {
+        humanize:  g("opt_humanize")?.checked,
+        lengthen:  g("opt_lengthen")?.checked,
+        faqs:      g("opt_faqs")?.checked,
+        headings:  g("opt_headings")?.checked,
+        svg:       g("opt_svg")?.checked,
+        seo:       g("opt_seo")?.checked
+      },
+      ch: {
+        linkedin:  g("ch_linkedin")?.checked,
+        x:         g("ch_x")?.checked,
+        email:     g("ch_email")?.checked,
+        instagram: g("ch_instagram")?.checked,
+        reddit:    g("ch_reddit")?.checked,
+        facebook:  g("ch_facebook")?.checked,
+        quora:     g("ch_quora")?.checked,
+        tiktok:    g("ch_tiktok")?.checked,
+      },
+      extras: {
+        li_article: g("li_article")?.checked,
+        x_sequence: g("x_sequence")?.checked,
+        x_posts:    g("x_posts")?.value || "4",
+        rdt_communities: g("rdt_communities")?.checked,
+        rdt_comments:    g("rdt_comments")?.checked,
+        tt_hooks:   g("tt_hooks")?.checked,
+        tt_onscreen:g("tt_onscreen")?.checked
+      }
+    };
   }
-
-  /* ---------- Generator ---------- */
-  (function demoWire(){
-    const form = byId("demoForm");
-    const src  = byId("sourceText");
-    const outWrap = byId("demoOutput");
-    const quotaEl = byId("demoQuota");
-    const unitEl  = byId("quotaUnit");
-    const generateBtn = byId("generateBtn");
-    const clearBtn = byId("clearBtn");
-    if (!form || !src || !outWrap) return;
-
-    clearBtn.addEventListener("click", ()=>{ src.value = ""; outWrap.innerHTML = ""; });
-
-    async function paintQuota(){
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-        const j = await r.json();
-        if (!r.ok) return;
-        if (j.scope==="ip"){
-          const cap = j.platform?.monthly?.cap ?? 5;
-          const used = j.platform?.monthly?.used ?? 0;
-          quotaEl.textContent = Math.max(0, cap - used);
-          unitEl.textContent  = "demo runs left this month";
-        } else {
-          const used = j.platform?.daily?.used ?? 0;
-          const cap  = j.platform?.daily?.cap == null ? null : j.platform.daily.cap;
-          quotaEl.textContent = cap==null ? "∞" : Math.max(0, cap - used);
-          unitEl.textContent  = "runs left for today";
-        }
-      }catch{ quotaEl.textContent = "—"; }
-    }
-    window.paintQuota = paintQuota;
-    paintQuota();
-
-    function readToggles(){
-      const g = (n)=> form.elements[n];
-      return {
-        opt: {
-          humanize:  g("opt_humanize")?.checked,
-          lengthen:  g("opt_lengthen")?.checked,
-          faqs:      g("opt_faqs")?.checked,
-          headings:  g("opt_headings")?.checked,
-          svg:       g("opt_svg")?.checked,
-          seo:       g("opt_seo")?.checked
-        },
-        ch: {
-          linkedin:  g("ch_linkedin")?.checked,
-          x:         g("ch_x")?.checked,
-          email:     g("ch_email")?.checked,
-          instagram: g("ch_instagram")?.checked,
-          reddit:    g("ch_reddit")?.checked,
-          facebook:  g("ch_facebook")?.checked,
-          quora:     g("ch_quora")?.checked,
-          tiktok:    g("ch_tiktok")?.checked,
-        },
-        extras: {
-          li_article: g("li_article")?.checked,
-          x_sequence: g("x_sequence")?.checked,
-          x_posts:    g("x_posts")?.value || "4",
-          rdt_communities: g("rdt_communities")?.checked,
-          rdt_comments:    g("rdt_comments")?.checked,
-          tt_hooks:   g("tt_hooks")?.checked,
-          tt_onscreen:g("tt_onscreen")?.checked
-        }
-      };
-    }
-
-    function systemPrompt(tog){
-      return {
-        role:"system",
-        content:
+  function systemPrompt(tog){
+    return {
+      role:"system",
+      content:
 `You are a senior social copywriter.
 Return ONLY valid JSON with this shape:
 {
@@ -1125,37 +1264,20 @@ Return ONLY valid JSON with this shape:
   "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
   "linkedin_article_html": string|null
 }
-Respect these toggles: 
-- Humanize: ${tog.opt.humanize ? "on" : "off"}
-- Lengthen: ${tog.opt.lengthen ? "on" : "off"}
-- Add FAQs: ${tog.opt.faqs ? "on" : "off"}
-- Auto-headings: ${tog.opt.headings ? "on" : "off"}
-- SVG ideas: ${tog.opt.svg ? "on" : "off"}
-- SEO basics: ${tog.opt.seo ? "on" : "off"}
-- X posts max: ${tog.extras.x_posts}
-- X sequence format: ${tog.extras.x_sequence ? "on (Post 1…N)" : "off"}
-- LinkedIn Article: ${tog.extras.li_article ? "on" : "off"}
-- Reddit communities: ${tog.extras.rdt_communities ? "include" : "skip"}
-- Reddit starter comments: ${tog.extras.rdt_comments ? "include" : "skip"}
-- TikTok hooks: ${tog.extras.tt_hooks ? "3 variants" : "1 variant"}
-- TikTok on-screen text: ${tog.extras.tt_onscreen ? "include" : "skip"}
-
+Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
 Rules:
-- Keep posts concise, skimmable and platform-native.
-- X posts ≤ 280 chars when possible; if a thread is required, prefix "Post N:" per item.
-- Provide meaningful hashtags (3–5) for Instagram.
-- If a field/channel wasn't requested, set it to null; do NOT invent.
-- NO prose outside the JSON.`
-      };
-    }
-
-    function userPrompt(raw, tog){
-      const srcType = form.elements["sourceType"]?.value || "paragraph";
-      const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
-      const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-      return {
-        role:"user",
-        content:
+- Keep platform-native, concise. X posts ≤ 280 chars when possible; if multiple, prefix "Post N:".
+- Provide 3–5 meaningful Instagram hashtags.
+- Do not include any prose outside the JSON.`
+    };
+  }
+  function userPrompt(raw, form, tog){
+    const srcType = form.elements["sourceType"]?.value || "paragraph";
+    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
+    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
+    return {
+      role:"user",
+      content:
 `${head}:
 ${raw}
 
@@ -1163,228 +1285,221 @@ Task:
 1) Create a one-line outline.
 2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
 3) Apply the toggles and extras exactly.`
-      };
-    }
+    };
+  }
+  function parseJsonLoose(txt){
+    if (!txt) return null;
+    let s = String(txt).trim();
+    // Strip fences ```json ... ```
+    s = s.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+    // Grab outermost braces to be safe
+    const first = s.indexOf("{"); const last = s.lastIndexOf("}");
+    if (first >= 0 && last > first) s = s.slice(first, last+1);
+    try { return JSON.parse(s); } catch {}
+    // Remove trailing commas (simple)
+    s = s.replace(/,\s*([}\]])/g, "$1");
+    try { return JSON.parse(s); } catch {}
+    return null;
+  }
 
-    // Save last outputs for quick-publish / exports
-    const last = { li:"", xArr:[], email:{subject:"",body:""}, reddit:{title:"",body:""} };
+  function paintOutput(j){
+    const outWrap = byId("demoOutput");
+    if (!outWrap) return;
+    outWrap.innerHTML = ""; // clear
 
-    function addCard(title, inner, opts={}){
+    const addCard = (title, inner, channelKey=null) => {
       outWrap.insertAdjacentHTML("beforeend", `
         <div class="card p-5">
           <div class="flex justify-between items-center gap-2 flex-wrap">
             <strong class="tracking-tight">${title}</strong>
-            <div class="flex gap-2">
-              ${opts.actions || ""}
-              <button class="btn copy" type="button">Copy</button>
-            </div>
+            <button class="btn copy" type="button">Copy</button>
           </div>
           ${inner}
         </div>`);
       const card = outWrap.lastElementChild;
       const copyBtn = $(".btn.copy", card);
-      const pre = $("pre.content", card);
-      copyBtn && copyBtn.addEventListener("click", async ()=>{
+      const pre = $("pre.content", card) || $("pre", card);
+      copyBtn && once(copyBtn, "click", async ()=>{
         try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }
         catch{ toast("Copy failed"); }
       });
+      // Cache for Quick Publish / Scheduler
+      if (channelKey && pre) {
+        LAST_OUTPUT = LAST_OUTPUT || {};
+        LAST_OUTPUT[channelKey] = pre.innerText;
+      }
+    };
+
+    if (j.linkedin){
+      addCard("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
     }
-
-    function paintOutput(j){
-      outWrap.innerHTML = ""; // clear
-
-      if (j.linkedin){
-        last.li = j.linkedin;
-        addCard(
-          "LinkedIn",
-          `<pre id="out-li_m" class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`,
-          { actions: `<button class="btn member-only" id="actLiCopyOpen" type="button">Copy & open</button>` }
-        );
-        byId("actLiCopyOpen")?.addEventListener("click", async ()=>{
-          try{ await navigator.clipboard.writeText(last.li); }catch{}
-          window.open("https://www.linkedin.com/feed/", "_blank");
-        });
-      }
-
-      if (Array.isArray(j.x) && j.x.length){
-        last.xArr = j.x.slice();
-        const seq = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
-        addCard(
-          "X (Twitter)",
-          `<pre id="out-x_m" class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`,
-          { actions: `<button class="btn member-only" id="actTweet" type="button">Post</button>` }
-        );
-        byId("actTweet")?.addEventListener("click", ()=>{
-          const txt = last.xArr[0] || "";
-          const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(txt);
-          window.open(url, "_blank");
-        });
-      }
-
-      if (j.email && (j.email.subject || j.email.body)){
-        last.email = { subject: j.email.subject||"", body: j.email.body||"" };
-        addCard(
-          "Email",
-          `<div class="text-xs text-slate-400">Subject:</div>
-           <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-           <div class="text-xs text-slate-400 mt-3">Body:</div>
-           <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`,
-          { actions:`<button class="btn member-only" id="actEmail" type="button">Open draft</button>` }
-        );
-        byId("actEmail")?.addEventListener("click", ()=>{
-          const s = encodeURIComponent(last.email.subject||"");
-          const b = encodeURIComponent(last.email.body||"");
-          location.href = `mailto:?subject=${s}&body=${b}`;
-        });
-      }
-
-      if (j.instagram){
-        const cap = j.instagram.caption||"";
-        const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
-        addCard("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`);
-      }
-
-      if (j.reddit){
-        last.reddit = { title:j.reddit.title||"", body:j.reddit.body||"" };
-        const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-        const starters = (j.reddit.starter_comments||[]).map((c)=>`• ${c}`).join("\n");
-        addCard(
-          "Reddit",
-          `<div class="text-xs text-slate-400">Main post:</div>
-           <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-           <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
-           <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
-           <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
-           <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`,
-          { actions:`<button class="btn member-only" id="actReddit" type="button">Open submit</button>` }
-        );
-        byId("actReddit")?.addEventListener("click", ()=>{
-          const u = new URL("https://www.reddit.com/submit");
-          u.searchParams.set("title", last.reddit.title || "Post");
-          u.searchParams.set("text", last.reddit.body || "");
-          window.open(u.toString(), "_blank");
-        });
-      }
-
-      if (j.facebook){
-        addCard("Facebook", `
-          <div class="text-xs text-slate-400">Primary text:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`);
-      }
-
-      if (j.quora){
-        const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-        addCard("Quora", `
-          <div class="text-xs text-slate-400">Answer:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`);
-      }
-
-      if (j.tiktok){
-        const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-        const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-        addCard("TikTok", `
-          <div class="text-xs text-slate-400">Script:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Hooks:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
-          <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`);
-      }
+    if (Array.isArray(j.x) && j.x.length){
+      const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
+      addCard("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
     }
+    if (j.email && (j.email.subject || j.email.body)){
+      addCard("Email", `
+        <div class="text-xs text-slate-400">Subject:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Body:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`, "email");
+    }
+    if (j.instagram){
+      const cap = j.instagram.caption||"";
+      const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
+      addCard("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
+    }
+    if (j.reddit){
+      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+      const starters = (j.reddit.starter_comments||[]).map((c)=>`• ${c}`).join("\n");
+      addCard("Reddit", `
+        <div class="text-xs text-slate-400">Main post:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
+        <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`, "reddit");
+    }
+    if (j.facebook){
+      addCard("Facebook", `
+        <div class="text-xs text-slate-400">Primary text:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`, "facebook");
+    }
+    if (j.quora){
+      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
+      addCard("Quora", `
+        <div class="text-xs text-slate-400">Answer:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`, "quora");
+    }
+    if (j.tiktok){
+      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+      addCard("TikTok", `
+        <div class="text-xs text-slate-400">Script:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
+        <div class="text-xs text-slate-400 mt-3">Hooks:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
+        <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
+        <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`, "tiktok");
+    }
+  }
 
-    form.addEventListener("submit", async (e)=>{
+  function wireGenerator(){
+    const form = byId("demoForm");
+    const src  = byId("sourceText");
+    const outWrap = byId("demoOutput");
+    const clearBtn = byId("clearBtn");
+    const genBtnGuest  = byId("generateBtn");
+    const genBtnMember = byId("generateBtn_member");
+    if (!form || !src || !outWrap) return;
+
+    once(clearBtn, "click", ()=>{ src.value=""; outWrap.innerHTML=""; LAST_OUTPUT=null; });
+
+    once(form, "submit", async (e)=>{
       e.preventDefault();
       const raw = (src.value||"").trim();
       if (!raw){ toast("Paste some content first"); return; }
 
+      const btn = AUTHTED ? genBtnMember : genBtnGuest;
       try{
-        generateBtn.disabled = true; generateBtn.textContent = "Generating…";
+        btn.disabled = true; btn.textContent = "Generating…";
         outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
 
-        const tog = readToggles();
-        const messages = [ systemPrompt(tog), userPrompt(raw, tog) ];
+        const tog = readToggles(form);
+        const messages = [ systemPrompt(tog), userPrompt(raw, form, tog) ];
+
+        // Lane: guests always "free"; members use "pro" only if on Starter+ for priority models
+        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+
         const r = await fetch(`${WORKER_BASE}/api/generate`,{
           method:"POST",
           headers: await getAuthHeaders(),
-          body: JSON.stringify({ plan: "free", temperature: 0.5, messages })
+          body: JSON.stringify({
+            plan: lane, temperature: 0.5, messages
+          })
         });
         const data = await r.json();
         if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
 
         const content = data?.choices?.[0]?.message?.content || "";
-        const j = extractJSON(content);
+        const j = parseJsonLoose(content);
         if (!j) throw new Error("Model did not return JSON");
-
         paintOutput(j);
         toast("Done ✅");
-        paintQuota();
+
+        // Refresh quotas and status UI after success
+        fetchStatusAndPaint().catch(()=>{});
       }catch(e){
         outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
       }finally{
-        generateBtn.disabled = false; generateBtn.textContent = "Generate";
+        btn.disabled = false; btn.textContent = AUTHTED ? "Generate" : "Generate (demo)";
       }
     });
+  }
 
-    // Quick publish buttons (use last outputs)
-    byId("qpTweet")?.addEventListener("click", ()=>{
-      const txt = (last.xArr && last.xArr[0]) ? last.xArr[0] : (byId("out-x_m")?.innerText||"");
-      if (!txt) return toast("Generate X content first");
-      const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(txt);
-      window.open(url, "_blank");
+  /* ==================== Quick Publish (authed only) ==================== */
+  function qpEnsureLast(which){
+    if (!LAST_OUTPUT || !LAST_OUTPUT[which]) { toast("Generate first, then try again."); return null; }
+    return LAST_OUTPUT[which];
+  }
+  function wireQuickPublish(){
+    const btnX   = byId("qp-x");
+    const btnRd  = byId("qp-reddit");
+    const btnLi  = byId("qp-linkedin");
+    const btnEm  = byId("qp-email");
+    if (btnX) once(btnX,"click", ()=>{
+      const text = qpEnsureLast("x"); if (!text) return;
+      const t = text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ");
+      const url = `https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`;
+      window.open(url,"_blank");
     });
-    byId("qpReddit")?.addEventListener("click", ()=>{
-      const title = last.reddit.title || "Post";
-      const body  = last.reddit.body  || "";
-      const u = new URL("https://www.reddit.com/submit");
-      u.searchParams.set("title", title);
-      u.searchParams.set("text", body);
-      window.open(u.toString(), "_blank");
+    if (btnRd) once(btnRd,"click", ()=>{
+      const body = qpEnsureLast("reddit") || qpEnsureLast("linkedin") || qpEnsureLast("x");
+      if (!body) return;
+      // Try to extract a title if present in the first line
+      const firstLine = body.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,280);
+      const text = body;
+      const url = `https://www.reddit.com/submit?title=${encodeURIComponent(firstLine)}&text=${encodeURIComponent(text)}`;
+      window.open(url,"_blank");
     });
-    byId("qpCopyLI")?.addEventListener("click", async ()=>{
-      const txt = last.li || (byId("out-li_m")?.innerText||"");
-      if (!txt) return toast("Generate LinkedIn first");
-      try{ await navigator.clipboard.writeText(txt); }catch{}
-      window.open("https://www.linkedin.com/feed/", "_blank");
+    if (btnLi) once(btnLi,"click", async ()=>{
+      const text = qpEnsureLast("linkedin") || qpEnsureLast("x"); if (!text) return;
+      try{ await navigator.clipboard.writeText(text); toast("Copied for LinkedIn ✅"); }catch{}
+      window.open("https://www.linkedin.com/feed/","_blank");
     });
-    byId("qpEmail")?.addEventListener("click", ()=>{
-      const s = encodeURIComponent(last.email.subject||"");
-      const b = encodeURIComponent(last.email.body||"");
-      location.href = `mailto:?subject=${s}&body=${b}`;
+    if (btnEm) once(btnEm,"click", ()=>{
+      const em = LAST_OUTPUT?.email;
+      if (em && typeof em === "string"){
+        const parts = em.split("\n");
+        const subj = parts[0].slice(0,120);
+        const body = parts.slice(1).join("\n");
+        location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+        return;
+      }
+      // else try dialog fields if we rendered email card
+      byId("emailSubjEdit") && (byId("emailSubjEdit").value = "");
+      byId("emailBodyEdit") && (byId("emailBodyEdit").value = qpEnsureLast("email") || "");
+      byId("emailPreview")?.showModal();
     });
-  })();
+  }
 
-  /* ---------- Integrations: Notion & Trello ---------- */
-  (function integrationsWire(){
-    // OAuth starts
-    byId("connectNotion")?.addEventListener("click", async ()=>{
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`,{ headers: await getAuthHeaders() });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Notion start failed");
-        location.href = j.url;
-      }catch(e){ toast(e.message || "Notion connect failed"); }
-    });
-    byId("connectTrello")?.addEventListener("click", async ()=>{
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`,{ headers: await getAuthHeaders() });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello start failed");
-        location.href = j.url;
-      }catch(e){ toast(e.message || "Trello connect failed"); }
-    });
+  /* ==================== Notion / Trello (Creator+) ==================== */
+  function wireIntegrations(){
+    const btnNotion = byId("li-notion");
+    const btnTrello = byId("li-trello");
+    const trelloDialog = byId("trelloModal");
 
-    // Export last LinkedIn/X
-    byId("li-notion")?.addEventListener("click", async ()=>{
+    if (btnNotion) once(btnNotion, "click", async ()=>{
+      if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required.");
       const blocks = [];
-      const li = byId("out-li_m")?.innerText || "";
-      const x  = byId("out-x_m")?.innerText || "";
+      const li = LAST_OUTPUT?.linkedin || "";
+      const x  = LAST_OUTPUT?.x || "";
       if (li) blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: li });
       if (x)  blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: x });
-      if (!blocks.length) return toast("Generate content first");
       try{
         const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
           method:"POST", headers: await getAuthHeaders(),
@@ -1397,123 +1512,165 @@ Task:
       }catch(e){ toast(e.message || "Notion export failed"); }
     });
 
-    byId("li-trello")?.addEventListener("click", ()=>{
-      byId("trelloModal")?.showModal();
-    });
-    byId("trelloConfirm")?.addEventListener("click", async ()=>{
-      const board_id = byId("trelloBoardId")?.value?.trim();
-      const list_id  = byId("trelloListId")?.value?.trim();
-      if (!list_id) return toast("Enter List ID");
-      const title = "Social Draft";
-      const description = [
-        "LinkedIn:\n"+(byId("out-li_m")?.innerText||""),
-        "\nX:\n"+(byId("out-x_m")?.innerText||"")
-      ].join("\n");
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-          method:"POST", headers: await getAuthHeaders(),
-          body: JSON.stringify({ board_id, list_id, title, description })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-        toast("Sent to Trello ✅");
-        byId("trelloModal")?.close();
-        j.url && window.open(j.url, "_blank");
-      }catch(e){ toast(e.message || "Trello export failed"); }
-    });
-  })();
-
-  /* ---------- Scheduler (client-side queue) ---------- */
-  (function schedulerWire(){
-    const listEl = byId("schList");
-    const addBtn = byId("schAdd");
-    const addLast= byId("schAddLast");
-    const runBtn = byId("schRunNow");
-    const whenEl = byId("schWhen");
-    const chanEl = byId("schChannel");
-    const textEl = byId("schText");
-
-    let key = "sched:guest";
-    async function keyForUser(){
-      try{
-        const { token, userId } = await (window.getAuth?.() || {});
-        key = userId ? `sched:${userId}` : "sched:guest";
-      }catch{ key = "sched:guest"; }
-    }
-    function readQ(){ try{ return JSON.parse(localStorage.getItem(key)||"[]"); }catch{ return []; } }
-    function writeQ(arr){ localStorage.setItem(key, JSON.stringify(arr)); }
-    function paintQ(){
-      const q = readQ();
-      listEl.innerHTML = q.length ? "" : `<div class="text-slate-500">Nothing scheduled yet.</div>`;
-      q.forEach((it, idx)=>{
-        const d = new Date(it.when || Date.now());
-        const iso = d.toLocaleString();
-        const el = document.createElement("div");
-        el.className = "p-3 border rounded-lg flex items-start gap-3";
-        el.innerHTML = `
-          <input type="checkbox" data-idx="${idx}" class="mt-1">
-          <div class="grow">
-            <div class="text-xs opacity-70">${iso} • ${it.channel}</div>
-            <div class="text-sm mt-1 whitespace-pre-wrap">${it.text.slice(0,240)}${it.text.length>240?"…":""}</div>
-          </div>
-          <button class="btn" data-del="${idx}" type="button">Delete</button>`;
-        listEl.appendChild(el);
-        el.querySelector('[data-del]')?.addEventListener("click", ()=>{
-          const q2 = readQ(); q2.splice(idx,1); writeQ(q2); paintQ();
-        });
+    if (btnTrello && trelloDialog){
+      once(btnTrello, "click", ()=>{
+        if (PLAN_RANK[CURRENT_PLAN] < 2) return toast("Creator plan required.");
+        trelloDialog.showModal();
+      });
+      const confirm = byId("trelloConfirm");
+      once(confirm, "click", async ()=>{
+        const board_id = byId("trelloBoardId")?.value?.trim();
+        const list_id  = byId("trelloListId")?.value?.trim();
+        if (!list_id) return toast("Enter List ID");
+        const title = "Social Draft";
+        const description = [
+          "LinkedIn:\n"+(LAST_OUTPUT?.linkedin||""),
+          "\nX:\n"+(LAST_OUTPUT?.x||"")
+        ].join("\n");
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
+            method:"POST", headers: await getAuthHeaders(),
+            body: JSON.stringify({ board_id, list_id, title, description })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+          toast("Sent to Trello ✅");
+          trelloDialog.close();
+          j.url && window.open(j.url, "_blank");
+        }catch(e){ toast(e.message || "Trello export failed"); }
       });
     }
+  }
 
-    async function addFromInputs(txt){
-      await keyForUser();
-      const when = whenEl.value ? new Date(whenEl.value).toISOString() : new Date().toISOString();
-      const it = { channel: chanEl.value, when, text: (txt||textEl.value||"").trim() };
-      if (!it.text) return toast("Add some text first");
-      const q = readQ(); q.push(it); writeQ(q); paintQ(); toast("Added to queue");
-    }
+  /* ==================== Scheduler (Starter+) — local queue ==================== */
+  const SKEY = ()=> `crp:sched:${USER_ID || "anon"}`;
+  const loadQueue = ()=> { try{ return JSON.parse(localStorage.getItem(SKEY())||"[]"); }catch{ return []; } };
+  const saveQueue = (q)=> { try{ localStorage.setItem(SKEY(), JSON.stringify(q)); }catch{} };
 
-    addBtn?.addEventListener("click", ()=> addFromInputs());
-    addLast?.addEventListener("click", ()=>{
-      const li = byId("out-li_m")?.innerText || "";
-      const x  = byId("out-x_m")?.innerText || "";
-      const txt = li || x || "";
-      if (!txt) return toast("Generate something first");
-      addFromInputs(txt);
+  function renderQueue(){
+    const wrap = byId("schedList");
+    const empty= byId("schedEmpty");
+    if (!wrap) return;
+    const q = loadQueue();
+    wrap.innerHTML = "";
+    if (!q.length){ empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+    q.forEach((item, idx)=>{
+      const html = `
+        <div class="border rounded-xl p-3 grid md:grid-cols-12 gap-3 items-start">
+          <label class="md:col-span-1 flex items-start gap-2 text-sm">
+            <input type="checkbox" data-idx="${idx}" ${item.selected?"checked":""} />
+            <span class="mono text-[11px]">${item.channel}</span>
+          </label>
+          <div class="md:col-span-3 text-xs text-slate-500">${new Date(item.when).toLocaleString()}</div>
+          <div class="md:col-span-7 text-sm whitespace-pre-wrap">${item.text}</div>
+          <div class="md:col-span-1 text-right">
+            <button class="btn" data-del="${idx}" type="button">Remove</button>
+          </div>
+        </div>`;
+      wrap.insertAdjacentHTML("beforeend", html);
     });
+    // Wire checkboxes + del
+    $$('input[type="checkbox"][data-idx]', wrap).forEach(cb=>{
+      once(cb,"change", ()=>{
+        const q = loadQueue(); const i = Number(cb.getAttribute("data-idx")||"0");
+        if (q[i]){ q[i].selected = cb.checked; saveQueue(q); }
+      });
+    });
+    $$('button[data-del]', wrap).forEach(b=>{
+      once(b,"click", ()=>{
+        const q = loadQueue(); const i = Number(b.getAttribute("data-del")||"0");
+        q.splice(i,1); saveQueue(q); renderQueue();
+      });
+    });
+  }
 
-    runBtn?.addEventListener("click", ()=>{
-      const q = readQ();
-      const checks = Array.from(listEl.querySelectorAll('input[type="checkbox"]:checked'));
-      if (!checks.length) return toast("Select items to publish");
-      checks.forEach(c=>{
-        const idx = Number(c.getAttribute("data-idx"));
-        const it = q[idx];
-        if (!it) return;
-        // Use the same quick intents
-        if (it.channel==="X"){
-          const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(it.text);
-          window.open(url, "_blank");
-        } else if (it.channel==="Reddit"){
-          const u = new URL("https://www.reddit.com/submit");
-          u.searchParams.set("title", it.text.slice(0,120));
-          u.searchParams.set("text", it.text);
-          window.open(u.toString(), "_blank");
-        } else if (it.channel==="LinkedIn"){
-          navigator.clipboard.writeText(it.text).finally(()=> window.open("https://www.linkedin.com/feed/", "_blank"));
-        } else {
-          navigator.clipboard.writeText(it.text).finally(()=> toast("Copied — paste into your app"));
+  function wireScheduler(){
+    const gate = PLAN_RANK[CURRENT_PLAN] >= 1; // Starter+
+    // If not starter+, nothing to wire
+    const add = byId("schedAdd"); const useLast = byId("schedUseLast");
+    const ch  = byId("schedChannel"); const when = byId("schedWhen"); const text = byId("schedText");
+    const pub = byId("schedPublish"); const clr = byId("schedClear");
+    if (!add || !gate) return;
+
+    once(add, "click", ()=>{
+      const payload = (text.value||"").trim();
+      const w = when.value ? new Date(when.value) : new Date(Date.now()+5*60*1000);
+      if (!payload) return toast("Add some text first");
+      const q = loadQueue();
+      q.push({ channel: ch.value, when: w.toISOString(), text: payload, selected: true });
+      saveQueue(q); renderQueue(); toast("Added to queue");
+    });
+    once(useLast, "click", ()=>{
+      if (!LAST_OUTPUT) return toast("Generate first");
+      const key = ch.value;
+      const val = LAST_OUTPUT[key] || LAST_OUTPUT.linkedin || LAST_OUTPUT.x || "";
+      if (!val) return toast("No output to use for this channel yet");
+      byId("schedText").value = val;
+      toast("Filled from last output");
+    });
+    once(pub, "click", ()=>{
+      const q = loadQueue();
+      const toPub = q.filter(i=> i.selected);
+      if (!toPub.length) return toast("Select some items first");
+      toPub.forEach(item=>{
+        // Open appropriate composer
+        const txt = item.text;
+        const when = new Date(item.when);
+        const inPast = when.getTime() < Date.now();
+        // For now: immediate publish via native composers; scheduling is "local" (user must confirm).
+        switch(item.channel){
+          case "x":
+            window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(txt.slice(0,270))}`,"_blank");
+            break;
+          case "reddit":
+            const f = txt.split("\n")[0].slice(0,280);
+            window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(f)}&text=${encodeURIComponent(txt)}`,"_blank");
+            break;
+          case "linkedin":
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            window.open("https://www.linkedin.com/feed/","_blank");
+            break;
+          case "email":
+            window.open(`mailto:?subject=${encodeURIComponent(txt.split("\n")[0].slice(0,120))}&body=${encodeURIComponent(txt)}`,"_self");
+            break;
+          case "instagram":
+          case "facebook":
+          default:
+            navigator.clipboard.writeText(txt).catch(()=>{});
+            toast(`Copied ${item.channel} text — paste into the app.`);
+            break;
+        }
+      });
+      // Remove published ones
+      const remain = q.filter(i=> !i.selected);
+      saveQueue(remain); renderQueue();
+    });
+    once(clr, "click", ()=>{ saveQueue([]); renderQueue(); });
+    renderQueue();
+  }
+
+  /* ==================== Nav, anchors, year, billing params ==================== */
+  function wireNavAndMisc(){
+    const toggle = byId("navToggle");
+    const sheet  = byId("mobileNav");
+    const close  = byId("navClose");
+    toggle && once(toggle, "click", ()=> document.body.classList.add("nav-open"));
+    close  && once(close,  "click", ()=> document.body.classList.remove("nav-open"));
+    $$('a[href^="#"]').forEach(a=>{
+      once(a,"click",(e)=>{
+        const id = a.getAttribute("href");
+        if (!id || id==="#") return;
+        const el = $(id);
+        if (el){
+          e.preventDefault();
+          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
+          document.body.classList.remove("nav-open");
+          history.replaceState(null,"",id);
         }
       });
     });
-
-    keyForUser().then(paintQ);
-  })();
-
-  /* ---------- Footer year ---------- */
-  (function(){ const y = byId("year"); if (y) y.textContent = new Date().getFullYear(); })();
-
-  /* ---------- Billing URL params ---------- */
-  (function billingBanner(){
+    const y = byId("year"); y && (y.textContent = new Date().getFullYear());
     try{
       const u = new URL(location.href);
       const ok   = u.searchParams.get("billing")==="success";
@@ -1522,21 +1679,67 @@ Task:
       if (fail) toast("Billing cancelled");
       if (ok || fail){ u.searchParams.delete("billing"); history.replaceState({}, "", u.toString()); }
     }catch{}
-  })();
+  }
 
-  /* ---------- Normalize external links ---------- */
-  $$('a[target="_blank"]').forEach(a=> a.setAttribute("rel","noopener"));
+  /* ==================== Boot ==================== */
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    await ensureSupabase();
+    await finishOAuthIfNeeded();
 
-  /* ---------- Wire billing + initial status ---------- */
-  document.addEventListener("DOMContentLoaded", ()=>{
+    wireAuthDialog();
+    wireAuthButtons();
     wireBilling();
-    refreshStatusAndUI();
-    // also refresh on auth changes if available
-    try{
-      window.supabase?.auth?.onAuthStateChange?.((_e,_s)=>{ refreshStatusAndUI(); window.paintQuota?.(); });
-    }catch{}
+    wireNavAndMisc();
+
+    wireGenerator();
+    wireQuickPublish();
+    wireIntegrations();
+
+    await fetchStatusAndPaint();
+    await paintLive();
+    setInterval(paintLive, 30000);
+
+    // React to auth changes
+    supabase.auth.onAuthStateChange((_event, session)=>{
+      AUTHTED = !!session;
+      USER_ID = session?.user?.id || null;
+      fetchStatusAndPaint().catch(()=>{});
+      // Close auth dialog if open
+      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
+    });
   });
 }
 </script>
+<!-- ===== PLAN GATES + A11Y FINISHER ===== -->
+<style id="plan-gates-finisher">
+  /* Default safe state until plan is known */
+  .only-authed{ display:none; }
+  .plan-starter-plus,
+  .plan-creator-plus,
+  .plan-business-only{ display:none; }
+
+  /* Optional: hide elements until app paints (avoid FOUC); remove/add via JS */
+  .js-hide-until-ready{ visibility:hidden; }
+  body.__ready .js-hide-until-ready{ visibility:visible; }
+
+  /* Keyboard focus */
+  :focus-visible{
+    outline: 2px solid var(--brandA);
+    outline-offset: 2px;
+  }
+</style>
+
+<script>
+  // Mark app ready → show any .js-hide-until-ready items
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      document.body.classList.add('__ready');
+      // Toast is live region for SR users
+      var t = document.getElementById('toast');
+      if (t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
+    }catch(e){}
+  });
+</script>
+<!-- ===== /PLAN GATES + A11Y FINISHER ===== -->
 </body>
 </html>
