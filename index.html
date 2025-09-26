@@ -28,7 +28,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Global CSS (kept compact; dark-friendly) -->
+  <!-- Global CSS -->
   <style>
     :root{ --brandA:#7AA2FF; --brandB:#FF2D2D; --ink:#0a0d18 }
     html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -61,98 +61,143 @@
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .icon { width: 1rem; height: 1rem; display: inline-block; vertical-align: -0.15em; }
+    /* Utilities for section gating */
+    [data-gate="member"]{ display:none; }
+    body[data-auth="member"] [data-gate="member"]{ display:block; }
+    body[data-auth="member"] [data-gate="guest"]{ display:none; }
   </style>
 
-  <!-- JSON-LD (Organization + WebSite + App) -->
+  <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 
-  <!-- IMPORTANT: Worker base (your Cloudflare Worker) -->
+  <!-- IMPORTANT: Worker base -->
   <script>
-    // Point all fetches at your Worker
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
-    // Optional identity flags used by the bootstrap code later
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- ✅ Supabase v2 (added; non-destructive) -->
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-    // Supabase project config (as requested)
+  <!-- === Supabase auth boot (Google OAuth + Magic Link) === -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ---- Supabase init (from your values)
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // Create client (exposed globally)
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
-
-    // Global helpers used by other scripts (non-destructive: only added if absent)
-    window.getAuth = window.getAuth || (async () => {
-      try {
-        const { data } = await window.supabase.auth.getSession();
-        const s = data?.session;
-        return {
-          token:  s?.access_token || "",
-          userId: s?.user?.id || null,
-          email:  s?.user?.email || null
-        };
-      } catch {
-        return { token:"", userId:null, email:null };
-      }
-    });
-
-    window.getAuthHeaders = window.getAuthHeaders || (async () => {
+    // ---- Simple helpers (no name collisions to avoid call-stack issues)
+    window.getAuthSession = async ()=> (await supabase.auth.getSession()).data.session || null;
+    window.getAuth = async ()=>{
+      const s = await window.getAuthSession();
+      return { token: s?.access_token || "", userId: s?.user?.id || null, email: s?.user?.email || null };
+    };
+    window.authHeaders = async ()=>{
       const { token, userId } = await window.getAuth();
-      const h = { "Content-Type": "application/json" };
-      if (token)  h["Authorization"] = `Bearer ${token}`;
-      if (userId) h["X-User-Id"]    = userId;
+      const h = { "Content-Type":"application/json" };
+      if (token)  h.Authorization = `Bearer ${token}`;
+      if (userId) h["X-User-Id"] = userId;
       return h;
-    });
+    };
 
-    // Minimal UI wiring for Sign in / Sign out buttons (additive only)
-    function paintAuthUI(authed) {
-      const show = (id) => document.getElementById(id)?.classList.remove("hidden");
-      const hide = (id) => document.getElementById(id)?.classList.add("hidden");
-      const has = (id) => !!document.getElementById(id);
+    // ---- UI gating + badge refresh after auth changes
+    async function refreshAfterAuth(){
+      const body = document.body;
+      const s = await window.getAuthSession();
+      body?.setAttribute("data-auth", s ? "member" : "guest");
 
-      if (has("loginBtn"))     (authed ? hide("loginBtn")     : show("loginBtn"));
-      if (has("loginBtn_m"))   (authed ? hide("loginBtn_m")   : show("loginBtn_m"));
-      if (has("logoutBtn"))    (authed ? show("logoutBtn")    : hide("logoutBtn"));
-      if (has("logoutBtn_m"))  (authed ? show("logoutBtn_m")  : hide("logoutBtn_m"));
-      if (has("manageBilling"))   authed ? show("manageBilling")   : hide("manageBilling");
-      if (has("manageBilling_m")) authed ? show("manageBilling_m") : hide("manageBilling_m");
-      if (has("planbadge"))    document.getElementById("planbadge").textContent = authed ? "Plan: Member" : "Plan: Free";
-      if (has("planbadge_m"))  document.getElementById("planbadge_m").textContent = authed ? "Plan: Member" : "Plan: Free";
+      // Update plan badge from backend (uses bearer)
+      try{
+        const r = await fetch(`${window.WORKER_BASE}/api/billing/status`, { headers: await window.authHeaders() });
+        const j = await r.json();
+        const plan = (j.plan || "free").toLowerCase();
+        const b1 = document.getElementById("planbadge");
+        const b2 = document.getElementById("planbadge_m");
+        if (b1) b1.textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
+        if (b2) b2.textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
+        // Show manage billing for paid tiers
+        ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (plan !== "free") el.classList.remove("hidden");
+          else el.classList.add("hidden");
+        });
+      }catch{}
+      // If newly signed-in, route to dashboard section
+      if (s) location.hash = "member";
     }
 
-    // Email magic link sign-in (prompt-based; you can swap to OAuth later without changing existing HTML)
-    function wireAuthButtons() {
-      const loginEls  = ["loginBtn","loginBtn_m","heroSignIn"].map(id => document.getElementById(id)).filter(Boolean);
-      const logoutEls = ["logoutBtn","logoutBtn_m"].map(id => document.getElementById(id)).filter(Boolean);
+    supabase.auth.onAuthStateChange((_event, _session)=>{ refreshAfterAuth(); });
 
-      loginEls.forEach(btn => btn.addEventListener("click", async () => {
-        const email = prompt("Enter your email to sign in via magic link:");
-        if (!email) return;
-        const { error } = await window.supabase.auth.signInWithOtp({ email });
-        alert(error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.");
-      }));
+    // ---- Public sign-in/out helpers
+    window.openAuthDialog = function openAuthDialog(){
+      const dlg = document.getElementById("auth");
+      if (dlg && typeof dlg.showModal === "function") dlg.showModal();
+    };
 
-      logoutEls.forEach(btn => btn.addEventListener("click", async () => {
-        await window.supabase.auth.signOut();
-      }));
-    }
+    window.signInWithGoogle = async function signInWithGoogle(){
+      try{
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: location.origin + "/auth/callback",
+            queryParams: { access_type: "offline", prompt: "select_account" }
+          }
+        });
+        if (error) throw error;
+      }catch(e){ alert(e.message || "Google sign-in failed"); }
+    };
 
-    // Keep UI in sync with auth state (does not modify your existing DOM beyond hiding/showing)
-    window.supabase.auth.onAuthStateChange((_event, session) => {
-      paintAuthUI(!!session);
-    });
+    window.sendMagicLink = async function sendMagicLink(email, btn){
+      if (!email){ alert("Enter your email"); return; }
+      if (btn){ btn.disabled = true; const old=btn.textContent; btn.textContent="Sending…"; btn.dataset._old=old; }
+      try{
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: location.origin + "/auth/callback" }
+        });
+        if (error) throw error;
+        const note = document.getElementById("authNote");
+        if (note) note.textContent = "Magic link sent. Check your inbox.";
+      }catch(e){
+        alert(e.message || "Could not send magic link");
+      }finally{
+        if (btn){ btn.disabled=false; btn.textContent = btn.dataset._old || "Send magic link"; }
+      }
+    };
 
-    // Initial paint + wiring after DOM is ready
-    document.addEventListener("DOMContentLoaded", async () => {
-      wireAuthButtons();
-      const { data } = await window.supabase.auth.getSession();
-      paintAuthUI(!!data?.session);
+    window.signOutAll = async function signOutAll(){
+      try{ await supabase.auth.signOut(); }catch{}
+    };
+
+    // ---- Expose a unified launcher used elsewhere
+    window.doSignIn = function doSignIn(provider){
+      if (provider === "google") return window.signInWithGoogle();
+      return window.openAuthDialog();
+    };
+
+    // ---- Auth dialog wiring (once DOM is ready)
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const sendBtn = document.getElementById("authSend");
+      const emailEl = document.getElementById("authEmail");
+      const gbtn    = document.getElementById("googleBtn");
+      sendBtn?.addEventListener("click", ()=> window.sendMagicLink((emailEl?.value||"").trim(), sendBtn), { once:false });
+      gbtn?.addEventListener("click", ()=> window.signInWithGoogle(), { once:false });
+
+      // Login/Logout buttons
+      ["loginBtn","loginBtn_m","heroSignIn","heroSignIn_pr"].forEach(id=>{
+        const el = document.getElementById(id);
+        el?.addEventListener("click", ()=> window.doSignIn());
+      });
+      const logoutBtns = ["logoutBtn","logoutBtn_m"];
+      logoutBtns.forEach(id=>{
+        const el = document.getElementById(id);
+        el?.classList.remove("hidden");
+        el?.addEventListener("click", ()=> window.signOutAll());
+      });
+
+      refreshAfterAuth(); // initial paint
     });
   </script>
 </head>
@@ -162,7 +207,7 @@
   <div class="halo h2"></div>
   <div class="halo h3"></div>
 
-  <!-- Top nav (desktop + mobile trigger) -->
+  <!-- ===== HEADER ===== -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
@@ -182,8 +227,10 @@
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80" data-nav="pricing">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
+
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
-        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
+        <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" data-portal="stripe">Manage billing</button>
+
         <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border hidden">Sign out</button>
@@ -194,7 +241,7 @@
     </div>
 
     <!-- Promo strip -->
-    <div class="border-t border-white/40 bg-white/70 dark:bg-white/10">
+    <div class="border-top border-white/40 bg-white/70 dark:bg-white/10">
       <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
@@ -224,7 +271,7 @@
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
-          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Manage billing</button>
+          <button id="manageBilling_m" class="px-3 py-2 rounded-lg border border-white/20 hidden" data-portal="stripe">Manage billing</button>
           <button id="loginBtn_m" class="px-3 py-2 rounded-lg border border-white/20">Sign in</button>
           <button id="logoutBtn_m" class="px-3 py-2 rounded-lg border border-white/20 hidden">Sign out</button>
         </div>
@@ -232,11 +279,11 @@
     </div>
   </header>
 
-  <!-- ===== HERO + CTA rail ===== -->
-  <section class="relative">
+  <!-- ===== HERO ===== -->
+  <section id="hero" class="relative">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
-      <!-- Left: copy + CTAs -->
-      <div>
+      <!-- Left copy + CTAs (guest gate shows for all; member will be routed to #member) -->
+      <div data-gate="guest">
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span id="heroBadge">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
@@ -251,7 +298,6 @@
           Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
         </p>
 
-        <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90" data-action="scroll-demo" id="ctaTryDemo">
             Try the Live Demo
@@ -372,9 +418,8 @@
       </div>
     </div>
   </section>
-
   <!-- ===== LIVE DEMO ===== -->
-  <section id="demo" class="relative scroll-mt-24">
+  <section id="demo" class="relative scroll-mt-24" data-gate="guest">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
@@ -385,7 +430,7 @@
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
-          <button id="heroSignIn" class="btn btn-primary">Sign in</button>
+          <button id="heroSignIn_pr" class="btn btn-primary">Sign in</button>
         </div>
       </div>
 
@@ -506,9 +551,7 @@
       </div>
 
       <!-- OUTPUT -->
-      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false">
-        <!-- Channel cards will be injected here -->
-      </div>
+      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
 
       <!-- Live strip -->
       <div class="mt-8 md:mt-10">
@@ -529,8 +572,299 @@
     </div>
   </section>
 
+  <!-- ===== DEMO SCRIPTS (namespaced to avoid collisions) ===== -->
+  <script>
+  (function CRPDemo(){
+    const W = window, D = document;
+    const WORKER_BASE = W.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+
+    // Tiny helpers (scoped; do not leak globals)
+    const qs  = (sel, el=D)=> el.querySelector(sel);
+    const qsa = (sel, el=D)=> Array.from(el.querySelectorAll(sel));
+    const byId= (id)=> D.getElementById(id);
+    const toast = (msg)=> {
+      const t = byId("toast"), m = byId("toastMsg");
+      if (!t || !m) return console.log("[toast]", msg);
+      m.textContent = msg; t.classList.remove("hidden");
+      setTimeout(()=> t.classList.add("hidden"), 1800);
+    };
+
+    // Live stats ticker (light)
+    (async function liveStats(){
+      const countEl = byId("liveCount");
+      const feedEl  = byId("liveFeed");
+      if (!countEl || !feedEl) return;
+      async function tick(){
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/stats/today`);
+          const j = await r.json();
+          if (r.ok && typeof j.today_count === "number"){
+            countEl.textContent = String(j.today_count);
+          }
+          if (Array.isArray(j.recent) && j.recent.length){
+            feedEl.innerHTML = j.recent.map(x=> `<span class="chip">${x}</span>`).join("");
+          }
+        }catch{}
+      }
+      tick(); setInterval(tick, 30000);
+    })();
+
+    // Quota paint (guest/demo)
+    (async function paintQuota(){
+      const quotaEl = byId("demoQuota");
+      if (!quotaEl) return;
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        const j = await r.json();
+        if (r.ok){
+          if (j.scope==="ip"){ // no session (demo quota by IP/month)
+            const cap = j.platform?.monthly?.cap ?? 5;
+            const used = j.platform?.monthly?.used ?? 0;
+            quotaEl.textContent = Math.max(0, cap - used);
+          }else{
+            const capD = j.platform?.daily?.cap ?? 5;
+            const usedD = j.platform?.daily?.used ?? 0;
+            quotaEl.textContent = (capD==null) ? "∞" : Math.max(0, capD - usedD);
+          }
+        }
+      }catch{}
+    })();
+
+    // Demo form wiring
+    (function wireDemo(){
+      const form = byId("demoForm");
+      const src  = byId("sourceText");
+      const out  = byId("demoOutput");
+      const gen  = byId("generateBtn");
+      const clr  = byId("clearBtn");
+      if (!form || !src || !out) return;
+
+      clr?.addEventListener("click", ()=>{
+        src.value = "";
+        out.innerHTML = "";
+      });
+
+      // Safe JSON extractor — prevents stack overflow with tight regex recursion
+      function safeJSON(maybe){
+        if (!maybe) return null;
+        // Try direct parse first
+        try{ return JSON.parse(maybe); }catch{}
+        // Attempt to locate last JSON object/array block
+        const start = maybe.indexOf("{");
+        const astart= maybe.indexOf("[");
+        const s = (start === -1) ? astart : (astart === -1 ? start : Math.min(start, astart));
+        if (s === -1) return null;
+        const tail = maybe.slice(s);
+        // Trim to last closing brace/bracket
+        const e1 = tail.lastIndexOf("}");
+        const e2 = tail.lastIndexOf("]");
+        const e  = Math.max(e1, e2);
+        if (e === -1) return null;
+        const slice = tail.slice(0, e+1);
+        try{ return JSON.parse(slice); }catch{ return null; }
+      }
+
+      function readToggles(){
+        const g = (n)=> form.elements[n];
+        return {
+          opt: {
+            humanize:  !!g("opt_humanize")?.checked,
+            lengthen:  !!g("opt_lengthen")?.checked,
+            faqs:      !!g("opt_faqs")?.checked,
+            headings:  !!g("opt_headings")?.checked,
+            svg:       !!g("opt_svg")?.checked,
+            seo:       !!g("opt_seo")?.checked,
+          },
+          ch: {
+            linkedin:  !!g("ch_linkedin")?.checked,
+            x:         !!g("ch_x")?.checked,
+            email:     !!g("ch_email")?.checked,
+            instagram: !!g("ch_instagram")?.checked,
+            reddit:    !!g("ch_reddit")?.checked,
+            facebook:  !!g("ch_facebook")?.checked,
+            quora:     !!g("ch_quora")?.checked,
+            tiktok:    !!g("ch_tiktok")?.checked,
+          },
+          extras: {
+            li_article:       !!g("li_article")?.checked,
+            x_sequence:       !!g("x_sequence")?.checked,
+            x_posts:          g("x_posts")?.value || "4",
+            rdt_communities:  !!g("rdt_communities")?.checked,
+            rdt_comments:     !!g("rdt_comments")?.checked,
+            tt_hooks:         !!g("tt_hooks")?.checked,
+            tt_onscreen:      !!g("tt_onscreen")?.checked,
+          }
+        };
+      }
+
+      function buildMessages(raw, tog, srcType){
+        const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
+        const sys = {
+          role:"system",
+          content:
+`You are a senior social copywriter.
+Return ONLY valid JSON with this shape:
+{
+  "outline": string,
+  "linkedin": string|null,
+  "x": string[]|null,
+  "email": { "subject": string, "body": string }|null,
+  "instagram": { "caption": string, "hashtags": string[] }|null,
+  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
+  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
+  "quora": { "answer": string, "followups": string[] }|null,
+  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
+  "linkedin_article_html": string|null
+}
+Respect these toggles: 
+- Humanize: ${tog.opt.humanize ? "on" : "off"}
+- Lengthen: ${tog.opt.lengthen ? "on" : "off"}
+- Add FAQs: ${tog.opt.faqs ? "on" : "off"}
+- Auto-headings: ${tog.opt.headings ? "on" : "off"}
+- SVG ideas: ${tog.opt.svg ? "on" : "off"}
+- SEO basics: ${tog.opt.seo ? "on" : "off"}
+- X posts max: ${tog.extras.x_posts}
+- X sequence format: ${tog.extras.x_sequence ? "on (Post 1…N)" : "off"}
+- LinkedIn Article: ${tog.extras.li_article ? "on" : "off"}
+- Reddit communities: ${tog.extras.rdt_communities ? "include" : "skip"}
+- Reddit starter comments: ${tog.extras.rdt_comments ? "include" : "skip"}
+- TikTok hooks: ${tog.extras.tt_hooks ? "3 variants" : "1 variant"}
+- TikTok on-screen text: ${tog.extras.tt_onscreen ? "include" : "skip"}
+
+Rules:
+- Keep posts concise and native.
+- X posts ≤ 280 chars when possible; prefix "Post N:" in sequences.
+- Provide 3–5 meaningful hashtags for Instagram.
+- If a channel wasn't requested, set it to null.
+- NO prose outside the JSON.`
+        };
+        const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
+        const usr = {
+          role:"user",
+          content:
+`${head}:
+${raw}
+
+Task:
+1) Create a one-line outline.
+2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
+3) Apply the toggles and extras exactly.`
+        };
+        return [sys, usr];
+      }
+
+      function renderOutput(j){
+        out.innerHTML = ""; // clear
+        const blocks = [];
+
+        // helper to add copyable card
+        const addCard = (title, content, extraNote="")=>{
+          const id = "copy_"+Math.random().toString(36).slice(2);
+          blocks.push(`
+            <div class="card p-5">
+              <div class="flex justify-between items-center gap-2 flex-wrap">
+                <strong class="tracking-tight">${title}</strong>
+                <button class="btn" data-copy="#${id}">Copy</button>
+              </div>
+              <pre id="${id}" class="whitespace-pre-wrap text-sm mt-3">${content}</pre>
+              ${extraNote ? `<div class="text-xs text-slate-500 mt-2">${extraNote}</div>` : ""}
+            </div>`);
+        };
+
+        if (j.linkedin) addCard("LinkedIn", j.linkedin);
+        if (Array.isArray(j.x) && j.x.length){
+          const seq = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
+          addCard("X (Twitter)", seq, 'Sequence format: “Post 1 … Post N”.');
+        }
+        if (j.email && (j.email.subject || j.email.body)){
+          addCard("Email", `Subject:\n${j.email.subject||""}\n\nBody:\n${j.email.body||""}`);
+        }
+        if (j.instagram){
+          const cap = j.instagram.caption||"";
+          const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
+          addCard("Instagram", `${cap}\n\n${tags}`);
+        }
+        if (j.reddit){
+          const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+          const starters = (j.reddit.starter_comments||[]).map((c)=>`• ${c}`).join("\n");
+          addCard("Reddit",
+            `**${j.reddit.title||""}**\n\n${j.reddit.body||""}\n\nSuggested communities:\n${subs||"—"}\n\nStarter comments:\n${starters||"—"}`);
+        }
+        if (j.facebook){
+          addCard("Facebook", `Primary:\n${j.facebook.primary||""}\n\nHeadline/Description:\n${j.facebook.meta?.headline||""}\n${j.facebook.meta?.description||""}`);
+        }
+        if (j.quora){
+          const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
+          addCard("Quora", `Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${follow||"—"}`);
+        }
+        if (j.tiktok){
+          const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+          const ons   = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+          addCard("TikTok", `Script:\n${j.tiktok.script||""}\n\nHooks:\n${hooks||"—"}\n\nOn-screen:\n${ons||"—"}`);
+        }
+        if (j.linkedin_article_html){
+          blocks.push(`<div class="card p-5"><strong class="tracking-tight">LinkedIn Article</strong><div class="prose prose-invert mt-3">${j.linkedin_article_html}</div></div>`);
+        }
+
+        if (!blocks.length){
+          out.innerHTML = `<div class="card p-5 text-sm text-slate-500">No channels were generated. Check your selections and try again.</div>`;
+        }else{
+          out.innerHTML = blocks.join("");
+          // Copy buttons
+          qsa("[data-copy]").forEach(btn=>{
+            btn.addEventListener("click", async ()=>{
+              try{
+                const target = qs(btn.getAttribute("data-copy"));
+                await navigator.clipboard.writeText(target?.innerText || "");
+                toast("Copied ✅");
+              }catch{ toast("Copy failed"); }
+            });
+          });
+        }
+      }
+
+      form.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const raw = (src.value||"").trim();
+        if (!raw){ toast("Paste some content first"); return; }
+
+        const srcType = form.elements["sourceType"]?.value || "paragraph";
+        const tog = readToggles();
+
+        try{
+          gen.disabled = true; gen.textContent = "Generating…";
+          out.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+
+          const messages = buildMessages(raw, tog, srcType);
+          const headers  = await (window.authHeaders?.() || { "Content-Type":"application/json" });
+
+          const r = await fetch(`${WORKER_BASE}/api/generate`,{
+            method:"POST",
+            headers,
+            body: JSON.stringify({ plan: "free", temperature: 0.5, messages })
+          });
+
+          // Handle non-JSON or network issues gracefully
+          let data = null;
+          try{ data = await r.json(); }catch{ throw new Error("Bad response from server"); }
+          if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
+
+          const content = data?.choices?.[0]?.message?.content || "";
+          const j = safeJSON(content);
+          if (!j) throw new Error("Model did not return JSON");
+
+          renderOutput(j);
+          toast("Done ✅");
+        }catch(e){
+          out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
+        }finally{
+          gen.disabled = false; gen.textContent = "Generate";
+        }
+      });
+    })();
+  </script>
   <!-- ===== PRICING ===== -->
-  <section id="pricing" class="relative scroll-mt-24">
+  <section id="pricing" class="relative scroll-mt-24" data-gate="guest">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-black tracking-tight">Simple, honest pricing</h2>
@@ -582,10 +916,7 @@
             <li>• <strong>Analytics</strong> (basics)</li>
             <li>• <strong>Article Optimizer</strong>: up to 5 / day</li>
           </ul>
-          <button
-            data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-            class="subBtn mt-6 w-full btn btn-primary"
-            type="button">Get Starter</button>
+          <button data-checkout="stripe" data-price="price_1S7y58JYjIKHzKcjzL7cIKiB" class="mt-6 w-full btn btn-primary" type="button">Get Starter</button>
         </div>
 
         <!-- CREATOR (featured) -->
@@ -605,10 +936,7 @@
             <li>• <strong>Analytics Pro</strong> (per-channel)</li>
             <li>• <strong>Article Optimizer</strong>: up to 15 / day</li>
           </ul>
-          <button
-            data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-            class="subBtn mt-6 w-full btn btn-primary"
-            type="button">Get Creator</button>
+          <button data-checkout="stripe" data-price="price_1S7y77JYjIKHzKcjKQYjiqZH" class="mt-6 w-full btn btn-primary" type="button">Get Creator</button>
         </div>
 
         <!-- BUSINESS -->
@@ -627,762 +955,387 @@
             <li>• <strong>Team Analytics</strong> (org-wide)</li>
             <li>• <strong>Article Optimizer</strong>: up to 30 / day</li>
           </ul>
-          <button
-            data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-            class="subBtn mt-6 w-full btn"
-            type="button">Get Business</button>
-        </div>
-      </div>
-
-      <!-- Why upgrade -->
-      <div class="grid md:grid-cols-3 gap-6 mt-10">
-        <div class="stat">
-          <div class="k">Faster queues</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p>
-        </div>
-        <div class="stat">
-          <div class="k">Scheduler</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p>
-        </div>
-        <div class="stat">
-          <div class="k">Integrations</div>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p>
-        </div>
-      </div>
-
-      <!-- ===== FAQ ===== -->
-      <div id="faq" class="mt-14">
-        <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
-        <div class="mt-6 grid md:grid-cols-2 gap-4">
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Any click on <em>Generate</em> that returns content (demo or signed-in). Batch mode counts per line.
-            </p>
-          </details>
-
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Yes for all paid plans (daily caps by tier). Free users get one verified run.
-            </p>
-          </details>
-
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              “Bring Your Own Key.” Use your own model API key for extra capacity. We never store your key in plaintext.
-            </p>
-          </details>
-
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.
-            </p>
-          </details>
-
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
-            </p>
-          </details>
-
-          <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.
-            </p>
-          </details>
+          <button data-checkout="stripe" data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh" class="mt-6 w-full btn" type="button">Get Business</button>
         </div>
       </div>
     </div>
-
-    <!-- FAQ JSON-LD (kept near the section for clarity) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What counts as a “generation”?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is the Article Optimizer included?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes for all paid plans (daily caps by tier). Free users get one verified run."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What is BYOK?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I cancel anytime?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do you support teams?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Which platforms can you export to?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."
-          }
-        }
-      ]
-    }
-    </script>
   </section>
-<script>
-/* ========= ContentRepurpose.pro — App wiring (Part 6/8) ========= */
 
-/* NOTE: Auth helpers come from Part 1 (Supabase). We only reference them here to avoid duplicates. */
+  <!-- ===== MEMBER DASHBOARD (authed) ===== -->
+  <section id="memberView" class="relative scroll-mt-24" data-gate="member">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="flex items-center justify-between gap-3 mb-6">
+        <div class="flex items-center gap-3">
+          <span id="memberPlanBadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border">Plan: —</span>
+          <span id="quotaMember" class="chip">Today: —</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="manageBilling2" class="btn hidden" data-portal="stripe">Manage billing</button>
+          <button id="logoutBtn_m" class="btn hidden">Sign out</button>
+        </div>
+      </div>
 
-// --- CONFIG ---
-const WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
+      <!-- Quotas -->
+      <div id="quotaCards" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <!-- Filled by script -->
+      </div>
 
-// --- tiny utils ---
-const $ = (q, r=document) => r.querySelector(q);
-const $$ = (q, r=document) => [...r.querySelectorAll(q)];
-const byId = (id) => document.getElementById(id);
-const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
+      <!-- GENERATOR (member lane & BYOK lane) -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h3 class="font-semibold">Create</h3>
+          <textarea id="source_m" class="w-full rounded-xl border p-4 min-h-[140px] mt-3"
+            placeholder="Paste a paragraph, blog excerpt, or a URL."></textarea>
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <button id="run_m" class="btn btn-primary">Generate</button>
+            <button id="run-byok_m" class="btn">Generate with your BYOK</button>
+            <button id="clear_m" class="btn">Clear</button>
+            <span id="status_m" class="text-sm text-slate-500 ml-auto"></span>
+          </div>
 
-function showToast(msg){
-  const t = byId("toast"), m = byId("toastMsg");
-  if (!t || !m) return alert(msg);
-  m.textContent = msg;
-  t.classList.remove("hidden");
-  setTimeout(()=> t.classList.add("hidden"), 1800);
-}
+          <!-- Basic options -->
+          <div class="grid grid-cols-2 gap-2 mt-4 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_humanize_m" checked> Humanize</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_headings_m" checked> Auto-headings</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_faqs_m"> Add FAQs</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_lengthen_m"> Lengthen</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_svg_m"> SVG ideas</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="opt_seo_m"> SEO basics</label>
+          </div>
+        </div>
 
-// Use global auth headers from Part 1; fallback to anonymous
-async function getAuthHeaders(){
-  if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-  return { "Content-Type":"application/json" };
-}
-function extractJSON(txt){
-  try { return JSON.parse(txt); } catch {}
-  const m = String(txt||"").match(/\{[\s\S]*\}$/);
-  if (!m) return null;
-  try { return JSON.parse(m[0]); } catch { return null; }
-}
+        <div class="card p-5">
+          <h3 class="font-semibold">Quick exports</h3>
+          <div class="grid sm:grid-cols-2 gap-2 mt-3">
+            <button id="li-notion" class="btn hidden">Send LinkedIn + X → Notion</button>
+            <button id="li-trello" class="btn hidden">Send LinkedIn + X → Trello</button>
+            <button id="publish-em_m" class="btn">Open Email in client</button>
+          </div>
 
-// --- NAV: burger + smooth anchor ---
-(function navWire(){
-  const toggle = byId("navToggle");
-  const sheet  = byId("mobileNav");
-  const close  = byId("navClose");
-  if (toggle && sheet){
-    toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-  }
-  if (close){
-    close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-  }
-  // smooth scroll for internal anchors
-  $$('a[href^="#"]').forEach(a=>{
-    a.addEventListener("click", (e)=>{
-      const id = a.getAttribute("href");
-      if (!id || id==="#" ) return;
-      const el = $(id);
-      if (el){
-        e.preventDefault();
-        el.scrollIntoView({ behavior:"smooth", block:"start" });
-        document.body.classList.remove("nav-open");
-        history.replaceState(null,"",id);
-      }
+          <div class="mt-6 grid gap-3">
+            <div class="stat">
+              <div class="text-xs text-slate-500">Notion</div>
+              <div id="notionState" class="k">Disconnected</div>
+              <div class="mt-2 flex gap-2">
+                <button id="connectNotion" class="btn">Connect</button>
+                <button id="disconnectNotion" class="btn hidden">Disconnect</button>
+              </div>
+            </div>
+            <div class="stat">
+              <div class="text-xs text-slate-500">Trello</div>
+              <div id="trelloState" class="k">Disconnected</div>
+              <div class="mt-2 flex gap-2">
+                <button id="connectTrello" class="btn">Connect</button>
+                <!-- (optional) disconnect button can be added later -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTPUTS -->
+      <div class="grid lg:grid-cols-2 gap-6 mt-6">
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>LinkedIn</strong>
+            <button id="copy-li_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-li_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+
+          <div class="mt-4 border-t border-white/20 pt-4">
+            <strong>LinkedIn Article</strong>
+            <div id="out-li-article_m" class="mt-2 prose prose-invert max-w-none"></div>
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>X (Twitter)</strong>
+            <button id="copy-x_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-x_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Email</strong>
+            <button id="copy-em_m" class="btn text-xs">Copy subject</button>
+          </div>
+          <div class="text-xs text-slate-400 mt-2">Subject</div>
+          <pre id="out-em-subj_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+          <div class="text-xs text-slate-400 mt-3">Body</div>
+          <pre id="out-em-body_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Instagram</strong>
+            <button id="copy-ig_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-ig_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Reddit</strong>
+            <button id="copy-reddit_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-reddit_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+          <div class="mt-3 text-xs text-slate-400">Suggested communities</div>
+          <ul id="out-reddit-subs_m" class="mt-1 grid grid-cols-2 gap-1 text-sm"></ul>
+          <div class="mt-3 text-xs text-slate-400">Starter comments</div>
+          <pre id="out-reddit-comments_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Facebook</strong>
+            <button id="copy-fb_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-fb_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+          <div class="text-xs text-slate-400 mt-3">Link preview</div>
+          <pre id="out-fb-meta_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>Quora</strong>
+            <button id="copy-quora_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-quora_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+          <div class="text-xs text-slate-400 mt-3">Follow-up prompts</div>
+          <pre id="out-quora-prompts_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <strong>TikTok</strong>
+            <button id="copy-tt_m" class="btn text-xs">Copy</button>
+          </div>
+          <pre id="out-tt_m" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+          <div class="text-xs text-slate-400 mt-3">On-screen plan</div>
+          <pre id="out-tt-onscreen_m" class="mt-1 whitespace-pre-wrap text-sm"></pre>
+        </div>
+      </div>
+
+      <!-- Scheduler (local queue UI) -->
+      <div class="card p-5 mt-6">
+        <h3 class="font-semibold">Scheduler</h3>
+        <div class="grid md:grid-cols-4 gap-3 mt-3">
+          <select id="schedChannel" class="border rounded-lg px-2 py-2">
+            <option value="linkedin">LinkedIn</option>
+            <option value="x">X (Twitter)</option>
+            <option value="email">Email</option>
+            <option value="instagram">Instagram</option>
+            <option value="reddit">Reddit</option>
+            <option value="facebook">Facebook</option>
+            <option value="quora">Quora</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+          <input id="schedWhen" type="datetime-local" class="border rounded-lg px-2 py-2" />
+          <textarea id="schedContent" class="border rounded-lg px-2 py-2 md:col-span-2" placeholder="Paste content to queue…"></textarea>
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+          <button id="schedSave" class="btn btn-primary">Add to queue</button>
+          <button id="schedClear" class="btn">Clear content</button>
+        </div>
+        <ul id="schedList" class="mt-3 grid gap-2"></ul>
+      </div>
+
+      <!-- Analytics (local augment + live stats) -->
+      <div class="grid md:grid-cols-3 gap-6 mt-6">
+        <div class="stat card p-5">
+          <div class="text-xs text-slate-500">Total generations (local)</div>
+          <div id="anCount" class="k text-2xl font-bold mt-2">0</div>
+          <div class="text-xs text-slate-500 mt-2">Most active channel</div>
+          <div id="anTop" class="mt-1">—</div>
+        </div>
+        <div class="stat card p-5">
+          <div class="text-xs text-slate-500">Recent activity</div>
+          <ul id="anRecent" class="mt-2 grid gap-2 text-xs"></ul>
+        </div>
+        <div class="stat card p-5">
+          <div class="text-xs text-slate-500">Volume (last 7d)</div>
+          <div id="anChart" class="mt-3 text-sm">—</div>
+        </div>
+      </div>
+
+      <!-- Team (Business plan only) -->
+      <div id="teamCard" class="card p-5 mt-6" style="display:none">
+        <h3 class="font-semibold">Team</h3>
+        <div class="grid md:grid-cols-2 gap-3 mt-3">
+          <div>
+            <label class="text-xs text-slate-500">Invite a teammate</label>
+            <div class="mt-1 flex gap-2">
+              <input id="inviteEmail" type="email" class="border rounded-lg px-3 py-2 w-full" placeholder="teammate@company.com" />
+              <button id="inviteBtn" class="btn">Invite</button>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">Seats</label>
+            <ul id="seatList" class="mt-2 grid gap-2 text-sm"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ===== MEMBER SCRIPTS (scoped; no globals leaked) ===== -->
+  <script>
+  (function CRPMember(){
+    const W = window, D = document;
+    const WORKER_BASE = W.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+    const byId = (id)=> D.getElementById(id);
+    const qs   = (s,el=D)=> el.querySelector(s);
+    const qsa  = (s,el=D)=> Array.from(el.querySelectorAll(s));
+    const toast = (msg)=>{
+      const t = byId("toast"), m = byId("toastMsg");
+      if (!t || !m) return console.log("[toast]", msg);
+      m.textContent = msg; t.classList.remove("hidden");
+      setTimeout(()=> t.classList.add("hidden"), 1800);
+    };
+
+    // ---------- NAV + PROMO ----------
+    (function navWire(){
+      const toggle = byId("navToggle");
+      const sheet  = byId("mobileNav");
+      const close  = byId("navClose");
+      toggle?.addEventListener("click", ()=> D.body.classList.add("nav-open"));
+      close?.addEventListener("click", ()=> D.body.classList.remove("nav-open"));
+      qsa('a[href^="#"]').forEach(a=>{
+        a.addEventListener("click", (e)=>{
+          const id = a.getAttribute("href"); if (!id || id==="#") return;
+          const el = qs(id); if (!el) return;
+          e.preventDefault(); el.scrollIntoView({ behavior:"smooth", block:"start" });
+          D.body.classList.remove("nav-open"); history.replaceState(null,"",id);
+        });
+      });
+    })();
+    ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
+      const b = byId(id);
+      b?.addEventListener("click", async ()=>{
+        try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }
+        catch{ toast("Copy failed"); }
+      });
     });
-  });
-})();
 
-// --- Promo copy buttons (header + pricing rail) ---
-["copyPromoBtn", "copyPromoBtn_pr"].forEach(id=>{
-  const btn = byId(id);
-  if (!btn) return;
-  btn.addEventListener("click", async ()=>{
-    try { await navigator.clipboard.writeText("CONTENTOFF90"); showToast("Code copied ✅"); }
-    catch { showToast("Copy failed"); }
-  });
-});
-
-// --- Sign-in modal triggers (hero + pricing rail + header) ---
-["heroSignIn", "heroSignIn_pr", "loginBtn", "loginBtn_m"].forEach(id=>{
-  const b = byId(id);
-  if(!b) return;
-  b.addEventListener("click", ()=>{
-    // Part 1 wires magic-link prompt; if you have a <dialog id="auth"> it will still work
-    const dlg = byId("auth");
-    if (dlg && typeof dlg.showModal==="function") dlg.showModal();
-  });
-});
-
-// --- Manage Billing (Stripe portal) ---
-["manageBilling","manageBilling2","manageBilling_m"].forEach(id=>{
-  const b = byId(id);
-  if(!b) return;
-  b.classList.remove("hidden");
-  b.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
-        method:"POST", headers: await getAuthHeaders(),
-        body: JSON.stringify({ return_url: location.origin })
+    // ---------- BILLING: checkout + portal ----------
+    qsa('[data-checkout="stripe"]').forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const price = btn.getAttribute("data-price") || "";
+        if (!price) return toast("Missing price id");
+        btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+            method:"POST",
+            headers: await (W.authHeaders?.() || { "Content-Type":"application/json" }),
+            body: JSON.stringify({ price, success_url: location.origin + "/?billing=success", cancel_url: location.origin + "/?billing=cancel" })
+          });
+          const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+          if (j.url) location.href = j.url; else throw new Error("No checkout URL");
+        }catch(e){ toast(e.message||"Checkout failed"); btn.disabled=false; btn.textContent=old; }
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Billing error"); }
-  });
-});
-
-// --- Checkout buttons (plans) ---
-$$(".subBtn").forEach(btn=>{
-  btn.addEventListener("click", async ()=>{
-    const price = btn.getAttribute("data-price");
-    if(!price) return;
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ price, success_url: `${location.origin}/?billing=success`, cancel_url: `${location.origin}/?billing=cancel` })
+    });
+    qsa('[data-portal="stripe"]').forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
+        try{
+          const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
+            method:"POST",
+            headers: await (W.authHeaders?.() || { "Content-Type":"application/json" }),
+            body: JSON.stringify({ return_url: location.href })
+          });
+          const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Portal error");
+          if (j.url) location.href = j.url; else throw new Error("No portal URL");
+        }catch(e){ toast(e.message||"Portal failed"); btn.disabled=false; btn.textContent=old; }
       });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Checkout error"); }
-  });
-});
+    });
 
-// --- Live stats ticker (light) ---
-(async function liveStats(){
-  const countEl = byId("liveCount");
-  if (!countEl) return;
-  async function tick(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/stats/today`);
-      const j = await r.json();
-      if (r.ok && typeof j.today_count === "number"){
-        countEl.textContent = j.today_count.toString();
-      }
-    }catch{}
-  }
-  tick();
-  setInterval(tick, 30000);
-})();
+    // ---------- MEMBER BOOT ----------
+    async function paintStatus(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Status error");
 
-// --- DEMO: form -> generate ---
-(function demoWire(){
-  const form = byId("demoForm");
-  const src  = byId("sourceText");
-  const outWrap = byId("demoOutput");
-  const quotaEl = byId("demoQuota");
-  const generateBtn = byId("generateBtn");
-  const clearBtn = byId("clearBtn");
+        const plan = (j.plan || "free").toLowerCase();
+        byId("memberPlanBadge") && (byId("memberPlanBadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`);
 
-  if (!form || !src || !outWrap) return;
+        // show manage billing for paid
+        ["manageBilling2","manageBilling","manageBilling_m"].forEach(id=>{
+          const el = byId(id); if (el) (plan!=="free" ? el.classList.remove("hidden") : el.classList.add("hidden"));
+        });
 
-  clearBtn?.addEventListener("click", ()=>{
-    src.value = "";
-    outWrap.innerHTML = "";
-  });
-
-  // basic “remaining” paint from status endpoint (guest or authed)
-  (async function paintQuota(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (r.ok){
-        if (j.scope==="ip"){
-          const cap = j.platform?.monthly?.cap ?? 5;
-          const used = j.platform?.monthly?.used ?? 0;
-          const left = Math.max(0, cap - used);
-          if (quotaEl) quotaEl.textContent = left;
-        } else {
-          const capD = j.platform?.daily?.cap ?? 5;
-          const usedD = j.platform?.daily?.used ?? 0;
-          const left = (capD==null) ? "∞" : Math.max(0, capD - usedD);
-          if (quotaEl) quotaEl.textContent = left;
+        // top quota cards
+        const qc = byId("quotaCards");
+        if (qc){
+          const pd = j.platform?.daily || {used:0,cap:null};
+          const pm = j.platform?.monthly || {used:0,cap:null};
+          const bd = j.byok?.daily || {used:0,cap:0};
+          const bm = j.byok?.monthly || {used:0,cap:0};
+          qc.innerHTML = `
+            <div class="stat"><div class="text-xs text-slate-500">Platform • Today</div><div class="k">${pd.used}/${pd.cap ?? "∞"}</div></div>
+            <div class="stat"><div class="text-xs text-slate-500">Platform • This month</div><div class="k">${pm.used}/${pm.cap ?? "∞"}</div></div>
+            <div class="stat"><div class="text-xs text-slate-500">BYOK • Today</div><div class="k">${bd.used}/${bd.cap ?? "—"}</div></div>
+            <div class="stat"><div class="text-xs text-slate-500">BYOK • This month</div><div class="k">${bm.used}/${bm.cap ?? "—"}</div></div>`;
         }
-      }
-    }catch{}
-  })();
 
-  function readToggles(){
-    const g = (n)=> form.elements[n];
-    return {
-      // optimizers
-      opt: {
-        humanize:  g("opt_humanize")?.checked,
-        lengthen:  g("opt_lengthen")?.checked,
-        faqs:      g("opt_faqs")?.checked,
-        headings:  g("opt_headings")?.checked,
-        svg:       g("opt_svg")?.checked,
-        seo:       g("opt_seo")?.checked
-      },
-      // channels
-      ch: {
-        linkedin:  g("ch_linkedin")?.checked,
-        x:         g("ch_x")?.checked,
-        email:     g("ch_email")?.checked,
-        instagram: g("ch_instagram")?.checked,
-        reddit:    g("ch_reddit")?.checked,
-        facebook:  g("ch_facebook")?.checked,
-        quora:     g("ch_quora")?.checked,
-        tiktok:    g("ch_tiktok")?.checked,
-      },
-      // channel extras
-      extras: {
-        li_article: g("li_article")?.checked,
-        x_sequence: g("x_sequence")?.checked,
-        x_posts:    g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked,
-        rdt_comments:    g("rdt_comments")?.checked,
-        tt_hooks:   g("tt_hooks")?.checked,
-        tt_onscreen:g("tt_onscreen")?.checked
-      }
-    };
-  }
-
-  function systemPrompt(tog){
-    // Strict JSON envelope for robust parsing
-    return {
-      role:"system",
-      content:
-`You are a senior social copywriter.
-Return ONLY valid JSON with this shape:
-{
-  "outline": string,
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Respect these toggles: 
-- Humanize: ${tog.opt.humanize ? "on" : "off"}
-- Lengthen: ${tog.opt.lengthen ? "on" : "off"}
-- Add FAQs: ${tog.opt.faqs ? "on" : "off"}
-- Auto-headings: ${tog.opt.headings ? "on" : "off"}
-- SVG ideas: ${tog.opt.svg ? "on" : "off"}
-- SEO basics: ${tog.opt.seo ? "on" : "off"}
-- X posts max: ${tog.extras.x_posts}
-- X sequence format: ${tog.extras.x_sequence ? "on (Post 1…N)" : "off"}
-- LinkedIn Article: ${tog.extras.li_article ? "on" : "off"}
-- Reddit communities: ${tog.extras.rdt_communities ? "include" : "skip"}
-- Reddit starter comments: ${tog.extras.rdt_comments ? "include" : "skip"}
-- TikTok hooks: ${tog.extras.tt_hooks ? "3 variants" : "1 variant"}
-- TikTok on-screen text: ${tog.extras.tt_onscreen ? "include" : "skip"}
-
-Rules:
-- Keep posts concise, skimmable and platform-native.
-- X posts ≤ 280 chars when possible; if a thread is required, prefix "Post N:" per item.
-- Provide meaningful hashtags (3–5) for Instagram.
-- If a field/channel wasn't requested, set it to null; do NOT invent.
-- NO prose outside the JSON.`
-    };
-  }
-
-  function userPrompt(raw, tog){
-    const srcType = form.elements["sourceType"]?.value || "paragraph";
-    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return {
-      role:"user",
-      content:
-`${head}:
-${raw}
-
-Task:
-1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`
-    };
-  }
-
-  function paintOutput(j){
-    outWrap.innerHTML = ""; // clear first
-    // LinkedIn
-    if (j.linkedin){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-li"/></svg>LinkedIn</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>
-        </div>`);
-    }
-    // X
-    if (Array.isArray(j.x) && j.x.length){
-      const seq = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-x"/></svg>X (Twitter)</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>
-          <div class="text-xs text-slate-500 mt-2">Sequence format: “Post 1 … Post N”.</div>
-        </div>`);
-    }
-    // Email
-    if (j.email && (j.email.subject || j.email.body)){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-mail"/></svg>Email</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Subject:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Body:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>
-        </div>`);
-    }
-    // Instagram
-    if (j.instagram){
-      const cap = j.instagram.caption||"";
-      const tags = (j.instagram.hashtags||[]).map(h=> (h.startsWith("#")?h:"#"+h)).join(" ");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-ig"/></svg>Instagram</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>
-        </div>`);
-    }
-    // Reddit
-    if (j.reddit){
-      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-      const starters = (j.reddit.starter_comments||[]).map((c,i)=>`• ${c}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-reddit"/></svg>Reddit</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Main post:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${subs || "—"}</pre>
-          <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${starters || "—"}</pre>
-        </div>`);
-    }
-    // Facebook
-    if (j.facebook){
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-fb"/></svg>Facebook</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Primary text:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>
-        </div>`);
-    }
-    // Quora
-    if (j.quora){
-      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-quora"/></svg>Quora</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Answer:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${follow || "—"}</pre>
-        </div>`);
-    }
-    // TikTok
-    if (j.tiktok){
-      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      outWrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight inline-flex items-center gap-2"><svg class="icon"><use href="#i-tt"/></svg>TikTok</strong>
-            <button class="btn copy">Copy</button>
-          </div>
-          <div class="text-xs text-slate-400">Script:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-          <div class="text-xs text-slate-400 mt-3">Hooks:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${hooks || "—"}</pre>
-          <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
-          <pre class="whitespace-pre-wrap text-sm mt-1 content">${ons || "—"}</pre>
-        </div>`);
-    }
-
-    // copy buttons inside outputs
-    $$(".card .btn.copy", outWrap).forEach(b=>{
-      b.addEventListener("click", async ()=>{
-        const pre = b.closest(".card")?.querySelector("pre.content");
-        if (!pre) return;
-        try{ await navigator.clipboard.writeText(pre.innerText); showToast("Copied ✅"); }
-        catch{ showToast("Copy failed"); }
-      });
-    });
-  }
-
-  form.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    const raw = (src.value||"").trim();
-    if (!raw){ showToast("Paste some content first"); return; }
-
-    try{
-      generateBtn.disabled = true; generateBtn.textContent = "Generating…";
-      outWrap.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-
-      const tog = readToggles();
-      const messages = [ systemPrompt(tog), userPrompt(raw, tog) ];
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ plan: "free", temperature: 0.5, messages })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-
-      const content = data?.choices?.[0]?.message?.content || "";
-      const j = extractJSON(content);
-      if (!j) throw new Error("Model did not return JSON");
-
-      paintOutput(j);
-      showToast("Done ✅");
-    }catch(e){
-      outWrap.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
-    }finally{
-      generateBtn.disabled = false; generateBtn.textContent = "Generate";
-    }
-  });
-})();
-
-// --- Footer year ---
-(function(){ const y = byId("year"); if (y) y.textContent = new Date().getFullYear(); })();
-</script>
-
-<script>
-/* ========= ContentRepurpose.pro — Member wiring (Part 7/8) ========= */
-
-(function memberBoot(){
-  const elMember = byId("memberView");
-  if (!elMember) return; // safety if member section not present
-
-  // Use global auth headers from Part 1 if present
-  async function getAuthHeadersLocal(){
-    if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-    return { "Content-Type":"application/json" };
-  }
-
-  // ---- PLAN + QUOTA PAINT ----
-  async function paintStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Status error");
-
-      // Header badges
-      const plan = (j.plan || "free").toLowerCase();
-      if (byId("memberPlanBadge")) byId("memberPlanBadge").textContent = `Plan: ${plan.charAt(0).toUpperCase()+plan.slice(1)}`;
-
-      // Header manage billing visibility for paid
-      if (plan !== "free"){
-        ["manageBilling2","manageBilling","manageBilling_m"].forEach(id => byId(id)?.classList.remove("hidden"));
-      }
-
-      // Top quota chips
-      const qc = byId("quotaCards");
-      if (qc){
-        const pd = j.platform?.daily || {used:0, cap:null};
-        const pm = j.platform?.monthly || {used:0, cap:null};
-        const bd = j.byok?.daily || {used:0, cap:0};
-        const bm = j.byok?.monthly || {used:0, cap:0};
-        qc.innerHTML = `
-          <div class="stat"><div class="text-xs text-slate-500">Platform • Today</div><div class="k">${pd.used}/${pd.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">Platform • This month</div><div class="k">${pm.used}/${pm.cap ?? "∞"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • Today</div><div class="k">${bd.used}/${bd.cap ?? "—"}</div></div>
-          <div class="stat"><div class="text-xs text-slate-500">BYOK • This month</div><div class="k">${bm.used}/${bm.cap ?? "—"}</div></div>
-        `;
-      }
-
-      // “Today: x/y” chip near Create
-      const q = byId("quotaMember");
-      if (q){
+        // “Today: x/y” chip
         const used = j.platform?.daily?.used ?? 0;
         const cap  = j.platform?.daily?.cap ?? 5;
-        q.textContent = `Today: ${used}/${cap ?? "∞"}`;
-      }
+        byId("quotaMember") && (byId("quotaMember").textContent = `Today: ${used}/${cap ?? "∞"}`);
 
-      // Feature list
-      const fl = byId("featureList");
-      if (fl){
-        let feats = [];
-        if (plan==="free"){
-          feats = [
-            "5 runs/day • signed-in",
-            "Article Optimizer • one-time trial",
-            "Export CSV/Markdown",
-            "BYOK: 5/day"
-          ];
-        } else if (plan==="starter"){
-          feats = [
-            "200 generations/month",
-            "Batch (up to 5 lines/run)",
-            "10 saved presets",
-            "Scheduler (queue & calendar)",
-            "Analytics (basics)",
-            "BYOK: 50/month (+5 daily headroom)"
-          ];
-        } else if (plan==="creator"){
-          feats = [
-            "500 generations/month",
-            "Unlimited presets",
-            "Project pack export",
-            "Notion & Trello export",
-            "Buffer queue",
-            "Analytics Pro (per-channel)",
-            "BYOK: 150/month (+10 daily)"
-          ];
-        } else {
-          feats = [
-            "Unlimited (fair use)",
-            "3 seats included",
-            "White-label export",
-            "Team presets & shared calendar",
-            "Priority support",
-            "Team Analytics (org-wide)",
-            "BYOK: 300/month (+30 daily)"
-          ];
-        }
-        fl.innerHTML = feats.map(f=>`<li>• ${f}</li>`).join("");
-      }
+        // integrations states
+        const iNotion = j.integrations?.notion?.connected;
+        const iTrello = j.integrations?.trello?.connected;
+        byId("notionState") && (byId("notionState").textContent = iNotion ? "Connected" : "Disconnected");
+        byId("trelloState") && (byId("trelloState").textContent = iTrello ? "Connected" : "Disconnected");
+        if (iNotion){ byId("connectNotion")?.classList.add("hidden"); byId("disconnectNotion")?.classList.remove("hidden"); }
+        if (iTrello){ byId("connectTrello")?.classList.remove("hidden"); }
 
-      // Integrations badges (if already connected)
-      const iNotion = j.integrations?.notion?.connected;
-      const iTrello = j.integrations?.trello?.connected;
-      if (byId("notionState")) byId("notionState").textContent = iNotion ? "Connected" : "Disconnected";
-      if (byId("trelloState")) byId("trelloState").textContent = iTrello ? "Connected" : "Disconnected";
-      if (iNotion){ byId("connectNotion")?.classList.add("hidden"); byId("disconnectNotion")?.classList.remove("hidden"); }
-      if (iTrello){ byId("connectTrello")?.classList.add("hidden"); byId("disconnectTrello")?.classList?.remove("hidden"); } // (disconnectTrello not in DOM in this rev)
-
-      // Team section visibility (Business)
-      const teamCard = byId("teamCard");
-      if (teamCard){
-        teamCard.style.display = (plan==="business") ? "" : "none";
+        // team section visibility
+        const teamCard = byId("teamCard");
+        if (teamCard) teamCard.style.display = (plan==="business") ? "" : "none";
         if (plan==="business") refreshOrgMembers();
-      }
+      }catch(e){ /* soft fail */ }
+    }
+    paintStatus();
 
-      // White-label toggle
-      const wl = byId("whitelabel");
-      const wlLabel = byId("wlLabel");
-      if (wl && wlLabel){
-        const enabled = !!(j.org && j.org.white_label);
-        wl.checked = enabled;
-        wlLabel.classList.remove("hidden");
-      }
-    }catch(e){ /* non-fatal */ }
-  }
-  paintStatus();
-
-  // ---- BYOK SAVE/GET ----
-  byId("save_m")?.addEventListener("click", async ()=>{
-    const provider = byId("byok_provider_m")?.value || "";
-    const key      = byId("byok_key_m")?.value?.trim() || "";
-    const base     = byId("byok_base_m")?.value?.trim() || "";
-    const model    = byId("model_m")?.value?.trim() || "";
-    if (!key){ showToast("Add your API key first"); return; }
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/byok/save`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify({ provider, key, base, model })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Could not save");
-      showToast("BYOK saved ✅");
-    }catch(e){ showToast(e.message || "Save failed"); }
-  });
-
-  (async function hydrateBYOK(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/byok/get`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) return;
-      if (byId("byok_provider_m")) byId("byok_provider_m").value = j.provider || "";
-      if (byId("byok_key_m"))      byId("byok_key_m").value      = j.key || "";
-      if (byId("byok_base_m"))     byId("byok_base_m").value     = j.base || "";
-      if (byId("model_m"))         byId("model_m").value         = j.model || "";
-    }catch{}
-  })();
-
-  // ---- MEMBER GENERATE (platform & BYOK) ----
-  const gsrc   = byId("source_m");
-  const gst    = byId("status_m");
-  const outIds = {
-    li: "out-li_m", liArticle: "out-li-article_m",
-    x: "out-x_m",
-    emSubj: "out-em-subj_m", emBody:"out-em-body_m",
-    ig: "out-ig_m",
-    reddit: "out-reddit_m", redditSubs:"out-reddit-subs_m", redditCom:"out-reddit-comments_m",
-    fb: "out-fb_m", fbMeta:"out-fb-meta_m",
-    quora: "out-quora_m", quoraP:"out-quora-prompts_m",
-    tt: "out-tt_m", ttOn: "out-tt-onscreen_m"
-  };
-  function clearMemberOutputs(){
-    Object.values(outIds).forEach(id => {
-      const el = byId(id);
-      if (!el) return;
-      if (el.tagName==="UL") el.innerHTML = "";
-      else el.textContent = "";
-    });
-  }
-  function readMemberToggles(){
-    return {
-      opt: {
-        humanize:  byId("opt_humanize_m")?.checked,
-        lengthen:  byId("opt_lengthen_m")?.checked,
-        faqs:      byId("opt_faqs_m")?.checked,
-        headings:  byId("opt_headings_m")?.checked,
-        svg:       byId("opt_svg_m")?.checked,
-        seo:       byId("opt_seo_m")?.checked
-      }
+    // ---------- GENERATION (member + BYOK) ----------
+    const gsrc = byId("source_m");
+    const gst  = byId("status_m");
+    const outIds = {
+      li: "out-li_m", liArticle: "out-li-article_m",
+      x: "out-x_m",
+      emSubj: "out-em-subj_m", emBody:"out-em-body_m",
+      ig: "out-ig_m",
+      reddit: "out-reddit_m", redditSubs:"out-reddit-subs_m", redditCom:"out-reddit-comments_m",
+      fb: "out-fb_m", fbMeta:"out-fb-meta_m",
+      quora: "out-quora_m", quoraP:"out-quora-prompts_m",
+      tt: "out-tt_m", ttOn: "out-tt-onscreen_m"
     };
-  }
 
-  function sysMember(){
-    return {
-      role:"system",
-      content:
+    function clearMemberOutputs(){
+      Object.values(outIds).forEach(id=>{
+        const el = byId(id); if (!el) return;
+        if (el.tagName==="UL") el.innerHTML = ""; else el.textContent = "";
+      });
+    }
+    function readMemberToggles(){
+      return {
+        opt: {
+          humanize:  !!byId("opt_humanize_m")?.checked,
+          lengthen:  !!byId("opt_lengthen_m")?.checked,
+          faqs:      !!byId("opt_faqs_m")?.checked,
+          headings:  !!byId("opt_headings_m")?.checked,
+          svg:       !!byId("opt_svg_m")?.checked,
+          seo:       !!byId("opt_seo_m")?.checked
+        }
+      };
+    }
+    function sysMember(){
+      return {
+        role:"system",
+        content:
 `You are a social + editorial repurposer. Return ONLY valid JSON with keys:
 {
   "linkedin": string|null,
@@ -1396,139 +1349,125 @@ Task:
   "linkedin_article_html": string|null
 }
 Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hashtags 3–5; NO prose outside JSON.`
-    };
-  }
-  function usrMember(src){
-    return { role:"user", content:`Source:\n${src}\n\nGenerate for LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. If missing context, be conservative.` };
-  }
-  function paintMember(j){
-    // LI
-    if (j.linkedin && byId(outIds.li)) byId(outIds.li).textContent = j.linkedin;
-    if (j.linkedin_article_html && byId(outIds.liArticle)) byId(outIds.liArticle).innerHTML = j.linkedin_article_html;
-
-    // X
-    if (Array.isArray(j.x) && j.x.length && byId(outIds.x)){
-      byId(outIds.x).textContent = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
+      };
+    }
+    function usrMember(src){
+      return { role:"user", content:`Source:\n${src}\n\nGenerate drafts for LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok.` };
+    }
+    function safeJSON(maybe){
+      if (!maybe) return null;
+      try{ return JSON.parse(maybe); }catch{}
+      const s1 = maybe.indexOf("{"), s2 = maybe.indexOf("[");
+      const s = (s1===-1)? s2 : (s2===-1? s1 : Math.min(s1,s2));
+      if (s<0) return null;
+      const tail = maybe.slice(s);
+      const e = Math.max(tail.lastIndexOf("}"), tail.lastIndexOf("]"));
+      if (e<0) return null;
+      try{ return JSON.parse(tail.slice(0,e+1)); }catch{ return null; }
+    }
+    function paintMember(j){
+      // LI
+      if (j.linkedin && byId(outIds.li)) byId(outIds.li).textContent = j.linkedin;
+      if (j.linkedin_article_html && byId(outIds.liArticle)) byId(outIds.liArticle).innerHTML = j.linkedin_article_html;
+      // X
+      if (Array.isArray(j.x) && j.x.length && byId(outIds.x)){
+        byId(outIds.x).textContent = j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n");
+      }
+      // Email
+      if (j.email){
+        byId(outIds.emSubj)?.textContent = j.email.subject || "";
+        byId(outIds.emBody)?.textContent = j.email.body || "";
+      }
+      // IG
+      if (j.instagram){
+        const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
+        byId(outIds.ig)?.textContent = `${j.instagram.caption||""}\n\n${tags}`;
+      }
+      // Reddit
+      if (j.reddit){
+        byId(outIds.reddit)?.textContent = `**${j.reddit.title||""}**\n\n${j.reddit.body||""}`;
+        if (byId(outIds.redditSubs)) byId(outIds.redditSubs).innerHTML = (j.reddit.communities||[]).slice(0,8).map(s=>`<li>r/${s}</li>`).join("");
+        byId(outIds.redditCom)?.textContent = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
+      }
+      // FB
+      if (j.facebook){
+        byId(outIds.fb)?.textContent = j.facebook.primary || "";
+        byId(outIds.fbMeta)?.textContent = `${j.facebook.meta?.headline||""}\n${j.facebook.meta?.description||""}`;
+      }
+      // Quora
+      if (j.quora){
+        byId(outIds.quora)?.textContent = j.quora.answer || "";
+        byId(outIds.quoraP)?.textContent = (j.quora.followups||[]).map(x=>`• ${x}`).join("\n");
+      }
+      // TikTok
+      if (j.tiktok){
+        byId(outIds.tt)?.textContent = j.tiktok.script || "";
+        byId(outIds.ttOn)?.textContent = (j.tiktok.onscreen||[]).map(x=>`• ${x}`).join("\n");
+      }
     }
 
-    // Email
-    if (j.email){
-      if (byId(outIds.emSubj)) byId(outIds.emSubj).textContent = j.email.subject || "";
-      if (byId(outIds.emBody)) byId(outIds.emBody).textContent = j.email.body || "";
+    async function runMember({ lane="platform" }={}){
+      const raw = (gsrc?.value||"").trim();
+      if (!raw){ toast("Paste an idea, excerpt, or URL first"); return; }
+      const btn = (lane==="byok") ? byId("run-byok_m") : byId("run_m");
+      try{
+        btn && (btn.disabled=true, btn.textContent="Generating…");
+        gst && (gst.textContent="Working…");
+        clearMemberOutputs();
+
+        const messages = [ sysMember(readMemberToggles()), usrMember(raw) ];
+        const body = { messages, temperature: 0.4, plan: (lane==="byok" ? "byok" : "member"), ...(lane==="byok" ? { use_byok: true } : {}) };
+
+        const r = await fetch(`${WORKER_BASE}/api/generate`,{
+          method:"POST",
+          headers: await (W.authHeaders?.() || { "Content-Type":"application/json" }),
+          body: JSON.stringify(body)
+        });
+        let data=null; try{ data = await r.json(); }catch{ throw new Error("Bad response from server"); }
+        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
+        const content = data?.choices?.[0]?.message?.content || "";
+        const j = safeJSON(content); if (!j) throw new Error("Model did not return JSON");
+        paintMember(j);
+        gst && (gst.textContent="Done ✅");
+        bumpAnalytics("generation");
+        paintStatus(); // refresh quotas
+      }catch(e){
+        gst && (gst.textContent = `Error: ${e.message || e}`);
+      }finally{
+        btn && (btn.disabled=false, btn.textContent = (lane==="byok") ? "Generate with your BYOK" : "Generate");
+      }
     }
+    byId("run_m")?.addEventListener("click", ()=> runMember({ lane:"platform" }));
+    byId("run-byok_m")?.addEventListener("click", ()=> runMember({ lane:"byok" }));
+    byId("clear_m")?.addEventListener("click", ()=>{ if (gsrc) gsrc.value=""; clearMemberOutputs(); gst && (gst.textContent=""); });
 
-    // IG
-    if (j.instagram){
-      const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-      if (byId(outIds.ig)) byId(outIds.ig).textContent = `${j.instagram.caption||""}\n\n${tags}`;
-    }
+    // ---------- EXPORTS ----------
+    byId("li-notion")?.classList.remove("hidden");
+    byId("li-notion")?.addEventListener("click", async ()=>{
+      const blocks = [];
+      const li = byId(outIds.li)?.textContent || "";
+      const x  = byId(outIds.x)?.textContent || "";
+      if (li) blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: li });
+      if (x)  blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: x });
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
+          method:"POST",
+          headers: await (W.authHeaders?.() || { "Content-Type":"application/json" }),
+          body: JSON.stringify({ title:"Social Drafts", blocks })
+        });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
+        toast("Sent to Notion ✅"); if (j.url) window.open(j.url, "_blank");
+      }catch(e){ toast(e.message || "Notion export failed"); }
+    });
 
-    // Reddit
-    if (j.reddit){
-      if (byId(outIds.reddit)) byId(outIds.reddit).textContent = `**${j.reddit.title||""}**\n\n${j.reddit.body||""}`;
-      if (byId(outIds.redditSubs)) byId(outIds.redditSubs).innerHTML = (j.reddit.communities||[]).slice(0,8).map(s=>`<li>r/${s}</li>`).join("");
-      if (byId(outIds.redditCom)) byId(outIds.redditCom).textContent = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-    }
-
-    // FB
-    if (j.facebook){
-      if (byId(outIds.fb)) byId(outIds.fb).textContent = j.facebook.primary || "";
-      if (byId(outIds.fbMeta)) byId(outIds.fbMeta).textContent = `${j.facebook.meta?.headline||""}\n${j.facebook.meta?.description||""}`;
-    }
-
-    // Quora
-    if (j.quora){
-      if (byId(outIds.quora)) byId(outIds.quora).textContent = j.quora.answer || "";
-      if (byId(outIds.quoraP)) byId(outIds.quoraP).textContent = (j.quora.followups||[]).map(x=>`• ${x}`).join("\n");
-    }
-
-    // TikTok
-    if (j.tiktok){
-      if (byId(outIds.tt)) byId(outIds.tt).textContent = j.tiktok.script || "";
-      if (byId(outIds.ttOn)) byId(outIds.ttOn).textContent = (j.tiktok.onscreen||[]).map(x=>`• ${x}`).join("\n");
-    }
-  }
-
-  async function runMember({ lane="platform" }={}){
-    const raw = (gsrc?.value||"").trim();
-    if (!raw){ showToast("Paste an idea, excerpt, or URL first"); return; }
-    const btn = (lane==="byok") ? byId("run-byok_m") : byId("run_m");
-    try{
-      btn && (btn.disabled=true, btn.textContent="Generating…");
-      gst && (gst.textContent="Working…");
-      clearMemberOutputs();
-
-      const messages = [ sysMember(readMemberToggles()), usrMember(raw) ];
-      const body = { messages, temperature: 0.4 };
-      if (lane==="byok"){ body.plan = "byok"; body.use_byok = true; }
-      else { body.plan = "member"; }
-
-      const r = await fetch(`${WORKER_BASE}/api/generate`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify(body)
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-
-      const content = data?.choices?.[0]?.message?.content || "";
-      const j = (function(){ try { return JSON.parse(content); } catch { return null; } })() || (function(){
-        const m = String(content||"").match(/\{[\s\S]*\}$/); if (!m) return null;
-        try { return JSON.parse(m[0]); } catch { return null; }
-      })();
-      if (!j) throw new Error("Model did not return JSON");
-
-      paintMember(j); 
-      gst && (gst.textContent="Done ✅");
-      bumpAnalytics("generation"); // local analytics
-    }catch(e){
-      gst && (gst.textContent = `Error: ${e.message || e}`);
-    }finally{
-      btn && (btn.disabled=false, btn.textContent = (lane==="byok") ? "Generate with your BYOK" : "Generate");
-      paintStatus();
-    }
-  }
-
-  byId("run_m")?.addEventListener("click", ()=> runMember({ lane:"platform" }));
-  byId("run-byok_m")?.addEventListener("click", ()=> runMember({ lane:"byok" }));
-  byId("clear_m")?.addEventListener("click", ()=>{
-    gsrc && (gsrc.value = "");
-    clearMemberOutputs();
-    gst && (gst.textContent="";
-    );
-  });
-
-  // ---- EXPORTS (Notion, Trello) ----
-  // Notion: simple page composed from LinkedIn + X
-  byId("li-notion")?.classList.remove("hidden");
-  byId("li-notion")?.addEventListener("click", async ()=>{
-    const title = "LinkedIn draft";
-    const blocks = [];
-    const li = byId(outIds.li)?.textContent || "";
-    const x  = byId(outIds.x)?.textContent || "";
-    if (li) blocks.push({ type:"heading", text:"LinkedIn" }, { type:"paragraph", text: li });
-    if (x)  blocks.push({ type:"heading", text:"X (Twitter)" }, { type:"paragraph", text: x });
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`,{
-        method:"POST", headers: await getAuthHeadersLocal(),
-        body: JSON.stringify({ title, blocks })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
-      showToast("Sent to Notion ✅");
-      window.open(j.url, "_blank");
-    }catch(e){ showToast(e.message || "Notion export failed"); }
-  });
-
-  // Trello: open modal and send
-  const trelloBtn = byId("li-trello");
-  const trelloDialog = byId("trelloModal");
-  if (trelloBtn && trelloDialog){
-    trelloBtn.classList.remove("hidden");
-    trelloBtn.addEventListener("click", ()=> trelloDialog.showModal());
+    const trelloBtn = byId("li-trello");
+    const trelloDialog = byId("trelloModal");
+    trelloBtn?.classList.remove("hidden");
+    trelloBtn?.addEventListener("click", ()=> trelloDialog?.showModal());
     byId("trelloConfirm")?.addEventListener("click", async ()=>{
       const board_id = byId("trelloBoardId")?.value?.trim();
       const list_id  = byId("trelloListId")?.value?.trim();
-      if (!list_id){ showToast("Enter List ID"); return; }
+      if (!list_id) return toast("Enter List ID");
       const title = "Social Draft";
       const description = [
         "LinkedIn:\n"+(byId(outIds.li)?.textContent||""),
@@ -1536,521 +1475,459 @@ Guidelines: skimmable, native tone; X posts ≤ 280 chars when possible; IG hash
       ].join("\n");
       try{
         const r = await fetch(`${WORKER_BASE}/api/integrations/trello/export`,{
-          method:"POST", headers: await getAuthHeadersLocal(),
+          method:"POST",
+          headers: await (W.authHeaders?.() || { "Content-Type":"application/json" }),
           body: JSON.stringify({ board_id, list_id, title, description })
         });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
-        showToast("Sent to Trello ✅");
-        trelloDialog.close();
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Trello export failed");
+        toast("Sent to Trello ✅");
+        trelloDialog?.close();
         if (j.url) window.open(j.url, "_blank");
-      }catch(e){ showToast(e.message || "Trello export failed"); }
+      }catch(e){ toast(e.message || "Trello export failed"); }
     });
-  }
 
-  // Connect Trello / Notion
-  byId("connectTrello")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Trello OAuth failed");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Trello connect failed"); }
-  });
-  byId("connectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Notion OAuth failed");
-      location.href = j.url;
-    }catch(e){ showToast(e.message || "Notion connect failed"); }
-  });
-  byId("disconnectNotion")?.addEventListener("click", async ()=>{
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers: await getAuthHeadersLocal() });
-      if (!r.ok){ const j = await r.json(); throw new Error(j?.error?.message || "Disconnect failed"); }
-      showToast("Notion disconnected");
-      paintStatus();
-    }catch(e){ showToast(e.message || "Notion disconnect failed"); }
-  });
-
-  // ---- EMAIL PREVIEW ----
-  const emailDlg = byId("emailPreview");
-  byId("publish-em_m")?.addEventListener("click", ()=>{
-    if (!emailDlg) return;
-    byId("emailSubjEdit").value = byId(outIds.emSubj)?.textContent || "";
-    byId("emailBodyEdit").value = byId(outIds.emBody)?.textContent || "";
-    emailDlg.showModal();
-  });
-  byId("emailSendBtn")?.addEventListener("click", ()=>{
-    const subj = encodeURIComponent(byId("emailSubjEdit").value || "");
-    const body = encodeURIComponent(byId("emailBodyEdit").value || "");
-    location.href = `mailto:?subject=${subj}&body=${body}`;
-  });
-
-  // ---- COPY buttons (member) ----
-  function simpleCopy(id, btnId){
-    const b = byId(btnId);
-    if (!b) return;
-    b.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText(byId(id)?.textContent || ""); showToast("Copied ✅"); }
-      catch{ showToast("Copy failed"); }
+    // Connect/Disconnect integrations
+    byId("connectTrello")?.addEventListener("click", async ()=>{
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/trello/oauth/start`, { headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Trello OAuth failed");
+        location.href = j.url;
+      }catch(e){ toast(e.message || "Trello connect failed"); }
     });
-  }
-  simpleCopy(outIds.li, "copy-li_m");
-  simpleCopy(outIds.x,  "copy-x_m");
-  simpleCopy(outIds.emSubj, "copy-em_m"); // copies subject only; body is in preview modal
-  simpleCopy(outIds.ig, "copy-ig_m");
-  simpleCopy(outIds.reddit, "copy-reddit_m");
-  simpleCopy(outIds.fb, "copy-fb_m");
-  simpleCopy(outIds.quora, "copy-quora_m");
-  simpleCopy(outIds.tt, "copy-tt_m");
+    byId("connectNotion")?.addEventListener("click", async ()=>{
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/oauth/start`, { headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Start Notion OAuth failed");
+        location.href = j.url;
+      }catch(e){ toast(e.message || "Notion connect failed"); }
+    });
+    byId("disconnectNotion")?.addEventListener("click", async ()=>{
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        if (!r.ok){ const jj = await r.json(); throw new Error(jj?.error?.message || "Disconnect failed"); }
+        toast("Notion disconnected"); paintStatus();
+      }catch(e){ toast(e.message || "Notion disconnect failed"); }
+    });
 
-  // ---- Scheduler (local-only queue UI) ----
-  const schedKey = "crp_scheduler_queue_v1";
-  const schedList = byId("schedList");
-  function loadSched(){ try{ return JSON.parse(localStorage.getItem(schedKey)||"[]"); }catch{return [];} }
-  function saveSched(arr){ localStorage.setItem(schedKey, JSON.stringify(arr)); }
-  function paintSched(){
-    const items = loadSched().sort((a,b)=> new Date(a.when) - new Date(b.when));
-    if (!schedList) return;
-    schedList.innerHTML = items.map((it,i)=> `<li class="p-2 rounded-lg border flex items-center justify-between"><span class="text-xs">${new Date(it.when).toLocaleString()} • ${it.channel}</span><button data-i="${i}" class="btn text-xs">Remove</button></li>`).join("");
-    $$("button[data-i]", schedList).forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const i = Number(btn.getAttribute("data-i"));
-        const arr = loadSched(); arr.splice(i,1); saveSched(arr); paintSched();
+    // ---------- EMAIL PREVIEW ----------
+    const emailDlg = byId("emailPreview");
+    byId("publish-em_m")?.addEventListener("click", ()=>{
+      if (!emailDlg) return;
+      byId("emailSubjEdit").value = byId(outIds.emSubj)?.textContent || "";
+      byId("emailBodyEdit").value = byId(outIds.emBody)?.textContent || "";
+      emailDlg.showModal();
+    });
+    byId("emailSendBtn")?.addEventListener("click", ()=>{
+      const subj = encodeURIComponent(byId("emailSubjEdit").value || "");
+      const body = encodeURIComponent(byId("emailBodyEdit").value || "");
+      location.href = `mailto:?subject=${subj}&body=${body}`;
+    });
+
+    // ---------- COPY buttons ----------
+    function wireCopy(targetId, btnId){
+      const b = byId(btnId);
+      b?.addEventListener("click", async ()=>{
+        try{ await navigator.clipboard.writeText(byId(targetId)?.textContent || ""); toast("Copied ✅"); }
+        catch{ toast("Copy failed"); }
       });
-    });
-  }
-  byId("schedSave")?.addEventListener("click", ()=>{
-    const ch = byId("schedChannel")?.value || "linkedin";
-    const when = byId("schedWhen")?.value;
-    const content = byId("schedContent")?.value?.trim() || "";
-    if (!when || !content){ showToast("Pick date/time and paste content"); return; }
-    const arr = loadSched(); arr.push({ channel: ch, when, content }); saveSched(arr); paintSched(); showToast("Added to queue ✅");
-  });
-  byId("schedClear")?.addEventListener("click", ()=>{
-    byId("schedContent").value = ""; showToast("Cleared");
-  });
-  paintSched();
+    }
+    wireCopy(outIds.li, "copy-li_m");
+    wireCopy(outIds.x,  "copy-x_m");
+    wireCopy(outIds.emSubj, "copy-em_m");
+    wireCopy(outIds.ig, "copy-ig_m");
+    wireCopy(outIds.reddit, "copy-reddit_m");
+    wireCopy(outIds.fb, "copy-fb_m");
+    wireCopy(outIds.quora, "copy-quora_m");
+    wireCopy(outIds.tt, "copy-tt_m");
 
-  // ---- Analytics (local only; augments with live count) ----
-  const anCount = byId("anCount");
-  const anTop   = byId("anTop");
-  const anRecent = byId("anRecent");
-  const anChart = byId("anChart"); // placeholder box
-  const analyticsKey = "crp_local_analytics_v1";
-  function getAn(){ try{ return JSON.parse(localStorage.getItem(analyticsKey)||"{}"); }catch{return{}}; }
-  function setAn(obj){ localStorage.setItem(analyticsKey, JSON.stringify(obj)); }
-  function bumpAnalytics(kind){
-    const an = getAn();
-    an.events = an.events || [];
-    an.events.push({ t: Date.now(), kind });
-    setAn(an);
+    // ---------- Scheduler (local) ----------
+    const schedKey = "crp_scheduler_queue_v1";
+    const schedList = byId("schedList");
+    const loadSched = ()=> { try{ return JSON.parse(localStorage.getItem(schedKey)||"[]"); }catch{return [];} };
+    const saveSched = (arr)=> localStorage.setItem(schedKey, JSON.stringify(arr));
+    function paintSched(){
+      const items = loadSched().sort((a,b)=> new Date(a.when) - new Date(b.when));
+      if (!schedList) return;
+      schedList.innerHTML = items.map((it,i)=> `<li class="p-2 rounded-lg border flex items-center justify-between"><span class="text-xs">${new Date(it.when).toLocaleString()} • ${it.channel}</span><button data-i="${i}" class="btn text-xs">Remove</button></li>`).join("");
+      qsa("button[data-i]", schedList).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const i = Number(btn.getAttribute("data-i"));
+          const arr = loadSched(); arr.splice(i,1); saveSched(arr); paintSched();
+        });
+      });
+    }
+    byId("schedSave")?.addEventListener("click", ()=>{
+      const ch = byId("schedChannel")?.value || "linkedin";
+      const when = byId("schedWhen")?.value;
+      const content = byId("schedContent")?.value?.trim() || "";
+      if (!when || !content) return toast("Pick date/time and paste content");
+      const arr = loadSched(); arr.push({ channel: ch, when, content }); saveSched(arr); paintSched(); toast("Added to queue ✅");
+    });
+    byId("schedClear")?.addEventListener("click", ()=>{ byId("schedContent").value = ""; toast("Cleared"); });
+    paintSched();
+
+    // ---------- Analytics (local augment) ----------
+    const analyticsKey = "crp_local_analytics_v1";
+    const getAn = ()=> { try{ return JSON.parse(localStorage.getItem(analyticsKey)||"{}"); }catch{return{}}; };
+    const setAn = (obj)=> localStorage.setItem(analyticsKey, JSON.stringify(obj));
+    function bumpAnalytics(kind){
+      const an = getAn(); an.events = an.events || []; an.events.push({ t: Date.now(), kind }); setAn(an); paintAnalytics();
+    }
+    function paintAnalytics(){
+      const an = getAn();
+      const events = (an.events||[]).filter(e => Date.now() - e.t < 1000*60*60*24*90);
+      const byDay = {}; events.forEach(e=>{ const d = new Date(e.t).toISOString().slice(0,10); byDay[d] = (byDay[d]||0)+1; });
+      byId("anCount") && (byId("anCount").textContent = String(events.length));
+      byId("anTop") && (byId("anTop").textContent = "LinkedIn"); // placeholder
+      if (byId("anRecent")) byId("anRecent").innerHTML = events.slice(-5).reverse().map(e=>`<li class="p-2 rounded-lg border text-xs">Generated • ${new Date(e.t).toLocaleString()}</li>`).join("");
+      byId("anChart") && (byId("anChart").textContent = "Volume (local): " + Object.values(byDay).slice(-7).join(", "));
+    }
     paintAnalytics();
-  }
-  function paintAnalytics(){
-    const an = getAn();
-    const events = (an.events||[]).filter(e => Date.now() - e.t < 1000*60*60*24*90); // last 90d
-    const byDay = {};
-    events.forEach(e=>{
-      const d = new Date(e.t).toISOString().slice(0,10);
-      byDay[d] = (byDay[d]||0)+1;
-    });
-    const total = events.length;
-    if (anCount) anCount.textContent = String(total);
-    if (anTop) anTop.textContent = "LinkedIn"; // placeholder until real per-channel telemetry
-    if (anRecent) anRecent.innerHTML = events.slice(-5).reverse().map(e=>`<li class="p-2 rounded-lg border text-xs">Generated • ${new Date(e.t).toLocaleString()}</li>`).join("");
-    if (anChart){ anChart.textContent = "Volume (local): " + Object.values(byDay).slice(-7).join(", ");
-    }
-  }
-  paintAnalytics();
-  window.bumpAnalytics = bumpAnalytics; // used by generator painting
+    W.bumpAnalytics = bumpAnalytics; // used by generator painting
 
-  // ---- Presets (save/load/delete) ----
-  const presetList = byId("presetList"); // optional: if you add a list
-  async function loadPresets(){
-    if (!presetList) return;
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Load presets failed");
-      const arr = j.presets || [];
-      presetList.innerHTML = arr.length ? arr.map(p=>`<li class="p-2 rounded-lg border flex items-center justify-between">
-        <span class="text-xs">${p.title}</span>
-        <div class="flex gap-2">
-          <button data-id="${p.id}" class="btn text-xs loadPreset">Load</button>
-          <button data-id="${p.id}" class="btn text-xs delPreset">Delete</button>
-        </div>
-      </li>`).join("") : `<li class="text-xs text-slate-500">No presets yet</li>`;
-      $$(".loadPreset", presetList).forEach(b=> b.addEventListener("click", ()=> showToast("Preset load stub (map to UI fields)")));
-      $$(".delPreset", presetList).forEach(b=> b.addEventListener("click", async ()=>{
-        const id = b.getAttribute("data-id");
-        const r = await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ id }) });
-        if (!r.ok){ const jj = await r.json(); showToast(jj?.error?.message || "Delete failed"); return; }
-        showToast("Preset deleted"); loadPresets();
-      }));
-    }catch(e){ /* non-fatal */ }
-  }
-  loadPresets();
-
-  // ---- Teams (Business)
-  async function refreshOrgMembers(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/org/members`, { headers: await getAuthHeadersLocal() });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Org members error");
-      const list = byId("seatList");
-      if (list){
-        list.innerHTML = (j.members||[]).map(m=> `<li class="p-2 rounded-lg border text-xs flex items-center justify-between">
-          <span>${m.email || m.user_id}</span>
-          ${j.owner_id===m.user_id ? `<span class="chip">Owner</span>` : `<button data-id="${m.user_id}" class="btn text-xs removeSeat">Remove</button>`}
-        </li>`).join("") + (j.invites && j.invites.length ? `<li class="p-2 rounded-lg border text-xs">Invites: ${j.invites.map(i=>i.email).join(", ")}</li>` : "");
-        $$(".removeSeat", list).forEach(b=>{
-          b.addEventListener("click", async ()=>{
-            const uid = b.getAttribute("data-id");
-            const r2 = await fetch(`${WORKER_BASE}/api/org/remove`, {
-              method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ user_id: uid })
+    // ---------- Teams (Business) ----------
+    async function refreshOrgMembers(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/org/members`, { headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}) });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Org members error");
+        const list = byId("seatList");
+        if (list){
+          list.innerHTML = (j.members||[]).map(m=> `<li class="p-2 rounded-lg border text-xs flex items-center justify-between">
+            <span>${m.email || m.user_id}</span>
+            ${j.owner_id===m.user_id ? `<span class="chip">Owner</span>` : `<button data-id="${m.user_id}" class="btn text-xs removeSeat">Remove</button>`}
+          </li>`).join("") + (j.invites && j.invites.length ? `<li class="p-2 rounded-lg border text-xs">Invites: ${j.invites.map(i=>i.email).join(", ")}</li>` : "");
+          qsa(".removeSeat", list).forEach(b=>{
+            b.addEventListener("click", async ()=>{
+              const uid = b.getAttribute("data-id");
+              const r2 = await fetch(`${WORKER_BASE}/api/org/remove`, {
+                method:"POST", headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}), body: JSON.stringify({ user_id: uid })
+              });
+              if (!r2.ok){ const jj = await r2.json(); toast(jj?.error?.message || "Remove failed"); return; }
+              toast("Removed"); refreshOrgMembers();
             });
-            if (!r2.ok){ const jj = await r2.json(); showToast(jj?.error?.message || "Remove failed"); return; }
-            showToast("Removed"); refreshOrgMembers();
           });
-        });
-      }
-    }catch(e){ /* non-fatal */ }
-  }
-  byId("inviteBtn")?.addEventListener("click", async ()=>{
-    try{
-      // ensure org exists
-      await fetch(`${WORKER_BASE}/api/org/ensure`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ name:"Your Team" }) });
-      const email = byId("inviteEmail")?.value?.trim();
-      if (!email){ showToast("Enter an email"); return; }
-      const r = await fetch(`${WORKER_BASE}/api/org/invite`, { method:"POST", headers: await getAuthHeadersLocal(), body: JSON.stringify({ email }) });
-      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Invite failed");
-      showToast("Invite sent ✅");
-      byId("inviteEmail").value = "";
-      refreshOrgMembers();
-    }catch(e){ showToast(e.message || "Invite failed"); }
-  });
-
-})();
-</script>
-
-<script>
-/* ========= ContentRepurpose.pro — Final polish (Part 8/8) ========= */
-
-(function finalPolish(){
-  // --- Shortcuts to shared helpers from earlier parts ---
-  const $  = (sel, el=document) => el.querySelector(sel);
-  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const byId = id => document.getElementById(id);
-  const noop = ()=>{};
-  const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-
-  // --- Safe toast (reuses Part 6’s showToast if present) ---
-  function toast(msg){
-    if (typeof window.showToast === "function") return window.showToast(msg);
-    console.log("[toast]", msg);
-  }
-
-  // --- Smooth scroll to anchors/sections ---
-  function smoothScrollTo(el){
-    try{ el?.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el?.scrollIntoView(); }
-  }
-
-  // --- Tiny router: #demo, #pricing, #signin, #member ---
-  async function routeFromHash(){
-    const h = (location.hash||"").replace(/^#/, "").toLowerCase();
-    if (!h) return;
-
-    if (h==="demo"){
-      const v = byId("demoView") || byId("hero") || byId("demo");
-      smoothScrollTo(v);
-      byId("source")?.focus();
-      return;
+        }
+      }catch(e){ /* ignore */ }
     }
-    if (h==="pricing"){
-      const v = byId("pricing") || byId("plans");
-      smoothScrollTo(v);
-      return;
-    }
-    if (h==="signin" || h==="login"){
-      if (typeof window.doSignIn === "function") return window.doSignIn().catch(noop);
-      toast("Sign-in is available from the top-right button.");
-      return;
-    }
-    if (h==="member" || h==="dashboard"){
-      const v = byId("memberView") || byId("hero");
-      smoothScrollTo(v);
-      return;
-    }
-  }
-  window.addEventListener("hashchange", routeFromHash);
-  routeFromHash();
-
-  // --- “Try Demo” / hero buttons ---
-  const tryDemoBtns = $$('[data-action="try-demo"]');
-  tryDemoBtns.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      location.hash = "demo";
-      const pre = btn.getAttribute("data-prefill");
-      if (pre && byId("source")) byId("source").value = pre;
-    });
-  });
-
-  // --- “Sign in” buttons (header + hero) ---
-  const signInBtns = $$('[data-action="sign-in"]');
-  signInBtns.forEach(b=>{
-    b.addEventListener("click", async ()=>{
-      if (typeof window.doSignIn === "function"){
-        try{ await window.doSignIn(); }catch(e){ toast(e.message||"Sign-in failed"); }
-      }else{
-        location.hash = "signin";
-      }
-    });
-  });
-
-  // --- “Copy code” (coupon, snippets) ---
-  $$('[data-copy]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const val = btn.getAttribute("data-copy") || btn.textContent.trim();
-      try{ await navigator.clipboard.writeText(val); toast("Copied ✓"); }
-      catch{ toast("Copy failed"); }
-    });
-  });
-
-  // --- FAQ accordion (keyboard + a11y) ---
-  $$('.faq-item').forEach(item=>{
-    const header = $('.faq-q', item);
-    const panel  = $('.faq-a', item);
-    if (!header || !panel) return;
-    const id = header.id || ('faq_' + Math.random().toString(36).slice(2));
-    header.id = id;
-    header.setAttribute('role','button');
-    header.setAttribute('tabindex','0');
-    header.setAttribute('aria-expanded','false');
-    panel.setAttribute('role','region');
-    panel.setAttribute('aria-labelledby', id);
-    panel.hidden = true;
-
-    function toggle(){
-      const open = header.getAttribute('aria-expanded') === 'true';
-      header.setAttribute('aria-expanded', String(!open));
-      panel.hidden = open;
-    }
-    header.addEventListener('click', toggle);
-    header.addEventListener('keydown', (e)=>{
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-      if (e.key === 'ArrowDown'){ e.preventDefault(); header.parentElement?.nextElementSibling?.querySelector?.('.faq-q')?.focus(); }
-      if (e.key === 'ArrowUp'){ e.preventDefault(); header.parentElement?.previousElementSibling?.querySelector?.('.faq-q')?.focus(); }
-    });
-  });
-
-  // --- Pricing CTAs → checkout
-  async function getAuthHeaders(){
-    if (typeof window.getAuthHeaders === "function") return await window.getAuthHeaders();
-    return { "Content-Type":"application/json" };
-  }
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-
-  $$('[data-checkout="stripe"]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const price = btn.getAttribute("data-price") || "";
-      if (!price){ toast("Missing price id on button"); return; }
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
+    byId("inviteBtn")?.addEventListener("click", async ()=>{
       try{
-        const body = {
-          price,
-          success_url: location.origin + "/?billing=success",
-          cancel_url:  location.origin + "/?billing=cancel"
-        };
-        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify(body)
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No checkout URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open checkout");
-        btn.disabled = false; btn.textContent = old;
-      }
+        await fetch(`${WORKER_BASE}/api/org/ensure`, { method:"POST", headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}), body: JSON.stringify({ name:"Your Team" }) });
+        const email = byId("inviteEmail")?.value?.trim(); if (!email) return toast("Enter an email");
+        const r = await fetch(`${WORKER_BASE}/api/org/invite`, { method:"POST", headers: await (W.authHeaders?.() || {"Content-Type":"application/json"}), body: JSON.stringify({ email }) });
+        const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Invite failed");
+        toast("Invite sent ✅"); byId("inviteEmail").value = ""; refreshOrgMembers();
+      }catch(e){ toast(e.message || "Invite failed"); }
     });
-  });
 
-  // --- Manage billing (Customer Portal) ---
-  $$('[data-portal="stripe"]').forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      btn.disabled = true; const old = btn.textContent; btn.textContent = "Opening…";
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/portal`, {
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ return_url: location.href })
-        });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-        if (j.url) location.href = j.url;
-        else throw new Error("No portal URL returned");
-      }catch(e){
-        toast(e.message || "Unable to open billing portal");
-        btn.disabled = false; btn.textContent = old;
-      }
-    });
-  });
-
-  // --- Auto-apply referral codes from ?ref=...
-  (async function applyReferral(){
-    try{
-      const u = new URL(location.href);
-      const ref = u.searchParams.get("ref");
-      if (!ref) return;
-      fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`).catch(()=>{});
-    }catch{}
-  })();
-
-  // --- Intersection polish: fade-in sections on scroll (CSS classes must exist) ---
-  const io = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{
-      if (e.isIntersecting){ e.target.classList.add("reveal-in"); io.unobserve(e.target); }
-    });
-  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.15 });
-  $$('.reveal').forEach(el=> io.observe(el));
-
-  // --- Handle billing query params (success/cancel) ---
-  (function billingBanner(){
-    const u = new URL(location.href);
-    const ok   = u.searchParams.get("billing")==="success";
-    const fail = u.searchParams.get("billing")==="cancel";
-    if (ok)   toast("Billing updated — thank you!");
-    if (fail) toast("Billing cancelled");
-    if (ok || fail){
-      u.searchParams.delete("billing");
-      history.replaceState({}, "", u.toString());
+    // ---------- Route from hash on load (go to dashboard after auth) ----------
+    function routeFromHash(){
+      const h = (location.hash||"").replace(/^#/, "").toLowerCase();
+      if (!h) return;
+      const map = { demo: byId("demo"), pricing: byId("pricing"), member: byId("memberView"), signin: byId("auth") };
+      if (h==="signin" && map.signin && typeof map.signin.showModal==="function") map.signin.showModal();
+      else map[h]?.scrollIntoView({ behavior:"smooth", block:"start" });
     }
+    window.addEventListener("hashchange", routeFromHash);
+    routeFromHash();
   })();
-
-  // --- Guard: prevent full page jump for in-page primary nav ---
-  $$('a[href^="#"]').forEach(a=>{
-    a.addEventListener("click", (e)=>{
-      const id = a.getAttribute("href")?.slice(1);
-      if (!id) return;
-      const el = byId(id);
-      if (!el) return;
-      e.preventDefault();
-      smoothScrollTo(el);
-      history.pushState({}, "", `#${id}`);
-    });
-  });
-
-  if (location.hash === "#demo") {
-    setTimeout(()=> routeFromHash(), 0);
-  }
-
-  // Normalize external links
-  $$('a[target="_blank"]').forEach(a=> a.setAttribute("rel","noopener"));
-
-  // Keyboard: close any <dialog> with Escape
-  window.addEventListener("keydown", (e)=>{
-    if (e.key==="Escape"){
-      $$('dialog[open]').forEach(d=> d.close());
-    }
-  });
-
-  // UTM persistence (7 days)
-  (function persistUTM(){
-    const u = new URL(location.href);
-    const keys = ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"];
-    let touched = false;
-    const store = JSON.parse(localStorage.getItem("crp_utm")||"{}");
-    keys.forEach(k=>{
-      if (u.searchParams.has(k)){ store[k] = u.searchParams.get(k); touched = true; }
-    });
-    if (touched){
-      store._ts = Date.now();
-      localStorage.setItem("crp_utm", JSON.stringify(store));
-    }
-  })();
-
-})();
-</script>
-  <!-- ===== GLOBAL SVG SPRITE (icons used in cards) ===== -->
-  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
-    <symbol id="i-li" viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM0 8h5v16H0zM8 8h4.8v2.2h.1c.7-1.3 2.4-2.7 4.9-2.7 5.2 0 6.2 3.4 6.2 7.8V24h-5v-7.1c0-1.7 0-3.9-2.4-3.9s-2.8 1.9-2.8 3.8V24H8z"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.9 2H22l-7.7 8.8L23.3 22H16l-5.4-6.6L4.5 22H1.4l8.4-9.6L.9 2H8l4.9 5.9L18.9 2zM17 20h1.9L7.1 4H5.1L17 20z"/></symbol>
-    <symbol id="i-mail" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></symbol>
-    <symbol id="i-ig" viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6zM18 6.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></symbol>
-    <symbol id="i-reddit" viewBox="0 0 24 24"><path d="M22 12.5c0-1.1-.9-2-2-2-.6 0-1.1.2-1.5.6-1.2-.8-2.8-1.3-4.6-1.4l.8-3.8 2.7.6c0 1 .8 1.8 1.8 1.8a1.8 1.8 0 1 0 0-3.6c-.7 0-1.2.3-1.6.8l-3.5-.8c-.3-.1-.6.1-.7.4l-1 4.6c-1.8.1-3.4.6-4.6 1.4-.4-.4-1-.6-1.6-.6-1.1 0-2 .9-2 2 0 .8.5 1.5 1.2 1.8-.1.4-.2.8-.2 1.2 0 2.8 3.1 5.1 7 5.4h1.7c3.9-.3 7-2.6 7-5.4 0-.4-.1-.8-.2-1.2.7-.3 1.2-1 1.2-1.8zM8.5 14a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm7 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM12 20c-2 0-3.9-.6-5.2-1.6-.3-.2-.3-.6 0-.8.2-.3.6-.3.8 0 1 .8 2.7 1.3 4.4 1.3s3.4-.5 4.4-1.3c.2-.2.6-.2.8 0 .3.2.3.6 0 .8C15.9 19.4 14 20 12 20z"/></symbol>
-    <symbol id="i-fb" viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7h-2.3v-2.9h2.3V9.2c0-2.3 1.4-3.5 3.4-3.5.98 0 2 .17 2 .17v2.2h-1.1c-1.1 0-1.4.68-1.4 1.4v1.7h2.6l-.4 2.9h-2.2v7A10 10 0 0 0 22 12z"/></symbol>
-    <symbol id="i-quora" viewBox="0 0 24 24"><path d="M12 2C6.7 2 3 6 3 12s3.7 10 9 10c1.7 0 3.3-.4 4.6-1.2l1.7 2.2h2.9l-3-3.9c1.7-1.8 2.8-4.4 2.8-7.1 0-6-3.7-10-9-10zm0 2c4.3 0 7 3.2 7 8s-2.7 8-7 8-7-3.2-7-8 2.7-8 7-8zm2.4 12.7c-.7.5-1.7.8-2.7.8-2.7 0-4.5-2-4.5-5.5s1.8-5.5 4.5-5.5S16.2 8.5 16.2 12c0 1.5-.3 2.8-.8 3.7l1.6 2.1h-1.9l-1.1-1.4z"/></symbol>
-    <symbol id="i-tt" viewBox="0 0 24 24"><path d="M15.5 3c.3 2.2 1.7 3.7 3.8 4v3.1c-1.4.1-2.6-.4-3.8-1.2v5.7c0 3.9-3.1 7-7 7S1.5 18.5 1.5 14.6c0-3.8 2.9-6.8 6.6-7v3.4c-1.8.1-3.2 1.6-3.2 3.6 0 2 .1 3.6 3 3.6 1.7 0 3.1-1.5 3.1-3.2V3h4.5z"/></symbol>
-  </svg>
-
-  <!-- ===== TOAST ===== -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] hidden">
-    <div class="px-4 py-2 rounded-xl bg-black text-white shadow"> <span id="toastMsg">Done</span> </div>
-  </div>
-
-  <!-- ===== AUTH DIALOG (email magic link) ===== -->
-  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
-    <form method="dialog" class="p-5 grid gap-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Sign in</h3>
-        <button class="btn" value="cancel">Close</button>
-      </div>
-      <p class="text-sm text-slate-500">Enter your email to receive a magic link.</p>
-      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
-      <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
-      <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
+  </script>
+  <!-- ===== AUTH DIALOG (Google + Magic Link) ===== -->
+  <dialog id="auth" class="rounded-2xl p-0 w-[92vw] max-w-md border">
+    <form method="dialog" class="p-4 border-b flex items-center justify-between">
+      <strong>Sign in</strong>
+      <button class="btn text-xs" aria-label="Close">Close</button>
     </form>
+
+    <div class="p-5 grid gap-4">
+      <!-- Continue with Google -->
+      <button id="googleBtn" type="button" class="btn btn-primary flex items-center justify-center gap-2">
+        <svg class="icon"><use href="#i-google"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="text-center text-xs text-slate-500">or</div>
+
+      <!-- Magic link -->
+      <label class="text-sm">Email</label>
+      <input id="authEmail" type="email" inputmode="email" autocomplete="email"
+             class="border rounded-lg px-3 py-2 w-full" placeholder="you@example.com" />
+
+      <button id="sendMagic" type="button" class="btn w-full">Send magic link</button>
+      <div id="authHint" class="text-xs text-slate-500">
+        We’ll email you a sign-in link. Check spam if you don’t see it in ~10s.
+      </div>
+    </div>
   </dialog>
 
   <!-- ===== EMAIL PREVIEW DIALOG ===== -->
-  <dialog id="emailPreview" class="rounded-xl p-0 w-[92vw] max-w-2xl">
-    <form method="dialog" class="p-5 grid gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Email preview</h3>
-        <button class="btn" value="cancel">Close</button>
-      </div>
+  <dialog id="emailPreview" class="rounded-2xl p-0 w-[92vw] max-w-2xl border">
+    <form method="dialog" class="p-4 border-b flex items-center justify-between">
+      <strong>Email preview</strong>
+      <button class="btn text-xs" aria-label="Close">Close</button>
+    </form>
+    <div class="p-5 grid gap-3">
       <label class="text-xs text-slate-500">Subject</label>
       <input id="emailSubjEdit" class="border rounded-lg px-3 py-2" />
-      <label class="text-xs text-slate-500 mt-2">Body</label>
-      <textarea id="emailBodyEdit" class="border rounded-lg px-3 py-2 min-h-[180px]"></textarea>
-      <div class="mt-3 flex items-center justify-end gap-2">
-        <button class="btn" value="cancel">Cancel</button>
-        <button id="emailSendBtn" class="btn btn-primary" type="button">Open in mail app</button>
+      <label class="text-xs text-slate-500">Body</label>
+      <textarea id="emailBodyEdit" class="border rounded-lg px-3 py-2 min-h-[200px]"></textarea>
+      <div class="flex items-center justify-end gap-2">
+        <button id="emailSendBtn" class="btn btn-primary" type="button">Open in your email client</button>
       </div>
-    </form>
+    </div>
   </dialog>
 
   <!-- ===== TRELLO EXPORT DIALOG ===== -->
-  <dialog id="trelloModal" class="rounded-xl p-0 w-[92vw] max-w-md">
-    <form method="dialog" class="p-5 grid gap-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Send to Trello</h3>
-        <button class="btn" value="cancel">Close</button>
-      </div>
-      <label class="text-xs text-slate-500">Board ID (optional)</label>
-      <input id="trelloBoardId" class="border rounded-lg px-3 py-2" placeholder="e.g. 5ab123..." />
-      <label class="text-xs text-slate-500">List ID <span class="text-red-500">*</span></label>
-      <input id="trelloListId" class="border rounded-lg px-3 py-2" placeholder="e.g. 5ac456..." />
-      <div class="mt-3 flex items-center justify-end gap-2">
-        <button class="btn" value="cancel">Cancel</button>
-        <button id="trelloConfirm" class="btn btn-primary" type="button">Send to Trello</button>
-      </div>
+  <dialog id="trelloModal" class="rounded-2xl p-0 w-[92vw] max-w-md border">
+    <form method="dialog" class="p-4 border-b flex items-center justify-between">
+      <strong>Send to Trello</strong>
+      <button class="btn text-xs" aria-label="Close">Close</button>
     </form>
+    <div class="p-5 grid gap-3">
+      <label class="text-xs text-slate-500">Board ID (optional)</label>
+      <input id="trelloBoardId" class="border rounded-lg px-3 py-2" placeholder="(optional)" />
+      <label class="text-xs text-slate-500">List ID</label>
+      <input id="trelloListId" class="border rounded-lg px-3 py-2" placeholder="required" />
+      <div class="flex items-center justify-end gap-2">
+        <button class="btn" type="submit">Cancel</button>
+        <button id="trelloConfirm" type="button" class="btn btn-primary">Send</button>
+      </div>
+    </div>
   </dialog>
 
+  <!-- ===== TOAST ===== -->
+  <div id="toast" class="fixed bottom-4 right-4 z-50 hidden">
+    <div class="px-3 py-2 rounded-xl bg-black text-white shadow-lg">
+      <span id="toastMsg">—</span>
+    </div>
+  </div>
+
+  <!-- ===== SVG SPRITE (icons used across the page) ===== -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+    <symbol id="i-li" viewBox="0 0 24 24">
+      <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4zM8 8h3.8v2.05h.05C12.64 8.8 14.2 8 16.35 8 20.77 8 21 10.9 21 14.7V23h-4v-7.3c0-1.74-.03-3.98-2.43-3.98-2.44 0-2.81 1.9-2.81 3.85V23h-4z"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M18.9 2H22l-9.4 10.7L22.7 22h-7.1l-5.5-6.4L4.9 22H2l9.9-11.3L1.4 2h7.1l5 5.8z"/>
+    </symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24">
+      <path d="M2 4h20v16H2z" fill="none" stroke="currentColor"/><path d="M2 5l10 7 10-7" fill="none" stroke="currentColor"/>
+    </symbol>
+    <symbol id="i-ig" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="5" ry="5" fill="none" stroke="currentColor"/>
+      <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor"/>
+      <circle cx="17.5" cy="6.5" r="1.2"/>
+    </symbol>
+    <symbol id="i-reddit" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="7" fill="none" stroke="currentColor"/>
+      <circle cx="9" cy="13" r="1.2"/><circle cx="15" cy="13" r="1.2"/>
+      <path d="M8 16c1.2 1 3 .9 4 .9s2.8.1 4-.9" fill="none" stroke="currentColor"/>
+    </symbol>
+    <symbol id="i-fb" viewBox="0 0 24 24">
+      <path d="M13 22V12h3l1-4h-4V6c0-1 .3-2 2-2h2V1h-3c-3 0-5 2-5 5v2H6v4h3v10h4z"/>
+    </symbol>
+    <symbol id="i-quora" viewBox="0 0 24 24">
+      <path d="M12 2C6.9 2 3 6.3 3 11.4S6.9 21 12 21c1.6 0 3-.4 4.3-1.1l1.6 2.1 2.1-1.6-1.7-2.2c1.6-1.8 2.6-4.2 2.6-6.8C21 6.3 17.1 2 12 2zm0 3c3.6 0 6.5 2.9 6.5 6.4S15.6 18.3 12 18.3 5.5 15.5 5.5 11.4 8.4 5 12 5z"/>
+    </symbol>
+    <symbol id="i-tt" viewBox="0 0 24 24">
+      <path d="M16 3h3a6 6 0 0 0 0 6 6 6 0 1 1-6 6V3h3z"/>
+    </symbol>
+    <symbol id="i-google" viewBox="0 0 24 24">
+      <path d="M21.35 11.1H12v2.8h5.3c-.23 1.5-1.63 4.4-5.3 4.4A6.4 6.4 0 1 1 12 5.6c1.86 0 3.12.8 3.84 1.5l2.64-2.55C17.1 2.6 14.83 1.7 12 1.7 6.9 1.7 2.8 5.8 2.8 10.9s4.1 9.2 9.2 9.2c5.3 0 8.8-3.7 8.8-8.9 0-.6-.1-1-.25-1.9z"/>
+    </symbol>
+  </svg>
+
+  <!-- ===== AUTH + SESSION SCRIPT ===== -->
+  <script>
+    (function AuthWiring(){
+      const W = window, D = document;
+      const byId = (id)=> D.getElementById(id);
+      const toast = (msg)=>{
+        const t = byId("toast"), m = byId("toastMsg");
+        if (!t || !m) return console.log("[toast]", msg);
+        m.textContent = msg; t.classList.remove("hidden");
+        setTimeout(()=> t.classList.add("hidden"), 1800);
+      };
+
+      // Guard: Supabase client must already exist from Part 1.
+      if (!W.supabase || !W.supabase.auth){
+        console.warn("Supabase not initialized — check Part 1 import block.");
+        return;
+      }
+
+      const authDlg = byId("auth");
+      const googleBtn = byId("googleBtn");
+      const emailInput = byId("authEmail");
+      const sendMagicBtn = byId("sendMagic");
+
+      // Expose helper for API calls to include session
+      W.authHeaders = async () => {
+        const { data: { session } } = await W.supabase.auth.getSession();
+        const h = { "Content-Type":"application/json" };
+        if (session?.access_token) h["Authorization"] = `Bearer ${session.access_token}`;
+        if (session?.user?.id) h["X-User-Id"] = session.user.id;
+        return h;
+      };
+
+      // Basic UI toggles (guest vs member)
+      function setAuthedUI(user){
+        const isAuthed = !!user;
+        D.body.setAttribute("data-auth", isAuthed ? "member" : "guest");
+
+        // Header buttons
+        const idsShow   = isAuthed ? ["logoutBtn","logoutBtn_m"] : ["loginBtn","loginBtn_m"];
+        const idsHide   = isAuthed ? ["loginBtn","loginBtn_m"]  : ["logoutBtn","logoutBtn_m"];
+        idsShow.forEach(id=> byId(id)?.classList.remove("hidden"));
+        idsHide.forEach(id=> byId(id)?.classList.add("hidden"));
+
+        // Plan badges (header + mobile)
+        if (!isAuthed){
+          byId("planbadge")?.replaceChildren(document.createTextNode("Plan: Free"));
+          byId("planbadge_m")?.replaceChildren(document.createTextNode("Plan: Free"));
+        }
+
+        // Route: land members on dashboard
+        if (isAuthed) {
+          const member = byId("memberView");
+          if (member) member.scrollIntoView({ behavior:"smooth", block:"start" });
+          // Also reflect in hash for bookmarking
+          if (location.hash.toLowerCase() !== "#member") history.replaceState({}, "", "#member");
+        }
+      }
+
+      // Login buttons open dialog
+      ["loginBtn","loginBtn_m","heroSignIn","heroSignIn_pr"].forEach(id=>{
+        const b = byId(id);
+        b?.addEventListener("click", ()=> authDlg?.showModal());
+      });
+
+      // Logout buttons
+      ["logoutBtn","logoutBtn_m"].forEach(id=>{
+        byId(id)?.addEventListener("click", async ()=>{
+          await W.supabase.auth.signOut();
+          toast("Signed out");
+          setAuthedUI(null);
+          // Return to hero
+          document.getElementById("hero")?.scrollIntoView({behavior:"smooth"});
+        });
+      });
+
+      // Fix: sometimes button became unclickable if a dialog submit swallowed focus.
+      // Ensure buttons are type="button" (they are), and forcibly enable pointer events.
+      [googleBtn, sendMagicBtn].forEach(btn=>{
+        if (btn){ btn.style.pointerEvents = "auto"; btn.disabled = false; }
+      });
+
+      // Google OAuth
+      googleBtn?.addEventListener("click", async ()=>{
+        try{
+          // Optional: preserve hash so we can return to #member
+          sessionStorage.setItem("post_auth_hash", "#member");
+          const { data, error } = await W.supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: location.origin + "/#member", // returns to dashboard
+              queryParams: { prompt: "select_account" }
+            }
+          });
+          if (error) throw error;
+          // supabase will redirect; no further action here.
+        }catch(e){
+          toast(e.message || "Google sign-in failed");
+        }
+      });
+
+      // Magic link
+      sendMagicBtn?.addEventListener("click", async ()=>{
+        const email = (emailInput?.value || "").trim();
+        if (!email){ toast("Enter your email first"); return; }
+        try{
+          sendMagicBtn.disabled = true; sendMagicBtn.textContent = "Sending…";
+          const { error } = await W.supabase.auth.signInWithOtp({
+            email,
+            options: { emailRedirectTo: location.origin + "/#member" }
+          });
+          if (error) throw error;
+          toast("Magic link sent ✉️ Check your inbox");
+          // keep dialog open so the user can read the hint; enable re-send after 6s
+          setTimeout(()=>{ sendMagicBtn.disabled=false; sendMagicBtn.textContent="Resend magic link"; }, 6000);
+        }catch(e){
+          toast(e.message || "Could not send magic link");
+          sendMagicBtn.disabled=false; sendMagicBtn.textContent="Send magic link";
+        }
+      });
+
+      // Handle OAuth/Magic-link return
+      (async function hydrateSessionOnLoad(){
+        // Supabase v2: check for URL hash params then update session (handled internally).
+        const { data:{ session } } = await W.supabase.auth.getSession();
+        setAuthedUI(session?.user || null);
+
+        // After sign-in, refresh plan & badges
+        if (session?.user){
+          try{
+            const r = await fetch(`${W.WORKER_BASE}/api/billing/status`, { headers: await W.authHeaders() });
+            const j = await r.json();
+            if (r.ok){
+              const plan = (j.plan || "free").toLowerCase();
+              const pretty = plan.charAt(0).toUpperCase() + plan.slice(1);
+              byId("planbadge")?.replaceChildren(document.createTextNode(`Plan: ${pretty}`));
+              byId("planbadge_m")?.replaceChildren(document.createTextNode(`Plan: ${pretty}`));
+              // show manage billing for paid
+              if (plan !== "free"){
+                ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=> byId(id)?.classList.remove("hidden"));
+              }
+            }
+          }catch{}
+        }
+
+        // If we preserved a target hash pre-auth, go there
+        const ph = sessionStorage.getItem("post_auth_hash");
+        if (session?.user && ph){
+          sessionStorage.removeItem("post_auth_hash");
+          if (ph.startsWith("#")) location.hash = ph;
+        }
+      })();
+
+      // React to session changes dynamically
+      W.supabase.auth.onAuthStateChange(async (evt, sess)=>{
+        setAuthedUI(sess?.user || null);
+        if (evt === "SIGNED_IN"){
+          toast("Signed in ✅");
+          // Close dialog if open
+          authDlg?.close?.();
+          // Plan refresh
+          try{
+            const r = await fetch(`${W.WORKER_BASE}/api/billing/status`, { headers: await W.authHeaders() });
+            const j = await r.json();
+            if (r.ok){
+              const plan = (j.plan || "free").toLowerCase();
+              const pretty = plan.charAt(0).toUpperCase() + plan.slice(1);
+              byId("planbadge")?.replaceChildren(document.createTextNode(`Plan: ${pretty}`));
+              byId("planbadge_m")?.replaceChildren(document.createTextNode(`Plan: ${pretty}`));
+            }
+          }catch{}
+        }
+        if (evt === "SIGNED_OUT"){
+          toast("Signed out");
+        }
+      });
+    })();
+  </script>
+
   <!-- ===== FOOTER ===== -->
-  <footer class="mt-20 border-t border-white/30">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
-      <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
-      <nav class="flex items-center gap-4 opacity-80">
-        <a href="#pricing" class="hover:opacity-100">Pricing</a>
-        <a href="/blog" class="hover:opacity-100">Blog</a>
-        <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
-      </nav>
+  <footer class="mt-16 border-t border-white/20">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm text-slate-500">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>© <span id="year"></span> ContentRepurpose.pro</div>
+        <div class="flex items-center gap-4">
+          <a href="/blog" class="hover:opacity-80">Blog</a>
+          <a href="#pricing" class="hover:opacity-80">Pricing</a>
+          <a href="mailto:support@contentrepurpose.pro" class="hover:opacity-80">Support</a>
+        </div>
+      </div>
     </div>
   </footer>
 
+  <!-- Close body/html -->
 </body>
 </html>
