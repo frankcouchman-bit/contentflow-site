@@ -5,38 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-  <meta name="description" content="Paste once → get LinkedIn, X, Email, Instagram, Reddit & more. Article Optimizer, Scheduler, Analytics, Notion/Trello export, BYOK. Built for creators, marketers & teams." />
+  <meta name="description" content="Content repurposing AI that turns one idea into LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported." />
   <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
   <meta name="robots" content="index,follow,max-video-preview:-1,max-image-preview:large,max-snippet:-1">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
-  <meta property="og:description" content="Turn one idea into everywhere content. Generator + Optimizer + Scheduler + Analytics. Export to Notion & Trello. BYOK supported.">
+  <meta property="og:description" content="Repurpose content with AI. Paste once → get LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported.">
   <meta property="og:url" content="https://contentrepurpose.pro/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
-  <meta name="twitter:description" content="Multi-channel drafts for LinkedIn, X, Email, Instagram, Reddit, Facebook, TikTok & Quora. Optimizer + Scheduler + Analytics.">
+  <meta name="twitter:description" content="Content repurposing AI for multi-channel drafts. Export to Notion & Trello. BYOK supported.">
   <meta name="twitter:image" content="/og-cover.png">
-
-  <!-- Favicons -->
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Fonts + Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- (Optional perf) Preconnect to API origins -->
-  <link rel="preconnect" href="https://contentflow-worker.frank-couchman.workers.dev" crossorigin>
-  <link rel="preconnect" href="https://ynkoavaeadlzlwylmfmu.supabase.co" crossorigin>
 
   <!-- Global CSS -->
   <style>
@@ -90,15 +80,127 @@
     body[data-plan="business"] .plan-business-only{display:revert}
   </style>
 
-  <!-- JSON-LD (Org + Site + App) -->
+  <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 
-  <!-- Worker base (keep as-is) -->
+  <!-- Worker base -->
   <script>
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
+  </script>
+
+  <!-- Supabase v2 auth (magic link + Google OAuth) — hardened -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+
+    // 1) Init
+    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true   // handles magic-link redirect on this page
+      }
+    });
+
+    // 2) Helpers
+    window.getAuth = async () => {
+      try {
+        const { data } = await window.supabase.auth.getSession();
+        const s = data?.session;
+        return {
+          token:  s?.access_token || "",
+          userId: s?.user?.id || null,
+          email:  s?.user?.email || null
+        };
+      } catch {
+        return { token:"", userId:null, email:null };
+      }
+    };
+    window.getAuthHeaders = async () => {
+      const { token, userId } = await window.getAuth();
+      const h = { "Content-Type": "application/json" };
+      if (token)  h["Authorization"] = `Bearer ${token}`;
+      if (userId) h["X-User-Id"]    = userId;
+      return h;
+    };
+
+    // 3) Minimal UI paint to avoid “Plan: Member”
+    function paintAuthBadge({authed, plan="free"}){
+      document.body.setAttribute("data-auth", authed ? "authed" : "guest");
+      document.body.setAttribute("data-plan", plan);
+      const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
+      const set = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = `Plan: ${pretty}`;
+      };
+      set("planbadge"); set("planbadge_m");
+      const show = (id, on) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle("hidden", !on);
+      };
+      show("loginBtn", !authed); show("loginBtn_m", !authed);
+      show("logoutBtn", authed); show("logoutBtn_m", authed);
+      show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
+    }
+
+    // 4) Magic link sender (uses current origin; ensure this origin is whitelisted in Supabase)
+    async function doSendMagicLink() {
+      const email = document.getElementById("authEmail")?.value?.trim();
+      const note  = document.getElementById("authNote");
+      if (!email) { if (note) note.textContent = "Enter a valid email."; return; }
+      const redirectTo = window.SITE_ORIGIN || window.location.origin;
+      const { error } = await window.supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+      note.textContent = error ? `Sign-in error: ${error.message}` : "Check your email for the magic link.";
+    }
+    window.doSendMagicLink = doSendMagicLink;
+
+    // 5) OAuth/magic-link finisher — cleans URL (prevents stuck sessions)
+    async function finishOAuthIfNeeded(){
+      try{
+        const u = new URL(location.href);
+        const code = u.searchParams.get("code");
+        const err  = u.searchParams.get("error_description");
+        if (err) console.warn("OAuth error:", decodeURIComponent(err));
+        if (code) {
+          const { error } = await window.supabase.auth.exchangeCodeForSession({ code });
+          if (error) console.warn("exchangeCodeForSession:", error.message);
+          ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
+          history.replaceState({}, "", u.toString());
+        }
+        if (location.hash.includes("access_token")) {
+          await window.supabase.auth.getSession();
+          history.replaceState({}, "", location.pathname + location.search);
+        }
+      }catch(e){ console.warn("finishOAuthIfNeeded:", e); }
+    }
+
+    // 6) Wire on load
+    document.addEventListener("DOMContentLoaded", async () => {
+      await finishOAuthIfNeeded();
+
+      // Dialog buttons (hooked later too)
+      document.getElementById("authSend")?.addEventListener("click", doSendMagicLink);
+      document.getElementById("authGoogle")?.addEventListener("click", async () => {
+        try {
+          await window.supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: window.SITE_ORIGIN || window.location.origin }});
+        } catch(e){ const note=document.getElementById("authNote"); if (note) note.textContent = e?.message || "Google sign-in failed."; }
+      });
+
+      // Initial paint
+      const { data } = await window.supabase.auth.getSession();
+      const authed = !!data?.session;
+      paintAuthBadge({ authed, plan:"free" });
+
+      // Live plan paint after sign-in/out
+      window.supabase.auth.onAuthStateChange((_event, session) => {
+        paintAuthBadge({ authed: !!session, plan:"free" });
+      });
+    });
   </script>
 </head>
 <body class="min-h-full" data-auth="guest" data-plan="free">
@@ -107,37 +209,34 @@
   <div class="halo h2"></div>
   <div class="halo h3"></div>
 
-  <!-- ===== HEADER ===== -->
+  <!-- Top nav (desktop + mobile trigger) -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
         <svg width="36" height="36" viewBox="0 0 48 48" class="rounded-xl" aria-hidden="true">
           <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
-        <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
-        <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
-        <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/></svg>
+          <rect x="0" y="0" width="48" height="48" rx="12" fill="url(#g)"/>
+          <path d="M14 16h10a6 6 0 0 1 0 12H20v4h-6V16zm6 6v4h4a2 2 0 1 0 0-4h-4z" fill="white"/>
+          <path d="M28 16h6v16h-6z" fill="white" opacity=".9"/>
+        </svg>
         <span class="font-semibold tracking-tight">Content<span class="txt-grad">Repurpose</span></span>
       </a>
 
-      <!-- Desktop nav -->
       <nav class="hidden md:flex items-center gap-6 text-sm">
         <a href="#demo" class="hover:opacity-80">Live Demo</a>
         <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-80">Templates</a>
-        <a href="#use-cases" class="hover:opacity-80">Use cases</a>
-        <a href="#best-picks" class="hover:opacity-80">Best picks</a>
+        <a href="https://contentrepurpose.pro/#use-cases" class="hover:opacity-80">Use cases</a>
+        <button id="openBestPicks" type="button" class="hover:opacity-80 underline decoration-dotted">Best picks</button>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
-
-        <!-- Plan & auth controls -->
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
-          <button id="loginBtn"  class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
+          <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
           <button id="logoutBtn" class="px-3 py-1 rounded-lg border only-authed hidden">Sign out</button>
         </div>
       </nav>
 
-      <!-- Mobile toggle -->
       <button id="navToggle" class="md:hidden touch-target px-3 py-2 rounded-lg border" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">☰</button>
     </div>
 
@@ -157,16 +256,16 @@
 
     <!-- Mobile sheet -->
     <div id="mobileNav" class="nav-sheet" aria-hidden="true">
-      <div class="nav-panel text-sm text-white" role="dialog" aria-modal="true" aria-labelledby="mnav-title" tabindex="-1">
+      <div class="nav-panel text-sm text-white">
         <div class="flex items-center justify-between">
-          <span id="mnav-title" class="font-semibold">Menu</span>
+          <span class="font-semibold">Menu</span>
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
         </div>
         <nav class="mt-4 grid gap-2">
           <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
           <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="px-3 py-2 rounded-lg hover:bg-white/10">Templates</a>
-          <a href="#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
-          <a href="#best-picks" class="px-3 py-2 rounded-lg hover:bg-white/10">Best picks</a>
+          <a href="https://contentrepurpose.pro/#use-cases" class="px-3 py-2 rounded-lg hover:bg-white/10">Use cases</a>
+          <button id="openBestPicks_m" class="text-left px-3 py-2 rounded-lg hover:bg-white/10">Best picks</button>
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
           <a href="/blog" class="px-3 py-2 rounded-lg hover:bg-white/10">Blog</a>
         </nav>
@@ -180,12 +279,12 @@
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
+  <!-- ===== HERO + CTA rail ===== -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <!-- Left: copy + CTAs -->
       <div>
-        <!-- Badge swaps with auth -->
+        <!-- BADGE: show demo note to guests, plan badge to members -->
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
@@ -197,35 +296,55 @@
         </h1>
 
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Paste once → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, <strong>Instagram</strong>, <strong>Reddit</strong> & more.
-          <br class="hidden md:block" />Export to <strong>Notion</strong> or <strong>Trello</strong>, schedule posts, track results. <strong>BYOK</strong> supported.
+          Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
+          Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
         </p>
 
         <!-- CTA rail -->
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
-          <a href="#best-picks" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 hover:bg-white/50">See best picks</a>
+          <a href="#optimizer" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Optimize Article (SEO)</a>
+          <a href="#pricing" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">See pricing</a>
           <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
 
-        <!-- Trust strip -->
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <span class="badge">Generator</span>
-          <span class="badge">Article Optimizer</span>
-          <span class="badge">Scheduler</span>
-          <span class="badge">Analytics</span>
-          <span class="badge">Notion/Trello</span>
+          <span class="badge">AI Content Generator</span>
+          <span class="badge">Repurposing Tool</span>
+          <span class="badge">SEO-ready</span>
           <span class="badge">BYOK</span>
         </div>
 
-        <!-- Topic authority: featured internal links -->
-        <div class="mt-6 text-[13px] text-slate-500 dark:text-slate-400">
-          Learn: 
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">Paste once, multi-channel</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion/Trello export</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Repurposing for SEO</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing-examples-workflows/">Workflows & examples</a>
+        <!-- Trust strip -->
+        <div class="mt-8 overflow-hidden">
+          <div class="flex items-center gap-4 text-[11px] uppercase tracking-widest text-slate-500">
+            <span class="chip">Creators</span>
+            <span class="chip">Marketers</span>
+            <span class="chip">Newsletters</span>
+            <span class="chip">Teams</span>
+          </div>
+          <div class="relative mt-4">
+            <div class="marquee opacity-70">
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
+              <!-- duplicate for seamless scroll -->
+              <div class="chip">LinkedIn-first</div>
+              <div class="chip">Editorial-friendly</div>
+              <div class="chip">Email copy</div>
+              <div class="chip">Instagram captions</div>
+              <div class="chip">Notion export</div>
+              <div class="chip">Trello sync</div>
+              <div class="chip">Keyword-aware</div>
+              <div class="chip">Tone controls</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -247,7 +366,7 @@
               <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
                 • Hook that earns the scroll<br>
                 • 6–10 crisp lines, one CTA<br>
-                • On-brand tone & keywords
+                • On-brand tone &amp; keywords
               </div>
             </div>
             <div class="mock p-4 card">
@@ -263,8 +382,8 @@
             <div class="mock p-4 card">
               <div class="text-xs text-slate-400">Email</div>
               <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
-                Subject & body prepped<br>
-                Preview & send from your client
+                Subject &amp; body prepped<br>
+                Preview &amp; send from your client
               </div>
             </div>
             <div class="mock p-4 card">
@@ -298,1355 +417,974 @@
       </div>
     </div>
   </section>
-  <!-- (Part 2 starts with the Generator / Demo section) -->
-<!-- ===== LIVE DEMO / GENERATOR ===== -->
-<section id="demo" class="relative scroll-mt-24">
-  <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-    <div class="flex items-end justify-between gap-4 mb-6">
-      <div>
-        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
-        <!-- Copy changes by auth state -->
-        <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
-          No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
-        </p>
-        <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
-          Signed in — your plan limits apply per day/month by tier.
-        </p>
+
+  <!-- ===== BEST PICKS / PLAN ADVISOR (modal) ===== -->
+  <dialog id="bestPicksDialog" class="rounded-xl p-0 w-[92vw] max-w-lg">
+    <form method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Best Picks for You</h3>
+        <button class="btn" value="cancel">Close</button>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="#pricing" class="btn">See pricing</a>
-        <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
-      </div>
-    </div>
-
-    <!-- Promo rail -->
-    <div class="card p-4 md:p-5 mb-6">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2 text-sm">
-          <span class="badge">LIMITED</span>
-          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
-          <a class="btn btn-primary" href="#pricing">Upgrade</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Presets toolbar (client + Worker-backed) -->
-    <div class="card p-4 md:p-5 mb-4">
-      <div class="flex flex-wrap items-center gap-3">
-        <div class="flex items-center gap-2">
-          <label for="presetSelect" class="text-sm text-slate-600 dark:text-slate-300">Presets</label>
-          <select id="presetSelect" class="border rounded-lg px-3 py-2 min-w-[220px]">
-            <option value="">— Load preset —</option>
-          </select>
-        </div>
-        <button id="presetSave" class="btn" type="button" title="Save current settings as a preset">Save</button>
-        <button id="presetDelete" class="btn" type="button" title="Delete selected preset" disabled>Delete</button>
-        <span id="presetCapNote" class="text-xs text-slate-500">
-          Free: 1 preset • Starter: 10 • Creator/Business: Unlimited
-        </span>
-      </div>
-    </div>
-
-    <!-- Generator Form -->
-    <div class="card p-5 md:p-6">
-      <form id="demoForm" class="grid gap-6" autocomplete="off">
-        <!-- Source selector -->
-        <fieldset>
-          <legend class="text-sm font-semibold">Source</legend>
-
-          <!-- Batch mode + counter -->
-          <div class="mt-2 flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2">
-              <label class="inline-flex items-center gap-2">
-                <input type="checkbox" id="batchMode" name="batch_mode">
-                <span>Batch mode (each line = one input)</span>
-              </label>
-              <span class="chip" id="batchCounter">0 lines</span>
-            </div>
-            <span id="batchCapNote" class="text-xs text-slate-500">
-              Max per run — Free: 3 • Starter: 10 • Creator: 30 • Business: 60
-            </span>
-          </div>
-
-          <div class="mt-3 grid md:grid-cols-3 gap-3">
-            <label class="tab flex items-center justify-between">
-              <span class="flex items-center gap-2">
-                <input type="radio" name="sourceType" value="paragraph" checked>
-                Paragraph / Notes
-              </span>
-              <span class="chip">fastest</span>
-            </label>
-            <label class="tab flex items-center">
-              <input type="radio" name="sourceType" value="blog" class="mr-2">
-              Full Blog
-            </label>
-            <label class="tab flex items-center">
-              <input type="radio" name="sourceType" value="url" class="mr-2">
-              URL
-            </label>
-          </div>
-
-          <div class="mt-3">
-            <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]"
-              placeholder="Paste your paragraph, blog, or URL. Tip: enable Batch mode and put each micro-topic on its own line."></textarea>
-          </div>
-        </fieldset>
-
-        <!-- Optimizer options -->
-        <fieldset>
-          <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
-          <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen"> Lengthen content</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG image ideas</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> Check SEO basics (title/meta/alt-text)</label>
-          </div>
-          <div class="mt-2 flex items-center flex-wrap gap-2 text-[12px] text-slate-500">
-            <span class="chip">Starter: up to 10/day</span>
-            <span class="chip">Creator: up to 40/day</span>
-            <span class="chip">Business: up to 80/day</span>
-            <span id="optCapNote" class="text-[12px] text-slate-500">Signed-in Free: 1/day</span>
-          </div>
-        </fieldset>
-
-        <!-- Channels -->
-        <fieldset>
-          <legend class="text-sm font-semibold">Channels to generate</legend>
-          <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
-            <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
-          </div>
-        </fieldset>
-
-        <!-- Channel-specific extras -->
-        <div class="grid md:grid-cols-2 gap-6">
-          <fieldset class="card p-4">
-            <legend class="text-sm font-semibold">LinkedIn</legend>
-            <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label>
-            <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
-              Pro tip: Creator+ renders the article HTML block for one-click Notion export.
-            </div>
-          </fieldset>
-
-          <fieldset class="card p-4">
-            <legend class="text-sm font-semibold">X (Twitter)</legend>
-            <div class="mt-2 flex items-center gap-3">
-              <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
-              <label class="flex items-center gap-2">
-                Max posts:
-                <select name="x_posts" class="border rounded-lg px-2 py-1">
-                  <option>2</option><option selected>4</option><option>6</option>
-                </select>
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="card p-4">
-            <legend class="text-sm font-semibold">Reddit</legend>
-            <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
-            <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
-          </fieldset>
-
-          <fieldset class="card p-4">
-            <legend class="text-sm font-semibold">TikTok</legend>
-            <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
-            <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label>
-          </fieldset>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex flex-wrap items-center gap-3">
-          <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">
-            Generate (demo)
-          </button>
-          <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
-            Generate
-          </button>
-          <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-
-          <!-- Quota copy varies -->
-          <div class="text-sm text-slate-500 only-guest">
-            You have <span id="demoQuota">—</span> demo runs left this month.
-          </div>
-          <div class="text-sm text-slate-500 only-authed hidden">
-            You have <span id="memberQuota">—</span> runs left today.
-          </div>
-
-          <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
-        </div>
-      </form>
-    </div>
-
-    <!-- OUTPUT -->
-    <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false">
-      <!-- Channel cards will be injected here -->
-    </div>
-
-    <!-- ===== QUICK PUBLISH ===== -->
-    <!-- Locked preview for guests (see, but can’t use) -->
-    <div class="mt-10 card p-5 only-guest">
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <strong class="tracking-tight">Quick publish</strong>
-        <div class="text-xs text-slate-500">Unlock with Starter or higher.</div>
-      </div>
-      <div class="relative mt-4">
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 opacity-60 pointer-events-none select-none">
-          <button class="btn">Post to X</button>
-          <button class="btn">Open Reddit submit</button>
-          <button class="btn">Copy for LinkedIn & open</button>
-          <button class="btn">Send email draft</button>
-        </div>
-        <div class="absolute inset-0 flex items-center justify-center">
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white text-sm">Upgrade to unlock</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Active for authed users (wired later) -->
-    <div class="mt-10 card p-5 only-authed hidden">
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <strong class="tracking-tight">Quick publish</strong>
-        <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
-      </div>
-      <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <button id="qp-x" class="btn">Post to X</button>
-        <button id="qp-reddit" class="btn">Open Reddit submit</button>
-        <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
-        <button id="qp-email" class="btn">Send email draft</button>
-      </div>
-
-      <!-- Creator+ integrations -->
-      <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
-        <button id="li-notion" class="btn">Export to Notion</button>
-        <button id="li-trello" class="btn">Send to Trello</button>
-      </div>
-      <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
-        Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
-      </div>
-    </div>
-  </div>
-</section>
-<!-- ===== BEST PICKS (Plan picker) ===== -->
-<section id="best-picks" class="relative scroll-mt-24">
-  <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-    <div class="text-center mb-8">
-      <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks for you</h2>
-      <p class="mt-2 text-slate-600 dark:text-slate-300">
-        Choose the plan that matches how you publish. See exactly what unlocks and why it matters.
+      <p class="text-sm text-slate-600 dark:text-slate-300">
+        Based on what most users with similar goals choose, here’s what we recommend:
       </p>
-    </div>
-
-    <!-- Quick guidance chips -->
-    <div class="flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
-      <span class="chip">Solo creator</span>
-      <span class="chip">Newsletter</span>
-      <span class="chip">Startup marketer</span>
-      <span class="chip">Agency / Team</span>
-    </div>
-
-    <!-- Plan cards (direct checkout-ready; uses same data-price IDs as Pricing) -->
-    <div class="grid lg:grid-cols-4 gap-6 mt-8">
-      <!-- Free -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
-        <h3 class="mt-3 text-xl font-bold">Explore & validate</h3>
-        <p class="mt-2 text-slate-500 dark:text-slate-300 text-sm">
-          Test fit and workflow. Great for dabbling or evaluating.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• Generator: <strong>5 runs/day (signed-in)</strong></li>
-          <li>• Demo (no login): <strong>5 runs/month</strong></li>
-          <li>• Optimizer: <strong>1/day</strong> <span class="text-slate-400">(any toggle)</span></li>
-          <li>• BYOK: <strong>5/day</strong></li>
-          <li>• 1 saved preset</li>
-          <li class="opacity-70">• <span class="line-through">Scheduler</span> <span class="chip">Unlock in Starter</span></li>
-          <li class="opacity-70">• <span class="line-through">Analytics</span> <span class="chip">Unlock in Starter</span></li>
-          <li class="opacity-70">• <span class="line-through">Notion/Trello export</span> <span class="chip">Unlock in Creator</span></li>
-        </ul>
-        <a href="#demo" class="mt-6 block text-center btn">Start free</a>
-        <div class="mt-3 text-[12px] text-slate-500">
-          Learn: <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social post generator</a>
+      <div class="grid gap-3">
+        <div class="card p-4">
+          <strong>Creator — $19/mo</strong>
+          <p class="text-sm mt-1 text-slate-500">500 generations/month, Optimizer 15/day, Scheduler (multi-profile), Analytics Pro, Notion/Trello/Buffer.</p>
+          <div class="mt-2 flex gap-2">
+            <a href="#pricing" class="btn btn-primary">See Creator details</a>
+            <button type="button" class="btn js-checkout" data-price="price_1S7y77JYjIKHzKcjKQYjiqZH">Start Creator</button>
+          </div>
+        </div>
+        <div class="card p-4">
+          <strong>Starter — $9/mo</strong>
+          <p class="text-sm mt-1 text-slate-500">200 generations/month, Optimizer 5/day, Scheduler (single profile), Analytics basics.</p>
+          <div class="mt-2 flex gap-2">
+            <a href="#pricing" class="btn">See Starter details</a>
+            <button type="button" class="btn js-checkout" data-price="price_1S7y58JYjIKHzKcjzL7cIKiB">Start Starter</button>
+          </div>
+        </div>
+        <div class="card p-4">
+          <strong>Business — $49/mo</strong>
+          <p class="text-sm mt-1 text-slate-500">Unlimited (fair use), 3 seats, Team analytics, shared calendar, white-label export.</p>
+          <div class="mt-2 flex gap-2">
+            <a href="#pricing" class="btn">See Business details</a>
+            <button type="button" class="btn js-checkout" data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh">Start Business</button>
+          </div>
         </div>
       </div>
+      <p class="text-xs text-slate-500">Tip: Free users get a preview of all features, but some actions are locked until you upgrade.</p>
+    </form>
+  </dialog>
 
-      <!-- Starter -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-        <h3 class="mt-3 text-xl font-bold">Consistent posting</h3>
-        <p class="mt-2 text-slate-500 dark:text-slate-300 text-sm">
-          Ideal if you post several times a week and want a queue.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>200</strong> generations/month</li>
-          <li>• Batch inputs: <strong>up to 10/run</strong></li>
-          <li>• <strong>10</strong> saved presets</li>
-          <li>• <strong>Scheduler</strong> (single profile)</li>
-          <li>• <strong>Analytics</strong> (basics)</li>
-          <li>• Optimizer: <strong>10/day</strong></li>
-          <li>• BYOK: <strong>50/month</strong> (+5 daily bonus)</li>
-        </ul>
-        <button
-          data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-          class="mt-6 w-full btn btn-primary js-checkout subBtn"
-          type="button">Get Starter</button>
-        <div class="mt-3 text-[12px] text-slate-500">
-          Why: <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/">Paste once, multi-channel</a>
-        </div>
-      </div>
-
-      <!-- Creator (featured) -->
-      <div class="card p-6 flex flex-col ring-1 ring-black/5 relative">
-        <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
-        <h3 class="mt-1 text-xl font-bold">Creator</h3>
-        <p class="mt-2 text-slate-500 dark:text-slate-300 text-sm">
-          For daily publishing and cross-platform workflows.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>500</strong> generations/month</li>
-          <li>• Batch inputs: <strong>up to 30/run</strong></li>
-          <li>• <strong>Unlimited</strong> presets</li>
-          <li>• <strong>Scheduler</strong> (multi-profile)</li>
-          <li>• <strong>Analytics Pro</strong> (per-channel)</li>
-          <li>• <strong>Notion export</strong> & <strong>Trello boards</strong></li>
-          <li>• <strong>Buffer</strong> push for drafts</li>
-          <li>• Optimizer: <strong>40/day</strong></li>
-          <li>• BYOK: <strong>150/month</strong> (+10 daily)</li>
-        </ul>
-        <button
-          data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-          class="mt-6 w-full btn btn-primary js-checkout subBtn"
-          type="button">Get Creator</button>
-        <div class="mt-3 text-[12px] text-slate-500">
-          Why: <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion/Trello export</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing-examples-workflows/">Workflows</a>
-        </div>
-      </div>
-
-      <!-- Business -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
-        <h3 class="mt-3 text-xl font-bold">Business</h3>
-        <p class="mt-2 text-slate-500 dark:text-slate-300 text-sm">
-          For teams, agencies and org-wide calendars.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>Unlimited*</strong> generations <span class="text-slate-400">(fair use)</span></li>
-          <li>• <strong>3 seats</strong> included</li>
-          <li>• White-label export</li>
-          <li>• Priority support</li>
-          <li>• Team presets & shared calendar</li>
-          <li>• Optimizer: <strong>80/day</strong></li>
-          <li>• BYOK: <strong>300/month</strong> (+30 daily)</li>
-          <li>• Team Analytics (org-wide)</li>
-        </ul>
-        <button
-          data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-          class="mt-6 w-full btn js-checkout subBtn"
-          type="button">Get Business</button>
-        <div class="mt-3 text-[12px] text-slate-500">
-          Why: <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-strategy/">Strategy</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/">ROI</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contextual nudge based on current plan (just reads data-plan for copy) -->
-    <div class="mt-8 text-center text-sm text-slate-500">
-      <span class="only-guest">Tip: Sign in to see your personalized caps and unlock Scheduler previews.</span>
-      <span class="only-authed hidden">You’re on <strong id="bpPlanName">Free</strong>. Upgrade to unlock Scheduler, Analytics, and more.</span>
-    </div>
-  </div>
-</section>
-
-<!-- ===== USE CASES ===== -->
-<section id="use-cases" class="relative scroll-mt-24">
-  <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-    <div class="text-center mb-8">
-      <h2 class="text-3xl md:text-4xl font-black tracking-tight">Use cases</h2>
-      <p class="mt-2 text-slate-600 dark:text-slate-300">
-        Proven workflows for creators, marketers, newsletters and teams.
-      </p>
-    </div>
-
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Creators -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">Creators & solopreneurs</h3>
-          <span class="badge">Starter+</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Turn one idea into a week of LinkedIn, X and Instagram posts. Queue with Scheduler.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• Hooks, lines & CTAs tuned per platform</li>
-          <li>• Batch 10–30 topics at once (plan-based)</li>
-          <li>• Quick Publish to speed up posting</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/linkedin-post-templates/">LinkedIn templates</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/">One piece → multiple platforms</a>
-        </div>
-      </article>
-
-      <!-- Marketers -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">Startup & brand marketers</h3>
-          <span class="badge">Creator+</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Repurpose blog posts into multi-channel campaigns with Notion/Trello hand-off.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• Notion pages & Trello cards in one click</li>
-          <li>• Per-channel Analytics to see what wins</li>
-          <li>• Buffer push for draft scheduling</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/">Repurpose blog → social</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">AI content repurposing</a>
-        </div>
-      </article>
-
-      <!-- Newsletters -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">Newsletters & media</h3>
-          <span class="badge">Creator+</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Summarize long issues, generate email subjects, and spin out platform-ready snippets.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• Email subject + body drafts</li>
-          <li>• Instagram captions + hashtags</li>
-          <li>• Reddit variants with community suggestions</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-101/">Content repurposing 101</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/">AI vs manual</a>
-        </div>
-      </article>
-
-      <!-- Agencies / Teams -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">Agencies & teams</h3>
-          <span class="badge">Business</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Shared calendar, team presets and org-level analytics with fair-use generations.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• 3 seats included; invite more with seats</li>
-          <li>• White-label exports</li>
-          <li>• Team Analytics & org-wide caps</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/contentrepurpose-vs-missinglettr/">CR vs Missinglettr</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/">Best tools 2025</a>
-        </div>
-      </article>
-
-      <!-- SEO / Growth -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">SEO & growth</h3>
-          <span class="badge">All plans</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Use Optimizer to add FAQs (JSON-LD), fix titles/meta, and keep alt text on point.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• FAQ schema & heading structure</li>
-          <li>• Keyword-aware rewrites</li>
-          <li>• SVG ideas for posts</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Repurposing for SEO</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-search-ranking-with-repurposed-content/">AI & rankings</a>
-        </div>
-      </article>
-
-      <!-- Thought leadership -->
-      <article class="card p-5">
-        <div class="flex items-center justify-between">
-          <h3 class="font-semibold tracking-tight">Thought leadership</h3>
-          <span class="badge">Starter+</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-          Create LinkedIn-first threads, port to email & X, then track performance by channel.
-        </p>
-        <ul class="mt-3 text-sm space-y-1">
-          <li>• LinkedIn + X sequences</li>
-          <li>• Email subject lines that pull</li>
-          <li>• Per-channel Analytics (Creator+)</li>
-        </ul>
-        <div class="mt-3 text-xs text-slate-500">
-          Learn:
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/">Free LinkedIn post generator</a> •
-          <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-ideas/">Repurposing ideas</a>
-        </div>
-      </article>
-    </div>
-
-    <!-- CTA -->
-    <div class="text-center mt-10">
-      <a href="#pricing" class="btn btn-primary">Compare full pricing</a>
-    </div>
-  </div>
-</section>
-<!-- ===== PRICING (enhanced) ===== -->
-<section id="pricing" class="relative scroll-mt-24">
-  <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-    <div class="text-center mb-10">
-      <h2 class="text-3xl md:text-4xl font-black tracking-tight">Simple, honest pricing</h2>
-      <p class="mt-2 text-slate-600 dark:text-slate-300">Start free. Add power when you need it.</p>
-    </div>
-
-    <!-- Conversion rail -->
-    <div class="card p-4 md:p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2 text-sm">
-        <span class="badge">LIMITED</span>
-        <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> your first month of <strong>Creator</strong>.</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="copyPromoBtn_pr" class="btn" type="button">Copy code</button>
-
-        <!-- Guests see demo / sign-in -->
-        <a href="#demo" class="btn only-guest">Try Demo</a>
-        <button class="btn js-open-auth only-guest" type="button">Sign in</button>
-
-        <!-- Authed users see billing controls -->
-        <button id="manageBilling2" class="btn only-authed hidden" type="button">Manage billing</button>
-      </div>
-    </div>
-
-    <!-- Pricing grid -->
-    <div class="grid lg:grid-cols-4 gap-6">
-      <!-- FREE -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Free</div>
-        <h3 class="mt-3 text-xl font-bold">Demo + Account</h3>
-        <div class="mt-2 text-3xl font-extrabold">$0<span class="text-sm text-slate-500">/forever</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• Demo (no login): <strong>5 runs / month</strong></li>
-          <li>• Free account: <strong>5 runs / day</strong></li>
-          <li>• Optimizer: <strong>1/day</strong> (any toggle)</li>
-          <li>• BYOK: <strong>5/day</strong></li>
-          <li>• <strong>1</strong> saved preset</li>
-          <li>• Batch inputs: <strong>up to 3/run</strong></li>
-          <li>• CSV/Markdown export</li>
-          <li class="opacity-70">• <span class="line-through">Scheduler</span> <span class="chip">Unlock in Starter</span></li>
-          <li class="opacity-70">• <span class="line-through">Analytics</span> <span class="chip">Unlock in Starter</span></li>
-          <li class="opacity-70">• <span class="line-through">Notion/Trello</span> <span class="chip">Unlock in Creator</span></li>
-        </ul>
-        <a href="#demo" class="mt-6 block text-center btn">Start free</a>
-      </div>
-
-      <!-- STARTER -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
-        <h3 class="mt-3 text-xl font-bold">Solo Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$9<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>200 generations / month</strong></li>
-          <li>• Batch inputs: <strong>up to 10/run</strong></li>
-          <li>• <strong>10</strong> saved presets</li>
-          <li>• <strong>Scheduler</strong> (queue & calendar)</li>
-          <li>• <strong>Analytics</strong> (basics)</li>
-          <li>• Optimizer: <strong>10/day</strong></li>
-          <li>• BYOK: <strong>50 / month</strong> (+5 daily headroom)</li>
-        </ul>
-        <button
-          data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
-          class="mt-6 w-full btn btn-primary js-checkout subBtn"
-          type="button">Get Starter</button>
-      </div>
-
-      <!-- CREATOR (featured) -->
-      <div class="card p-6 flex flex-col ring-1 ring-black/5 relative">
-        <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs px-3 py-1 rounded-full bg-grad text-white shadow">Best value</span>
-        <h3 class="mt-1 text-xl font-bold">Creator</h3>
-        <div class="mt-2 text-3xl font-extrabold">$19<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>500 generations / month</strong></li>
-          <li>• Batch inputs: <strong>up to 30/run</strong></li>
-          <li>• <strong>Unlimited</strong> presets</li>
-          <li>• <strong>Scheduler</strong> (multi-profile)</li>
-          <li>• <strong>Analytics Pro</strong> (per-channel)</li>
-          <li>• <strong>Notion export</strong> & <strong>Trello boards</strong></li>
-          <li>• <strong>Buffer</strong> push for drafts</li>
-          <li>• Optimizer: <strong>40/day</strong></li>
-          <li>• BYOK: <strong>150 / month</strong> (+10 daily)</li>
-        </ul>
-        <button
-          data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
-          class="mt-6 w-full btn btn-primary js-checkout subBtn"
-          type="button">Get Creator</button>
-      </div>
-
-      <!-- BUSINESS -->
-      <div class="card p-6 flex flex-col">
-        <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Team</div>
-        <h3 class="mt-3 text-xl font-bold">Business</h3>
-        <div class="mt-2 text-3xl font-extrabold">$49<span class="text-sm text-slate-500">/mo</span></div>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• <strong>Unlimited</strong> (fair use)</li>
-          <li>• <strong>3 seats</strong> included</li>
-          <li>• White-label export</li>
-          <li>• Priority support</li>
-          <li>• Team presets & shared calendar</li>
-          <li>• Optimizer: <strong>80/day</strong></li>
-          <li>• BYOK: <strong>300 / month</strong> (+30 daily)</li>
-          <li>• <strong>Team Analytics</strong> (org-wide)</li>
-        </ul>
-        <button
-          data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-          class="mt-6 w-full btn js-checkout subBtn"
-          type="button">Get Business</button>
-      </div>
-    </div>
-
-    <!-- Why upgrade (tight, benefit-first) -->
-    <div class="grid md:grid-cols-3 gap-6 mt-10">
-      <div class="stat">
-        <div class="k">Faster queues</div>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Paid lanes hit priority models with fewer rate limits.</p>
-      </div>
-      <div class="stat">
-        <div class="k">Scheduler</div>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Queue multi-channel posts and see your week at a glance.</p>
-      </div>
-      <div class="stat">
-        <div class="k">Integrations</div>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Push to Notion, Trello, and Buffer in one click.</p>
-      </div>
-    </div>
-
-    <!-- ===== FAQ ===== -->
-    <div id="faq" class="mt-14">
-      <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
-      <div class="mt-6 grid md:grid-cols-2 gap-4">
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">What counts as a “generation”?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Any click on <em>Generate</em> that returns content (demo or signed-in). In Batch mode, each line counts as one.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">Is the Article Optimizer included?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Yes across plans. Daily caps by tier. Free (signed-in) gets one verified run/day. Learn more about
-            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">SEO repurposing</a>.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            “Bring Your Own Key.” Use your own model API key for extra capacity. Keys aren’t stored in plaintext. See our
-            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing/">guide</a>.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">Can I cancel anytime?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Absolutely. Manage billing from your dashboard; your plan remains active until the end of the cycle.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram. See
-            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion/Trello export</a>.
-          </p>
-        </details>
-
-        <details class="card p-4">
-          <summary class="font-semibold cursor-pointer">Do you have templates?</summary>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-            Yes — grab our popular <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/linkedin-post-templates/">LinkedIn post templates</a>.
-          </p>
-        </details>
-      </div>
-    </div>
-  </div>
-
-  <!-- Updated FAQ JSON-LD -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"FAQPage",
-    "mainEntity":[
-      {"@type":"Question","name":"What counts as a “generation”?","acceptedAnswer":{"@type":"Answer","text":"Any click on Generate that returns content (demo or signed-in). In Batch mode, each line counts as one."}},
-      {"@type":"Question","name":"Is the Article Optimizer included?","acceptedAnswer":{"@type":"Answer","text":"Yes across plans. Daily caps by tier. Free (signed-in) gets one verified run/day."}},
-      {"@type":"Question","name":"What is BYOK?","acceptedAnswer":{"@type":"Answer","text":"Bring Your Own Key — use your own model API key for extra capacity. Keys aren’t stored in plaintext."}},
-      {"@type":"Question","name":"Can I cancel anytime?","acceptedAnswer":{"@type":"Answer","text":"Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle."}},
-      {"@type":"Question","name":"Do you support teams?","acceptedAnswer":{"@type":"Answer","text":"Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports."}},
-      {"@type":"Question","name":"Which platforms can you export to?","acceptedAnswer":{"@type":"Answer","text":"Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram."}},
-      {"@type":"Question","name":"Do you have templates?","acceptedAnswer":{"@type":"Answer","text":"Yes — see our LinkedIn post templates."}}
-    ]
-  }
+  <script>
+    // Best Picks modal openers
+    document.addEventListener("DOMContentLoaded", function(){
+      var d = document.getElementById("bestPicksDialog");
+      var open1 = document.getElementById("openBestPicks");
+      var open2 = document.getElementById("openBestPicks_m");
+      function openDlg(e){ try{ e && e.preventDefault(); d && d.showModal(); }catch{} }
+      open1 && open1.addEventListener("click", openDlg);
+      open2 && open2.addEventListener("click", openDlg);
+    });
   </script>
-</section>
+  <!-- ===== LIVE DEMO / GENERATOR ===== -->
+  <section id="demo" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
+            No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.
+          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
+            Signed in — your plan limits apply per day/month by tier.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#pricing" class="btn">See pricing</a>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
+        </div>
+      </div>
 
-<!-- ===== FOOTER (with internal links for topical authority) ===== -->
-<footer class="mt-20 border-top border-white/30">
-  <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm grid md:grid-cols-4 gap-8">
-    <div>
-      <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
-      <p class="mt-2 opacity-70">Paste once → publish everywhere. Repurpose content with AI.</p>
+      <!-- Promo rail -->
+      <div class="card p-4 md:p-5 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="badge">LIMITED</span>
+            <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
+            <a class="btn btn-primary" href="#pricing">Upgrade</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generator Form -->
+      <div class="card p-5 md:p-6">
+        <!-- Hard guards to prevent navigation even if JS is late -->
+        <form id="demoForm" class="grid gap-6" method="post" action="javascript:void(0)" onsubmit="return false" autocomplete="off" novalidate>
+          <!-- Source selector -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Source</legend>
+            <div class="mt-2 grid md:grid-cols-3 gap-3">
+              <label class="tab flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                  <input type="radio" name="sourceType" value="paragraph" checked>
+                  Paragraph / Notes
+                </span>
+                <span class="chip">fastest</span>
+              </label>
+              <label class="tab flex items-center">
+                <input type="radio" name="sourceType" value="blog" class="mr-2">
+                Full Blog
+              </label>
+              <label class="tab flex items-center">
+                <input type="radio" name="sourceType" value="url" class="mr-2">
+                URL
+              </label>
+            </div>
+            <div class="mt-3">
+              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]"
+                placeholder="Paste your paragraph or blog. If you selected URL, paste it here."></textarea>
+            </div>
+          </fieldset>
+
+          <!-- Optimizer options (light) -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
+            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen"> Lengthen content</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG image ideas</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo"> Check SEO basics (title/meta/alt-text)</label>
+            </div>
+            <div class="mt-2 text-[12px] text-slate-500">
+              <span class="chip">Starter: up to 5/day</span>
+              <span class="chip">Creator: up to 15/day</span>
+              <span class="chip">Business: up to 30/day</span>
+            </div>
+          </fieldset>
+
+          <!-- Channels -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Channels to generate</legend>
+            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
+            </div>
+          </fieldset>
+
+          <!-- Channel-specific extras -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">LinkedIn</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">X (Twitter)</legend>
+              <div class="mt-2 flex items-center gap-3">
+                <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
+                <label class="flex items-center gap-2">
+                  Max posts:
+                  <select name="x_posts" class="border rounded-lg px-2 py-1">
+                    <option>2</option><option selected>4</option><option>6</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">Reddit</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">TikTok</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label>
+            </fieldset>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Buttons are type=button to avoid any native submit navigation -->
+            <button id="generateBtn" type="button" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">
+              Generate (demo)
+            </button>
+            <button id="generateBtn_member" type="button" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
+              Generate
+            </button>
+            <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
+
+            <div class="text-sm text-slate-500 only-guest">
+              You have <span id="demoQuota">—</span> demo runs left this month.
+            </div>
+            <div class="text-sm text-slate-500 only-authed hidden">
+              You have <span id="memberQuota">—</span> runs left today.
+            </div>
+
+            <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- OUTPUT -->
+      <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false">
+        <!-- Channel cards will be injected here -->
+      </div>
+
+      <!-- Quick Publish (authed only; Free can see, guests can’t) -->
+      <div class="mt-10 card p-5 only-authed hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <strong class="tracking-tight">Quick publish</strong>
+          <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
+        </div>
+        <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <button id="qp-x" class="btn">Post to X</button>
+          <button id="qp-reddit" class="btn">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
+          <button id="qp-email" class="btn">Send email draft</button>
+        </div>
+
+        <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
+          <button id="li-notion" class="btn">Export to Notion</button>
+          <button id="li-trello" class="btn">Send to Trello</button>
+        </div>
+        <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
+          Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
+        </div>
+      </div>
+
+      <!-- Live strip -->
+      <div class="mt-10">
+        <div class="card p-4 md:p-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <strong class="tracking-tight">Generations today</strong>
+              <span id="liveCount" class="chip">–</span>
+            </div>
+            <div class="text-xs text-slate-500">Real results update every 30s</div>
+          </div>
+          <div class="mt-3 overflow-hidden">
+            <div id="liveFeed" class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite"></div>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <div>
-      <div class="font-semibold mb-2">Product</div>
-      <ul class="space-y-2 opacity-80">
-        <li><a href="#demo" class="hover:opacity-100">Live Demo</a></li>
-        <li><a href="#best-picks" class="hover:opacity-100">Best Picks</a></li>
-        <li><a href="#use-cases" class="hover:opacity-100">Use Cases</a></li>
-        <li><a href="#pricing" class="hover:opacity-100">Pricing</a></li>
-        <li class="only-authed hidden"><button id="manageBilling" class="px-0 py-0 underline">Manage billing</button></li>
-      </ul>
+  <!-- ===== ARTICLE OPTIMIZER (SEO) ===== -->
+  <section id="optimizer" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Optimize Article (SEO)</h2>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
+            Sign in to run the optimizer. Free accounts get 1 verified run.
+          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
+            Starter: 5/day • Creator: 15/day • Business: 30/day
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#pricing" class="btn">See pricing</a>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
+        </div>
+      </div>
+
+      <!-- Optimizer form -->
+      <div class="card p-5 md:p-6">
+        <form id="optimizerForm" class="grid gap-6" method="post" action="javascript:void(0)" onsubmit="return false" autocomplete="off" novalidate>
+          <!-- Input -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Source (URL or Article)</legend>
+            <div class="grid md:grid-cols-3 gap-3">
+              <label class="grid gap-1 md:col-span-2">
+                <span class="text-xs text-slate-500">URL (optional)</span>
+                <input id="optUrl" type="url" class="border rounded-xl px-3 py-2" placeholder="https://example.com/your-article" />
+              </label>
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">Target keyword</span>
+                <input id="optKeyword" type="text" class="border rounded-xl px-3 py-2" placeholder="e.g. content repurposing for SEO" />
+              </label>
+            </div>
+            <label class="grid gap-1 mt-3">
+              <span class="text-xs text-slate-500">Paste article (Markdown or plain text)</span>
+              <textarea id="optArticle" class="w-full rounded-xl border p-4 min-h-[180px]" placeholder="Paste your article content…"></textarea>
+            </label>
+          </fieldset>
+
+          <!-- Options -->
+          <fieldset>
+            <legend class="text-sm font-semibold">What to improve</legend>
+            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_len30" checked> Lengthen by ~30%</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_h2h3" checked> Improve H2/H3 structure</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs_ld" checked> Add FAQs (with JSON-LD)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Better meta title & description</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_ctr" checked> CTR ideas (A/B titles)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_rank" checked> Likelihood to rank + gaps</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_altkw" checked> Alternative keywords to target</label>
+            </div>
+          </fieldset>
+
+          <!-- Actions (locked UI hint for free) -->
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="runOptimizerBtn" type="button" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
+              Optimize article
+            </button>
+            <button type="button" class="px-4 py-3 rounded-xl font-semibold border only-guest">
+              Unlock Optimizer (free preview)
+            </button>
+            <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">See plans</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Optimizer Output -->
+      <div id="optimizerOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
+
+      <!-- Internal resources for topical authority -->
+      <div class="mt-10">
+        <div class="card p-5">
+          <strong class="tracking-tight">Learn & get more from the Optimizer</strong>
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3 text-sm">
+            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" target="_blank" rel="noopener">Content repurposing for SEO</a>
+            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-content-repurposing/" target="_blank" rel="noopener">AI content repurposing</a>
+            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" target="_blank" rel="noopener">Paste once, multi-channel</a>
+            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" target="_blank" rel="noopener">AI social media post generator</a>
+            <a class="underline hover:opacity-80" href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" target="_blank" rel="noopener">Repurpose blog → social</a>
+            <a class="underline hover:opacity-80" href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" target="_blank" rel="noopener">Free AI LinkedIn post generator</a>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <div>
-      <div class="font-semibold mb-2">Learn</div>
-      <ul class="space-y-2 opacity-80">
-        <li><a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-100">LinkedIn post templates</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" class="hover:opacity-100">AI social post generator</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/repurpose-blog-post-for-social-media/" class="hover:opacity-100">Repurpose blog → social</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" class="hover:opacity-100">Paste once, multi-channel</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/notion-trello-export/" class="hover:opacity-100">Notion & Trello export</a></li>
-      </ul>
+  <!-- Guard: disable native submit on these forms if any script races -->
+  <script>
+    (function(){
+      try{
+        ["demoForm","optimizerForm"].forEach(function(id){
+          var f = document.getElementById(id);
+          if (!f) return;
+          f.setAttribute("method","post");
+          f.setAttribute("action","javascript:void(0)");
+          f.addEventListener("submit", function(e){ e.preventDefault(); return false; });
+        });
+        // Also prevent default on the Generate buttons in case listeners attach late
+        var gb = document.getElementById("generateBtn");
+        var gm = document.getElementById("generateBtn_member");
+        [gb,gm].filter(Boolean).forEach(function(b){
+          b.addEventListener("click", function(e){ e.preventDefault(); /* handlers in Part 6 will run */ });
+        });
+        var ro = document.getElementById("runOptimizerBtn");
+        if (ro) ro.addEventListener("click", function(e){ e.preventDefault(); /* actual handler in Part 6 */ });
+      }catch(e){}
+    })();
+  </script>
+  <!-- ===== USE CASES ===== -->
+  <section id="use-cases" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Use cases</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">From one idea → everywhere content.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Solo creator (Free → Starter) -->
+        <article class="card p-5 relative">
+          <div class="flex items-center gap-2">
+            <span class="chip">Solo</span>
+            <span class="chip">Writing cadence</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Turn blogs into weekly LinkedIn + X</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+            Paste a paragraph or full blog, get platform-native drafts + optional LinkedIn Article.
+          </p>
+          <ul class="mt-4 text-sm space-y-1">
+            <li>• Generator (multi-channel)</li>
+            <li>• Sequence threads for X</li>
+            <li class="opacity-70">• Scheduler queue <span class="chip">Starter+</span></li>
+          </ul>
+          <div class="mt-5 flex gap-2">
+            <a class="btn btn-primary" href="#demo">Try generator</a>
+            <button class="btn" type="button" data-open-advisor="solo">See best plan</button>
+          </div>
+          <div class="absolute top-3 right-3 text-xs px-2 py-1 rounded bg-white/70 dark:bg-white/10 border">Free-friendly</div>
+        </article>
+
+        <!-- SEO content team (Starter → Creator) -->
+        <article class="card p-5 relative">
+          <div class="flex items-center gap-2">
+            <span class="chip">SEO</span>
+            <span class="chip">Content ops</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Revive posts with SEO & repurpose</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+            Optimize articles for a target keyword, auto-H2/H3, FAQs (JSON-LD) and CTR titles — then repurpose.
+          </p>
+          <ul class="mt-4 text-sm space-y-1">
+            <li>• Article Optimizer <span class="chip">Starter+</span></li>
+            <li>• LinkedIn + Email repurposing</li>
+            <li class="opacity-70">• Notion/Trello export <span class="chip">Creator+</span></li>
+          </ul>
+          <div class="mt-5 flex gap-2">
+            <a class="btn btn-primary" href="#optimizer">Run optimizer</a>
+            <button class="btn" type="button" data-open-advisor="seo">See best plan</button>
+          </div>
+          <div class="absolute top-3 right-3 text-xs px-2 py-1 rounded bg-white/70 dark:bg-white/10 border">Starter+</div>
+        </article>
+
+        <!-- Team workflows (Business) -->
+        <article class="card p-5 relative">
+          <div class="flex items-center gap-2">
+            <span class="chip">Team</span>
+            <span class="chip">Org-wide</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Multi-seat calendar & analytics</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+            Shared scheduler, team presets, org analytics and white-label exports.
+          </p>
+          <ul class="mt-4 text-sm space-y-1">
+            <li>• Shared calendar & queue</li>
+            <li>• Team presets & review</li>
+            <li>• Org analytics dashboard</li>
+          </ul>
+          <div class="mt-5 flex gap-2">
+            <a class="btn btn-primary" href="#pricing">Compare plans</a>
+            <button class="btn" type="button" data-open-advisor="team">See best plan</button>
+          </div>
+          <div class="absolute top-3 right-3 text-xs px-2 py-1 rounded bg-white/70 dark:bg-white/10 border">Business</div>
+        </article>
+
+        <!-- Locked example tiles (visible to Free; no interaction) -->
+        <article class="card p-5 plan-starter-plus">
+          <div class="flex items-center gap-2">
+            <span class="chip">Queues</span>
+            <span class="chip">Timing</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Schedule the week in 10 minutes</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Drag-drop queue and calendar view.</p>
+          <div class="mt-4 flex gap-2">
+            <a class="btn" href="#demo">Open scheduler</a>
+          </div>
+        </article>
+
+        <article class="card p-5 relative">
+          <div class="absolute inset-0 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-sm flex items-center justify-center plan-free-only"></div>
+          <div class="absolute top-3 right-3 text-xs px-2 py-1 rounded bg-white/70 dark:bg-white/10 border plan-free-only">Locked</div>
+          <div class="flex items-center gap-2">
+            <span class="chip">Export</span>
+            <span class="chip">Workflows</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Ship to Notion & Trello</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Send drafts to your workspace in one click.</p>
+          <div class="mt-4 flex gap-2">
+            <button class="btn plan-creator-plus" type="button" id="tryNotionBtn">Try Notion export</button>
+            <button class="btn plan-creator-plus" type="button" id="tryTrelloBtn">Try Trello export</button>
+            <a class="btn plan-free-only" href="#pricing">Unlock on Creator</a>
+          </div>
+        </article>
+
+        <article class="card p-5 relative">
+          <div class="absolute inset-0 rounded-xl bg-black/5 dark:bg-white/5 backdrop-blur-sm flex items-center justify-center plan-free-only"></div>
+          <div class="absolute top-3 right-3 text-xs px-2 py-1 rounded bg-white/70 dark:bg-white/10 border plan-free-only">Locked</div>
+          <div class="flex items-center gap-2">
+            <span class="chip">Analytics</span>
+            <span class="chip">Growth</span>
+          </div>
+          <h3 class="mt-3 text-lg font-bold">Channel analytics</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Per-channel breakdown and org-level stats.</p>
+          <div class="mt-4 text-sm text-slate-500 plan-creator-plus">Connect channels to see data.</div>
+          <a class="btn plan-free-only mt-4" href="#pricing">Unlock on Starter+</a>
+        </article>
+      </div>
+
+      <!-- Templates deep link (always visible) -->
+      <div class="text-center mt-12">
+        <a class="inline-flex items-center gap-2 btn btn-primary"
+           href="https://contentrepurpose.pro/blog/linkedin-post-templates/"
+           target="_blank" rel="noopener">
+          Browse LinkedIn Templates
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+        </a>
+      </div>
     </div>
+  </section>
 
-    <div>
-      <div class="font-semibold mb-2">Deep dives</div>
-      <ul class="space-y-2 opacity-80">
-        <li><a href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" class="hover:opacity-100">Repurposing for SEO</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/ai-content-repurposing/" class="hover:opacity-100">AI content repurposing</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" class="hover:opacity-100">Best tools 2025</a></li>
-        <li><a href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/" class="hover:opacity-100">AI vs manual</a></li>
-        <li><a href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" class="hover:opacity-100">Free LinkedIn generator</a></li>
-      </ul>
+  <!-- ===== BEST PICKS (Advisor) ===== -->
+  <section id="best-picks" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Tell us how you publish — we’ll recommend the right plan.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Card options open the advisor -->
+        <article class="card p-5 text-center">
+          <h3 class="text-lg font-bold">Solo creator</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">1 profile • 2–4 posts/week</p>
+          <button class="btn btn-primary mt-4" type="button" data-open-advisor="solo">See my pick</button>
+        </article>
+        <article class="card p-5 text-center">
+          <h3 class="text-lg font-bold">Growing brand</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Multi-channel • templates & exports</p>
+          <button class="btn btn-primary mt-4" type="button" data-open-advisor="brand">See my pick</button>
+        </article>
+        <article class="card p-5 text-center">
+          <h3 class="text-lg font-bold">Team / Agency</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">3+ seats • shared calendar</p>
+          <button class="btn btn-primary mt-4" type="button" data-open-advisor="team">See my pick</button>
+        </article>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="max-w-7xl mx-auto px-4 md:px-5 pb-8 text-sm flex flex-wrap items-center justify-between gap-3 opacity-80">
-    <nav class="flex items-center gap-4">
-      <a href="#pricing" class="hover:opacity-100">Pricing</a>
-      <a href="/blog" class="hover:opacity-100">Blog</a>
-      <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
-    </nav>
-    <div>Made for creators, marketers & teams.</div>
-  </div>
-</footer>
-<!-- ===== PART 5 PATCH: Plan previews, Batch caps, Optimizer caps, Presets, Scheduler polish ===== -->
-<script type="module">
-/* ---------- PLAN CAPS (client hints; backend remains source of truth) ---------- */
-const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
-const PLAN_CAPS = {
-  dailyGenerations: { free:5, starter:30, creator:60, business:300 },
-  optimizerPerDay:  { free:1, starter:10, creator:40, business:80 },
-  presetsMax:       { free:1, starter:10, creator:Infinity, business:Infinity },
-  batchPerRun:      { free:3, starter:10, creator:30, business:60 }
-};
+  <!-- Advisor Modal -->
+  <dialog id="advisor" class="rounded-xl p-0 w-[92vw] max-w-lg">
+    <form method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Recommended plan</h3>
+        <button class="btn" value="cancel">Close</button>
+      </div>
+      <div id="advisorCopy" class="text-sm text-slate-600 dark:text-slate-300">
+        <!-- filled by script -->
+      </div>
+      <div class="grid sm:grid-cols-2 gap-2">
+        <!-- Buttons trigger Worker checkout with price ids already in your pricing section -->
+        <button class="btn btn-primary" type="button" data-advisor-checkout="" id="advisorCta">Continue</button>
+        <a class="btn" href="#pricing">Compare all plans</a>
+      </div>
+    </form>
+  </dialog>
 
-/* ---------- LIGHT “LOCKED PREVIEW” STYLES (adds an overlay; non-destructive) ---------- */
-const styleTagId = "__crp_preview_lock_css__";
-if (!document.getElementById(styleTagId)) {
-  const st = document.createElement("style");
-  st.id = styleTagId;
-  st.textContent = `
-    .is-locked { position: relative; }
-    .is-locked::after{
-      content:"Upgrade to use"; position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      background:linear-gradient(180deg, rgba(14,16,22,.70), rgba(14,16,22,.75));
-      border-radius:inherit; color:#e9eef6; font-weight:600; letter-spacing:.2px;
-    }
-    .is-locked [data-lockable], .is-locked input, .is-locked select, .is-locked textarea, .is-locked button { pointer-events:none !important; }
-    .chip.lock { border-color: rgba(255,255,255,.35); }
-  `;
-  document.head.appendChild(st);
-}
+  <!-- Wiring for advisor + template targets (minimal; full app wiring in Part 6) -->
+  <script>
+    (function(){
+      function cap(s){ return (s||"").slice(0,1).toUpperCase()+ (s||"").slice(1); }
+      var dlg = document.getElementById("advisor");
+      var copy = document.getElementById("advisorCopy");
+      var cta  = document.getElementById("advisorCta");
 
-/* ---------- HELPERS ---------- */
-const getPlan = ()=> (window.CURRENT_PLAN || "free");
-const planRankOf = p => PLAN_RANK[p] ?? 0;
-const todayKey = () => new Date().toISOString().slice(0,10);
-const userKey  = () => (window.USER_ID || "anon");
-const lsGet = (k, d)=> { try{ const v=localStorage.getItem(k); return v? JSON.parse(v):d; }catch{ return d; } };
-const lsSet = (k, v)=> { try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} };
-const toast  = (msg)=> { try{ document.getElementById("toastMsg").textContent=msg; const t=document.getElementById("toast"); t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"), 1800);}catch{ alert(msg);} };
+      var PRICE = {
+        starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
+        creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
+        business: "price_1S7y8OJYjIKHzKcjqA9uJdyh"
+      };
 
-/* ---------- SHOW “PLAN-GATED” SECTIONS AS PREVIEWS WHEN BELOW TIER ---------- */
-function applyLockedPreviews() {
-  const plan = getPlan();
-  const rank = planRankOf(plan);
+      function openAdvisor(kind){
+        var plan = "starter", perks = [];
+        if (kind==="solo"){ plan="starter"; perks=["Scheduler queue","200 generations/mo","Basic analytics"]; }
+        if (kind==="brand" || kind==="seo"){ plan="creator"; perks=["Notion & Trello export","500 generations/mo","Analytics Pro","Multi-profile scheduler"]; }
+        if (kind==="team"){ plan="business"; perks=["3 seats included","Org-wide analytics","White-label export"]; }
 
-  // Starter+ sections: show locked to Free
-  document.querySelectorAll(".plan-starter-plus").forEach(el=>{
-    if (rank >= PLAN_RANK.starter) {
-      el.classList.remove("is-locked","hidden");
-    } else {
-      el.classList.remove("hidden");
-      el.classList.add("is-locked");
-    }
-  });
-  // Creator+ sections
-  document.querySelectorAll(".plan-creator-plus").forEach(el=>{
-    if (rank >= PLAN_RANK.creator) {
-      el.classList.remove("is-locked","hidden");
-    } else {
-      el.classList.remove("hidden");
-      el.classList.add("is-locked");
-    }
-  });
-  // Business-only
-  document.querySelectorAll(".plan-business-only").forEach(el=>{
-    if (rank >= PLAN_RANK.business) {
-      el.classList.remove("is-locked","hidden");
-    } else {
-      el.classList.remove("hidden");
-      el.classList.add("is-locked");
-    }
-  });
+        copy.innerHTML =
+          "<p class='mb-2'>We recommend the <strong>"+ cap(plan) +"</strong> plan.</p>"+
+          "<ul class='list-disc pl-5 space-y-1'>" + perks.map(function(p){ return "<li>"+p+"</li>"; }).join("") + "</ul>";
 
-  // Best-picks inline copy
-  const bpPlan = document.getElementById("bpPlanName");
-  if (bpPlan) bpPlan.textContent = plan.charAt(0).toUpperCase()+plan.slice(1);
-}
-
-/* Hook into your existing paint after status load */
-const __orig_applyPlanGates = (typeof applyPlanGates==="function" ? applyPlanGates : null);
-window.applyPlanGates = function patchedApplyPlanGates(plan){
-  // Keep original hide/show logic (for authed-only bits)
-  if (__orig_applyPlanGates) try { __orig_applyPlanGates(plan); } catch {}
-  // Then convert hidden gates to visible previews w/ locks
-  applyLockedPreviews();
-};
-
-/* Also reflect plan name in header “Plan: X” badges consistently */
-const __orig_paintPlanBadges = (typeof paintPlanBadges==="function" ? paintPlanBadges : null);
-window.paintPlanBadges = function patchedPaintPlanBadges(plan){
-  if (__orig_paintPlanBadges) try { __orig_paintPlanBadges(plan); } catch {}
-  const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
-  const ids = ["planbadge","planbadge_m","heroPlanName","bpPlanName"];
-  ids.forEach(id => { const el=document.getElementById(id); if (el) el.textContent = pretty; });
-};
-
-/* ---------- BATCH MODE: live line counter + per-plan caps ---------- */
-(function wireBatchCounter(){
-  const src = document.getElementById("sourceText");
-  if (!src) return;
-  // Create a tiny chip after textarea if missing
-  let chip = document.getElementById("batchCounter");
-  if (!chip) {
-    chip = document.createElement("div");
-    chip.id = "batchCounter";
-    chip.className = "mt-1 text-[12px] text-slate-500";
-    src.insertAdjacentElement("afterend", chip);
-  }
-  const render = ()=>{
-    const lines = (src.value||"").split(/\r?\n/).filter(l=>l.trim().length>0);
-    const plan = getPlan();
-    const cap  = PLAN_CAPS.batchPerRun[plan] ?? 3;
-    chip.innerHTML = `Batch lines: <strong>${lines.length}</strong> / ${cap}`;
-    if (lines.length > cap) chip.innerHTML += ` <span class="text-red-500">— over your ${plan} cap</span>`;
-  };
-  src.addEventListener("input", render);
-  render();
-
-  // Enforce on submit (without touching your generation logic)
-  const form = document.getElementById("demoForm");
-  if (!form) return;
-  form.addEventListener("submit", (e)=>{
-    try{
-      const val = (src.value||"").trim();
-      const lines = val.split(/\r?\n/).filter(l=>l.trim().length>0);
-      const plan = getPlan();
-      const cap  = PLAN_CAPS.batchPerRun[plan] ?? 3;
-      if (lines.length > cap){
-        e.preventDefault();
-        toast(`Batch limit is ${cap} lines on ${plan}. Trim your input or upgrade.`);
+        cta.setAttribute("data-advisor-checkout", PRICE[plan]);
+        try{ dlg.showModal(); }catch(e){ /* ignore */ }
       }
-    }catch{}
-  }, true);
-})();
 
-/* ---------- OPTIMIZER CAP ENFORCEMENT (client hint; daily counter in localStorage) ---------- */
-const OPT_KEY = (d= todayKey(), u = userKey()) => `crp:opt_count:${d}:${u}`;
-function countOptimizerToggles(form){
-  const names = ["opt_humanize","opt_lengthen","opt_faqs","opt_headings","opt_svg","opt_seo"];
-  return names.reduce((n, id)=> n + (form.elements[id]?.checked ? 1 : 0), 0) > 0 ? 1 : 0;
-}
-function optimizerRemaining(plan){
-  const cap = PLAN_CAPS.optimizerPerDay[plan] ?? 1;
-  const used = Number(lsGet(OPT_KEY(), 0)) || 0;
-  return Math.max(0, cap - used);
-}
-function bumpOptimizerIfNeeded(form, success){
-  if (!success) return;
-  if (countOptimizerToggles(form) > 0){
-    const used = Number(lsGet(OPT_KEY(), 0)) || 0;
-    lsSet(OPT_KEY(), used+1);
-  }
-}
-/* UI warning near Optimizer section */
-(function wireOptimizerHint(){
-  const form = document.getElementById("demoForm");
-  if (!form) return;
-  const fs = Array.from(form.querySelectorAll("fieldset")).find(f=> /Article Optimizer/i.test(f.textContent||""));
-  if (!fs) return;
-  let note = fs.querySelector("[data-opt-note]");
-  if (!note){
-    note = document.createElement("div");
-    note.setAttribute("data-opt-note","1");
-    note.className = "mt-2 text-[12px] text-slate-500";
-    fs.appendChild(note);
-  }
-  const paint = ()=>{
-    const plan = getPlan();
-    const left = optimizerRemaining(plan);
-    note.innerHTML = `Optimizer runs left today: <strong>${left}</strong> on ${plan}.`;
-  };
-  document.addEventListener("visibilitychange", paint);
-  paint();
+      document.querySelectorAll("[data-open-advisor]").forEach(function(b){
+        b.addEventListener("click", function(){ openAdvisor(b.getAttribute("data-open-advisor")); });
+      });
 
-  // Gate submission if out of local daily budget (backend still authoritative)
-  const formEl = document.getElementById("demoForm");
-  if (!formEl) return;
-  formEl.addEventListener("submit", (e)=>{
-    try{
-      if (countOptimizerToggles(formEl) > 0){
-        const plan = getPlan();
-        if (optimizerRemaining(plan) <= 0){
-          e.preventDefault();
-          toast(`Optimizer daily cap reached on ${plan}. Uncheck Optimizer or upgrade.`);
+      // Checkout via Worker (same flow as pricing buttons in Part 2)
+      cta && cta.addEventListener("click", async function(){
+        var price = cta.getAttribute("data-advisor-checkout");
+        if (!price){ return; }
+        cta.disabled = true; var old = cta.textContent; cta.textContent = "Opening…";
+        try{
+          const r = await fetch((window.WORKER_BASE||"") + "/api/billing/checkout", {
+            method:"POST",
+            headers: await (window.getAuthHeaders ? window.getAuthHeaders() : Promise.resolve({ "Content-Type":"application/json" })),
+            body: JSON.stringify({
+              price,
+              success_url: (window.SITE_ORIGIN||location.origin) + "/?billing=success",
+              cancel_url:  (window.SITE_ORIGIN||location.origin) + "/?billing=cancel"
+            })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+          location.href = j.url;
+        }catch(e){
+          alert(e.message || "Checkout failed");
+        }finally{
+          cta.disabled = false; cta.textContent = old;
         }
+      });
+
+      // Optional “try export” buttons: if locked, nudge to pricing
+      var n = document.getElementById("tryNotionBtn");
+      var t = document.getElementById("tryTrelloBtn");
+      [n,t].forEach(function(btn){
+        if (!btn) return;
+        btn.addEventListener("click", function(){
+          // Real wiring lives in Part 6 (integrations). Here we simply scroll to demo.
+          try{ document.getElementById("demo").scrollIntoView({behavior:"smooth"}); }catch{}
+        });
+      });
+    })();
+  </script>
+  <!-- ===== PRICING REFINEMENTS (add-on rail) ===== -->
+  <section aria-label="Pricing assurance" class="relative">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 pb-6">
+      <div class="card p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold">No-risk guarantee</div>
+          <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">
+            Upgrade now — cancel anytime from your dashboard. Your plan stays active until the end of the cycle.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a class="btn" href="#pricing">Compare plans</a>
+          <button id="pricingManageBilling_inline" class="btn only-authed hidden" type="button">Manage billing</button>
+          <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in to upgrade</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STICKY BEST-PICKS RAIL ===== -->
+  <div id="stickyRail" class="fixed inset-x-0 bottom-3 z-50 px-3 md:px-0 hidden" role="region" aria-label="Quick actions">
+    <div class="max-w-3xl mx-auto card p-3 md:p-4 flex items-center gap-2 md:gap-3">
+      <button id="stickyClose" class="btn" type="button" aria-label="Hide">✕</button>
+      <div class="text-sm flex-1">
+        <strong>Find your best plan</strong>
+        <span class="hidden sm:inline text-slate-500 dark:text-slate-400">— 3 questions, 10 seconds.</span>
+      </div>
+      <button class="btn btn-primary" type="button" data-open-advisor="solo">Best pick for me</button>
+      <a class="btn" href="#pricing">See pricing</a>
+      <a class="btn" href="https://contentrepurpose.pro/blog/linkedin-post-templates/" target="_blank" rel="noopener">Templates</a>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // Manage billing button (uses Worker portal)
+      var mb = document.getElementById("pricingManageBilling_inline");
+      if (mb){
+        mb.addEventListener("click", async function(){
+          mb.disabled = true; var old = mb.textContent; mb.textContent = "Opening…";
+          try{
+            const r = await fetch((window.WORKER_BASE||"") + "/api/billing/portal",{
+              method:"POST", headers: await (window.getAuthHeaders? window.getAuthHeaders() : Promise.resolve({"Content-Type":"application/json"})),
+              body: JSON.stringify({ return_url: location.href })
+            });
+            const j = await r.json();
+            if (!r.ok) throw new Error(j?.error?.message || "Portal error");
+            location.href = j.url;
+          }catch(e){ alert(e.message||"Portal error"); mb.disabled=false; mb.textContent=old; }
+        });
+      }
+
+      // Sticky rail behavior (shows after user scrolls a bit; persists dismissal)
+      var rail  = document.getElementById("stickyRail");
+      var close = document.getElementById("stickyClose");
+      var KEY   = "crp:sticky:dismissed";
+      function show(){ if (!localStorage.getItem(KEY)) rail.classList.remove("hidden"); }
+      function hide(){ rail.classList.add("hidden"); localStorage.setItem(KEY, "1"); }
+      if (close) close.addEventListener("click", hide);
+
+      var shown = false;
+      window.addEventListener("scroll", function(){
+        if (shown) return;
+        if (window.scrollY > 900) { shown = true; show(); }
+      }, { passive:true });
+
+      // Respect auth paint: reveal Manage Billing only when authed
+      document.addEventListener("DOMContentLoaded", function(){
+        try{
+          var authed = document.body.getAttribute("data-auth")==="authed";
+          if (authed) { mb && mb.classList.remove("hidden"); }
+        }catch{}
+      });
+    })();
+  </script>
+
+  <!-- ===== FEATURED READS (Topical authority & internal links) ===== -->
+  <section id="featured-reads" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Featured reads</h2>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">Proven strategies & workflows for repurposing.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <a class="card p-5 block hover:opacity-90" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/" target="_blank" rel="noopener">
+          <div class="chip">SEO</div>
+          <h3 class="mt-3 font-bold">Content Repurposing for SEO</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Rank better by expanding, restructuring, and interlinking your best posts.</p>
+        </a>
+
+        <a class="card p-5 block hover:opacity-90" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/" target="_blank" rel="noopener">
+          <div class="chip">AI generator</div>
+          <h3 class="mt-3 font-bold">AI Social Media Post Generator</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Turn a paragraph into native posts for LinkedIn, X, Email & Instagram.</p>
+        </a>
+
+        <a class="card p-5 block hover:opacity-90" href="https://contentrepurpose.pro/blog/paste-once-multi-channel/" target="_blank" rel="noopener">
+          <div class="chip">Workflows</div>
+          <h3 class="mt-3 font-bold">Paste Once → Multi-channel</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">One input → multiple ready-to-ship drafts without context switching.</p>
+        </a>
+
+        <a class="card p-5 block hover:opacity-90" href="https://contentrepurpose.pro/blog/ai-content-repurposing-examples-workflows/" target="_blank" rel="noopener">
+          <div class="chip">Examples</div>
+          <h3 class="mt-3 font-bold">AI Repurposing Examples & Workflows</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">See practical flows from blog → LinkedIn, X, and email sequences.</p>
+        </a>
+
+        <a class="card p-5 block hover:opacity-90" href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" target="_blank" rel="noopener">
+          <div class="chip">2025</div>
+          <h3 class="mt-3 font-bold">Best AI Content Repurposing Tools (2025)</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Where we shine vs. alternatives and when to combine tools.</p>
+        </a>
+
+        <a class="card p-5 block hover:opacity-90" href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" target="_blank" rel="noopener">
+          <div class="chip">Free tool</div>
+          <h3 class="mt-3 font-bold">Free AI LinkedIn Post Generator</h3>
+          <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">Spin up LinkedIn posts fast — then upgrade for scheduling & analytics.</p>
+        </a>
+      </div>
+
+      <!-- Inline shortcuts -->
+      <div class="text-center mt-8 flex flex-wrap items-center justify-center gap-2">
+        <a class="btn" href="https://contentrepurpose.pro/blog/linkedin-post-templates/" target="_blank" rel="noopener">Templates</a>
+        <a class="btn" href="#use-cases">Use cases</a>
+        <button class="btn btn-primary" type="button" data-open-advisor="brand">Best pick</button>
+      </div>
+    </div>
+  </section>
+<!-- ===== FINAL BOOT/POLISH (no redirects, plan previews, advisor wiring) ===== -->
+<script>
+(function(){
+  /* ---------- Safe helpers ---------- */
+  const $  = (s, r=document)=> r.querySelector(s);
+  const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
+  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+  const WORKER_BASE = window.WORKER_BASE || "";
+
+  async function getAuthHeaders(){
+    try{
+      if (window.getAuthHeaders) return await window.getAuthHeaders();
+      if (window.supabase){
+        const { data } = await window.supabase.auth.getSession();
+        const h = { "Content-Type":"application/json" };
+        const tok = data?.session?.access_token;
+        const uid = data?.session?.user?.id;
+        if (tok) h.Authorization = `Bearer ${tok}`;
+        if (uid) h["X-User-Id"] = uid;
+        return h;
       }
     }catch{}
-  }, true);
-})();
-
-/* ---------- PRESETS (save/list/delete) with per-plan limits ---------- */
-(function wirePresets(){
-  const form = document.getElementById("demoForm");
-  if (!form) return;
-
-  // Build toolbar (top-right of Generator card) if missing
-  let bar = document.getElementById("presetsBar");
-  if (!bar){
-    bar = document.createElement("div");
-    bar.id = "presetsBar";
-    bar.className = "mt-2 flex flex-wrap items-center gap-2 text-sm";
-    // find the generator card to inject into (the one that wraps the form)
-    const card = form.closest(".card") || document.getElementById("demo");
-    (card || form).insertAdjacentElement("beforebegin", bar);
-  }
-  bar.innerHTML = `
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="chip">Presets</span>
-      <select id="presetSelect" class="border rounded-lg px-2 py-1 min-w-[200px]">
-        <option value="">Load a preset…</option>
-      </select>
-      <button id="presetSave" class="btn" type="button">Save current</button>
-      <button id="presetDelete" class="btn" type="button">Delete</button>
-      <span id="presetNote" class="text-[12px] text-slate-500"></span>
-    </div>
-  `;
-
-  const sel  = document.getElementById("presetSelect");
-  const save = document.getElementById("presetSave");
-  const del  = document.getElementById("presetDelete");
-  const note = document.getElementById("presetNote");
-
-  async function listPresets(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "List failed");
-      sel.innerHTML = `<option value="">Load a preset…</option>`;
-      (j.presets||[]).forEach(p=>{
-        const o = document.createElement("option");
-        o.value = p.id; o.textContent = p.title; o.dataset.json = JSON.stringify(p.data||{});
-        sel.appendChild(o);
-      });
-      // Show cap info
-      const plan = getPlan();
-      const max = PLAN_CAPS.presetsMax[plan] ?? 1;
-      const used = (j.presets||[]).length;
-      note.textContent = `Saved: ${used}/${Number.isFinite(max)? max : "∞"} on ${plan}`;
-      // Lock save if at cap (unless ∞)
-      save.disabled = Number.isFinite(max) && used >= max;
-      if (save.disabled) save.title = "Preset limit reached for your plan";
-    }catch(e){
-      note.textContent = "Presets unavailable.";
-    }
+    return { "Content-Type":"application/json" };
   }
 
-  function readFormData(){
-    // Keep it simple: toggles, channels, extras, and sourceType
-    const g = n => form.elements[n];
-    return {
-      sourceType: g("sourceType")?.value || "paragraph",
-      opt: {
-        humanize:  g("opt_humanize")?.checked || false,
-        lengthen:  g("opt_lengthen")?.checked || false,
-        faqs:      g("opt_faqs")?.checked || false,
-        headings:  g("opt_headings")?.checked || false,
-        svg:       g("opt_svg")?.checked || false,
-        seo:       g("opt_seo")?.checked || false
-      },
-      ch: {
-        linkedin:  g("ch_linkedin")?.checked || false,
-        x:         g("ch_x")?.checked || false,
-        email:     g("ch_email")?.checked || false,
-        instagram: g("ch_instagram")?.checked || false,
-        reddit:    g("ch_reddit")?.checked || false,
-        facebook:  g("ch_facebook")?.checked || false,
-        quora:     g("ch_quora")?.checked || false,
-        tiktok:    g("ch_tiktok")?.checked || false
-      },
-      extras: {
-        li_article:      g("li_article")?.checked || false,
-        x_sequence:      g("x_sequence")?.checked || false,
-        x_posts:         g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked || false,
-        rdt_comments:    g("rdt_comments")?.checked || false,
-        tt_hooks:        g("tt_hooks")?.checked || false,
-        tt_onscreen:     g("tt_onscreen")?.checked || false
+  /* ---------- 0) Make sure “Generate” never navigates ---------- */
+  document.addEventListener("DOMContentLoaded", function(){
+    const form = document.getElementById("demoForm");
+    if (form){
+      // Kill any action/hash from HTML or browser autofill
+      form.setAttribute("action", "");
+      form.setAttribute("method", "post");
+
+      // Defuse Enter on textareas from causing navigation
+      const src = document.getElementById("sourceText");
+      if (src){
+        src.addEventListener("keydown", (e)=>{
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            form.requestSubmit && form.requestSubmit();
+          }
+        });
       }
-    };
-  }
-  function writeFormData(d){
-    const g = n => form.elements[n];
-    if (!d) return;
-    if (g("sourceType")) g("sourceType").value = d.sourceType || "paragraph";
-    // toggles
-    Object.entries(d.opt||{}).forEach(([k,v])=>{ if (g("opt_"+k)) g("opt_"+k).checked = !!v; });
-    // channels
-    Object.entries(d.ch||{}).forEach(([k,v])=>{ if (g("ch_"+k)) g("ch_"+k).checked = !!v; });
-    // extras
-    Object.entries(d.extras||{}).forEach(([k,v])=>{
-      if (k==="x_posts" && g("x_posts")) g("x_posts").value = String(v||"4");
-      else if (g(k)) g(k).checked = !!v;
-    });
-  }
 
-  save.addEventListener("click", async ()=>{
-    try{
-      const title = prompt("Preset name");
-      if (!title) return;
-      const data = readFormData();
-      const r = await fetch(`${WORKER_BASE}/api/presets/save`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ title, data })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Save failed");
-      toast("Preset saved ✅");
-      listPresets();
-    }catch(e){ toast(e.message || "Preset save failed"); }
-  });
-
-  del.addEventListener("click", async ()=>{
-    const id = sel.value;
-    if (!id) { toast("Choose a preset to delete"); return; }
-    if (!confirm("Delete this preset?")) return;
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/presets/delete`,{
-        method:"POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ id })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Delete failed");
-      toast("Preset deleted");
-      listPresets();
-    }catch(e){ toast(e.message || "Preset delete failed"); }
-  });
-
-  sel.addEventListener("change", ()=>{
-    const opt = sel.selectedOptions[0];
-    if (!opt || !opt.dataset.json) return;
-    try{ writeFormData(JSON.parse(opt.dataset.json)); toast("Preset loaded"); }catch{}
-  });
-
-  // Load on boot & on auth change (your Supabase listener will re-run status too)
-  listPresets();
-})();
-
-/* ---------- SCHEDULER & ANALYTICS POLISH ---------- */
-// Show Scheduler card for preview on Free but lock interactions (already handled by .is-locked)
-(function polishSchedulerAnalytics(){
-  const plan = getPlan();
-  const isFree = (plan === "free");
-  // If free → ensure sections are visible but locked (handled globally), add small nudge
-  const sched = document.querySelector("#pricing")?.previousElementSibling; // not relied on; keep no-op
-  const basicAna = document.getElementById("anaBasic");
-  const proAna   = document.getElementById("anaPro");
-  const teamAna  = document.getElementById("anaTeam");
-
-  if (basicAna && !basicAna.dataset.init) {
-    basicAna.dataset.init = "1";
-    basicAna.textContent = "Connect accounts to see daily posts & estimated reach.";
-  }
-  if (proAna && !proAna.dataset.init) {
-    proAna.dataset.init = "1";
-    proAna.textContent = "Per-channel breakdown unlocks on Creator+.";
-  }
-  if (teamAna && !teamAna.dataset.init) {
-    teamAna.dataset.init = "1";
-    teamAna.textContent = "Invite teammates to populate org-wide insights.";
-  }
-})();
-
-/* ---------- HOOK: increment local Optimizer budget after successful generations ---------- */
-(function hookGenerationSuccess(){
-  const out = document.getElementById("demoOutput");
-  const form = document.getElementById("demoForm");
-  if (!out || !form) return;
-  // We detect a successful render by a MutationObserver (cards inserted)
-  const obs = new MutationObserver((muts)=>{
-    const hasCard = muts.some(m=> Array.from(m.addedNodes||[]).some(n=> n.nodeType===1 && n.classList?.contains("card")));
-    if (hasCard) bumpOptimizerIfNeeded(form, true);
-  });
-  obs.observe(out, { childList:true, subtree:false });
-})();
-
-/* ---------- RE-RUN PREVIEW LOCKS AFTER STATUS PAINT ---------- */
-document.addEventListener("DOMContentLoaded", () => {
-  try{ applyLockedPreviews(); }catch{}
-});
-</script>
-<!-- ===== PART 6 A11Y: Skip link (place directly under <body ...>) ===== -->
-<a href="#main" class="skip-link">Skip to main content</a>
-/* ===== PART 6 A11Y/UX Polishes (append to your <style> block) ===== */
-.skip-link{
-  position:absolute; left:-999px; top:auto; width:1px; height:1px; overflow:hidden;
-}
-.skip-link:focus{
-  left:1rem; top:1rem; width:auto; height:auto; z-index:9999;
-  background:#0a0d18; color:#fff; padding:.6rem .9rem; border-radius:.6rem;
-}
-/* Stronger visible focus, but subtle */
-:focus-visible{ outline: 2px solid var(--brandA); outline-offset: 2px; }
-
-/* Reduced motion: stop marquee/orbit floats for motion-sensitive users */
-@media (prefers-reduced-motion: reduce){
-  .marquee{ animation: none !important }
-  .orbit{ animation: none !important }
-  .halo{ animation: none !important }
-  html, body{ scroll-behavior: auto }
-}
-
-/* Toast is a live region already; ensure readable contrast in light mode */
-@media (prefers-color-scheme: light){
-  #toast > div{ background:#0a0d18; color:#fff }
-}
-
-/* Mobile nav sheet: better backdrop click target */
-.nav-sheet{ cursor: pointer }
-.nav-panel{ cursor: default }
-<!-- ===== PART 6 JS: A11y + Mobile nav + Fallbacks (append inside crp-app-js before </script>) ===== -->
-<script type="module">
-/* ---------------- Main landmark & skip link target ---------------- */
-(function ensureMainLandmark(){
-  // Prefer existing hero as main; otherwise first content section
-  const mainId = "main";
-  if (!document.getElementById(mainId)){
-    const target = document.querySelector('#hero') || document.querySelector('section') || document.body;
-    target.setAttribute("id", mainId);
-    target.setAttribute("role","main");
-  }
-})();
-
-/* ---------------- External links: noopener + safe target ---------------- */
-(function hardenExternalLinks(){
-  const origin = location.origin;
-  document.querySelectorAll('a[href^="http"]').forEach(a=>{
-    if (!a.href.startsWith(origin)){
-      a.setAttribute("target","_blank");
-      const rel = (a.getAttribute("rel")||"").split(/\s+/);
-      if (!rel.includes("noopener")) rel.push("noopener");
-      if (!rel.includes("noreferrer")) rel.push("noreferrer");
-      a.setAttribute("rel", rel.join(" ").trim());
-    }
-  });
-})();
-
-/* ---------------- Mobile nav: focus trap, aria, escape to close ---------------- */
-(function mobileNavFocusTrap(){
-  const openBtn  = document.getElementById("navToggle");
-  const sheet    = document.getElementById("mobileNav");
-  const closeBtn = document.getElementById("navClose");
-  if (!openBtn || !sheet || !closeBtn) return;
-
-  const panel    = sheet.querySelector(".nav-panel");
-  const focusable = ()=> Array.from(panel.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])'))
-                              .filter(el=> !el.hasAttribute("disabled"));
-
-  function open(){
-    document.body.classList.add("nav-open");
-    sheet.setAttribute("aria-hidden","false");
-    openBtn.setAttribute("aria-expanded","true");
-    const f = focusable(); (f[0]||closeBtn).focus();
-    // trap
-    function onKey(e){
-      if (e.key === "Escape"){ e.preventDefault(); close(); }
-      if (e.key === "Tab"){
-        const list = focusable(); if (!list.length) return;
-        const first = list[0], last = list[list.length-1];
-        if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-      }
-    }
-    sheet._onKey = onKey; document.addEventListener("keydown", onKey);
-  }
-  function close(){
-    document.body.classList.remove("nav-open");
-    sheet.setAttribute("aria-hidden","true");
-    openBtn.setAttribute("aria-expanded","false");
-    document.removeEventListener("keydown", sheet._onKey || (()=>{}));
-    openBtn.focus();
-  }
-
-  openBtn.addEventListener("click", (e)=>{ e.preventDefault(); open(); });
-  closeBtn.addEventListener("click", (e)=>{ e.preventDefault(); close(); });
-  sheet.addEventListener("click", (e)=>{ if (e.target === sheet) close(); });
-})();
-
-/* ---------------- Dialog a11y: close on ESC, restore focus ---------------- */
-(function dialogA11y(){
-  const dialogs = Array.from(document.querySelectorAll("dialog"));
-  dialogs.forEach(dlg=>{
-    let opener=null;
-    dlg.addEventListener("close", ()=>{ try{ opener && opener.focus(); }catch{} });
-    dlg.addEventListener("cancel", (e)=>{ e.preventDefault(); dlg.close(); });
-    // mark opener on any button that opens it
-    document.querySelectorAll(`[aria-controls="${dlg.id}"], button[data-open="${dlg.id}"]`).forEach(btn=>{
-      btn.addEventListener("click", ()=> opener = btn);
-    });
-  });
-})();
-
-/* ---------------- Worker resilience: network banner + safe fetch wrapper ---------------- */
-(function networkFallback(){
-  const id = "__crp_net_banner__";
-  if (!document.getElementById(id)){
-    const bar = document.createElement("div");
-    bar.id = id;
-    bar.className = "fixed bottom-0 left-1/2 -translate-x-1/2 z-[9998] hidden";
-    bar.innerHTML = `<div class="px-4 py-2 rounded-t-xl bg-black text-white shadow text-sm">
-      Having connection trouble. Some features may be limited. Retrying…
-    </div>`;
-    document.body.appendChild(bar);
-  }
-  const bar = document.getElementById(id);
-  let failCount = 0, hideTimer = null;
-
-  function showBanner(){
-    bar.classList.remove("hidden");
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(()=> bar.classList.add("hidden"), 5000);
-  }
-
-  // Wrap window.fetch used by our app to detect outages (opt-in: only for same-origin Worker)
-  const origFetch = window.fetch.bind(window);
-  window.fetch = async function(url, opts){
-    try{
-      const u = typeof url==="string" ? url : (url?.url || "");
-      const isWorker = typeof u==="string" && u.startsWith((window.WORKER_BASE||""));
-      const res = await origFetch(url, opts);
-      if (isWorker && !res.ok) { failCount++; if (failCount>=2) showBanner(); }
-      else if (isWorker) { failCount = 0; }
-      return res;
-    }catch(e){
-      failCount++;
-      if (failCount>=1) showBanner();
-      // fabricate a minimal Response so callers don't explode if they only check !ok
-      return new Response(JSON.stringify({ error:{ code:"network_error", message:"Network unavailable"} }), {
-        status: 503, headers: { "Content-Type":"application/json" }
+      // Clean URL after a programmatic submit (prevents leftover ?query or #pricing)
+      const genBtns = ["generateBtn", "generateBtn_member"];
+      genBtns.forEach(id=>{
+        const b = document.getElementById(id);
+        if (b) b.addEventListener("click", ()=>{
+          try{
+            const u = new URL(location.href);
+            if (u.search) { u.search = ""; history.replaceState({}, "", u.toString()); }
+            if (u.hash   && u.hash !== "#demo") { u.hash = ""; history.replaceState({}, "", u.toString()); }
+          }catch{}
+        });
       });
     }
-  };
-})();
+  });
 
-/* ---------------- Live ticker: safe paint if Worker unreachable ---------------- */
-(function safeLiveTicker(){
-  const els = document.querySelectorAll('[data-live-count], #liveCount');
-  if (!els.length) return;
-  const set = (n)=> els.forEach(el=> el.textContent = String(n));
-
-  // If not painted by Worker after 3s, show "—"
-  let painted = false;
-  const t = setTimeout(()=>{ if (!painted){ set("—"); } }, 3000);
-
-  // Patch paintLive to set flag
-  const oldPaint = (typeof paintLive==="function") ? paintLive : null;
-  window.paintLive = async function patched(){
-    if (!oldPaint) { set("—"); painted = true; clearTimeout(t); return; }
-    try{ await oldPaint(); painted = true; clearTimeout(t); }catch{ set("—"); }
-  };
-  // run once more after load (in case earlier call failed)
-  setTimeout(()=> window.paintLive && window.paintLive(), 4000);
-})();
-
-/* ---------------- Smooth-scroll fix for internal anchors ---------------- */
-(function anchorSmoothScroll(){
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener("click", (e)=>{
-      const id = a.getAttribute("href");
-      if (!id || id==="#") return;
-      const el = document.querySelector(id);
-      if (!el) return;
+  /* ---------- 1) Advisor modal wiring (Best Picks) ---------- */
+  function openAdvisor(preset){
+    const dlg = document.getElementById("planAdvisor");
+    if (!dlg || !dlg.showModal){ location.hash = "#pricing"; return; }
+    if (preset){
+      try{
+        // optional: preselect radio/option by data-plan key
+        const el = dlg.querySelector(`[data-preset="${preset}"]`);
+        if (el) el.click();
+      }catch{}
+    }
+    dlg.showModal();
+  }
+  document.addEventListener("click", (e)=>{
+    const t = e.target.closest("[data-open-advisor]");
+    if (t){
       e.preventDefault();
-      try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-      history.replaceState(null,"",id);
+      openAdvisor(t.getAttribute("data-open-advisor") || "");
+    }
+  });
+  // Any anchor to #best-picks opens advisor instead of jumping
+  document.addEventListener("DOMContentLoaded", ()=>{
+    $$('a[href="#best-picks"]').forEach(a=>{
+      a.addEventListener("click", (e)=>{ e.preventDefault(); openAdvisor("solo"); });
     });
   });
-})();
 
-/* ---------------- Misc: global error guard → friendly toast ---------------- */
-window.addEventListener("unhandledrejection", (e)=>{ try{ e && e.preventDefault(); }catch{} toast("Something went wrong. Please try again."); });
-window.addEventListener("error", (e)=>{ if (!String(e?.message||"").includes("ResizeObserver")) toast("Unexpected error — it’s safe to retry."); });
+  /* ---------- 2) Route “Templates” to the article, “Use cases” to section ---------- */
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const templatesUrl = "https://contentrepurpose.pro/blog/linkedin-post-templates/";
+    // Top nav + mobile nav + shortcuts
+    $$('a[href="#templates"]').forEach(a=> a.setAttribute("href", templatesUrl));
+    // In case any link actually says “Templates” but has wrong href
+    $$('a').forEach(a=>{
+      if ((a.textContent||"").trim().toLowerCase() === "templates") a.setAttribute("href", templatesUrl);
+    });
+  });
 
-/* ---------------- Bonus: auto-aria-live on toast ---------------- */
-(function ensureToastAria(){
-  const t = document.getElementById('toast');
-  if (t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
+  /* ---------- 3) Manage Billing buttons (guard for auth) ---------- */
+  async function openBillingPortal(btn){
+    const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
+        method:"POST", headers: await getAuthHeaders(),
+        body: JSON.stringify({ return_url: location.href })
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message || "Portal error");
+      location.href = j.url;
+    }catch(e){ alert(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
+  }
+  document.addEventListener("DOMContentLoaded", ()=>{
+    ["manageBilling","manageBilling_m","manageBilling2","pricingManageBilling_inline"].forEach(id=>{
+      const b = document.getElementById(id);
+      if (b) b.addEventListener("click", ()=> openBillingPortal(b));
+    });
+  });
+
+  /* ---------- 4) Locked previews for plan-gated features (visible but non-interactive) ---------- */
+  function addLockedOverlay(el, label){
+    if (!el || el.__lockedApplied) return;
+    el.__lockedApplied = true;
+    el.classList.add("relative");
+    // Prevent interaction
+    el.style.pointerEvents = "none";
+    el.style.userSelect = "none";
+    el.style.opacity = "0.72";
+
+    const ov = document.createElement("div");
+    ov.setAttribute("aria-hidden","true");
+    ov.className = "absolute inset-0 rounded-xl flex items-end justify-end p-3";
+    ov.style.pointerEvents = "auto"; // overlay catches clicks
+    ov.innerHTML = `
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-1 rounded-full text-xs bg-black text-white">Locked</span>
+        <button type="button" class="btn btn-primary">Unlock ${label}</button>
+      </div>`;
+    // Click → if authed, open Pricing; if guest, open Auth
+    ov.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const authed = document.body.getAttribute("data-auth")==="authed";
+      if (authed) { location.hash = "#pricing"; }
+      else {
+        const dlg = document.getElementById("auth");
+        dlg && dlg.showModal ? dlg.showModal() : (location.hash="#pricing");
+      }
+    });
+    el.appendChild(ov);
+  }
+
+  // Show previews for Starter+/Creator+/Business sections to guests and free users
+  function enablePlanPreviews(){
+    const plan = (document.body.getAttribute("data-plan")||"free").toLowerCase();
+    const isGuest = (document.body.getAttribute("data-auth")||"guest")!=="authed";
+    if (plan==="free" || isGuest){
+      // Force-visualize gated blocks and overlay them
+      const styleId = "gate-preview-style";
+      if (!document.getElementById(styleId)){
+        const st = document.createElement("style");
+        st.id = styleId;
+        st.textContent = `
+          body[data-plan="free"] .plan-starter-plus,
+          body[data-plan="free"] .plan-creator-plus,
+          body[data-plan="free"] .plan-business-only,
+          body[data-auth="guest"] .plan-starter-plus,
+          body[data-auth="guest"] .plan-creator-plus,
+          body[data-auth="guest"] .plan-business-only{ display: block !important; }
+        `;
+        document.head.appendChild(st);
+      }
+      // Apply overlays with tier labels
+      $$(".plan-starter-plus").forEach(el=> addLockedOverlay(el, "Starter"));
+      $$(".plan-creator-plus").forEach(el=> addLockedOverlay(el, "Creator"));
+      $$(".plan-business-only").forEach(el=> addLockedOverlay(el, "Business"));
+      // Quick publish is authed-only; preview it to guests too
+      $$(".only-authed").forEach(el=>{
+        if (getComputedStyle(el).display === "none"){
+          // show and overlay
+          el.style.display = "block";
+          addLockedOverlay(el, "Starter");
+        }
+      });
+    }
+  }
+
+  /* ---------- 5) Finalize auth paint & previews on load and auth change ---------- */
+  async function refreshAfterAuth(){
+    try{
+      // Repaint status via existing function from Part 1/4 if present
+      if (window.fetchStatusAndPaint) await window.fetchStatusAndPaint();
+    }catch{}
+    enablePlanPreviews();
+  }
+
+  document.addEventListener("DOMContentLoaded", refreshAfterAuth);
+  // If Supabase is present, react to auth changes too
+  document.addEventListener("DOMContentLoaded", ()=>{
+    try{
+      if (window.supabase && window.supabase.auth){
+        window.supabase.auth.onAuthStateChange(()=> refreshAfterAuth());
+      }
+    }catch{}
+  });
+
+  /* ---------- 6) Minor UX guards ---------- */
+  // If any link still points to “/#best-picks”, intercept to advisor
+  document.addEventListener("click", (e)=>{
+    const a = e.target.closest('a[href$="#best-picks"]');
+    if (a){ e.preventDefault(); openAdvisor("solo"); }
+  });
+
+  // Smooth scroll to #use-cases if present
+  document.addEventListener("DOMContentLoaded", ()=>{
+    const link = $('a[href="#use-cases"]');
+    if (link){
+      link.addEventListener("click", (e)=>{
+        const sec = document.getElementById("use-cases");
+        if (sec){ e.preventDefault(); sec.scrollIntoView({behavior:"smooth",block:"start"}); }
+      });
+    }
+  });
+
+  // Clean magic-link residue if any (extra belt & braces)
+  document.addEventListener("DOMContentLoaded", ()=>{
+    try{
+      if (location.hash && /access_token|refresh_token|type=recovery/i.test(location.hash)){
+        history.replaceState({}, "", location.pathname + location.search);
+      }
+    }catch{}
+  });
 })();
 </script>
+<!-- ===== /FINAL BOOT/POLISH ===== -->
 <body>
-<html>
+</html>
+</body>
