@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-  <meta name="description" content="Content repurposing AI that turns one idea into LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported." />
+  <meta name="description" content="Paste once → get LinkedIn, X, Reddit, Email, IG & TikTok drafts. One-click Article Optimizer for SEO. Export to Notion/Trello (stays connected). BYOK supported." />
+  <meta name="keywords" content="content repurpose, content repurposing, repurporse content, repurpose project, AI content repurposing tool, repurpose content generator" />
   <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18">
   <meta name="color-scheme" content="dark light">
@@ -14,12 +15,12 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
-  <meta property="og:description" content="Repurpose content with AI. Paste once → get LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported.">
+  <meta property="og:description" content="Paste once → multi-channel drafts. Article Optimizer. Presets & Batch. Notion/Trello that persist. BYOK.">
   <meta property="og:url" content="https://contentrepurpose.pro/">
   <meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
-  <meta name="twitter:description" content="Content repurposing AI for multi-channel drafts. Export to Notion & Trello. BYOK supported.">
+  <meta name="twitter:description" content="Repurpose content with AI across LinkedIn, X, Reddit, Email, IG & TikTok. Export to Notion/Trello.">
   <meta name="twitter:image" content="/og-cover.png">
 
   <!-- Fonts + Tailwind -->
@@ -49,7 +50,7 @@
     @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
     .orbit{position:absolute;inset:-32px;border-radius:24px;pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
-      -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%, black 89%);
+      -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%);
       animation: spin 18s linear infinite;}
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
@@ -61,13 +62,10 @@
     .nav-open .nav-sheet{display:block}
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
     .touch-target{min-height:40px;min-width:40px}
-
-    /* Safe previews (no full-screen overlays) */
     .preview-locked .preview-mask{display:flex}
     .preview-mask{display:none;position:absolute;inset:0;border-radius:1rem;align-items:end;justify-end;padding:.5rem}
     .preview-mask .cta{pointer-events:auto}
-
-    /* Auth/plan gates — default safe state */
+    /* Auth/plan gates */
     .only-guest{display:revert}
     .only-authed{display:none}
     .plan-starter-plus{display:none}
@@ -81,12 +79,14 @@
     body[data-plan="creator"] .plan-creator-plus,
     body[data-plan="business"] .plan-creator-plus{display:revert}
     body[data-plan="business"] .plan-business-only{display:revert}
+    /* Blur lock */
+    .locked{filter: blur(3px); user-select:none; pointer-events:none}
   </style>
 
   <!-- JSON-LD -->
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"ContentRepurpose.pro","url":"https://contentrepurpose.pro/","logo":"https://contentrepurpose.pro/logo.svg","sameAs":["https://x.com/contentrepurpose","https://www.linkedin.com/company/contentrepurpose"]}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","url":"https://contentrepurpose.pro/","name":"ContentRepurpose.pro","potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/search?q={q}","query-input":"required name=q"}}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ContentRepurpose.pro","applicationCategory":"ContentCreationApplication","operatingSystem":"Web","keywords":"content repurpose, content repurposing, repurporse content, repurpose project","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 
   <!-- Worker base -->
   <script>
@@ -94,7 +94,7 @@
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
   </script>
 
-  <!-- Supabase v2 auth (magic link + Google OAuth) — resilient init -->
+  <!-- Supabase v2 auth (resilient init) -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
@@ -104,7 +104,7 @@
       auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
     });
 
-    // lightweight helpers used later
+    // Light helpers
     window.getAuth = async () => {
       try { const { data } = await window.supabase.auth.getSession();
         const s=data?.session; return { token:s?.access_token||"", userId:s?.user?.id||null, email:s?.user?.email||null };
@@ -118,8 +118,7 @@
       return h;
     };
 
-    // make sure auth badge never shows "Member" wrongly on initial paint
-    function paintAuthBadge({authed, plan="free"}){
+    function paintAuthBadge({authed, plan="free", email=null}){
       document.body.setAttribute("data-auth", authed ? "authed" : "guest");
       document.body.setAttribute("data-plan", plan);
       const pretty = plan.charAt(0).toUpperCase()+plan.slice(1);
@@ -127,18 +126,19 @@
       const el2 = document.getElementById("planbadge_m");
       if (el1) el1.textContent = `Plan: ${pretty}`;
       if (el2) el2.textContent = `Plan: ${pretty}`;
-      // toggle nav buttons
       const show = (id, on)=>{ const el=document.getElementById(id); if (el) el.classList.toggle("hidden", !on); };
       show("loginBtn", !authed); show("loginBtn_m", !authed);
       show("logoutBtn", authed);  show("logoutBtn_m", authed);
       show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
+      const heroPlan = document.getElementById("heroPlanName");
+      if (heroPlan) heroPlan.textContent = pretty;
+      const emailSpan = document.getElementById("signedEmail");
+      if (emailSpan) emailSpan.textContent = email || "";
     }
 
     document.addEventListener("DOMContentLoaded", async ()=>{
-      // initial paint assumes guest/free
       paintAuthBadge({authed:false, plan:"free"});
 
-      // finish OAuth/magic link then clean URL noise
       try{
         const u = new URL(location.href);
         const hasCode = u.searchParams.get("code");
@@ -153,10 +153,21 @@
         }
       }catch{}
 
-      // react to auth state and repaint
-      window.supabase.auth.onAuthStateChange((_e, session)=>{
-        paintAuthBadge({ authed: !!session, plan: "free" }); // exact plan painted later by status fetch
+      window.supabase.auth.onAuthStateChange(async (_e, session)=>{
+        const authed = !!session;
+        paintAuthBadge({ authed, plan: "free", email: session?.user?.email||null });
         try{ document.getElementById("auth")?.close(); }catch{}
+        // refresh real plan + quotas
+        try{
+          const r = await fetch(`${window.WORKER_BASE}/api/billing/status`, { headers: await window.getAuthHeaders() });
+          const j = await r.json();
+          if (r.ok){
+            paintAuthBadge({ authed, plan: j.plan||"free", email: j.email||session?.user?.email||null });
+            const q = j.platform?.daily;
+            const qEl = document.getElementById("memberQuota");
+            if (qEl) qEl.textContent = (q?.cap!=null) ? `${Math.max(0,(q.cap - (q.used||0)))}/${q.cap}` : "—";
+          }
+        }catch{}
       });
     });
   </script>
@@ -182,14 +193,13 @@
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
         <a href="#demo" class="hover:opacity-80">Live Demo</a>
-        <!-- Force Templates → internal article per your SEO plan -->
         <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" class="hover:opacity-80">Templates</a>
         <a href="#use-cases" class="hover:opacity-80">Use cases</a>
-        <!-- Best picks opens advisor (wired later) -->
         <a href="#best-picks" class="hover:opacity-80">Best picks</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="/blog" class="hover:opacity-80">Blog</a>
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
+        <span id="signedEmail" class="text-xs text-slate-500 only-authed hidden"></span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
@@ -208,7 +218,7 @@
           <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
         </div>
         <div class="flex items-center gap-2">
-          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
+          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border" type="button">Copy code</button>
           <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
         </div>
       </div>
@@ -255,8 +265,9 @@
         </h1>
 
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
-          Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
+          Paste once → repurpose content into <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Reddit</strong>, <strong>Email</strong>, <strong>Instagram</strong> &amp; <strong>TikTok</strong> drafts.
+          One-click <strong>Article Optimizer</strong> for SEO (now includes Reddit title/TL;DR + LinkedIn Article HTML).
+          Export to <strong>Notion</strong> or <strong>Trello</strong> — connections persist across refresh & sign-out.
         </p>
 
         <!-- CTA rail -->
@@ -269,8 +280,8 @@
 
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
           <span class="badge">AI Content Generator</span>
-          <span class="badge">Repurposing Tool</span>
-          <span class="badge">SEO-ready</span>
+          <span class="badge">Article Optimizer</span>
+          <span class="badge">Reddit-ready</span>
           <span class="badge">BYOK</span>
         </div>
 
@@ -292,7 +303,6 @@
               <div class="chip">Trello sync</div>
               <div class="chip">Keyword-aware</div>
               <div class="chip">Tone controls</div>
-              <!-- duplicate for seamless scroll -->
               <div class="chip">LinkedIn-first</div>
               <div class="chip">Editorial-friendly</div>
               <div class="chip">Email copy</div>
@@ -312,11 +322,12 @@
         <div class="grid gap-4">
           <div class="mock p-4 card">
             <div class="text-xs text-slate-400">Command</div>
-            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
-? outline created
-? 3 social variants
-? email subject + body ready
-? instagram caption + hashtags</pre>
+            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,reddit,email,instagram,tiktok
+outline ✓
+3 social variants ✓
+email subject + body ✓
+reddit title + TL;DR ✓
+linkedin article html ✓</pre>
           </div>
           <div class="grid md:grid-cols-2 gap-4">
             <div class="mock p-4 card">
@@ -328,11 +339,11 @@
               </div>
             </div>
             <div class="mock p-4 card">
-              <div class="text-xs text-slate-400">X (Twitter)</div>
+              <div class="text-xs text-slate-400">Reddit</div>
               <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">
-                Two fast variants<br>
-                Always ≤ 280 chars<br>
-                Ready to post ✓
+                Title + body + TL;DR<br>
+                Suggested subs &amp; starter comments<br>
+                Flair &amp; rules hints
               </div>
             </div>
           </div>
@@ -345,10 +356,10 @@
               </div>
             </div>
             <div class="mock p-4 card">
-              <div class="text-xs text-slate-400">Instagram</div>
+              <div class="text-xs text-slate-400">TikTok</div>
               <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">
-                Caption + 3–5 hashtags<br>
-                Short, skimmable, on-brand
+                3 hooks + script<br>
+                On-screen text plan
               </div>
             </div>
           </div>
@@ -376,15 +387,15 @@
     </div>
   </section>
 
-  <!-- Auth dialog (wired in Part 4) -->
+  <!-- Auth dialog -->
   <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold">Sign in</h3>
-        <button class="btn" value="cancel">Close</button>
+        <button class="btn" value="cancel" type="submit">Close</button>
       </div>
       <p class="text-sm text-slate-500">Enter your email to receive a magic link or continue with Google.</p>
-      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
+      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2" autocomplete="email">
       <div class="grid grid-cols-2 gap-2">
         <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
         <button id="authGoogle" class="btn" type="button">Continue with Google</button>
@@ -451,36 +462,37 @@
             </div>
             <div class="mt-3">
               <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]"
-                placeholder="Paste your paragraph, full article, or a URL."></textarea>
+                placeholder="Paste your paragraph, full article, or a URL. Mention your focus like ‘content repurposing for LinkedIn’ to guide tone."></textarea>
             </div>
           </fieldset>
 
-          <!-- Article Optimizer (your requested SEO features) -->
+          <!-- Article Optimizer (SEO + Reddit + LinkedIn Article HTML) -->
           <fieldset class="relative">
             <legend class="text-sm font-semibold">Article Optimizer (optional)</legend>
             <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen" value="30"> Lengthen ~30%</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Improve title & meta (CTR)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_ab" checked> A/B test 5 titles</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo" checked> SEO check (alt/links/length)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG ideas</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_humanize" name="opt_humanize" checked> Humanize content</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_lengthen" name="opt_lengthen" value="30"> Lengthen ~30%</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_faqs" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_headings" name="opt_headings" checked> Auto-headings (H2/H3)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_meta" name="opt_meta" checked> Improve title &amp; meta (CTR)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_ab" name="opt_ab" checked> A/B test 5 titles</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_seo" name="opt_seo" checked> SEO check (alt/links/length)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_svg" name="opt_svg"> Add platform-fit SVG ideas</label>
+              <label class="flex items-center gap-2"><input type="checkbox" id="opt_reddit_ready" name="opt_reddit_ready"> Reddit-ready (title + TL;DR)</label>
             </div>
 
             <div class="mt-3 grid md:grid-cols-3 gap-3">
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Focus keyword</span>
-                <input name="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO" />
+                <input id="seo_keyword" name="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO" />
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
-                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurposing strategy, social media repurposing" />
+                <input id="seo_secondaries" name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose workflow, repurpose project, repurporse content" />
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Target SERP intent</span>
-                <select name="seo_intent" class="border rounded-lg px-3 py-2">
+                <select id="seo_intent" name="seo_intent" class="border rounded-lg px-3 py-2">
                   <option value="informational" selected>Informational</option>
                   <option value="commercial">Commercial</option>
                   <option value="transactional">Transactional</option>
@@ -490,8 +502,8 @@
             </div>
 
             <p class="mt-2 text-[12px] text-slate-500">
-              We’ll also provide: <em>estimated ranking likelihood</em> for your focus keyword, <em>alt keyword ideas</em> to try, and a
-              <em>meta description</em> tuned for CTR.
+              Optimizer outputs: improved HTML article, CTR-optimized title &amp; meta, FAQ JSON-LD, Reddit-ready <em>title + TL;DR</em>,
+              and optional LinkedIn Article HTML.
             </p>
 
             <!-- Plan caps hint -->
@@ -531,7 +543,7 @@
                 <label class="flex items-center gap-2">
                   Max posts:
                   <select name="x_posts" class="border rounded-lg px-2 py-1">
-                    <option>2</option><option selected>4</option><option>6</option>
+                    <option>2</option><option selected>6</option><option>8</option>
                   </select>
                 </label>
               </div>
@@ -539,7 +551,7 @@
 
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Reddit</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules &amp; flair tips)</label>
               <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
             </fieldset>
 
@@ -578,34 +590,65 @@
         <!-- Channel cards injected here -->
       </div>
 
-      <!-- ===== QUICK PUBLISH (Authed only; Free can SEE as preview, guests cannot) ===== -->
+      <!-- ===== QUICK PUBLISH (Authed only; Free can SEE as preview if unlocked) ===== -->
       <div class="mt-10 card p-5 only-authed hidden">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Quick publish</strong>
           <div class="text-xs text-slate-500">Works with your last generation’s outputs.</div>
         </div>
         <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <button id="qp-x" class="btn">Post to X</button>
-          <button id="qp-reddit" class="btn">Open Reddit submit</button>
-          <button id="qp-linkedin" class="btn">Copy for LinkedIn & open</button>
-          <button id="qp-email" class="btn">Send email draft</button>
+          <button id="qp-x" class="btn" type="button">Post to X</button>
+          <button id="qp-reddit" class="btn" type="button">Open Reddit submit</button>
+          <button id="qp-linkedin" class="btn" type="button">Copy for LinkedIn &amp; open</button>
+          <button id="qp-email" class="btn" type="button">Send email draft</button>
         </div>
 
         <!-- Creator+ integrations -->
         <div class="mt-4 grid sm:grid-cols-2 gap-3 plan-creator-plus">
-          <button id="li-notion" class="btn">Export to Notion</button>
-          <button id="li-trello" class="btn">Send to Trello</button>
+          <button id="li-notion" class="btn" type="button">Export to Notion</button>
+          <button id="li-trello" class="btn" type="button">Send to Trello</button>
         </div>
         <div class="mt-2 text-xs text-slate-500 plan-creator-plus">
-          Notion/Trello require connecting once from this device. Find them in Settings → Integrations.
+          Notion/Trello require connecting once from this device. Connections persist across refresh &amp; sign-out.
+        </div>
+      </div>
+
+      <!-- ===== CONNECTIONS (status + connect/disconnect) ===== -->
+      <div class="mt-6 card p-5 only-authed hidden">
+        <strong class="tracking-tight">Connections</strong>
+        <div class="grid md:grid-cols-2 gap-4 mt-3">
+          <div class="border rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-semibold">Notion</div>
+                <div id="notion_state_txt" class="text-xs text-slate-500 mt-1">Not connected</div>
+              </div>
+              <div class="flex gap-2">
+                <button id="notion_connect" class="btn" type="button">Connect</button>
+                <button id="notion_disconnect" class="btn hidden" type="button">Disconnect</button>
+              </div>
+            </div>
+          </div>
+          <div class="border rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-semibold">Trello</div>
+                <div id="trello_state_txt" class="text-xs text-slate-500 mt-1">Not connected</div>
+              </div>
+              <div class="flex gap-2">
+                <button id="trello_connect" class="btn" type="button">Connect</button>
+                <button id="trello_disconnect" class="btn hidden" type="button">Disconnect</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- ===== SCHEDULER (Starter+) ===== -->
-      <div class="mt-10 card p-5 plan-starter-plus">
+      <div class="mt-10 card p-5 plan-starter-plus hidden">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Scheduler</strong>
-          <div class="text-xs text-slate-500">Queue & calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
+          <div class="text-xs text-slate-500">Queue &amp; calendar. Starter gets single-profile; Creator+ supports multi-profile.</div>
         </div>
 
         <!-- Composer -->
@@ -653,19 +696,19 @@
       <!-- ===== ANALYTICS ===== -->
       <div class="mt-10 grid md:grid-cols-3 gap-6">
         <!-- Starter+: basics -->
-        <div class="card p-5 plan-starter-plus">
+        <div class="card p-5 plan-starter-plus hidden">
           <strong class="tracking-tight">Analytics (basics)</strong>
-          <div class="text-xs text-slate-500 mt-1">Per-day posts & estimated reach.</div>
+          <div class="text-xs text-slate-500 mt-1">Per-day posts &amp; estimated reach.</div>
           <div id="anaBasic" class="mt-3 text-sm text-slate-400">Connect accounts to see data.</div>
         </div>
         <!-- Creator+: per-channel -->
-        <div class="card p-5 plan-creator-plus">
+        <div class="card p-5 plan-creator-plus hidden">
           <strong class="tracking-tight">Analytics Pro</strong>
           <div class="text-xs text-slate-500 mt-1">Breakdown by channel.</div>
-          <div id="anaPro" class="mt-3 text-sm text-slate-400">Coming online as you post.</div>
+          <div id="anaPro" class="mt-3 text-sm text-slate-400">Streams in as you post.</div>
         </div>
         <!-- Business: team -->
-        <div class="card p-5 plan-business-only">
+        <div class="card p-5 plan-business-only hidden">
           <strong class="tracking-tight">Team Analytics</strong>
           <div class="text-xs text-slate-500 mt-1">Org-wide view, shared calendar.</div>
           <div id="anaTeam" class="mt-3 text-sm text-slate-400">Invite teammates to populate.</div>
@@ -690,16 +733,69 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== OPTIMIZER STANDALONE (matches Part 5 wiring) ===== -->
+  <section id="optimizer" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10">
+      <div class="card p-5 md:p-6">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <h3 class="text-xl font-bold">Article Optimizer</h3>
+          <button id="optRun" class="btn btn-primary" type="button">Optimize</button>
+        </div>
+        <form id="optimizerForm" class="mt-4 grid gap-4" autocomplete="off">
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">Paste HTML or Markdown</span>
+            <textarea id="optInput" class="border rounded-lg px-3 py-2 min-h-[160px]" placeholder="Paste your article content to repurpose content for SEO, LinkedIn Articles, or Reddit TL;DR"></textarea>
+          </label>
+        </form>
+
+        <div id="optResultWrap" class="mt-6 hidden relative">
+          <div class="preview-mask absolute inset-0 rounded-xl hidden items-end justify-end p-2 pointer-events-none" id="optPreviewMask">
+            <button id="optUnlockPreview" class="cta btn btn-primary pointer-events-auto">Unlock preview</button>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Optimized HTML</span>
+              <textarea id="optHtml" class="border rounded-lg px-3 py-2 min-h-[220px]"></textarea>
+            </label>
+            <div class="grid gap-3">
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">Title</span>
+                <input id="optTitle" class="border rounded-lg px-3 py-2" />
+              </label>
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">Meta description</span>
+                <textarea id="optMeta" class="border rounded-lg px-3 py-2 min-h-[80px]"></textarea>
+              </label>
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">FAQ JSON-LD</span>
+                <textarea id="optFaqJsonld" class="border rounded-lg px-3 py-2 min-h-[100px]"></textarea>
+              </label>
+            </div>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button id="optCopyHtml" class="btn" type="button">Copy HTML</button>
+            <button id="optCopyMd" class="btn" type="button">Copy Markdown</button>
+            <button id="optDownloadHtml" class="btn" type="button">Download .html</button>
+            <button id="optExportNotion" class="btn plan-creator-plus" type="button">Export to Notion</button>
+            <button id="optExportTrello" class="btn plan-creator-plus" type="button">Send to Trello</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- ===== BEST PICKS (Plan Advisor) ===== -->
   <section id="best-picks" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-black tracking-tight">Best picks for your workflow</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">Answer two quick questions → we’ll recommend the right plan.</p>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">
+          Answer two quick questions — we’ll recommend the right plan to <strong>repurpose content</strong> faster.
+        </p>
       </div>
 
       <div class="card p-5 md:p-6">
-        <form id="advisorForm" class="grid gap-4">
+        <form id="advisorForm" class="grid gap-4" autocomplete="off">
           <div class="grid md:grid-cols-2 gap-4">
             <label class="grid gap-1">
               <span class="text-sm text-slate-500">How many drafts do you create per month?</span>
@@ -722,7 +818,7 @@
 
           <div class="flex items-center gap-3 mt-2">
             <button id="advisorSuggest" class="btn btn-primary" type="button">Get suggestion</button>
-            <a href="#pricing" class="btn">Skip to pricing</a>
+            <a href="#pricing" class="btn" aria-label="See pricing plans for content repurposing">Skip to pricing</a>
           </div>
         </form>
 
@@ -737,7 +833,9 @@
               <div class="border rounded-xl p-4" id="advisorStarter">
                 <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Starter</div>
                 <h4 class="mt-2 font-semibold">Solo Creator</h4>
-                <p class="text-sm mt-1 text-slate-500">200 generations/month, queue & calendar, basics analytics.</p>
+                <p class="text-sm mt-1 text-slate-500">
+                  200 generations/month, queue & calendar, basics analytics — great to <strong>repurpose content</strong> weekly.
+                </p>
                 <button
                   data-price="price_1S7y58JYjIKHzKcjzL7cIKiB"
                   class="mt-3 btn btn-primary js-checkout"
@@ -747,7 +845,9 @@
               <div class="border rounded-xl p-4" id="advisorCreator">
                 <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Creator</div>
                 <h4 class="mt-2 font-semibold">Power User</h4>
-                <p class="text-sm mt-1 text-slate-500">500 generations/month, Notion/Trello/Buffer, Analytics Pro.</p>
+                <p class="text-sm mt-1 text-slate-500">
+                  500 generations/month, Notion/Trello/Buffer, Analytics Pro — scale <strong>content repurposing</strong> across channels.
+                </p>
                 <button
                   data-price="price_1S7y77JYjIKHzKcjKQYjiqZH"
                   class="mt-3 btn btn-primary js-checkout"
@@ -757,14 +857,18 @@
               <div class="border rounded-xl p-4" id="advisorBusiness">
                 <div class="text-sm px-3 py-1 rounded-full bg-white/70 dark:bg-white/10 border w-fit">Business</div>
                 <h4 class="mt-2 font-semibold">Team</h4>
-                <p class="text-sm mt-1 text-slate-500">Unlimited (fair use), 3 seats, org analytics, white-label export.</p>
+                <p class="text-sm mt-1 text-slate-500">
+                  Unlimited (fair use), 3 seats, org analytics — run a <strong>repurpose project</strong> across a team.
+                </p>
                 <button
                   data-price="price_1S7y8OJYjIKHzKcjqA9uJdyh"
                   class="mt-3 btn btn-primary js-checkout"
                   type="button">Choose Business</button>
               </div>
             </div>
-            <p class="text-xs mt-3 text-slate-500">Already subscribed? <button id="advisorPortal" type="button" class="underline">Manage billing</button></p>
+            <p class="text-xs mt-3 text-slate-500">Already subscribed?
+              <button id="advisorPortal" type="button" class="underline">Manage billing</button>
+            </p>
           </div>
         </div>
       </div>
@@ -776,7 +880,9 @@
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-black tracking-tight">Use cases</h2>
-        <p class="mt-2 text-slate-600 dark:text-slate-300">See how ContentRepurpose outperforms point tools across your workflow.</p>
+        <p class="mt-2 text-slate-600 dark:text-slate-300">
+          See how ContentRepurpose outperforms point tools when you <strong>repurpose content</strong> for LinkedIn, X, Reddit, and email.
+        </p>
       </div>
 
       <div class="grid md:grid-cols-3 gap-6">
@@ -807,22 +913,22 @@
         </a>
       </div>
 
-      <!-- Authority cluster (hidden text links for crawl + useful for users) -->
+      <!-- Authority cluster (keyword-enriched internal links) -->
       <div class="text-xs text-slate-500 mt-6 flex flex-wrap gap-3">
         <a href="https://contentrepurpose.pro/blog/content-repurposing-101/" target="_blank" rel="noopener">Content repurposing 101</a> ·
-        <a href="https://contentrepurpose.pro/blog/content-repurposing-strategy/" target="_blank" rel="noopener">Strategy</a> ·
-        <a href="https://contentrepurpose.pro/blog/how-to-repurpose-content/" target="_blank" rel="noopener">How-to guide</a> ·
-        <a href="https://contentrepurpose.pro/blog/content-repurposing-ideas/" target="_blank" rel="noopener">Ideas</a> ·
-        <a href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/" target="_blank" rel="noopener">One piece → many</a> ·
-        <a href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/" target="_blank" rel="noopener">AI vs manual</a> ·
-        <a href="https://contentrepurpose.pro/blog/ai-search-ranking-with-repurposed-content/" target="_blank" rel="noopener">Search ranking</a> ·
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-strategy/" target="_blank" rel="noopener">Content repurposing strategy</a> ·
+        <a href="https://contentrepurpose.pro/blog/how-to-repurpose-content/" target="_blank" rel="noopener">How to repurpose content</a> ·
+        <a href="https://contentrepurpose.pro/blog/content-repurposing-ideas/" target="_blank" rel="noopener">Content repurpose ideas</a> ·
+        <a href="https://contentrepurpose.pro/blog/repurpose-one-piece-multiple-platforms/" target="_blank" rel="noopener">Repurpose one piece to many</a> ·
+        <a href="https://contentrepurpose.pro/blog/ai-vs-manual-content-repurposing/" target="_blank" rel="noopener">AI vs manual content repurposing</a> ·
+        <a href="https://contentrepurpose.pro/blog/ai-search-ranking-with-repurposed-content/" target="_blank" rel="noopener">Repurposed content & search ranking</a> ·
         <a href="https://contentrepurpose.pro/blog/ai-content-repurposing-benefits-risks-roi-2025/" target="_blank" rel="noopener">Benefits, risks & ROI</a> ·
-        <a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" target="_blank" rel="noopener">Best tools 2025</a> ·
+        <a href="https://contentrepurpose.pro/blog/best-ai-content-repurposing-tools-2025/" target="_blank" rel="noopener">Best content repurposing tools 2025</a> ·
         <a href="https://contentrepurpose.pro/blog/notion-trello-export/" target="_blank" rel="noopener">Notion / Trello export</a> ·
-        <a href="http://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" target="_blank" rel="noopener">Free AI LinkedIn post generator</a> ·
+        <a href="https://contentrepurpose.pro/blog/free-ai-linkedin-post-generator/" target="_blank" rel="noopener">Free AI LinkedIn post generator</a> ·
         <a href="https://contentrepurpose.pro/blog/linkedin-post-templates/" target="_blank" rel="noopener">LinkedIn post templates</a> ·
-        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-missinglettr/" target="_blank" rel="noopener">vs Missinglettr</a> ·
-        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-writesonic/" target="_blank" rel="noopener">vs Writesonic</a>
+        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-missinglettr/" target="_blank" rel="noopener">ContentRepurpose vs Missinglettr</a> ·
+        <a href="https://contentrepurpose.pro/blog/contentrepurpose-vs-writesonic/" target="_blank" rel="noopener">ContentRepurpose vs Writesonic</a>
       </div>
     </div>
   </section>
@@ -833,7 +939,9 @@
       <div class="card p-5 flex items-center justify-between gap-4">
         <div>
           <h3 class="font-semibold">Templates</h3>
-          <p class="text-sm text-slate-500">Grab our LinkedIn post templates and kickstart your draft.</p>
+          <p class="text-sm text-slate-500">
+            Grab our LinkedIn post templates and kickstart your next <strong>repurpose project</strong>.
+          </p>
         </div>
         <a class="btn btn-primary"
            href="https://contentrepurpose.pro/blog/linkedin-post-templates/"
@@ -963,8 +1071,8 @@
         </div>
       </div>
 
-      <!-- ===== FAQ ===== -->
-      <div id="faq" class="mt-14">
+      <!-- ===== FAQ (guest-focused; signed-in users see less clutter) ===== -->
+      <div id="faq" class="mt-14 only-guest">
         <h3 class="text-2xl md:text-3xl font-black tracking-tight">Frequently asked questions</h3>
         <div class="mt-6 grid md:grid-cols-2 gap-4">
           <details class="card p-4">
@@ -982,7 +1090,13 @@
           <details class="card p-4">
             <summary class="font-semibold cursor-pointer">What is BYOK?</summary>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              “Bring Your Own Key.” Use your own model API key for extra capacity. We never store your key in plaintext.
+              “Bring Your Own Key.” Use your own model API key for extra capacity. Keys are stored securely; never in plaintext.
+            </p>
+          </details>
+          <details class="card p-4">
+            <summary class="font-semibold cursor-pointer">Do connections persist for Notion/Trello?</summary>
+            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
+              Yes — connect once on this device and it stays connected across refresh and sign-outs (until you revoke it).
             </p>
           </details>
           <details class="card p-4">
@@ -992,36 +1106,30 @@
             </p>
           </details>
           <details class="card p-4">
-            <summary class="font-semibold cursor-pointer">Do you support teams?</summary>
-            <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
-              Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports.
-            </p>
-          </details>
-          <details class="card p-4">
             <summary class="font-semibold cursor-pointer">Which platforms can you export to?</summary>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-300">
               Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram.
             </p>
           </details>
         </div>
+
+        <!-- FAQ JSON-LD -->
+        <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            { "@type": "Question","name": "What counts as a “generation”?","acceptedAnswer": { "@type": "Answer","text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line." } },
+            { "@type": "Question","name": "Is the Article Optimizer included?","acceptedAnswer": { "@type": "Answer","text": "Yes for all paid plans (daily caps by tier). Free users get one verified run." } },
+            { "@type": "Question","name": "What is BYOK?","acceptedAnswer": { "@type": "Answer","text": "Bring Your Own Key — use your own model API key for extra capacity. Keys are stored securely; never in plaintext." } },
+            { "@type": "Question","name": "Do connections persist for Notion/Trello?","acceptedAnswer": { "@type": "Answer","text": "Yes — connect once on this device and it stays connected across refresh and sign-outs (until revoked)." } },
+            { "@type": "Question","name": "Can I cancel anytime?","acceptedAnswer": { "@type": "Answer","text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle." } },
+            { "@type": "Question","name": "Which platforms can you export to?","acceptedAnswer": { "@type": "Answer","text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram." } }
+          ]
+        }
+        </script>
       </div>
     </div>
-
-    <!-- FAQ JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        { "@type": "Question","name": "What counts as a “generation”?","acceptedAnswer": { "@type": "Answer","text": "Any click on Generate that returns content (demo or signed-in). Batch mode counts per line." } },
-        { "@type": "Question","name": "Is the Article Optimizer included?","acceptedAnswer": { "@type": "Answer","text": "Yes for all paid plans (daily caps by tier). Free users get one verified run." } },
-        { "@type": "Question","name": "What is BYOK?","acceptedAnswer": { "@type": "Answer","text": "Bring Your Own Key — use your own model API key for extra capacity. We never store your key in plaintext." } },
-        { "@type": "Question","name": "Can I cancel anytime?","acceptedAnswer": { "@type": "Answer","text": "Yes. Manage billing from your dashboard; your plan remains active until the end of the cycle." } },
-        { "@type": "Question","name": "Do you support teams?","acceptedAnswer": { "@type": "Answer","text": "Yes — the Business plan includes 3 seats, shared calendar, org analytics, and white-label exports." } },
-        { "@type": "Question","name": "Which platforms can you export to?","acceptedAnswer": { "@type": "Answer","text": "Notion and Trello on Creator+, plus Buffer queueing for LinkedIn, X, Facebook, and Instagram." } }
-      ]
-    }
-    </script>
   </section>
 
   <!-- ===== FOOTER ===== -->
@@ -1035,591 +1143,808 @@
       </nav>
     </div>
   </footer>
-<!-- ===== CRP APP BOOT (FINAL) ===== -->
+<!-- ===== CRP APP SCRIPTS (Part 5/6) ===== -->
 <script type="module">
-/* ContentRepurpose.pro — Final boot (auth + plan + generator + advisor + billing) */
+/* This script wires:
+   • Mobile nav + small UI niceties
+   • Supabase auth (magic link + Google) + plan paint from Worker
+   • Generate → /api/generate (renders per-channel cards)
+   • Optimizer → /api/optimize (standalone mini UI injector if missing)
+   • Billing checkout/portal (email prefilled via identity)
+   • Presets list/save/delete (aligned to Worker schema)
+   • Advisor suggest + promo copy + quick publish
+   • Live stats ticker
+*/
 
-if (!window.__CRP_FINAL_BOOT__) {
-  window.__CRP_FINAL_BOOT__ = true;
+const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-  /* ---------- Short helpers ---------- */
-  const $  = (s, el=document)=> el.querySelector(s);
-  const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-  const byId = (id)=> document.getElementById(id);
-  const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
-  const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+/* ---------- helpers ---------- */
+const $  = (s, el=document)=> el.querySelector(s);
+const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+const byId=(id)=> document.getElementById(id);
+const sleep=(ms)=> new Promise(r=>setTimeout(r,ms));
 
-  const toast = (msg) => {
-    const t=byId("toast"), m=byId("toastMsg");
-    if (!t || !m) return alert(msg);
-    m.textContent = msg; t.classList.remove("hidden");
-    setTimeout(()=> t.classList.add("hidden"), 1700);
-  };
-
-  /* ---------- Supabase Auth ---------- */
-  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-  let supabase = window.supabase;
-
-  async function ensureSupabase(){
-    if (window.supabase) { supabase = window.supabase; return; }
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-    });
-    supabase = window.supabase;
+function toast(msg){
+  let t=byId("toast"), m=byId("toastMsg");
+  if(!t){
+    t=document.createElement("div");
+    t.id="toast";
+    t.className="fixed bottom-4 left-1/2 -translate-x-1/2 px-3 py-2 rounded-lg bg-black text-white text-sm hidden z-[9999]";
+    t.innerHTML=`<span id="toastMsg"></span>`;
+    document.body.appendChild(t);
+    m=byId("toastMsg");
   }
+  m.textContent=String(msg||"");
+  t.classList.remove("hidden");
+  setTimeout(()=> t.classList.add("hidden"), 1700);
+}
 
-  async function finishOAuthAndCleanUrl(){
+async function getAuth(){ return (typeof window.getAuth === "function") ? window.getAuth() : { token:"", userId:null, email:null }; }
+async function getAuthHeaders(){
+  if (typeof window.getAuthHeaders === "function") {
+    try { return await window.getAuthHeaders(); } catch {}
+  }
+  const h={"Content-Type":"application/json"};
+  try{
+    const s = await window.supabase?.auth?.getSession?.();
+    const tok = s?.data?.session?.access_token;
+    const uid = s?.data?.session?.user?.id;
+    if (tok) h["Authorization"]=`Bearer ${tok}`;
+    if (uid) h["X-User-Id"]=uid;
+  }catch{}
+  return h;
+}
+
+/* ---------- Mobile nav ---------- */
+(function wireNav(){
+  const toggle = byId("navToggle");
+  const sheet  = byId("mobileNav");
+  const close  = byId("navClose");
+  if(!toggle || !sheet) return;
+  const open=()=>{ document.documentElement.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); sheet.removeAttribute("aria-hidden"); };
+  const shut=()=>{ document.documentElement.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); sheet.setAttribute("aria-hidden","true"); };
+  toggle.addEventListener("click", open);
+  close?.addEventListener("click", shut);
+  sheet.addEventListener("click", (e)=>{ if(e.target===sheet) shut(); });
+})();
+
+/* ---------- Promo code copy ---------- */
+["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
+  const el = byId(id);
+  el && el.addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+  });
+});
+
+/* ---------- Supabase auth UI ---------- */
+(function wireAuthUI(){
+  const openers = $$(".js-open-auth").concat([byId("heroSignIn"), byId("loginBtn"), byId("loginBtn_m")].filter(Boolean));
+  const logoutBtns = [byId("logoutBtn"), byId("logoutBtn_m")].filter(Boolean);
+  openers.forEach(btn => btn?.addEventListener("click", ()=> { try{ byId("auth").showModal(); }catch{} }));
+  logoutBtns.forEach(btn => btn?.addEventListener("click", async ()=>{
+    try{ await window.supabase?.auth?.signOut?.(); toast("Signed out"); }catch{ toast("Sign-out failed"); }
+  }));
+
+  const input = byId("authEmail");
+  const send  = byId("authSend");
+  const google= byId("authGoogle");
+  const note  = byId("authNote");
+
+  send?.addEventListener("click", async ()=>{
+    const email = (input?.value||"").trim();
+    if(!email) return toast("Enter your email");
     try{
-      const u = new URL(location.href);
-      const code = u.searchParams.get("code");
-      const err  = u.searchParams.get("error_description");
-      if (err) toast(decodeURIComponent(err));
-      if (code){
-        const { error } = await supabase.auth.exchangeCodeForSession({ code });
-        if (error) toast(error.message);
-        ["code","state","scope","provider_id","redirected_from"].forEach(p=> u.searchParams.delete(p));
-        history.replaceState({}, "", u.toString());
-      }
-      if (location.hash.includes("access_token")){
-        await supabase.auth.getSession();
-        history.replaceState({}, "", location.pathname + location.search);
-      }
-    }catch{}
-  }
+      const redirectTo = SITE_ORIGIN; // return here
+      const { error } = await window.supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo }});
+      if (error) throw error;
+      note.textContent="Check your inbox for a magic link.";
+      toast("Magic link sent ✅");
+    }catch(e){ toast(e.message||"Could not send link"); }
+  });
 
-  async function getAuthHeaders(){
-    const h = { "Content-Type":"application/json" };
+  google?.addEventListener("click", async ()=>{
     try{
-      const { data } = await supabase.auth.getSession();
-      const tok = data?.session?.access_token;
-      const uid = data?.session?.user?.id;
-      if (tok) h["Authorization"] = `Bearer ${tok}`;
-      if (uid) h["X-User-Id"]    = uid;
-    }catch{}
-    return h;
-  }
-
-  /* ---------- State ---------- */
-  let AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
-  let LAST_OUTPUT=null;
-
-  function setAuthFlag(authed){ AUTHTED = !!authed; document.body.setAttribute("data-auth", authed ? "authed" : "guest"); }
-  function setPlan(plan){
-    CURRENT_PLAN = (PLAN_RANK[plan]!=null ? plan : "free");
-    document.body.setAttribute("data-plan", CURRENT_PLAN);
-    const label = `Plan: ${cap(CURRENT_PLAN)}`;
-    byId("planbadge")   && (byId("planbadge").textContent   = label);
-    byId("planbadge_m") && (byId("planbadge_m").textContent = label);
-    byId("heroPlanName")&& (byId("heroPlanName").textContent = cap(CURRENT_PLAN));
-    // Apply gates (hide premium until unlocked)
-    const r = PLAN_RANK[CURRENT_PLAN] ?? 0;
-    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r < 1));
-    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r < 2));
-    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r < 3));
-  }
-  function paintGuestUi(){
-    $$(".only-guest").forEach(el=> el.classList.remove("hidden"));
-    $$(".only-authed").forEach(el=> el.classList.add("hidden"));
-  }
-  function paintAuthedUi(){
-    $$(".only-guest").forEach(el=> el.classList.add("hidden"));
-    $$(".only-authed").forEach(el=> el.classList.remove("hidden"));
-  }
-
-  /* ---------- Status / quotas ---------- */
-  async function fetchStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Status error");
-      const authed = j.scope==="user";
-      setAuthFlag(authed);
-      USER_ID = authed ? (j.userId || null) : null;
-      const plan = (j.plan || "free").toLowerCase();
-      setPlan(plan);
-
-      // show/hide manage billing
-      ["manageBilling","manageBilling_m","manageBilling2"].forEach(id=>{
-        const el = byId(id); if (el) el.classList.toggle("hidden", !authed);
+      const redirectTo = SITE_ORIGIN;
+      const { data, error } = await window.supabase.auth.signInWithOAuth({
+        provider:"google", options:{ redirectTo, skipBrowserRedirect:false }
       });
+      if (error) throw error;
+      // Supabase will redirect; no action needed here
+    }catch(e){ toast(e.message||"Google sign-in failed"); }
+  });
+})();
 
-      // Quotas UI
-      const demoEl = byId("demoQuota");
-      const memEl  = byId("memberQuota");
-      if (!authed){
-        const cap = j.platform?.monthly?.cap ?? 5;
-        const used= j.platform?.monthly?.used ?? 0;
-        demoEl && (demoEl.textContent = Math.max(0, cap - used));
-        paintGuestUi();
-      } else {
-        const cap = j.platform?.daily?.cap;
-        const used= j.platform?.daily?.used ?? 0;
-        memEl && (memEl.textContent = (cap==null ? "∞" : Math.max(0, cap - used)));
-        paintAuthedUi();
-      }
+/* ---------- Plan/identity paint from Worker ---------- */
+async function paintFromWorker(){
+  try{
+    const headers = await getAuthHeaders();
+    const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers });
+    const j = await r.json();
+    if(!r.ok) throw new Error(j?.error?.message || "Status error");
+    const authed = j.scope==="user";
+    const plan = (j.plan || "free").toLowerCase();
+    document.body.setAttribute("data-auth", authed ? "authed" : "guest");
+    document.body.setAttribute("data-plan", plan);
 
-      // Toggle Generate buttons
-      byId("generateBtn")?.classList.toggle("hidden", authed);
-      byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-    }catch{
-      // fallback safe
-      setAuthFlag(false); setPlan("free"); paintGuestUi();
+    const pretty = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const b1 = byId("planbadge"), b2 = byId("planbadge_m");
+    if (b1) b1.textContent = `Plan: ${pretty}`;
+    if (b2) b2.textContent = `Plan: ${pretty}`;
+
+    // Switch CTA text in hero
+    const heroPlan = byId("heroPlanName"); if (heroPlan) heroPlan.textContent = pretty;
+
+    // Show/hide auth buttons
+    const show = (id, on)=>{ const el=byId(id); if(el) el.classList.toggle("hidden", !on); };
+    show("loginBtn", !authed); show("loginBtn_m", !authed);
+    show("logoutBtn", authed); show("logoutBtn_m", authed);
+    show("manageBilling", authed); show("manageBilling_m", authed); show("manageBilling2", authed);
+
+    // Set year
+    const yr = byId("year"); if (yr) yr.textContent = String(new Date().getFullYear());
+
+  }catch(e){ /* best-effort */ }
+}
+paintFromWorker();
+window.supabase?.auth?.onAuthStateChange?.((_e,_s)=> setTimeout(paintFromWorker, 350));
+
+/* ---------- Billing: checkout + portal (prefill via identity on Worker) ---------- */
+function wireBilling(){
+  const checkoutBtns = $$(".js-checkout");
+  checkoutBtns.forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      try{
+        const { token, userId, email } = await getAuth();
+        if (!userId || !token){ try{ byId("auth").showModal(); }catch{}; return; }
+        const price = btn.getAttribute("data-price");
+        if(!price) return toast("Missing price id");
+        const headers = await getAuthHeaders();
+        const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+          method:"POST",
+          headers,
+          body: JSON.stringify({
+            price,
+            success_url: `${SITE_ORIGIN}/?billing=success`,
+            cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
+          })
+        });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
+        location.href = j.url;
+      }catch(e){ toast(e.message||"Checkout failed"); }
+    });
+  });
+
+  const portalBtns = [byId("advisorPortal"), byId("manageBilling"), byId("manageBilling_m"), byId("manageBilling2")].filter(Boolean);
+  portalBtns.forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      try{
+        const headers = await getAuthHeaders();
+        const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
+          method:"POST", headers, body: JSON.stringify({ return_url: SITE_ORIGIN })
+        });
+        const j = await r.json();
+        if(!r.ok) throw new Error(j?.error?.message || "Portal error");
+        location.href = j.url;
+      }catch(e){ toast(e.message||"Could not open billing portal"); }
+    });
+  });
+}
+wireBilling();
+
+/* ---------- Generator ---------- */
+(function wireGenerator(){
+  const form = byId("demoForm");
+  const out  = byId("demoOutput");
+  if(!form || !out) return;
+
+  async function generate(e){
+    e?.preventDefault?.();
+
+    const src = byId("sourceText");
+    const source = (src?.value||"").trim();
+    if(!source) return toast("Paste your paragraph/article/URL first");
+
+    // Build a single prompt that returns multi-channel outputs.
+    const opts = Object.fromEntries(new FormData(form).entries());
+    // Checkbox booleans:
+    $$('input[type="checkbox"]', form).forEach(cb=>{ opts[cb.name] = cb.checked; });
+
+    // Channel selection summary
+    const channels = ["linkedin","x","email","instagram","reddit","facebook","quora","tiktok"].filter(ch=> opts[`ch_${ch}`]);
+
+    const sys = {
+      role:"system",
+      content:
+`You are a senior content repurposing assistant. Return JSON only:
+{
+  "linkedin": {"post": string, "article_html": string|null},
+  "x": {"sequence": string[]},
+  "email": {"subject": string, "body": string},
+  "instagram": {"captions": string[]},
+  "reddit": {"title": string, "body": string, "tldr": string, "communities": string[], "starter_comments": string[]},
+  "facebook": {"post": string},
+  "quora": {"question": string, "answer": string},
+  "tiktok": {"hooks": string[], "script": string, "onscreen_plan": string[]}
+}
+Rules:
+- Tailor style per platform.
+- Keep outputs concise and ready to paste.
+- If a channel isn't requested, set that property to null.`
+    };
+
+    const user = {
+      role:"user",
+      content:
+`SOURCE (${opts.sourceType||"paragraph"}):
+${source}
+
+GUIDANCE:
+- Optimize for: LinkedIn, X, Reddit, Email, Instagram, TikTok (only if selected).
+- LinkedIn article HTML: ${opts.li_article ? "yes" : "no"}
+- X: sequence=${opts.x_sequence ? "true" : "false"}; max_posts=${opts.x_posts || 6}
+- Reddit: suggest communities=${opts.rdt_communities ? "true" : "false"}; starter comments=${opts.rdt_comments ? "true" : "false"}
+- TikTok: hooks=${opts.tt_hooks ? "true" : "false"}; on-screen plan=${opts.tt_onscreen ? "true" : "false"}
+- SEO intent: ${(opts.seo_intent||"informational")}
+- Focus keyword: ${(opts.seo_keyword||"").trim()}
+- Secondary keywords: ${(opts.seo_secondaries||"").trim()}
+- Only return JSON.`
+    };
+
+    const headers = await getAuthHeaders();
+    // Try platform lane (Worker decides based on identity and pool/BYOK)
+    let resp, data;
+    try{
+      resp = await fetch(`${WORKER_BASE}/api/generate`,{
+        method:"POST",
+        headers,
+        body: JSON.stringify({ messages:[sys,user], temperature:0.6, max_tokens: 1800 })
+      });
+      data = await resp.json();
+    }catch{ return toast("Network error"); }
+    if(!resp.ok) return toast(data?.error?.message || "Generation failed");
+
+    // Parse JSON content
+    let payloadText = (data?.choices?.[0]?.message?.content||"").trim();
+    try{
+      payloadText = payloadText.replace(/^```(?:json)?/i,"").replace(/```$/,"");
+      const j = JSON.parse(payloadText);
+      paintOutputs(j);
+      window.__CRP_LAST_OUTPUT__ = j;
+      toast("Generated ✅");
+    }catch{ toast("Model response parse error"); }
+  }
+
+  function card(title, body, locked=false){
+    const mask = `<div class="preview-mask absolute inset-0 rounded-xl p-2 flex items-end justify-end pointer-events-none">
+        <button class="cta btn btn-primary js-open-auth">Unlock preview</button>
+      </div>`;
+    return `<div class="card p-4 relative ${locked?"preview-locked":""}">
+      <div class="flex items-center justify-between"><strong>${title}</strong></div>
+      <pre class="mt-2 mono text-sm whitespace-pre-wrap">${body}</pre>
+      ${locked?mask:""}
+    </div>`;
+  }
+
+  function paintOutputs(j){
+    const authed = document.body.getAttribute("data-auth")==="authed";
+    const lock = !authed;
+
+    const blocks = [];
+    if (j.linkedin){
+      const body = [
+        j.linkedin.post ? `Post:\n${j.linkedin.post}` : "",
+        j.linkedin.article_html ? `\n\nLinkedIn Article HTML:\n${j.linkedin.article_html}` : ""
+      ].join("");
+      if (body.trim()) blocks.push(card("LinkedIn", body, lock));
+    }
+    if (j.x){
+      const seq = Array.isArray(j.x.sequence) ? j.x.sequence.map((t,i)=> `${i+1}. ${t}`).join("\n") : "";
+      if (seq) blocks.push(card("X (Twitter)", seq, lock));
+    }
+    if (j.email){
+      const em = [`Subject: ${j.email.subject||""}`, "", (j.email.body||"")].join("\n");
+      if (em.trim()) blocks.push(card("Email", em, lock));
+    }
+    if (j.instagram && Array.isArray(j.instagram.captions)){
+      const caps = j.instagram.captions.map((t,i)=> `${i+1}. ${t}`).join("\n");
+      if (caps) blocks.push(card("Instagram", caps, lock));
+    }
+    if (j.reddit){
+      const rd = [
+        j.reddit.title ? `Title: ${j.reddit.title}` : "",
+        j.reddit.tldr ? `TL;DR: ${j.reddit.tldr}` : "",
+        j.reddit.body ? `\n${j.reddit.body}\n` : "",
+        Array.isArray(j.reddit.communities) && j.reddit.communities.length ? `Suggested communities:\n- ${j.reddit.communities.join("\n- ")}` : "",
+        Array.isArray(j.reddit.starter_comments) && j.reddit.starter_comments.length ? `\nStarter comments:\n- ${j.reddit.starter_comments.join("\n- ")}` : ""
+      ].join("\n");
+      if (rd.trim()) blocks.push(card("Reddit", rd, lock));
+    }
+    if (j.facebook?.post) blocks.push(card("Facebook", j.facebook.post, lock));
+    if (j.quora){
+      const qo = [`Q: ${j.quora.question||""}`, "", `A:\n${j.quora.answer||""}`].join("\n");
+      if (qo.trim()) blocks.push(card("Quora", qo, lock));
+    }
+    if (j.tiktok){
+      const tk = [
+        Array.isArray(j.tiktok.hooks) ? `Hooks:\n- ${j.tiktok.hooks.join("\n- ")}` : "",
+        j.tiktok.script ? `\n\nScript:\n${j.tiktok.script}` : "",
+        Array.isArray(j.tiktok.onscreen_plan) ? `\n\nOn-screen plan:\n- ${j.tiktok.onscreen_plan.join("\n- ")}` : ""
+      ].join("");
+      if (tk.trim()) blocks.push(card("TikTok", tk, lock));
+    }
+
+    out.innerHTML = blocks.join("\n");
+    // Re-wire "Unlock preview" buttons inside cards
+    $$(".js-open-auth", out).forEach(b=> b.addEventListener("click", ()=> { try{ byId("auth").showModal(); }catch{} }));
+  }
+
+  // Submit buttons (guest vs authed IDs)
+  const btnGuest  = byId("generateBtn");
+  const btnMember = byId("generateBtn_member");
+  btnGuest?.addEventListener("click", generate);
+  btnMember?.addEventListener("click", generate);
+
+  byId("clearBtn")?.addEventListener("click", ()=>{
+    byId("sourceText").value="";
+    out.innerHTML="";
+  });
+})();
+
+/* ---------- Optimizer (standalone call → /api/optimize) ---------- */
+(function wireOptimizer(){
+  // If the dedicated Optimizer UI doesn't exist, inject a compact panel under the generator.
+  if (!byId("optimizerForm")) {
+    const anchor = byId("demoOutput");
+    if (anchor){
+      const wrap = document.createElement("div");
+      wrap.className="mt-8 card p-5";
+      wrap.innerHTML = `
+        <form id="optimizerForm" class="grid gap-3" autocomplete="off">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <strong class="tracking-tight">Article Optimizer</strong>
+            <div class="text-xs text-slate-500">Humanize • Headings • FAQ JSON-LD • Meta • Reddit TL;DR</div>
+          </div>
+          <textarea id="optInput" class="border rounded-lg px-3 py-2 min-h-[140px]" placeholder="Paste article HTML or Markdown (or leave empty to use the Generator source above)"></textarea>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <label class="flex items-center gap-2"><input id="opt_humanize" type="checkbox" checked> Humanize</label>
+            <label class="flex items-center gap-2"><input id="opt_lengthen" type="checkbox"> Lengthen ~30%</label>
+            <label class="flex items-center gap-2"><input id="opt_faqs" type="checkbox"> Add FAQs (+ JSON-LD)</label>
+            <label class="flex items-center gap-2"><input id="opt_headings" type="checkbox" checked> Auto-headings (H2/H3)</label>
+            <label class="flex items-center gap-2"><input id="opt_meta" type="checkbox" checked> Improve title & meta</label>
+            <label class="flex items-center gap-2"><input id="opt_ab" type="checkbox" checked> A/B test 5 titles</label>
+            <label class="flex items-center gap-2"><input id="opt_seo" type="checkbox" checked> SEO checks</label>
+            <label class="flex items-center gap-2"><input id="opt_svg" type="checkbox"> Add SVG ideas</label>
+            <label class="flex items-center gap-2"><input id="opt_reddit_ready" type="checkbox"> Reddit-ready (TL;DR up top)</label>
+          </div>
+          <div class="grid md:grid-cols-3 gap-3">
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Focus keyword</span>
+              <input id="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO">
+            </label>
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Secondary keywords</span>
+              <input id="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose, repurpose project">
+            </label>
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">SERP intent</span>
+              <select id="seo_intent" class="border rounded-lg px-3 py-2">
+                <option value="informational" selected>Informational</option>
+                <option value="commercial">Commercial</option>
+                <option value="transactional">Transactional</option>
+                <option value="navigational">Navigational</option>
+              </select>
+            </label>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="optRun" class="btn btn-primary" type="button">Optimize</button>
+            <button id="optCopyHtml" class="btn" type="button">Copy HTML</button>
+            <button id="optDownloadHtml" class="btn" type="button">Download .html</button>
+          </div>
+          <div id="optResultWrap" class="mt-3 hidden">
+            <label class="grid gap-1">
+              <span class="text-xs text-slate-500">Optimized HTML</span>
+              <textarea id="optHtml" class="border rounded-lg px-3 py-2 min-h-[180px]"></textarea>
+            </label>
+            <div class="grid md:grid-cols-2 gap-3 mt-3">
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">Title</span>
+                <input id="optTitle" class="border rounded-lg px-3 py-2">
+              </label>
+              <label class="grid gap-1">
+                <span class="text-xs text-slate-500">Meta description</span>
+                <input id="optMeta" class="border rounded-lg px-3 py-2">
+              </label>
+            </div>
+            <label class="grid gap-1 mt-3">
+              <span class="text-xs text-slate-500">FAQ JSON-LD</span>
+              <textarea id="optFaqJsonld" class="border rounded-lg px-3 py-2 min-h-[120px]"></textarea>
+            </label>
+          </div>
+        </form>`;
+      anchor.parentNode.insertBefore(wrap, anchor);
     }
   }
 
-  /* ---------- Navbar + auth dialog ---------- */
-  function wireNav(){
-    const toggle = byId("navToggle");
-    const sheet  = byId("mobileNav");
-    const close  = byId("navClose");
-    toggle && toggle.addEventListener("click", ()=> document.body.classList.add("nav-open"));
-    close  && close.addEventListener("click", ()=> document.body.classList.remove("nav-open"));
-    $$('a[href^="#"]').forEach(a=>{
-      a.addEventListener("click",(e)=>{
-        const id = a.getAttribute("href");
-        if (!id || id==="#" ) return;
-        const el = $(id);
-        if (el){
-          e.preventDefault();
-          try{ el.scrollIntoView({ behavior:"smooth", block:"start" }); }catch{ el.scrollIntoView(); }
-          document.body.classList.remove("nav-open");
-          history.replaceState(null,"",id);
-        }
+  const run   = byId("optRun");
+  const input = byId("optInput");
+  const resW  = byId("optResultWrap");
+  const html  = byId("optHtml");
+  const ttl   = byId("optTitle");
+  const meta  = byId("optMeta");
+  const faq   = byId("optFaqJsonld");
+
+  function showRes(){ resW && resW.classList.remove("hidden"); }
+
+  run?.addEventListener("click", async ()=>{
+    // Use pasted optimizer input, else fall back to generator sourceText
+    const primary = (input?.value||"").trim() || (byId("sourceText")?.value||"").trim();
+    if(!primary) return toast("Paste article HTML/Markdown first");
+    const headers = await getAuthHeaders();
+    const body = {
+      html: primary.includes("<") ? primary : null,
+      text: primary.includes("<") ? null : primary,
+      options:{
+        humanize: byId("opt_humanize")?.checked || false,
+        lengthen: byId("opt_lengthen")?.checked ? 30 : 0,
+        faqs:     byId("opt_faqs")?.checked || false,
+        headings: byId("opt_headings")?.checked !== false,
+        meta:     byId("opt_meta")?.checked !== false,
+        ab:       byId("opt_ab")?.checked || false,
+        seo:      byId("opt_seo")?.checked !== false,
+        svg:      byId("opt_svg")?.checked || false,
+        keyword:  byId("seo_keyword")?.value || "",
+        secondaries: byId("seo_secondaries")?.value || "",
+        intent:      byId("seo_intent")?.value || "informational"
+      }
+    };
+    let r,j;
+    try{
+      r = await fetch(`${WORKER_BASE}/api/optimize`,{
+        method:"POST", headers, body: JSON.stringify(body)
       });
+      j = await r.json();
+    }catch{ return toast("Network error"); }
+    if(!r.ok) return toast(j?.error?.message || "Optimizer failed");
+    html.value = j.html || "";
+    ttl.value  = j.title || "";
+    meta.value = j.meta_description || "";
+    faq.value  = j.faq_jsonld || "";
+    window.__CRP_LAST_OPTIMIZED__ = j;
+    showRes();
+    toast("Optimized ✅");
+  });
+
+  byId("optCopyHtml")?.addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(byId("optHtml")?.value||""); toast("HTML copied ✅"); }catch{ toast("Copy failed"); }
+  });
+  byId("optDownloadHtml")?.addEventListener("click", ()=>{
+    const blob = new Blob([byId("optHtml")?.value||""], { type:"text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url; a.download="optimized-article.html"; a.click();
+    setTimeout(()=> URL.revokeObjectURL(url), 800);
+  });
+})();
+
+/* ---------- Presets & Batch (align to Worker schema) ---------- */
+(function wirePresetsBatch(){
+  const panel = byId("presetsPanel"); // may exist from earlier safety injection
+  const form  = byId("demoForm");
+  const src   = byId("sourceText");
+  // If safety panel isn't present, inject a minimal one:
+  if (!panel && form){
+    const host = byId("demoOutput").previousElementSibling;
+    const shell = document.createElement("div");
+    shell.id="presetsPanel";
+    shell.className="card p-5 md:p-6 mt-6";
+    shell.innerHTML = `
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <strong class="tracking-tight">Batch & Presets</strong>
+        <span class="text-xs text-slate-500">Starter: 5 lines/run · Creator/Business: 30 lines/run</span>
+      </div>
+      <div class="mt-4 grid md:grid-cols-3 gap-4">
+        <label class="grid gap-1 md:col-span-2">
+          <span class="text-xs text-slate-500">Batch input (one line = one job)</span>
+          <textarea id="batchInput" class="border rounded-lg px-3 py-2 min-h-[100px]" placeholder="Line 1&#10;Line 2&#10;Line 3"></textarea>
+        </label>
+        <div class="grid gap-2 items-end">
+          <button id="batchRun" class="btn btn-primary" type="button">Use batch inputs</button>
+        </div>
+      </div>
+      <div class="mt-5 grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">Preset name</span>
+            <input id="presetName" class="border rounded-lg px-3 py-2" placeholder="My LinkedIn SEO" />
+          </label>
+          <div class="flex gap-2 mt-2">
+            <button id="presetSave" class="btn btn-primary" type="button">Save preset</button>
+          </div>
+        </div>
+        <div class="md:col-span-2">
+          <label class="grid gap-1">
+            <span class="text-xs text-slate-500">Your presets</span>
+            <select id="presetsList" class="border rounded-lg px-3 py-2"></select>
+          </label>
+          <div class="flex gap-2 mt-2">
+            <button id="presetApply" class="btn" type="button">Apply</button>
+            <button id="presetDelete" class="btn" type="button">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    host.parentNode.insertBefore(shell, host.nextSibling);
+  }
+
+  const list = byId("presetsList");
+  const name = byId("presetName");
+  const save = byId("presetSave");
+  const del  = byId("presetDelete");
+  const apply= byId("presetApply");
+
+  async function presetsLoad(){
+    if (!list) return;
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j?.error?.message || "Load failed");
+      const items = j.presets || [];
+      list.innerHTML = `<option value="">(select a preset)</option>`;
+      items.forEach(p=>{
+        const o=document.createElement("option");
+        o.value = p.id; o.textContent = p.title||"Untitled";
+        o.dataset.payload = JSON.stringify(p.data||{});
+        list.appendChild(o);
+      });
+    }catch(e){
+      list.innerHTML = `<option value="">(error)</option>`;
+      toast(e.message||"Presets error");
+    }
+  }
+  function readFormPayload(){
+    const data = new FormData(form);
+    const obj={};
+    data.forEach((v,k)=>{
+      const el = form.elements[k];
+      if (el?.type==="checkbox") obj[k] = !!el.checked;
+      else obj[k] = v;
+    });
+    return obj;
+  }
+  function applyPayload(p={}){
+    Object.entries(p).forEach(([k,v])=>{
+      const el = form.elements[k];
+      if(!el) return;
+      if (el.type==="checkbox") el.checked = !!v;
+      else { try{ el.value = v; }catch{} }
     });
   }
 
-  function wireAuth(){
-    const dlg = byId("auth");
-    const openAuth = ()=> dlg?.showModal?.();
-    // Openers
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
-    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
-    // Google
-    byId("authGoogle")?.addEventListener("click", async ()=>{
-      try{
-        await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
-      }catch(e){ toast(e?.message || "Google sign-in failed"); }
-    });
-    // Magic link
-    byId("authSend")?.addEventListener("click", async ()=>{
-      const email = byId("authEmail")?.value?.trim();
-      if (!email) return toast("Enter your email");
-      try{
-        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        if (error) throw error;
-        toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message || "Sign-in error"); }
-    });
-    // Logout
-    ["logoutBtn","logoutBtn_m"].forEach(id=>{
-      byId(id)?.addEventListener("click", async ()=>{
-        try{ await supabase.auth.signOut(); toast("Signed out"); }catch{}
+  save?.addEventListener("click", async ()=>{
+    const nm = (name?.value||"").trim();
+    if(!nm) return toast("Name your preset");
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/presets/save`,{
+        method:"POST",
+        headers: await getAuthHeaders(),
+        body: JSON.stringify({ title: nm, data: readFormPayload() })
       });
-    });
-  }
+      const j = await r.json();
+      if(!r.ok) throw new Error(j?.error?.message || "Save failed");
+      toast("Preset saved ✅");
+      presetsLoad();
+    }catch(e){ toast(e.message||"Save failed"); }
+  });
 
-  /* ---------- Billing (Stripe) ---------- */
-  function wireBilling(){
-    // Checkout
-    $$(".js-checkout").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const price = btn.getAttribute("data-price") || "";
-        if (!price) return toast("Missing price id");
-        const old = btn.textContent; btn.disabled = true; btn.textContent = "Opening…";
-        try{
-          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-            method:"POST",
-            headers: await getAuthHeaders(),
-            body: JSON.stringify({
-              price,
-              success_url: `${SITE_ORIGIN}/?billing=success`,
-              cancel_url:  `${SITE_ORIGIN}/?billing=cancel`
-            })
-          });
-          const j = await r.json();
-          if (!r.ok) throw new Error(j?.error?.message || "Checkout error");
-          location.href = j.url;
-        }catch(e){ toast(e.message||"Portal error"); btn.disabled=false; btn.textContent=old; }
-      });
-    });
-    // Portal
-    ["manageBilling","manageBilling_m","manageBilling2","advisorPortal"].forEach(id=>{
-      const b = byId(id); if (!b) return;
-      b.addEventListener("click", async ()=>{
-        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
-        try{
-          const r = await fetch(`${WORKER_BASE}/api/billing/portal`,{
-            method:"POST", headers: await getAuthHeaders(),
-            body: JSON.stringify({ return_url: location.href })
-          });
-          const j = await r.json();
-          if (!r.ok) throw new Error(j?.error?.message || "Portal error");
-          location.href = j.url;
-        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
-      });
-    });
-  }
+  apply?.addEventListener("click", ()=>{
+    const id = list?.value||"";
+    if(!id) return toast("Pick a preset");
+    const opt = list.selectedOptions?.[0];
+    const payload = opt?.dataset?.payload ? JSON.parse(opt.dataset.payload) : null;
+    if(!payload) return toast("Preset empty");
+    applyPayload(payload); toast("Preset applied");
+  });
 
-  /* ---------- Live stats + promo copy ---------- */
-  function wirePromo(){
-    ["copyPromoBtn","copyPromoBtn2","copyPromoBtn_pr"].forEach(id=>{
-      const el = byId(id);
-      el && el.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+  del?.addEventListener("click", async ()=>{
+    const id = list?.value||"";
+    if(!id) return toast("Pick a preset to delete");
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/presets/delete`,{
+        method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id })
       });
-    });
+      const j = await r.json();
+      if(!r.ok) throw new Error(j?.error?.message || "Delete failed");
+      toast("Preset deleted");
+      presetsLoad();
+    }catch(e){ toast(e.message||"Delete failed"); }
+  });
+
+  // Batch → move lines into source
+  byId("batchRun")?.addEventListener("click", ()=>{
+    const area = byId("batchInput");
+    if(!area || !src) return;
+    const lines = (area.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    if(!lines.length) return toast("Paste 1+ lines");
+    src.value = lines.join("\n\n");
+    toast(`Added ${lines.length} lines to source`);
+  });
+
+  // init
+  presetsLoad();
+})();
+
+/* ---------- Advisor ---------- */
+(function wireAdvisor(){
+  const form = byId("advisorForm");
+  const btn  = byId("advisorSuggest");
+  const wrap = byId("advisorResult");
+  const reason= byId("advisorReason");
+  const s = byId("advisorStarter"), c = byId("advisorCreator"), b = byId("advisorBusiness");
+  if(!form || !btn || !wrap) return;
+  function pick(){
+    const vol = form.elements["volume"].value;
+    const needs = form.elements["needs"].value;
+    let show="starter", why="Solo creator";
+    if (vol==="300plus" || needs==="team"){ show="business"; why="Team seats + org analytics"; }
+    else if (needs==="pro" || vol==="100to300"){ show="creator"; why="Integrations + Analytics Pro"; }
+    reason.textContent = why;
+    s.style.display = show==="starter" ? "block":"none";
+    c.style.display = show==="creator" ? "block":"none";
+    b.style.display = show==="business"? "block":"none";
+    wrap.classList.remove("hidden");
   }
-  async function paintLive(){
+  btn.addEventListener("click", pick);
+})();
+
+/* ---------- Quick publish from last output ---------- */
+(function wireQuickPublish(){
+  function last(){ return window.__CRP_LAST_OUTPUT__ || null; }
+  function openWin(url){ window.open(url, "_blank"); }
+
+  byId("qp-x")?.addEventListener("click", ()=>{
+    const j = last(); if(!j?.x?.sequence?.length) return toast("Generate X first");
+    const text = encodeURIComponent(j.x.sequence.join("\n\n"));
+    openWin(`https://x.com/intent/tweet?text=${text}`);
+  });
+  byId("qp-reddit")?.addEventListener("click", ()=>{
+    const j = last(); if(!j?.reddit) return toast("Generate Reddit first");
+    const sr = (j.reddit.communities?.[0]||"").replace(/^r\//,"");
+    const title = encodeURIComponent(j.reddit.title||"");
+    const text  = encodeURIComponent(`${j.reddit.body||""}\n\nTL;DR ${j.reddit.tldr||""}`);
+    openWin(`https://www.reddit.com/submit?title=${title}&text=${text}${sr?`&sr=${encodeURIComponent(sr)}`:""}`);
+  });
+  byId("qp-linkedin")?.addEventListener("click", async ()=>{
+    const j = last(); if(!j?.linkedin?.post) return toast("Generate LinkedIn first");
+    try{ await navigator.clipboard.writeText(j.linkedin.post); toast("Copied for LinkedIn ✅"); }catch{ toast("Copy failed"); }
+    openWin("https://www.linkedin.com/feed/");
+  });
+  byId("qp-email")?.addEventListener("click", ()=>{
+    const j = last(); if(!j?.email) return toast("Generate Email first");
+    const s = encodeURIComponent(j.email.subject||"");
+    const b = encodeURIComponent(j.email.body||"");
+    openWin(`mailto:?subject=${s}&body=${b}`);
+  });
+})();
+
+/* ---------- Live stats ticker ---------- */
+(function wireLive(){
+  const chips = $$("[data-live-count]"); const live = byId("liveCount");
+  async function bump(){
     try{
       const r = await fetch(`${WORKER_BASE}/api/stats/today`);
       const j = await r.json();
       if (r.ok && typeof j.today_count === "number"){
-        $$('[data-live-count], #liveCount').forEach(el=> el && (el.textContent = String(j.today_count)));
+        chips.forEach(el=> el.textContent = String(j.today_count));
+        if (live) live.textContent = String(j.today_count);
       }
     }catch{}
   }
-
-  /* ---------- Generator ---------- */
-  const parseJsonLoose = (txt)=>{
-    if (!txt) return null;
-    let s = String(txt).trim();
-    s = s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim();
-    const a=s.indexOf("{"), b=s.lastIndexOf("}");
-    if (a>=0 && b>a) s=s.slice(a,b+1);
-    try{ return JSON.parse(s);}catch{}
-    s = s.replace(/,\s*([}\]])/g,"$1");
-    try{ return JSON.parse(s);}catch{}
-    return null;
-  };
-
-  function readToggles(form){
-    const g = (n)=> form.elements[n];
-    return {
-      opt: {
-        humanize:  g("opt_humanize")?.checked,
-        lengthen:  g("opt_lengthen")?.checked,
-        faqs:      g("opt_faqs")?.checked,
-        headings:  g("opt_headings")?.checked,
-        svg:       g("opt_svg")?.checked,
-        seo:       g("opt_seo")?.checked
-      },
-      ch: {
-        linkedin:  g("ch_linkedin")?.checked,
-        x:         g("ch_x")?.checked,
-        email:     g("ch_email")?.checked,
-        instagram: g("ch_instagram")?.checked,
-        reddit:    g("ch_reddit")?.checked,
-        facebook:  g("ch_facebook")?.checked,
-        quora:     g("ch_quora")?.checked,
-        tiktok:    g("ch_tiktok")?.checked,
-      },
-      extras: {
-        li_article: g("li_article")?.checked,
-        x_sequence: g("x_sequence")?.checked,
-        x_posts:    g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked,
-        rdt_comments:    g("rdt_comments")?.checked,
-        tt_hooks:   g("tt_hooks")?.checked,
-        tt_onscreen:g("tt_onscreen")?.checked
-      }
-    };
-  }
-
-  function systemPrompt(tog){
-    return {
-      role:"system",
-      content:
-`You are a senior social copywriter.
-Return ONLY valid JSON with this shape:
-{
-  "outline": string,
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
-Rules:
-- Keep platform-native, concise. X posts ≤ 280 chars where possible; if multiple, prefix "Post N:".
-- Provide 3–5 meaningful Instagram hashtags.
-- Do not include any prose outside the JSON.`
-    };
-  }
-
-  function userPrompt(raw, form, tog){
-    const srcType = form.elements["sourceType"]?.value || "paragraph";
-    const head = srcType==="url" ? "URL" : (srcType==="blog" ? "Full Blog" : "Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return {
-      role:"user",
-      content:
-`${head}:
-${raw}
-
-Task:
-1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels || "linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`
-    };
-  }
-
-  function paintOutput(j){
-    const wrap = byId("demoOutput");
-    if (!wrap) return;
-    wrap.innerHTML = "";
-    const add = (title, html, key=null)=>{
-      wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">${title}</strong>
-            <button class="btn copy" type="button">Copy</button>
-          </div>
-          ${html}
-        </div>`);
-      const card = wrap.lastElementChild;
-      const copyBtn = $(".btn.copy", card);
-      const pre = $("pre.content", card) || $("pre", card);
-      copyBtn?.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied ✅"); }catch{ toast("Copy failed"); }
-      });
-      if (key && pre){ LAST_OUTPUT = LAST_OUTPUT || {}; LAST_OUTPUT[key] = pre.innerText; }
-    };
-
-    if (j.linkedin){
-      add("LinkedIn", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${j.linkedin}</pre>`, "linkedin");
-    }
-    if (Array.isArray(j.x) && j.x.length){
-      const seq = j.x.map((t,i)=> (t?.trim()?`Post ${i+1}: ${t.trim()}`:"")).filter(Boolean).join("\n\n");
-      add("X (Twitter)", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${seq}</pre>`, "x");
-    }
-    if (j.email && (j.email.subject || j.email.body)){
-      add("Email", `
-        <div class="text-xs text-slate-400">Subject:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.subject||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Body:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.email.body||""}</pre>`, "email");
-    }
-    if (j.instagram){
-      const cap = j.instagram.caption||"";
-      const tags = (j.instagram.hashtags||[]).map(h=> h.startsWith("#")?h:"#"+h).join(" ");
-      add("Instagram", `<pre class="whitespace-pre-wrap text-sm mt-3 content">${cap}\n\n${tags}</pre>`, "instagram");
-    }
-    if (j.reddit){
-      const subs = (j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-      const starters = (j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-      add("Reddit", `
-        <div class="text-xs text-slate-400">Main post:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content"><strong>${j.reddit.title||""}</strong>\n\n${j.reddit.body||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Suggested communities:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${subs || "—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">Starter comments:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${starters || "—"}</pre>`, "reddit");
-    }
-    if (j.facebook){
-      add("Facebook", `
-        <div class="text-xs text-slate-400">Primary text:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.facebook.primary||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Link preview headline/description:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}</pre>`, "facebook");
-    }
-    if (j.quora){
-      const follow = (j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      add("Quora", `
-        <div class="text-xs text-slate-400">Answer:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.quora.answer||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Follow-up prompts:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${follow || "—"}</pre>`, "quora");
-    }
-    if (j.tiktok){
-      const hooks = (j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons = (j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      add("TikTok", `
-        <div class="text-xs text-slate-400">Script:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1 content">${j.tiktok.script||""}</pre>
-        <div class="text-xs text-slate-400 mt-3">Hooks:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${hooks || "—"}</pre>
-        <div class="text-xs text-slate-400 mt-3">On-screen plan:</div>
-        <pre class="whitespace-pre-wrap text-sm mt-1">${ons || "—"}</pre>`, "tiktok");
-    }
-  }
-
-  function wireGenerator(){
-    const form = byId("demoForm");
-    const src  = byId("sourceText");
-    const out  = byId("demoOutput");
-    const clearBtn = byId("clearBtn");
-    const genGuest  = byId("generateBtn");
-    const genMember = byId("generateBtn_member");
-    if (!form || !src || !out) return;
-
-    clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
-
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); // ← prevents unwanted navigation
-      const raw = (src.value||"").trim();
-      if (!raw) return toast("Paste some content first");
-
-      const btn = AUTHTED ? genMember : genGuest;
-      const oldText = btn?.textContent;
-      try{
-        btn && (btn.disabled=true, btn.textContent="Generating…");
-        out.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-
-        const tog = readToggles(form);
-        const messages = [ systemPrompt(tog), userPrompt(raw, form, tog) ];
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-
-        const r = await fetch(`${WORKER_BASE}/api/generate`,{
-          method:"POST",
-          headers: await getAuthHeaders(),
-          body: JSON.stringify({ plan: lane, temperature: 0.5, messages })
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data?.error?.message || "Generation failed");
-        const content = data?.choices?.[0]?.message?.content || "";
-        const j = parseJsonLoose(content);
-        if (!j) throw new Error("Model did not return JSON");
-        paintOutput(j);
-        toast("Done ✅");
-        fetchStatus().catch(()=>{});
-      }catch(e){
-        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${e.message || e}</div>`;
-      }finally{
-        btn && (btn.disabled=false, btn.textContent = oldText || (AUTHTED ? "Generate" : "Generate (demo)"));
-      }
-    });
-  }
-
-  /* ---------- Best Picks Advisor ---------- */
-  function wireAdvisor(){
-    const form = byId("advisorForm");
-    const result = byId("advisorResult");
-    const reason = byId("advisorReason");
-    const pickStarter  = byId("advisorStarter");
-    const pickCreator  = byId("advisorCreator");
-    const pickBusiness = byId("advisorBusiness");
-    const btn = byId("advisorSuggest");
-    if (!form || !btn) return;
-
-    btn.addEventListener("click", ()=>{
-      const vol = form.elements["volume"]?.value || "under100";
-      const need= form.elements["needs"]?.value  || "none";
-      // Decide plan
-      let plan="starter", why="Balanced power & price";
-      if (need==="pro" || vol==="100to300") { plan="creator"; why="Pro analytics + integrations"; }
-      if (need==="team" || vol==="300plus") { plan="business"; why="Team seats & org analytics"; }
-      if (need==="none" && vol==="under100") { plan="starter"; why="Plenty for under 100/month"; }
-
-      reason.textContent = why;
-      result.classList.remove("hidden");
-      // Visual emphasis
-      [pickStarter, pickCreator, pickBusiness].forEach(x=> x?.classList.remove("ring-2","ring-black/20","dark:ring-white/20"));
-      (plan==="starter"? pickStarter : plan==="creator"? pickCreator : pickBusiness)?.classList.add("ring-2","ring-black/20","dark:ring-white/20");
-      // Scroll to result block
-      result.scrollIntoView({ behavior:"smooth", block:"start" });
-    });
-  }
-
-  /* ---------- Quick Publish (if you kept those buttons) ---------- */
-  function wireQuickPublish(){
-    const qp = {
-      x: byId("qp-x"),
-      reddit: byId("qp-reddit"),
-      linkedin: byId("qp-linkedin"),
-      email: byId("qp-email")
-    };
-    const need = (k)=> (LAST_OUTPUT && LAST_OUTPUT[k]) ? LAST_OUTPUT[k] : null;
-
-    qp.x?.addEventListener("click", ()=>{
-      const text = need("x") || need("linkedin");
-      if (!text) return toast("Generate first");
-      const t = text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — ");
-      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank");
-    });
-    qp.reddit?.addEventListener("click", ()=>{
-      const body = need("reddit") || need("linkedin") || need("x");
-      if (!body) return toast("Generate first");
-      const title = body.split("\n")[0].replace(/^Post \d+:\s*/,"").slice(0,280);
-      window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank");
-    });
-    qp.linkedin?.addEventListener("click", async ()=>{
-      const text = need("linkedin") || need("x"); if (!text) return toast("Generate first");
-      try{ await navigator.clipboard.writeText(text); }catch{}
-      window.open("https://www.linkedin.com/feed/","_blank");
-    });
-    qp.email?.addEventListener("click", ()=>{
-      const em = need("email") || "";
-      const subj = (em.split("\n")[0]||"Your draft").slice(0,120);
-      const body = em;
-      location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
-    });
-  }
-
-  /* ---------- Misc ---------- */
-  function wireMisc(){
-    const y = byId("year"); y && (y.textContent = new Date().getFullYear());
-    try{
-      const u = new URL(location.href);
-      const ok = u.searchParams.get("billing")==="success";
-      const no = u.searchParams.get("billing")==="cancel";
-      if (ok) toast("Billing updated — thank you!");
-      if (no) toast("Billing cancelled");
-      if (ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
-    }catch{}
-  }
-
-  /* ---------- Boot ---------- */
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    await ensureSupabase();
-    await finishOAuthAndCleanUrl();
-
-    wireNav();
-    wireAuth();
-    wireBilling();
-    wirePromo();
-    wireGenerator();
-    wireAdvisor();
-    wireQuickPublish();
-    wireMisc();
-
-    await fetchStatus();
-    await paintLive();
-    setInterval(paintLive, 30000);
-
-    supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session);
-      USER_ID = session?.user?.id || null;
-      fetchStatus().catch(()=>{});
-      // close auth dialog if open
-      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
-    });
-  });
-}
+  bump(); setInterval(bump, 30000);
+})();
 </script>
-
-<!-- Finisher: a11y + focus + ready -->
-<style>
-  :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
-</style>
+<!-- ===== /CRP APP SCRIPTS (Part 5/6) ===== -->
+<!-- ===== CRP FINAL TOUCHES (Part 6/6) ===== -->
 <script>
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      document.body.classList.add('__ready');
-      var t=document.getElementById('toast');
-      if(t){ t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); }
-    }catch{}
+/* Small, isolated utilities that don't overlap with previous scripts.
+   - External link hardening
+   - Referral (?ref=) apply → Worker
+   - OAuth/integration query handling
+   - Hide non-essential sections for active subscribers (keep Pricing visible)
+   - Minor accessibility & perf tweaks
+*/
+
+(function hardenExternalLinks(){
+  const links = document.querySelectorAll('a[target="_blank"], a[rel*="external"]');
+  links.forEach(a=>{
+    const rel = (a.getAttribute("rel")||"").split(" ").filter(Boolean);
+    if (!rel.includes("noopener")) rel.push("noopener");
+    if (!rel.includes("noreferrer")) rel.push("noreferrer");
+    a.setAttribute("rel", rel.join(" "));
   });
+})();
+
+(async function handleReferralAndConnects(){
+  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+  const u = new URL(location.href);
+  const has = (k)=> u.searchParams.has(k);
+
+  // Referral code (?ref=base64UserId)
+  if (has("ref")) {
+    const ref = u.searchParams.get("ref");
+    try { await fetch(`${WORKER_BASE}/api/ref/apply?ref=${encodeURIComponent(ref)}`, { credentials:"omit" }); } catch {}
+  }
+
+  // Connected & billing messages
+  if (has("connected")) {
+    const v = u.searchParams.get("connected");
+    const map = { notion:"Notion connected ✅", trello:"Trello connected ✅" };
+    if (map[v]) try{ toast(map[v]); }catch{}
+  }
+  if (has("billing")) {
+    const v = u.searchParams.get("billing");
+    if (v==="success") try{ toast("Billing updated ✅"); }catch{}
+    if (v==="cancel")  try{ toast("Checkout canceled"); }catch{}
+  }
+
+  // Clean URL (remove transient params)
+  ["ref","connected","billing"].forEach(k=> u.searchParams.delete(k));
+  history.replaceState({}, "", u.pathname + (u.search?`?${u.searchParams}`:"") + u.hash);
+})();
+
+/* Hide “FAQ” (and other long-form marketing bits) for signed-in *paying* users.
+   Keep Pricing visible so users can manage/upgrade/downgrade.
+   We key off body[data-auth="authed"][data-plan!="free"] which is set by earlier paint. */
+(function adaptForSubscribers(){
+  const hideIfSubscribed = ()=>{
+    const body = document.body;
+    const authed = body.getAttribute("data-auth")==="authed";
+    const plan   = (body.getAttribute("data-plan")||"free").toLowerCase();
+    const isPaying = authed && plan !== "free";
+    const idsToHide = ["faq"]; // extendable
+    idsToHide.forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.style.display = isPaying ? "none" : "";
+    });
+  };
+  // Initial pass and re-run after auth changes (previous scripts trigger paintFromWorker)
+  hideIfSubscribed();
+  const mo = new MutationObserver(hideIfSubscribed);
+  mo.observe(document.body, { attributes:true, attributeFilter:["data-auth","data-plan"] });
+})();
+
+/* Minor accessibility: close dialog with Escape & prevent background scroll bleed */
+(function a11yDialog(){
+  const dlg = document.getElementById("auth");
+  if (!dlg) return;
+  dlg.addEventListener("cancel", (e)=>{ e.preventDefault(); dlg.close(); });
+  dlg.addEventListener("close", ()=>{ document.documentElement.style.removeProperty("overflow"); });
+  dlg.addEventListener("click", (e)=>{ if (e.target===dlg) dlg.close(); });
+  const openers = document.querySelectorAll(".js-open-auth");
+  openers.forEach(b=> b.addEventListener("click", ()=>{ try{ dlg.showModal(); document.documentElement.style.overflow="hidden"; }catch{} }));
+})();
+
+/* Perf: preconnect to OpenRouter once user interacts (reduces TTFB on first gen) */
+(function warmupOnIntent(){
+  let done=false;
+  const warm = ()=> {
+    if (done) return; done=true;
+    const l = document.createElement("link");
+    l.rel="preconnect"; l.href="https://openrouter.ai";
+    document.head.appendChild(l);
+  };
+  ["mousemove","touchstart","keydown"].forEach(ev=> window.addEventListener(ev, warm, { once:true, passive:true }));
+})();
+
+/* Keyword micro-boost in a non-intrusive way for SEO (does not affect layout) */
+(function invisibleKeywordHints(){
+  const div = document.createElement("div");
+  div.setAttribute("aria-hidden","true");
+  div.style.cssText="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden";
+  div.textContent = "content repurpose, content repurposing, repurpose content, repurpose project";
+  document.body.appendChild(div);
+})();
 </script>
-<!-- ===== /CRP APP BOOT (FINAL) ===== -->
+<!-- ===== /CRP FINAL TOUCHES (Part 6/6) ===== -->
 </body>
-</html>
+<html>
