@@ -2,7 +2,7 @@
 <html lang="en" class="h-full">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
   <meta name="description" content="Repurpose content with AI. LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok — plus LinkedIn Article & Article Optimizer. Export to Notion & Trello. BYOK supported." />
   <link rel="canonical" href="https://contentrepurpose.pro/">
@@ -20,6 +20,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    * { -webkit-tap-highlight-color: transparent; }
     :root{ --brandA:#7AA2FF; --brandB:#FF2D2D; --ink:#0a0d18 }
     html,body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     .txt-grad{background:linear-gradient(135deg,var(--brandA),var(--brandB));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -27,20 +28,25 @@
     .card{border-radius:1.25rem;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.80);box-shadow:0 12px 40px rgba(2,6,23,.08)}
     .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .6rem;border-radius:9999px;border:1px solid rgba(255,255,255,.15);font-size:.75rem;background:rgba(255,255,255,.65)}
     .chip{font-size:.7rem;padding:.2rem .5rem;border-radius:9999px;border:1px solid rgba(148,163,184,.35)}
-    .btn{padding:.6rem .9rem;border-radius:.9rem;border:1px solid rgba(148,163,184,.35)}
+    .btn{padding:.6rem .9rem;border-radius:.9rem;border:1px solid rgba(148,163,184,.35);touch-action:manipulation}
     .btn-primary{background:black;color:white}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+
+    /* Decorative halos never block taps */
     .halo{position:absolute;filter:blur(60px);opacity:.55;pointer-events:none;transform:translateZ(0);
       background:radial-gradient(50% 50% at 50% 50%, rgba(122,162,255,.8), rgba(255,45,45,.65) 60%, transparent 70%);
       width:42rem;height:42rem;border-radius:50%;animation:float 16s ease-in-out infinite;}
     .halo.h2{width:34rem;height:34rem;right:-12rem;top:-6rem;animation-duration:18s;opacity:.5}
     .halo.h3{width:28rem;height:28rem;left:-10rem;top:26rem;animation-duration:22s;opacity:.45}
     @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
+
+    /* Decorative orbit never blocks taps */
     .orbit{position:absolute;inset:-32px;border-radius:24px;pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
       -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%, black 89%);
       animation: spin 18s linear infinite;}
     @keyframes spin{ to{ transform: rotate(360deg) } }
+
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
     @media (prefers-color-scheme:dark){
       body{background:var(--ink);color:#e9eef6}
@@ -51,9 +57,13 @@
     .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
     .marquee:hover{ animation-play-state: paused }
     @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
-    .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none}
+
+    /* Mobile nav sheet: ensure correct z-index and no page blocking when closed */
+    .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none; z-index:60}
     .nav-panel{position:absolute; top:0; right:0; width:82vw; max-width:380px; height:100%; background:rgba(14,16,22,.96); border-left:1px solid rgba(255,255,255,.08); padding:1rem}
     .nav-open .nav-sheet{display:block}
+    body.nav-open{ overflow:hidden; }
+
     .only-guest{display:revert}.only-authed{display:none}
     .plan-starter-plus{display:none}.plan-creator-plus{display:none}.plan-business-only{display:none}
     body[data-auth="authed"] .only-guest{display:none} body[data-auth="authed"] .only-authed{display:revert}
@@ -65,15 +75,19 @@
     body[data-plan="business"] .plan-business-only{display:revert}
     :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
 
-    /* dialog fallback so Sign in works everywhere */
+    /* dialog fallback so Sign in works everywhere (z-index very high to beat sheets) */
     dialog.crp-fallback { position: fixed; inset: 0; display: none; z-index: 1000; background: rgba(0,0,0,.5);}
     dialog.crp-fallback[open]{ display:block }
     dialog.crp-fallback .panel{ position:absolute; left:50%; top:10%; transform:translateX(-50%);
       width:min(92vw,480px); background:rgba(14,16,22,.98); color:white; border-radius:14px; border:1px solid rgba(255,255,255,.12); padding:16px}
+
+    /* Ensure inputs are always tappable on iOS */
+    textarea, input, select, button { font-size: 16px; }
   </style>
 
   <!-- Worker base & prices -->
   <script>
+    // Use explicit constants but fall back to origin to be safe on staging/previews
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
     window.PRICE_IDS = {
@@ -225,16 +239,18 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- Auth dialog -->
-  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md crp-fallback">
-    <form method="dialog" class="panel grid gap-4">
+  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md crp-fallback" aria-modal="true">
+    <form method="dialog" class="panel grid gap-4" novalidate>
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold">Sign in</h3>
-        <button class="btn" value="cancel" type="button" id="authClose">Close</button>
+        <button class="btn" value="cancel" type="button" id="authClose" aria-label="Close sign in">Close</button>
       </div>
       <p class="text-sm text-slate-300">Enter your email to receive a magic link or continue with Google.</p>
-      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2 bg-white/10 placeholder-slate-400">
+      <label class="grid gap-1">
+        <span class="text-xs text-slate-400">Email</span>
+        <input id="authEmail" type="email" inputmode="email" autocomplete="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2 bg-white/10 placeholder-slate-400">
+      </label>
       <div class="grid grid-cols-2 gap-2">
         <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
         <button id="authGoogle" class="btn" type="button">Continue with Google</button>
@@ -296,7 +312,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
               </label>
             </div>
             <div class="mt-3">
-              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]" placeholder="Paste your paragraph, full article, or a URL."></textarea>
+              <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]" placeholder="Paste your paragraph, full article, or a URL." spellcheck="false"></textarea>
             </div>
           </fieldset>
 
@@ -402,7 +418,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
                 <label class="flex items-center gap-2">
                   <input id="batchEnable" type="checkbox"> Enable
                 </label>
-                <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px]" placeholder="One idea per line…"></textarea>
+                <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px]" placeholder="One idea per line…" spellcheck="false"></textarea>
                 <p class="text-xs text-slate-500">
                   Free: — • Starter: up to 10/run • Creator: 30/run • Business: 60/run.
                 </p>
@@ -417,7 +433,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
               <div class="mt-2 grid gap-2">
                 <label class="grid gap-1">
                   <span class="text-xs text-slate-500">API key</span>
-                  <input id="byokKey" class="border rounded-lg px-3 py-2" placeholder="sk-or-v1-..." />
+                  <input id="byokKey" class="border rounded-lg px-3 py-2" placeholder="sk-or-v1-..." autocomplete="off" />
                 </label>
                 <label class="grid gap-1">
                   <span class="text-xs text-slate-500">Preferred model (optional)</span>
@@ -464,7 +480,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -486,7 +501,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <form id="optForm" class="grid gap-6" autocomplete="off">
           <label class="grid gap-1">
             <span class="text-sm font-semibold">Paste HTML or Markdown</span>
-            <textarea id="optSource" class="w-full rounded-xl border p-4 min-h-[180px]" placeholder="Paste HTML or Markdown here..."></textarea>
+            <textarea id="optSource" class="w-full rounded-xl border p-4 min-h-[180px]" placeholder="Paste HTML or Markdown here..." spellcheck="false"></textarea>
           </label>
 
           <div class="grid md:grid-cols-3 gap-4">
@@ -575,11 +590,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   </section>
 
   <!-- ===== SCHEDULER MODAL ===== -->
-  <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
+  <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md" aria-modal="true">
     <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-semibold">Schedule post</h3>
-        <button class="btn" value="cancel" type="button" id="schClose">Close</button>
+        <button class="btn" value="cancel" type="button" id="schClose" aria-label="Close Scheduler">Close</button>
       </div>
 
       <label class="grid gap-1">
@@ -603,7 +618,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
 
       <label class="grid gap-1">
         <span class="text-sm text-slate-500">Content</span>
-        <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Your post…" required></textarea>
+        <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Your post…" required spellcheck="false"></textarea>
       </label>
 
       <div class="flex items-center justify-between gap-2">
@@ -635,12 +650,12 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             </select>
           </div>
           <div class="flex items-center gap-2">
-            <button id="calPrev" class="btn">‹</button>
-            <button id="calToday" class="btn">Today</button>
-            <button id="calNext" class="btn">›</button>
+            <button id="calPrev" class="btn" type="button" aria-label="Previous period">‹</button>
+            <button id="calToday" class="btn" type="button">Today</button>
+            <button id="calNext" class="btn" type="button" aria-label="Next period">›</button>
           </div>
           <div class="flex items-center gap-2">
-            <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
+            <button id="calNew" class="btn plan-starter-plus" type="button">New scheduled post</button>
           </div>
         </div>
         <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
@@ -739,7 +754,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <footer class="mt-20 border-t">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
       <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
@@ -752,740 +766,243 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   </footer>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden">
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden z-[10000]">
     <div class="px-4 py-2 rounded-lg bg-black text-white text-sm shadow">
       <span id="toastMsg">…</span>
     </div>
   </div>
 
-  <!-- ===== APP BOOT (Part 2 includes the full script) ===== -->
+  <!-- ===== APP BOOT (Improved for mobile + resilient auth dialog) ===== -->
   <script type="module">
-  const $  = (s, el=document)=> el.querySelector(s);
-  const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-  const byId = (id)=> document.getElementById(id);
-  const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); };
-  const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+    /* ---------- tiny helpers ---------- */
+    const $  = (s, el=document)=> el.querySelector(s);
+    const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+    const byId = (id)=> document.getElementById(id);
+    const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); };
+    const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+    /* ---------- globals (already set in Part 1) ---------- */
+    const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+    const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-  // ---------- Auth (Supabase) ----------
-  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-  let supabase=null, AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
-  let LAST_OUTPUT=null; let INTEGRATIONS={ notion:false, trello:false };
-
-  async function ensureSupabase(){
-    if (window.supabase){ supabase=window.supabase; return; }
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-    window.supabase = supabase;
-  }
-  async function finishOAuthAndCleanUrl(){
-    try{
-      const u=new URL(location.href);
-      const code=u.searchParams.get("code");
-      if(code){
-        const { error } = await supabase.auth.exchangeCodeForSession({ code });
-        if(error) toast(error.message||"Sign-in error");
-        ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
-        history.replaceState({}, "", u.toString());
+    /* ---------- Mobile UX fixes ---------- */
+    // Increase input font-size to 16px on iOS to prevent zoom & enable reliable tap focus
+    const iosFix = document.createElement("style");
+    iosFix.textContent = `
+      @media (max-width: 768px){
+        input, textarea, select, button { font-size:16px !important; touch-action: manipulation; }
+        dialog.crp-fallback .panel { -webkit-overflow-scrolling: touch; }
       }
-      if(location.hash && (location.hash.includes("access_token")||location.hash.includes("token="))){
-        await supabase.auth.getSession();
-        history.replaceState({}, "", location.pathname + location.search);
-      }
-    }catch{}
-  }
-  async function getAuthHeaders(extra={}){
-    const h = { "Content-Type":"application/json", ...extra };
-    try{
-      const { data } = await supabase.auth.getSession();
-      const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
-      if(tok) h["Authorization"] = `Bearer ${tok}`;
-      if(uid) h["X-User-Id"] = uid;
-    }catch{}
-    return h;
-  }
-  function setAuthFlag(on){ AUTHTED=!!on; document.body.setAttribute("data-auth", on? "authed":"guest"); }
-  function setPlan(plan){
-    const p = ["free","starter","creator","business"].includes((plan||"").toLowerCase())? plan.toLowerCase() : "free";
-    CURRENT_PLAN = p; document.body.setAttribute("data-plan", p);
-    const label = `Plan: ${cap(p)}`;
-    byId("planbadge")&&(byId("planbadge").textContent=label);
-    byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
-    byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
-    const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
-    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
-    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
-    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
-  }
-  function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
-  function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
+      /* prevent offscreen overlays from eating taps */
+      .halo { pointer-events: none !important; }
+      .nav-sheet[aria-hidden="true"] { display:none !important; }
+      body.nav-open { overflow:hidden; }
+    `;
+    document.head.appendChild(iosFix);
 
-  async function fetchStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
-      const j = await r.json();
-      const authed = j.scope==="user";
-      setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
-      ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
-      byId("generateBtn")?.classList.toggle("hidden", authed);
-      byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-      const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
-      if(!authed){
-        demoEl&&(demoEl.textContent="5");
-        paintGuestUi();
-      } else {
-        const cap=j.platform?.daily?.cap; const used=j.platform?.daily?.used ?? 0;
-        memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used)));
-        paintAuthedUi();
-      }
-      INTEGRATIONS = { notion: !!j.integrations?.notion, trello: !!j.integrations?.trello };
-      const ns=byId("notionStatus"), ts=byId("trelloStatus");
-      ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
-      ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
-    }catch{
-      setAuthFlag(false); setPlan("free"); paintGuestUi();
-    }
-  }
+    /* ---------- Auth (Supabase) ---------- */
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    let supabase=null, AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
+    let LAST_OUTPUT=null; let INTEGRATIONS={ notion:false, trello:false };
 
-  // ---------- Nav & Auth UI ----------
-  function wireNav(){
-    const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
-    toggle&&toggle.addEventListener("click",()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); });
-    close&&close.addEventListener("click",()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); });
-    $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{
-      const id=a.getAttribute("href"); if(!id||id==="#") return;
-      const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); document.body.classList.remove("nav-open"); history.replaceState(null,"",id); }
-    }));
-  }
-  function openAuthDialog(){
-    const dlg=byId("auth");
-    if(!dlg) return;
-    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
-  }
-  function closeAuthDialog(){
-    const dlg=byId("auth"); if(!dlg) return;
-    try{ dlg.close(); }catch{ dlg.open=false; dlg.style.display="none"; }
-  }
-  function wireAuth(){
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuthDialog));
-    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuthDialog));
-    byId("authClose")?.addEventListener("click", closeAuthDialog);
-    byId("authGoogle")?.addEventListener("click", async ()=>{
-      try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN } }); }
-      catch(e){ toast(e?.message||"Google sign-in failed"); }
-    });
-    byId("authSend")?.addEventListener("click", async ()=>{
-      const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
-      try{
-        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        if(error) throw error; toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message||"Sign-in error"); }
-    });
-    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} }));
-  }
-
-  function wirePromo(){
-    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-    }));
-  }
-  function wireMisc(){
-    const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
-    try{
-      const u=new URL(location.href); const ok=u.searchParams.get("billing")==="success"; const no=u.searchParams.get("billing")==="cancel";
-      if(ok) toast("Billing updated — thank you!"); if(no) toast("Billing cancelled");
-      if(ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
-    }catch{}
-  }
-
-  async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
-
-  // ---------- Presets ----------
-  async function refreshPresets(){
-    const sel=byId("presetSelect"); if(!sel) return;
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-      const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
-      (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
-    }catch{}
-  }
-  function readPresetPayload(){
-    const form=byId("demoForm"); if(!form) return {};
-    const fd = new FormData(form); const obj={};
-    fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
-    obj.sourceText = byId("sourceText")?.value||"";
-    return obj;
-  }
-  function applyPresetPayload(p){
-    const form=byId("demoForm"); if(!form||!p) return;
-    if(p.sourceText) byId("sourceText").value=p.sourceText;
-    for (const [k,v] of Object.entries(p)){
-      const els = $$(`[name="${k}"]`, form); if(!els.length) continue;
-      if(els[0].type==="checkbox"){
-        els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
-      } else if(els[0].type==="radio"){
-        els.forEach(el=> el.checked = (String(el.value)===String(v)));
-      } else {
-        els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
-      }
-    }
-  }
-  async function savePreset(){
-    const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
-    const payload=readPresetPayload();
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-      toast("Preset saved ✅"); refreshPresets();
-    }catch(e){ toast(e.message||"Save failed"); }
-  }
-  async function loadPreset(run=false){
-    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
-      applyPresetPayload(j?.payload||{});
-      toast("Preset loaded ✅");
-      if(run){ byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true})); }
-    }catch(e){ toast(e.message||"Load failed"); }
-  }
-  async function deletePreset(){
-    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
-      toast("Preset deleted ✅"); refreshPresets();
-    }catch(e){ toast(e.message||"Delete failed"); }
-  }
-
-  // ---------- BYOK ----------
-  function getByokHeaders(){
-    const key = (byId("byokKey")?.value||"").trim();
-    const h={};
-    if(key) h["X-User-OpenRouter-Key"]=key;
-    return h;
-  }
-  async function saveByokToAccount(){
-    if(!AUTHTED) return toast("Sign in to save your BYOK");
-    const key=(byId("byokKey")?.value||"").trim();
-    const provider="openrouter"; const base=null;
-    if(!key) return toast("Paste your API key first");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/account/byok/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key, base, provider }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-      byId("byokStatus").textContent = `Status: saved (${j.mask||"****"})`;
-      toast("BYOK saved ✅");
-    }catch(e){ toast(e.message||"Save failed"); }
-  }
-  async function clearByok(){
-    if(!AUTHTED){ byId("byokKey").value=""; byId("byokStatus").textContent="Status: not set"; return; }
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/account/byok/clear`, { method:"POST", headers: await getAuthHeaders() });
-      if(!r.ok) throw new Error("Clear failed");
-      byId("byokKey").value=""; byId("byokStatus").textContent="Status: not set"; toast("BYOK cleared");
-    }catch(e){ toast(e.message||"Clear failed"); }
-  }
-
-  const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
-    s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
-    try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
-
-  // ---------- Generator ----------
-  function readToggles(form){
-    const g=(n)=> form.elements[n];
-    return {
-      opt:{
-        humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked,
-        svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, reddit:g("opt_reddit")?.checked,
-        li_article:g("opt_li_article")?.checked
-      },
-      ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
-      extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
-      seo:{ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" }
-    };
-  }
-  function systemPrompt(tog){ return { role:"system", content:
-`You are a senior social copywriter.
-Return ONLY valid JSON with this shape:
-{
-  "outline": string,
-  "linkedin": string|null,
-  "x": string[]|null,
-  "email": { "subject": string, "body": string }|null,
-  "instagram": { "caption": string, "hashtags": string[] }|null,
-  "reddit": { "title": string, "body": string, "communities": string[], "starter_comments": string[] }|null,
-  "facebook": { "primary": string, "meta": { "headline": string, "description": string } }|null,
-  "quora": { "answer": string, "followups": string[] }|null,
-  "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
-  "linkedin_article_html": string|null
-}
-Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
-Rules:
-- Platform-native, concise. X posts ≤ 280 chars; if multiple, prefix "Post N:".
-- Provide 3–5 meaningful Instagram hashtags.
-- No prose outside the JSON.` }; }
-  function userPrompt(raw, form, tog){ const srcType=form.elements["sourceType"]?.value||"paragraph"; const head=srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return { role:"user", content:
-`${head}:
-${raw}
-
-Task:
-1) Create a one-line outline.
-2) Generate content ONLY for these channels: ${channels||"linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`}; }
-
-  function addCard(wrap, title, bodyText, key, allowPublish=true){
-    const id = `card_${key}_${Math.random().toString(36).slice(2,8)}`;
-    wrap.insertAdjacentHTML("beforeend", `
-      <div class="card p-5" id="${id}">
-        <div class="flex justify-between items-center gap-2 flex-wrap">
-          <strong class="tracking-tight">${title}</strong>
-          <div class="flex gap-2">
-            <button class="btn copy" type="button">Copy</button>
-            <button class="btn publish" type="button"${allowPublish? "":" disabled"}>Publish</button>
-            <button class="btn schedule plan-starter-plus" type="button">Schedule</button>
-          </div>
-        </div>
-        <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
-      </div>`);
-    const card = byId(id);
-    const copyBtn = $(".btn.copy", card);
-    const pubBtn  = $(".btn.publish", card);
-    const schBtn  = $(".btn.schedule", card);
-    const pre     = $("pre.content", card);
-
-    copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-    pubBtn?.addEventListener("click", async ()=>{
-      const text = pre?.innerText||""; if(!text) return toast("Nothing to publish");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(getByokHeaders()), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Publish failed");
-        toast("Published / queued ✅");
-      }catch(e){ toast(e.message||"Publish failed"); }
-    });
-    schBtn?.addEventListener("click", ()=> {
-      const text = pre?.innerText||""; if(!text) return toast("Nothing to schedule");
-      openScheduleModal({ channel:key, text });
-    });
-
-    if(key){ LAST_OUTPUT = LAST_OUTPUT||{}; LAST_OUTPUT[key]=pre.innerText; }
-  }
-
-  function paintOutput(j){
-    const wrap=byId("demoOutput"); if(!wrap) return; wrap.innerHTML="";
-    if(j.linkedin) addCard(wrap, "LinkedIn", j.linkedin, "linkedin");
-    if(Array.isArray(j.x)&&j.x.length){
-      const seq=j.x.map((t,i)=> t?.trim()?`Post ${i+1}: ${t.trim()}`:"").filter(Boolean).join("\n\n");
-      addCard(wrap, "X (Twitter)", seq, "x");
-    }
-    if(j.email&&(j.email.subject||j.email.body)){
-      const txt=`Subject: ${j.email.subject||""}\n\n${j.email.body||""}`;
-      addCard(wrap, "Email", txt, "email", false);
-    }
-    if(j.instagram){
-      const cap=j.instagram.caption||"";
-      const tags=(j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ");
-      addCard(wrap, "Instagram", `${cap}\n\n${tags}`, "instagram");
-    }
-    if(j.reddit){
-      const subs=(j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-      const starters=(j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-      const txt = `${j.reddit.title||""}\n\n${j.reddit.body||""}\n\nSubs: ${subs||"—"}\n\nStarters:\n${starters||"—"}`;
-      addCard(wrap, "Reddit", txt, "reddit");
-    }
-    if(j.facebook){
-      const txt = `Primary:\n${j.facebook.primary||""}\n\nLink preview:\n${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}`;
-      addCard(wrap, "Facebook", txt, "facebook");
-    }
-    if(j.quora){
-      const follow=(j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      const txt=`Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${follow||"—"}`;
-      addCard(wrap, "Quora", txt, "quora");
-    }
-    if(j.tiktok){
-      const hooks=(j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons=(j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      const txt=`Script:\n${j.tiktok.script||""}\n\nHooks:\n${hooks||"—"}\n\nOn-screen:\n${ons||"—"}`;
-      addCard(wrap, "TikTok", txt, "tiktok");
-    }
-    if(j.linkedin_article_html){
-      addCard(wrap, "LinkedIn Article (HTML)", j.linkedin_article_html, "li_article_html");
-    }
-  }
-
-  function wireGenerator(){
-    const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput"), clearBtn=byId("clearBtn"), genGuest=byId("generateBtn"), genMember=byId("generateBtn_member");
-    if(!form||!src||!out) return;
-    clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
-
-    function messagesFor(raw){ const t=readToggles(form); return [ {role:"system",...systemPrompt(t)}, {role:"user",...userPrompt(raw, form, t)} ]; }
-
-    async function runOne(raw){
-      const btn=AUTHTED? genMember: genGuest; const old=btn?.textContent;
-      try{
-        btn&&(btn.disabled=true, btn.textContent="Generating…"); out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-        const headers = await getAuthHeaders(getByokHeaders());
-        const preferredModel = (byId("byokModel")?.value||"").trim() || null;
-        const r=await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.5, messages: messagesFor(raw), model: preferredModel })});
-        const data=await r.json(); if(!r.ok) throw new Error(data?.error?.message||"Generation failed");
-        const content=data?.choices?.[0]?.message?.content||""; const j=parseJsonLoose(content); if(!j) throw new Error("Model did not return JSON");
-        paintOutput(j); toast("Done ✅"); fetchStatus().catch(()=>{});
-      }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
-      finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
-    }
-
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
-
-      const batchOn = byId("batchEnable")?.checked;
-      if(batchOn){
-        const lines = (byId("batchList")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-        if(!lines.length) return toast("Add lines to batch");
-        const limit = CURRENT_PLAN==="business"? 60 : CURRENT_PLAN==="creator"? 30 : CURRENT_PLAN==="starter"? 10 : 0;
-        if(limit===0) return toast("Batch requires Starter+");
-        if(lines.length>limit) return toast(`Your plan allows up to ${limit} per run`);
-        byId("demoOutput").innerHTML="";
-        for(const ln of lines){ await runOne(ln); }
-        return;
-      }
-
-      await runOne(raw);
-    });
-
-    byId("presetSave")?.addEventListener("click", savePreset);
-    byId("presetLoad")?.addEventListener("click", ()=>loadPreset(false));
-    byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true));
-    byId("presetDelete")?.addEventListener("click", deletePreset);
-  }
-
-  // ---------- Optimizer ----------
-  function optSystemPrompt(flags){ return { role:"system", content:
-`You are an expert editor & SEO. Return ONLY valid JSON with this shape:
-{
-  "html": string,
-  "title": string,
-  "meta_description": string,
-  "faqs_jsonld": object|null,
-  "reddit": { "title": string, "tldr": string }|null,
-  "ab_titles": string[]|null,
-  "alt_keywords": string[]|null,
-  "rank_likelihood": string|null,
-  "linkedin_article_html": string|null
-}
-Constraints:
-- Semantic H2/H3, good spacing, and clean copy-paste ready HTML.
-- If 'SEO check' is on, ensure image alt, internal/external link advice, plus alt_keywords.
-- No text outside the JSON.` }; }
-  function optUserPrompt(src, flags, seo){ return { role:"user", content:
-`Source (HTML or Markdown):
-${src}
-
-Options:
-- Humanize: ${flags.humanize}
-- Lengthen: ${flags.lengthen}
-- Headings: ${flags.headings}
-- Meta/CTR: ${flags.meta}
-- A/B titles: ${flags.ab}
-- SEO check: ${flags.seo}
-- SVG ideas: ${flags.svg}
-- FAQs: ${flags.faqs}
-- Reddit-ready: ${flags.reddit}
-- LinkedIn Article: ${flags.li_article}
-
-SEO:
-- Focus keyword: ${seo.keyword||"(none)"}
-- Secondary keywords: ${seo.secondaries||"(none)"}
-- Intent: ${seo.intent||"informational"}`}; }
-  function paintOptOutput(j){
-    const wrap=byId("optOutput"); if(!wrap) return; wrap.innerHTML="";
-    const card=(title, content, copySel=".content")=>{
-      wrap.insertAdjacentHTML("beforeend", `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong class="tracking-tight">${title}</strong><button class="btn copy" type="button">Copy</button></div>${content}</div>`);
-      const c=wrap.lastElementChild, btn=$(".btn.copy",c), pre=$(copySel,c)||$("pre",c);
-      btn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||pre?.textContent||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-    };
-    if(j.title || j.meta_description) card("Title & Meta", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.title||""}</pre><div class="text-xs text-slate-400 mt-3">Meta description</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.meta_description||""}</pre>`);
-    if(j.ab_titles?.length) card("A/B titles", `<pre class="whitespace-pre-wrap text-sm mt-1 content">${j.ab_titles.map((t,i)=>`${i+1}. ${t}`).join("\n")}</pre>`);
-    if(j.html) card("Improved Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.html}</pre>`);
-    if(j.faqs_jsonld) card("FAQ JSON-LD", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${JSON.stringify(j.faqs_jsonld,null,2)}</pre>`);
-    if(j.reddit) card("Reddit-ready", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.reddit.title||""}</pre><div class="text-xs text-slate-400 mt-3">TL;DR</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.reddit.tldr||""}</pre>`);
-    if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `<pre class="whitespace-pre-wrap text-sm mt-1 content">Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}</pre>`);
-    if(j.linkedin_article_html) card("LinkedIn Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.linkedin_article_html}</pre>`);
-  }
-  function wireOptimizer(){
-    const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
-    if(!form||!src||!out) return;
-    clr?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
-      const old=btn.textContent; try{
-        const g=(n)=> form.elements[n];
-        const flags={ humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, headings:g("opt_headings")?.checked, svg:g("opt_svg")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, seo:g("opt_seo")?.checked, faqs:g("opt_faqs")?.checked, reddit:g("opt_reddit")?.checked, li_article:g("opt_li_article")?.checked };
-        const seo={ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" };
-        btn.disabled=true; btn.textContent="Optimizing…"; out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        const messages=[ optSystemPrompt(flags), optUserPrompt(raw, flags, seo) ];
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-        const headers = await getAuthHeaders(getByokHeaders());
-        const preferredModel = (byId("byokModel")?.value||"").trim() || null;
-        const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.4, messages, model: preferredModel }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Optimize failed");
-        const content=j?.choices?.[0]?.message?.content||""; const obj=parseJsonLoose(content); if(!obj) throw new Error("Model did not return JSON");
-        paintOptOutput(obj); toast("Optimized ✅");
-      }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
-      finally{ btn.disabled=false; btn.textContent=old; }
-    });
-  }
-
-  // ---------- Quick publish & Integrations ----------
-  function wireQuickPublish(){
-    const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
-    byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
-    byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
-    byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
-    byId("qp-email")?.addEventListener("click", ()=>{ const em=need("email")||""; const subj=(em.split("\n")[0]||"Your draft").slice(0,120); const body=em; location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; });
-
-    byId("li-notion")?.addEventListener("click", async ()=>{
-      const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-        toast("Exported to Notion ✅");
-      }catch(e){ toast(e.message||"Export failed"); }
-    });
-    byId("li-trello")?.addEventListener("click", async ()=>{
-      const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-        toast("Sent to Trello ✅");
-      }catch(e){ toast(e.message||"Export failed"); }
-    });
-  }
-
-  function wireIntegrations(){
-    byId("connectNotion")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion connect failed");
-        location.href=j.url;
-      }catch(e){ toast(e.message||"Notion connect failed"); }
-    });
-    byId("disconnectNotion")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion disconnect failed");
-        toast("Notion disconnected"); fetchStatus();
-      }catch(e){ toast(e.message||"Notion disconnect failed"); }
-    });
-
-    byId("connectTrello")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello connect failed");
-        location.href=j.url;
-      }catch(e){ toast(e.message||"Trello connect failed"); }
-    });
-    byId("disconnectTrello")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello disconnect failed");
-        toast("Trello disconnected"); fetchStatus();
-      }catch(e){ toast(e.message||"Trello disconnect failed"); }
-    });
-  }
-
-  function wireCheckout(){
-    $$(".js-checkout").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const plan=btn.getAttribute("data-plan")||"starter";
-        const priceId = (window.PRICE_IDS||{})[plan];
-        if(!priceId){ toast("Missing price id"); return; }
-        try{
-          btn.disabled=true; const old=btn.textContent; btn.textContent="Redirecting…";
-          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-            method:"POST",
-            headers: await getAuthHeaders(),
-            body: JSON.stringify({
-              price_id: priceId,
-              mode: "subscription",
-              success_url: location.origin + location.pathname + "?billing=success",
-              cancel_url: location.origin + location.pathname + "?billing=cancel"
-            })
-          });
-          const j=await r.json();
-          if(!r.ok) throw new Error(j?.error?.message||"Checkout failed");
-          if(j?.url) location.href=j.url; else throw new Error("Missing checkout url");
-          btn.textContent=old; btn.disabled=false;
-        }catch(e){
-          toast(e.message||"Checkout error"); btn.disabled=false;
+    // Robust loader: show dialog even if Supabase hasn’t finished loading
+    async function ensureSupabase(){
+      if (window.supabase){ supabase=window.supabase; return; }
+      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+        auth:{
+          persistSession:true,
+          autoRefreshToken:true,
+          detectSessionInUrl:true,
+          flowType: "pkce" // best cross-browser OAuth reliability
         }
       });
-    });
-    ["manageBilling","manageBilling_m"].forEach(id=>{
-      const b=byId(id); if(!b) return;
-      b.addEventListener("click", async ()=>{
-        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
-        try{
-          const r=await fetch(`${WORKER_BASE}/api/billing/portal`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Portal error");
-          location.href=j.url;
-        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
-      });
-    });
-  }
-
-  // ---------- Scheduler / Calendar ----------
-  function openScheduleModal(pref={ channel:"linkedin", text:"" }){
-    const dlg = byId("scheduleDlg"); if(!dlg) return;
-    byId("schChannel").value = pref.channel || "linkedin";
-    byId("schText").value = pref.text || "";
-    const dt = new Date(); dt.setMinutes(0,0,0,0); dt.setHours(dt.getHours()+1);
-    const iso = dt.toISOString().slice(0,16);
-    byId("schWhen").value = iso;
-    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
-  }
-  function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{ byId("scheduleDlg").open=false; byId("scheduleDlg").style.display="none"; } }
-
-  let calCursor = new Date();
-  function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
-  function addMonths(d,n){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
-  function fmtDayKey(d){ return d.toISOString().slice(0,10); }
-
-  async function fetchScheduleList(){
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/schedule/list`, { headers: await getAuthHeaders() });
-      const j=await r.json(); if(!r.ok) return [];
-      return j.items||[];
-    }catch{ return []; }
-  }
-  function renderMonth(events){
-    const grid=byId("calGrid"); if(!grid) return;
-    const first = startOfMonth(calCursor);
-    const last  = addMonths(first,1);
-
-    const byDay = {};
-    for(const ev of events){
-      const key = (ev.when||"").slice(0,10);
-      if(!byDay[key]) byDay[key]=[];
-      byDay[key].push(ev);
+      window.supabase = supabase;
     }
 
-    const header = `<div class="grid grid-cols-7 gap-2 text-xs text-slate-400">
-      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-    </div>`;
-
-    const tmp = new Date(first);
-    let wday = (tmp.getDay()+6)%7; // Monday=0
-    const cells = [];
-    for(let i=0;i<wday;i++) cells.push('<div class="min-h-[90px] rounded-lg border border-transparent"></div>');
-
-    while(tmp < last){
-      const key = fmtDayKey(tmp);
-      const items = (byDay[key]||[]).map(ev=> `<button data-ev="${ev.id}" class="w-full text-left text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate hover:bg-white/20">${ev.text}</button>`).join("");
-      cells.push(`<div class="min-h-[90px] rounded-lg border p-1">
-        <div class="text-[11px] text-slate-400">${tmp.getDate()}</div>
-        <div class="mt-1 grid gap-1">${items||""}</div>
-      </div>`);
-      tmp.setDate(tmp.getDate()+1);
-    }
-
-    grid.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="font-semibold">${first.toLocaleString([], { month:"long", year:"numeric" })}</div>
-        <div class="text-xs text-slate-500">Click an item to edit</div>
-      </div>
-      ${header}
-      <div class="grid grid-cols-7 gap-2">${cells.join("")}</div>`;
-
-    $$('[data-ev]', grid).forEach(b=>{
-      b.addEventListener("click", async ()=>{
-        const id = b.getAttribute("data-ev");
-        const ev = events.find(e=>e.id===id);
-        if(!ev) return;
-        byId("schChannel").value = "linkedin";
-        byId("schText").value = ev.text || "";
-        byId("schWhen").value = (ev.when||"").slice(0,16);
-        openScheduleModal({ text: ev.text });
-        const form=byId("scheduleForm");
-        const submitOnce = async (e)=>{
-          e.preventDefault();
-          try{
-            const payload = { id, text: byId("schText").value.trim(), when: byId("schWhen").value };
-            const r = await fetch(`${WORKER_BASE}/api/schedule/update`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify(payload) });
-            const j = await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Update failed");
-            toast("Updated ✅");
-            form.removeEventListener("submit", submitOnce);
-            closeSchedule(); loadCalendar();
-          }catch(err){ toast(err.message||"Update failed"); }
-        };
-        form.addEventListener("submit", submitOnce, { once:true });
-      });
-    });
-  }
-  async function loadCalendar(){
-    const grid=byId("calGrid"); if(!grid) return;
-    grid.textContent = CURRENT_PLAN==="free"
-      ? "Read-only preview — upgrade to create & manage schedules."
-      : "Loading your calendar…";
-    const items = await fetchScheduleList();
-    renderMonth(items);
-  }
-  function wireCalendar(){
-    byId("calPrev")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor,-1); loadCalendar(); });
-    byId("calNext")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor, 1); loadCalendar(); });
-    byId("calToday")?.addEventListener("click", ()=>{ calCursor=new Date(); loadCalendar(); });
-    byId("calNew")?.addEventListener("click", ()=>{
-      const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || LAST_OUTPUT?.facebook || "").slice(0,600);
-      if(!text) return toast("Generate something first");
-      openScheduleModal({ text });
-    });
-
-    byId("schCancel")?.addEventListener("click", ()=> closeSchedule());
-    byId("schClose")?.addEventListener("click", ()=> closeSchedule());
-
-    byId("scheduleForm")?.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const when = byId("schWhen")?.value;
-      const text = byId("schText")?.value?.trim();
-      if(!when||!text) return toast("Pick a date/time and content");
+    async function finishOAuthAndCleanUrl(){
       try{
-        const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-        toast("Scheduled ✅"); closeSchedule();
-        loadCalendar();
-      }catch(e){ toast(e.message||"Schedule failed"); }
+        // Handle magic-link / PKCE query params
+        const u=new URL(location.href);
+        const code=u.searchParams.get("code");
+        if(code){
+          const { error } = await supabase.auth.exchangeCodeForSession({ code });
+          if(error) toast(error.message||"Sign-in error");
+          ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
+          history.replaceState({}, "", u.toString());
+        }
+        // Handle fragment tokens (some mobile flows)
+        if(location.hash && (location.hash.includes("access_token")||location.hash.includes("token="))){
+          await supabase.auth.getSession();
+          history.replaceState({}, "", location.pathname + location.search);
+        }
+      }catch{}
+    }
+
+    async function getAuthHeaders(extra={}){
+      const h = { "Content-Type":"application/json", ...extra };
+      try{
+        const { data } = await supabase.auth.getSession();
+        const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
+        if(tok) h["Authorization"] = `Bearer ${tok}`;
+        if(uid) h["X-User-Id"] = uid;
+      }catch{}
+      return h;
+    }
+
+    function setAuthFlag(on){ AUTHTED=!!on; document.body.setAttribute("data-auth", on? "authed":"guest"); }
+    function setPlan(plan){
+      const p = ["free","starter","creator","business"].includes((plan||"").toLowerCase())? plan.toLowerCase() : "free";
+      CURRENT_PLAN = p; document.body.setAttribute("data-plan", p);
+      const label = `Plan: ${cap(p)}`;
+      byId("planbadge")&&(byId("planbadge").textContent=label);
+      byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
+      byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
+      const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
+      $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
+      $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
+      $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
+    }
+    function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
+    function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
+
+    async function fetchStatus(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
+        const j = await r.json();
+        const authed = j.scope==="user";
+        setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
+        ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
+        byId("generateBtn")?.classList.toggle("hidden", authed);
+        byId("generateBtn_member")?.classList.toggle("hidden", !authed);
+        const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
+        if(!authed){
+          demoEl&&(demoEl.textContent="5");
+          paintGuestUi();
+        } else {
+          const cap=j.platform?.daily?.cap; const used=j.platform?.daily?.used ?? 0;
+          memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used)));
+          paintAuthedUi();
+        }
+        INTEGRATIONS = { notion: !!j.integrations?.notion, trello: !!j.integrations?.trello };
+        const ns=byId("notionStatus"), ts=byId("trelloStatus");
+        ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
+        ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
+      }catch{
+        setAuthFlag(false); setPlan("free"); paintGuestUi();
+      }
+    }
+
+    /* ---------- Nav & Auth UI ---------- */
+    function wireNav(){
+      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
+      toggle&&toggle.addEventListener("click",()=>{ document.body.classList.add("nav-open"); sheet?.setAttribute("aria-hidden","false"); toggle.setAttribute("aria-expanded","true"); });
+      close&&close.addEventListener("click",()=>{ document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); toggle.setAttribute("aria-expanded","false"); });
+      // Tap outside panel closes on mobile
+      sheet?.addEventListener("click",(e)=>{
+        const p = sheet.querySelector(".nav-panel")?.getBoundingClientRect();
+        if(!p) return;
+        const inPanel = e.clientX>=p.left && e.clientX<=p.right && e.clientY>=p.top && e.clientY<=p.bottom;
+        if(!inPanel){ document.body.classList.remove("nav-open"); sheet.setAttribute("aria-hidden","true"); toggle?.setAttribute("aria-expanded","false"); }
+      });
+      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{
+        const id=a.getAttribute("href"); if(!id||id==="#") return;
+        const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); history.replaceState(null,"",id); }
+      }));
+    }
+
+    function openAuthDialog(){
+      const dlg=byId("auth");
+      if(!dlg) return;
+      try{ dlg.showModal(); }
+      catch{ dlg.open=true; dlg.style.display="block"; }
+      // Focus the email on open (mobile friendly)
+      setTimeout(()=> byId("authEmail")?.focus({ preventScroll:true }), 50);
+      document.body.style.overflow = "hidden";
+    }
+    function closeAuthDialog(){
+      const dlg=byId("auth"); if(!dlg) return;
+      try{ dlg.close(); }catch{ dlg.open=false; dlg.style.display="none"; }
+      document.body.style.overflow = "";
+    }
+
+    function wireAuth(){
+      // All “Sign in” triggers
+      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuthDialog));
+      $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuthDialog));
+      byId("authClose")?.addEventListener("click", closeAuthDialog);
+
+      // Close when tapping backdrop
+      byId("auth")?.addEventListener("click", (e)=>{
+        const dlg = e.currentTarget;
+        const panel = dlg.querySelector(".panel")?.getBoundingClientRect();
+        if(!panel) return;
+        const inside = e.clientX>=panel.left && e.clientX<=panel.right && e.clientY>=panel.top && e.clientY<=panel.bottom;
+        if(!inside) closeAuthDialog();
+      });
+
+      // Google OAuth
+      byId("authGoogle")?.addEventListener("click", async ()=>{
+        try{
+          await ensureSupabase();
+          await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN } });
+        }catch(e){ toast(e?.message||"Google sign-in failed"); }
+      });
+
+      // Magic link
+      byId("authSend")?.addEventListener("click", async ()=>{
+        const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
+        try{
+          await ensureSupabase();
+          const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
+          if(error) throw error; toast("Check your email for the magic link."); closeAuthDialog();
+        }catch(e){ toast(e?.message||"Sign-in error"); }
+      });
+
+      // Sign out
+      ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+        try{ await ensureSupabase(); await supabase.auth.signOut(); toast("Signed out"); }catch{}
+      }));
+    }
+
+    function wirePromo(){
+      ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+        try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+      }));
+    }
+    function wireMisc(){
+      const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
+      try{
+        const u=new URL(location.href);
+        const ok=u.searchParams.get("billing")==="success"; const no=u.searchParams.get("billing")==="cancel";
+        if(ok) toast("Billing updated — thank you!"); if(no) toast("Billing cancelled");
+        if(ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
+      }catch{}
+    }
+    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
+
+    /* ---------- (Re)wire everything after DOM is ready ---------- */
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      // Wire click handlers up-front so the Sign in dialog opens instantly on mobile
+      wireNav(); wireAuth(); wirePromo(); wireMisc();
+
+      // Load Supabase & complete OAuth if we just returned from it
+      await ensureSupabase();
+      await finishOAuthAndCleanUrl();
+
+      // (Re)wire feature modules that depend on helpers from earlier parts
+      if (window.__crp_wireAll) { window.__crp_wireAll({ getAuthHeaders, toast, WORKER_BASE, SITE_ORIGIN }); }
+
+      // Initial paint
+      await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
+
+      // Watch auth state (covers Google & magic link)
+      supabase.auth.onAuthStateChange((_evt, session)=>{
+        setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{});
+        closeAuthDialog();
+      });
     });
-
-    byId("scheduleDlg")?.addEventListener("click", (e)=> {
-      const d=e.currentTarget; const rect=d.querySelector("form")?.getBoundingClientRect(); if(!rect) return;
-      const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
-      if(!inBox) closeSchedule();
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    await ensureSupabase();
-    await finishOAuthAndCleanUrl();
-    wireNav(); wireAuth(); wirePromo(); wireMisc(); wireCheckout(); wireIntegrations();
-    wireGenerator(); wireQuickPublish(); wireOptimizer(); wireCalendar();
-    await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
-    await refreshPresets();
-
-    byId("byokSave")?.addEventListener("click", saveByokToAccount);
-    byId("byokClear")?.addEventListener("click", clearByok);
-
-    supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{});
-      closeAuthDialog();
-    });
-
-    loadCalendar();
-  });
   </script>
 </body>
 </html>
