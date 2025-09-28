@@ -55,14 +55,14 @@
     body[data-plan="creator"] .plan-creator-plus, body[data-plan="business"] .plan-creator-plus{display:revert}
     body[data-plan="business"] .plan-business-only{display:revert}
     :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
+    /* new: small utility for hidden sections */
+    .hidden-important{display:none !important}
   </style>
 
-  <!-- Worker base -->
+  <!-- Worker base & prices -->
   <script>
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
-
-    // Stripe Prices (FIX): used by checkout buttons
     window.PRICE_IDS = {
       starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
       creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
@@ -89,7 +89,7 @@
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="#integrations" class="hover:opacity-80">Integrations</a>
         <a href="#calendar" class="hover:opacity-80">Calendar</a>
-        <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
+        <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg.white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest">Sign in</button>
@@ -163,12 +163,25 @@
         <div class="grid gap-4">
           <div class="mock p-4 card">
             <div class="text-xs text-slate-400">Command</div>
-            <pre class="mono text-xs bg-black/85 text-emerald-200 rounded-xl p-4 h-40 overflow-auto" aria-label="CLI Preview">repurpose generate --channels linkedin,x,email,instagram
-? outline created
-? 3 social variants
-? email subject + body ready
-? instagram caption + hashtags</pre>
+
+            <!-- replaced the raw "?" lines with a tiny inline SVG progress viz -->
+            <div class="mt-3 rounded-lg border p-3 bg-white/60 dark:bg-white/5">
+              <svg width="100%" height="64" viewBox="0 0 600 64" role="img" aria-label="Generation progress">
+                <defs>
+                  <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/>
+                  </linearGradient>
+                </defs>
+                <rect x="12" y="20" width="160" height="24" rx="12" fill="url(#lg)"></rect>
+                <rect x="184" y="20" width="120" height="24" rx="12" fill="url(#lg)" opacity=".85"></rect>
+                <rect x="316" y="20" width="150" height="24" rx="12" fill="url(#lg)" opacity=".7"></rect>
+                <rect x="478" y="20" width="110" height="24" rx="12" fill="url(#lg)" opacity=".55"></rect>
+              </svg>
+              <pre class="mono text-xs mt-2">repurpose generate --channels linkedin,x,email,instagram
+outline ✓ • 3 social variants ✓ • email subject+body ✓ • instagram caption+hashtags ✓</pre>
+            </div>
           </div>
+
           <div class="grid md:grid-cols-2 gap-4">
             <div class="mock p-4 card"><div class="text-xs text-slate-400">LinkedIn</div>
               <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">• Hook that earns the scroll<br>• 6–10 crisp lines, one CTA<br>• On-brand tone & keywords</div></div>
@@ -201,7 +214,6 @@
       </div>
     </div>
   </section>
-
   <!-- Auth dialog -->
   <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form method="dialog" class="p-5 grid gap-4">
@@ -231,8 +243,9 @@
         </div>
       </div>
 
+      <!-- Promo -->
       <div class="card p-4 md:p-5 mb-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2 text-sm"><span class="badge">LIMITED</span>
             <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span></div>
           <div class="flex items-center gap-2">
@@ -242,7 +255,7 @@
         </div>
       </div>
 
-      <!-- Source + Channels (unchanged from working) -->
+      <!-- Source + Channels -->
       <div class="card p-5 md:p-6">
         <form id="demoForm" class="grid gap-6" autocomplete="off">
           <fieldset>
@@ -258,7 +271,7 @@
             </div>
           </fieldset>
 
-          <!-- (kept) Article Optimizer toggles inside Generator for future — visually collapsed for now -->
+          <!-- Optional Optimizer flags inside Generator (kept minimal UI) -->
           <details class="mt-1">
             <summary class="text-sm font-semibold cursor-pointer">Article Optimizer (optional)</summary>
             <div class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -277,7 +290,7 @@
               <label class="grid gap-1"><span class="text-xs text-slate-500">Focus keyword</span>
                 <input name="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO" /></label>
               <label class="grid gap-1"><span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
-                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose workflow, repurpose project, repurporse content" /></label>
+                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="repurposing workflow, repurpose project" /></label>
               <label class="grid gap-1"><span class="text-xs text-slate-500">Target SERP intent</span>
                 <select name="seo_intent" class="border rounded-lg px-3 py-2">
                   <option value="informational" selected>Informational</option>
@@ -287,7 +300,6 @@
                 </select></label>
             </div>
             <p class="mt-2 text-[12px] text-slate-500">Optimizer outputs: improved HTML article, CTR-optimized title & meta, FAQ JSON-LD, Reddit-ready title + TL;DR, and optional LinkedIn Article HTML.</p>
-            <div class="mt-2 text-[12px] text-slate-500"><span class="chip">Starter: up to 5/day</span><span class="chip">Creator: up to 15/day</span><span class="chip">Business: up to 30/day</span></div>
           </details>
 
           <fieldset>
@@ -321,16 +333,17 @@
               <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label></fieldset>
           </div>
 
-          <!-- Presets & Batch (plan-gated) -->
+          <!-- Presets & Batch -->
           <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Presets</legend>
               <div class="mt-2 grid gap-2">
                 <select id="presetSelect" class="border rounded-lg px-3 py-2"><option value="">— Select preset —</option></select>
                 <input id="presetName" class="border rounded-lg px-3 py-2" placeholder="Name new preset" />
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-wrap">
                   <button type="button" id="presetSave" class="btn">Save</button>
                   <button type="button" id="presetLoad" class="btn">Load</button>
+                  <button type="button" id="presetLoadAndRun" class="btn">Apply & Generate</button>
                   <button type="button" id="presetDelete" class="btn">Delete</button>
                 </div>
                 <p class="text-xs text-slate-500">Free: 1 preset • Paid: unlimited.</p>
@@ -398,7 +411,7 @@
         <form id="optForm" class="grid gap-6" autocomplete="off">
           <label class="grid gap-1">
             <span class="text-sm font-semibold">Paste HTML or Markdown</span>
-            <textarea id="optSource" class="w-full rounded-xl border p-4 min-h-[180px]" placeholder="Paste HTML or Markdown here...">this is a article about copywriting and how it works.</textarea>
+            <textarea id="optSource" class="w-full rounded-xl border p-4 min-h-[180px]" placeholder="Paste HTML or Markdown here..."></textarea>
           </label>
 
           <div class="grid md:grid-cols-3 gap-4">
@@ -420,7 +433,7 @@
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
-                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose workflow, repurpose project, repurporse content" />
+                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="repurpose workflow, content refresh" />
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Target SERP intent</span>
@@ -463,29 +476,68 @@
           <div class="flex items-center justify-between">
             <strong>Notion</strong>
             <div class="flex gap-2">
+              <span id="notionStatus" class="chip">status: —</span>
               <button id="connectNotion" class="btn">Connect</button>
               <button id="disconnectNotion" class="btn">Disconnect</button>
             </div>
           </div>
           <p class="mt-2 text-sm text-slate-500">After connecting, you can export LinkedIn Articles and posts directly to your Notion DB.</p>
-          <p class="mt-2 text-xs text-slate-500">Free: 1 publish/day • Starter: 5/day • Creator/Business: unlimited.</p>
         </div>
 
         <div class="card p-5">
           <div class="flex items-center justify-between">
             <strong>Trello</strong>
             <div class="flex gap-2">
+              <span id="trelloStatus" class="chip">status: —</span>
               <button id="connectTrello" class="btn">Connect</button>
               <button id="disconnectTrello" class="btn">Disconnect</button>
             </div>
           </div>
           <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello board/list with labels automatically.</p>
-          <p class="mt-2 text-xs text-slate-500">Free: 1 publish/day • Starter: 5/day • Creator/Business: unlimited.</p>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- New: Schedule Modal -->
+  <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Schedule post</h3>
+        <button class="btn" value="cancel" type="button" id="schClose">Close</button>
+      </div>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Channel</span>
+        <select id="schChannel" class="border rounded-lg px-3 py-2">
+          <option value="linkedin">LinkedIn</option>
+          <option value="x">X (Twitter)</option>
+          <option value="email">Email</option>
+          <option value="instagram">Instagram</option>
+          <option value="reddit">Reddit</option>
+          <option value="facebook">Facebook</option>
+          <option value="quora">Quora</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">When</span>
+        <input id="schWhen" type="datetime-local" class="border rounded-lg px-3 py-2" required />
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Content</span>
+        <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Your post…" required></textarea>
+      </label>
+
+      <div class="flex items-center justify-end gap-2">
+        <button class="btn" type="button" id="schCancel">Cancel</button>
+        <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
+      </div>
+      <p class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</p>
+    </form>
+  </dialog>
   <!-- ===== CALENDAR ===== -->
   <section id="calendar" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -511,12 +563,13 @@
           </div>
           <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
         </div>
-        <div id="calGrid" class="mt-4 min-h-[320px] rounded-xl border grid place-items-center text-slate-500">
+        <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
           (Calendar view loads here)
         </div>
       </div>
     </div>
   </section>
+
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -603,7 +656,7 @@
           <ul class="mt-4 text-sm space-y-2">
             <li>• Generator: <strong>80 runs / day</strong></li>
             <li>• Article Optimizer: <strong>30 / day</strong></li>
-            <li>• Presets: <strong>unlimited</strong> • Batch: <strong>up to 60 / run</strong></li>
+            <li>• Presets & Batch: <strong>unlimited</strong> (batch up to 60/run)</li>
             <li>• Notion/Trello publish: <strong>unlimited</strong></li>
             <li>• Shared Scheduler & Calendar for team</li>
             <li>• Invite up to <strong>3 seats</strong></li>
@@ -637,7 +690,7 @@
     <div class="px-4 py-2 rounded-lg bg-black text-white text-sm shadow"><span id="toastMsg">…</span></div>
   </div>
 
-  <!-- ===== APP BOOT ===== -->
+  <!-- ===== APP BOOT (full) ===== -->
   <script type="module">
   if (!window.__CRP_FINAL_BOOT__) {
     window.__CRP_FINAL_BOOT__ = true;
@@ -646,16 +699,17 @@
     const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
     const byId = (id)=> document.getElementById(id);
     const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
-    const WORKER_BASE = window.WORKER_BASE;
-    const SITE_ORIGIN = window.SITE_ORIGIN;
-    const PRICE_IDS = window.PRICE_IDS;
+    const WORKER_BASE = window.WORKER_BASE || "";
+    const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+    const PRICE_IDS = window.PRICE_IDS || {};
     const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
-    const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),1600); };
+    const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000); };
 
     /* ---------- Supabase auth ---------- */
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase=null, AUTHTED=false, CURRENT_PLAN="free", USER_ID=null, LAST_OUTPUT=null;
+    let INTEGRATIONS={ notion:false, trello:false };
 
     async function ensureSupabase(){
       if (window.supabase){ supabase=window.supabase; return; }
@@ -720,6 +774,14 @@
           const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used ?? 0;
           memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used))); paintAuthedUi();
         }
+        // integration chips
+        INTEGRATIONS = {
+          notion: !!j.integrations?.notion,
+          trello: !!j.integrations?.trello
+        };
+        const ns=byId("notionStatus"), ts=byId("trelloStatus");
+        ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
+        ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
       }catch{
         setAuthFlag(false); setPlan("free"); paintGuestUi();
       }
@@ -757,10 +819,10 @@
       }catch{}
     }
 
-    /* ---------- Live ticker ---------- */
-    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); const j=await r.json(); if(r.ok && typeof j.today_count==="number"){ $$('[data-live-count], #liveCount').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
+    /* ---------- Live ticker (no-op if worker lacks endpoint) ---------- */
+    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
 
-    /* ---------- Presets (KV via worker) ---------- */
+    /* ---------- Presets ---------- */
     async function refreshPresets(){
       const sel=byId("presetSelect"); if(!sel) return;
       try{
@@ -771,11 +833,27 @@
     }
     function readPresetPayload(){
       const form=byId("demoForm"); if(!form) return {};
-      // capture all relevant generator toggles & SEO fields & channels
-      const payload = new FormData(form); const obj={};
-      payload.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
+      const fd = new FormData(form); const obj={};
+      fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
       obj.sourceText = byId("sourceText")?.value||"";
       return obj;
+    }
+    function applyPresetPayload(p){
+      const form=byId("demoForm"); if(!form||!p) return;
+      // restore text
+      if(p.sourceText) byId("sourceText").value=p.sourceText;
+      // radios & checkboxes, selects
+      for (const [k,v] of Object.entries(p)){
+        const els = $$(`[name="${k}"]`, form);
+        if(!els.length) continue;
+        if(els[0].type==="checkbox"){
+          els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
+        } else if(els[0].type==="radio"){
+          els.forEach(el=> el.checked = (String(el.value)===String(v)));
+        } else {
+          els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
+        }
+      }
     }
     async function savePreset(){
       const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
@@ -786,15 +864,17 @@
         toast("Preset saved ✅"); refreshPresets();
       }catch(e){ toast(e.message||"Save failed"); }
     }
-    async function loadPreset(){
+    async function loadPreset(run=false){
       const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
       try{
         const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
         const p=j?.payload||{};
-        // restore minimal: sourceText + common toggles (best-effort)
-        if(p.sourceText) byId("sourceText").value=p.sourceText;
+        applyPresetPayload(p);
         toast("Preset loaded ✅");
+        if(run){ // auto-generate after load if asked
+          byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true}));
+        }
       }catch(e){ toast(e.message||"Load failed"); }
     }
     async function deletePreset(){
@@ -806,7 +886,7 @@
       }catch(e){ toast(e.message||"Delete failed"); }
     }
 
-    /* ---------- Notion / Trello Integrations ---------- */
+    /* ---------- Integrations ---------- */
     function wireIntegrations(){
       byId("connectNotion")?.addEventListener("click", async ()=>{
         try{
@@ -819,7 +899,7 @@
         try{
           const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
           const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion disconnect failed");
-          toast("Notion disconnected");
+          toast("Notion disconnected"); fetchStatus();
         }catch(e){ toast(e.message||"Notion disconnect failed"); }
       });
 
@@ -834,7 +914,7 @@
         try{
           const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
           const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello disconnect failed");
-          toast("Trello disconnected");
+          toast("Trello disconnected"); fetchStatus();
         }catch(e){ toast(e.message||"Trello disconnect failed"); }
       });
     }
@@ -862,7 +942,7 @@
             if(j?.url) location.href=j.url; else throw new Error("Missing checkout url");
           }catch(e){
             toast(e.message||"Checkout error");
-          }finally{ btn.disabled=false; btn.textContent=btn.getAttribute("data-restore")||"Choose"; }
+          }finally{ btn.disabled=false; }
         });
       });
       ["manageBilling","manageBilling_m"].forEach(id=>{
@@ -878,11 +958,25 @@
       });
     }
 
-    /* ---------- Generator + Output (adds Publish/Schedule) ---------- */
+    /* ---------- JSON helpers ---------- */
     const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
       s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
       try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
 
+    /* ---------- Schedule Modal helpers ---------- */
+    function openScheduleModal(pref={ channel:"linkedin", text:"" }){
+      const dlg = byId("scheduleDlg"); if(!dlg) return;
+      byId("schChannel").value = pref.channel || "linkedin";
+      byId("schText").value = pref.text || "";
+      // default to next whole hour
+      const dt = new Date(); dt.setMinutes(0,0,0); dt.setHours(dt.getHours()+1);
+      const iso = dt.toISOString().slice(0,16);
+      byId("schWhen").value = iso;
+      dlg.showModal();
+    }
+    function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{} }
+
+    /* ---------- Generator ---------- */
     function readToggles(form){
       const g=(n)=> form.elements[n];
       return { opt:{
@@ -957,16 +1051,10 @@ Task:
         }catch(e){ toast(e.message||"Publish failed"); }
       });
 
-      schBtn?.addEventListener("click", async ()=>{
+      schBtn?.addEventListener("click", ()=> {
         const text = pre?.innerText||"";
         if(!text) return toast("Nothing to schedule");
-        const t = prompt("Pick a time (YYYY-MM-DD HH:MM)");
-        if(!t) return;
-        try{
-          const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when: t }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-          toast("Scheduled ✅");
-        }catch(e){ toast(e.message||"Schedule failed"); }
+        openScheduleModal({ channel:key, text });
       });
 
       if(key){ LAST_OUTPUT = LAST_OUTPUT||{}; LAST_OUTPUT[key]=pre.innerText; }
@@ -1052,35 +1140,131 @@ Task:
 
         await runOne(raw);
       });
+
+      // Preset buttons
+      byId("presetSave")?.addEventListener("click", savePreset);
+      byId("presetLoad")?.addEventListener("click", ()=>loadPreset(false));
+      byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true));
+      byId("presetDelete")?.addEventListener("click", deletePreset);
     }
 
-    /* ---------- Quick publish & Export buttons ---------- */
-    function wireQuickPublish(){
-      const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
-      byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
-      byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
-      byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
-      byId("qp-email")?.addEventListener("click", ()=>{ const em=need("email")||""; const subj=(em.split("\n")[0]||"Your draft").slice(0,120); const body=em; location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; });
-
-      byId("li-notion")?.addEventListener("click", async ()=>{
-        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
+    /* ---------- Schedule modal wiring + server create + local reminder ---------- */
+    function wireScheduleModal(){
+      const dlg=byId("scheduleDlg");
+      if(!dlg) return;
+      const close=()=> closeSchedule();
+      byId("schCancel")?.addEventListener("click", close);
+      byId("schClose")?.addEventListener("click", close);
+      byId("scheduleForm")?.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const when = byId("schWhen")?.value;
+        const text = byId("schText")?.value?.trim();
+        if(!when||!text) return toast("Pick a date/time and content");
         try{
-          const r=await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-          toast("Exported to Notion ✅");
-        }catch(e){ toast(e.message||"Export failed"); }
-      });
-      byId("li-trello")?.addEventListener("click", async ()=>{
-        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
-        try{
-          const r=await fetch(`${WORKER_BASE}/api/integrations/trello/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-          toast("Sent to Trello ✅");
-        }catch(e){ toast(e.message||"Export failed"); }
+          const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
+          toast("Scheduled ✅"); closeSchedule();
+          // Save local reminder (for popup):
+          const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
+          list.push({ id:j.id||("local_"+Date.now()), text, when, shown:false });
+          localStorage.setItem("crp_local_sched", JSON.stringify(list));
+          // repaint calendar
+          loadCalendar();
+        }catch(e){ toast(e.message||"Schedule failed"); }
       });
     }
 
-    /* ---------- Optimizer (unchanged outputs, cleans headings) ---------- */
+    // Local reminder poller: checks every 30s and shows alert toast if due (client-side convenience)
+    setInterval(()=>{
+      try{
+        const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
+        const now = Date.now();
+        let changed=false;
+        for(const item of list){
+          if(item.shown) continue;
+          const t = new Date(item.when).getTime();
+          if(!isNaN(t) && now >= t){
+            toast("It's time to publish: " + (item.text.slice(0,80)+"…"));
+            item.shown = true; changed=true;
+          }
+        }
+        if(changed) localStorage.setItem("crp_local_sched", JSON.stringify(list));
+      }catch{}
+    }, 30000);
+
+    /* ---------- Calendar ---------- */
+    let calCursor = new Date();
+    function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
+    function addMonths(d,n){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
+    function fmtDayKey(d){ return d.toISOString().slice(0,10); }
+
+    async function fetchScheduleList(){
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/schedule/list`, { headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) return [];
+        return j.items||[];
+      }catch{ return []; }
+    }
+    function renderMonth(events){
+      const grid=byId("calGrid"); if(!grid) return;
+      const first = startOfMonth(calCursor);
+      const last  = addMonths(first,1);
+      // Build day map
+      const byDay = {};
+      for(const ev of events){
+        const key = (ev.when||"").slice(0,10);
+        if(!byDay[key]) byDay[key]=[];
+        byDay[key].push(ev);
+      }
+      // calendar header
+      const header = `<div class="grid grid-cols-7 gap-2 text-xs text-slate-400">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>`;
+      // leading blanks
+      const tmp = new Date(first);
+      let wday = (tmp.getDay()+6)%7; // Monday=0
+      const cells = [];
+      for(let i=0;i<wday;i++) cells.push('<div class="min-h-[90px] rounded-lg border border-transparent"></div>');
+
+      // days
+      while(tmp < last){
+        const key = fmtDayKey(tmp);
+        const items = (byDay[key]||[]).slice(0,3).map(ev=> `<div class="text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate">${ev.text}</div>`).join("");
+        cells.push(`<div class="min-h-[90px] rounded-lg border p-1">
+          <div class="text-[11px] text-slate-400">${tmp.getDate()}</div>
+          <div class="mt-1 grid gap-1">${items||""}</div>
+        </div>`);
+        tmp.setDate(tmp.getDate()+1);
+      }
+
+      grid.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">${first.toLocaleString([], { month:"long", year:"numeric" })}</div>
+          <div class="text-xs text-slate-500">Your scheduled posts appear here</div>
+        </div>
+        ${header}
+        <div class="grid grid-cols-7 gap-2">${cells.join("")}</div>`;
+    }
+    async function loadCalendar(){
+      const grid=byId("calGrid"); if(!grid) return;
+      grid.textContent = CURRENT_PLAN==="free"
+        ? "Read-only preview — upgrade to schedule posts."
+        : "Loading your calendar…";
+      const items = await fetchScheduleList();
+      renderMonth(items);
+    }
+    function wireCalendar(){
+      byId("calPrev")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor,-1); loadCalendar(); });
+      byId("calNext")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor, 1); loadCalendar(); });
+      byId("calToday")?.addEventListener("click", ()=>{ calCursor=new Date(); loadCalendar(); });
+      byId("calNew")?.addEventListener("click", ()=>{
+        const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || LAST_OUTPUT?.facebook || "").slice(0,600);
+        if(!text) return toast("Generate something first");
+        openScheduleModal({ text });
+      });
+    }
+
+    /* ---------- Optimizer ---------- */
     function optSystemPrompt(flags){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY valid JSON with this shape:
 {
@@ -1155,22 +1339,29 @@ SEO:
       });
     }
 
-    /* ---------- Calendar (read-only for Free) ---------- */
-    function wireCalendar(){
-      const grid=byId("calGrid"); if(!grid) return;
-      grid.textContent = CURRENT_PLAN==="free"
-        ? "Read-only preview — upgrade to schedule posts."
-        : "Your calendar is ready. (Events will appear here.)";
-      byId("calNew")?.addEventListener("click", async ()=>{
-        const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || "").slice(0,600);
-        if(!text) return toast("Generate something first");
-        const when = prompt("Pick a time (YYYY-MM-DD HH:MM)");
-        if(!when) return;
+    /* ---------- Quick publish ---------- */
+    function wireQuickPublish(){
+      const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
+      byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
+      byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
+      byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
+      byId("qp-email")?.addEventListener("click", ()=>{ const em=need("email")||""; const subj=(em.split("\n")[0]||"Your draft").slice(0,120); const body=em; location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; });
+
+      byId("li-notion")?.addEventListener("click", async ()=>{
+        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
         try{
-          const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-          toast("Scheduled ✅");
-        }catch(e){ toast(e.message||"Schedule failed"); }
+          const r=await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
+          toast("Exported to Notion ✅");
+        }catch(e){ toast(e.message||"Export failed"); }
+      });
+      byId("li-trello")?.addEventListener("click", async ()=>{
+        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/trello/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
+          toast("Sent to Trello ✅");
+        }catch(e){ toast(e.message||"Export failed"); }
       });
     }
 
@@ -1178,15 +1369,58 @@ SEO:
     document.addEventListener("DOMContentLoaded", async ()=>{
       await ensureSupabase(); await finishOAuthAndCleanUrl();
       wireNav(); wireAuth(); wirePromo(); wireMisc(); wireCheckout(); wireIntegrations();
-      wireGenerator(); wireQuickPublish(); wireOptimizer(); wireCalendar();
+      wireGenerator(); wireQuickPublish(); wireOptimizer(); wireScheduleModal(); wireCalendar();
       await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
       await refreshPresets();
-      byId("presetSave")?.addEventListener("click", savePreset);
-      byId("presetLoad")?.addEventListener("click", loadPreset);
-      byId("presetDelete")?.addEventListener("click", deletePreset);
       supabase.auth.onAuthStateChange((_evt, session)=>{ setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{}); try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{} });
+      // Close schedule dialog with ESC clicks outside
+      byId("scheduleDlg")?.addEventListener("click", (e)=> { const d=e.currentTarget; const rect=d.querySelector("form")?.getBoundingClientRect(); if(!rect) return; const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom; if(!inBox) closeSchedule(); });
+      // Initial calendar load
+      loadCalendar();
     });
   }
   </script>
+  <!-- ===== SCHEDULE DIALOG ===== -->
+  <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Schedule a post</h3>
+        <button id="schClose" class="btn" value="cancel" type="button">✕</button>
+      </div>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Channel</span>
+        <select id="schChannel" class="border rounded-lg px-3 py-2" disabled>
+          <option value="linkedin">LinkedIn</option>
+          <option value="x">X (Twitter)</option>
+          <option value="email">Email</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="reddit">Reddit</option>
+          <option value="quora">Quora</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+        <p class="text-[12px] text-slate-500">We’ll remind you at the time you pick.</p>
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Date & time</span>
+        <input id="schWhen" type="datetime-local" class="border rounded-lg px-3 py-2" required />
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Content</span>
+        <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" required placeholder="Paste or generate content…"></textarea>
+      </label>
+
+      <div class="flex items-center justify-end gap-2">
+        <button id="schCancel" class="btn" type="button">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save schedule</button>
+      </div>
+
+      <p class="text-[12px] text-slate-500">When the time comes, you’ll get an on-site popup reminder to publish.</p>
+    </form>
+  </dialog>
+
 </body>
 </html>
