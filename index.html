@@ -4,26 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-
-  <!-- Expanded claim matches platform: LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok + Optimizer -->
-  <meta name="description" content="Repurpose content with AI — generate LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, and TikTok drafts from one input. Export to Notion & Trello. Built-in Article Optimizer. BYOK supported." />
+  <meta name="description" content="Repurpose content with AI. LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok — plus LinkedIn Article & Article Optimizer. Export to Notion & Trello. BYOK supported." />
   <link rel="canonical" href="https://contentrepurpose.pro/">
-
-  <!-- Social -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
-  <meta property="og:description" content="Turn one idea into everywhere content. LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. Export to Notion & Trello. Article Optimizer & BYOK." />
-  <meta property="og:url" content="https://contentrepurpose.pro/">
-  <meta property="og:image" content="/og-cover.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator & Optimizer">
-  <meta name="twitter:description" content="Multi-channel drafts in one go. Scheduler, Calendar, Notion/Trello. BYOK supported.">
-  <meta name="twitter:image" content="/og-cover.png">
-
   <meta name="theme-color" content="#0a0d18"><meta name="color-scheme" content="dark light">
   <meta name="robots" content="index,follow,max-video-preview:-1,max-image-preview:large,max-snippet:-1">
+  <meta property="og:type" content="website"><meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
+  <meta property="og:description" content="Turn one idea into everywhere content. Multi-channel drafts + Article Optimizer. Export to Notion & Trello. BYOK supported.">
+  <meta property="og:url" content="https://contentrepurpose.pro/"><meta property="og:image" content="/og-cover.png">
+  <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
+  <meta name="twitter:description" content="Repurpose content with AI across LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. Export to Notion & Trello."><meta name="twitter:image" content="/og-cover.png">
 
-  <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -46,13 +36,15 @@
     .halo.h2{width:34rem;height:34rem;right:-12rem;top:-6rem;animation-duration:18s;opacity:.5}
     .halo.h3{width:28rem;height:28rem;left:-10rem;top:26rem;animation-duration:22s;opacity:.45}
     @keyframes float{ 0%,100%{ transform: translate3d(0,0,0) } 50%{ transform: translate3d(0,-20px,0) } }
-    .orbit{position:absolute; inset:-32px;border-radius:24px;pointer-events:none;
+    .orbit{position:absolute;inset:-32px;border-radius:24px;pointer-events:none;
       background: conic-gradient(from 0deg, rgba(122,162,255,.25), rgba(255,45,45,.18), rgba(122,162,255,.25));
       -webkit-mask: radial-gradient(closest-side, transparent 88%, black 89%); mask: radial-gradient(closest-side, transparent 88%, black 89%);
       animation: spin 18s linear infinite;}
     @keyframes spin{ to{ transform: rotate(360deg) } }
     .mock{border-radius:1rem;border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.6));}
     @media (prefers-color-scheme:dark){ body{background:var(--ink);color:#e9eef6} .card{background:rgba(14,16,22,.6);border-color:rgba(255,255,255,.08);box-shadow:0 24px 96px rgba(122,162,255,.08),0 14px 60px rgba(255,45,45,.06)} .badge{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)} .mock{ background:linear-gradient(180deg,rgba(17,20,31,.88),rgba(17,20,31,.72)); } }
+    .marquee{ display:grid; grid-auto-flow:column; gap:2rem; align-items:center; animation: scrollx 26s linear infinite }
+    .marquee:hover{ animation-play-state: paused } @keyframes scrollx{ from{ transform: translateX(0) } to{ transform: translateX(-50%) } }
     .nav-sheet{position:fixed; inset:0 0 auto 0; background:rgba(0,0,0,.6); backdrop-filter:blur(8px); display:none}
     .nav-panel{position:absolute; top:0; right:0; width:82vw; max-width:380px; height:100%; background:rgba(14,16,22,.96); border-left:1px solid rgba(255,255,255,.08); padding:1rem}
     .nav-open .nav-sheet{display:block}
@@ -63,9 +55,15 @@
     body[data-plan="creator"] .plan-creator-plus, body[data-plan="business"] .plan-creator-plus{display:revert}
     body[data-plan="business"] .plan-business-only{display:revert}
     :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
+
+    /* dialog fallback so Sign in works everywhere */
+    dialog.crp-fallback { position: fixed; inset: 0; display: none; z-index: 1000; background: rgba(0,0,0,.5);}
+    dialog.crp-fallback[open]{ display:block }
+    dialog.crp-fallback .panel{ position:absolute; left:50%; top:10%; transform:translateX(-50%);
+      width:min(92vw,480px); background:rgba(14,16,22,.98); color:white; border-radius:14px; border:1px solid rgba(255,255,255,.12); padding:16px}
   </style>
 
-  <!-- Worker base & Stripe price IDs (env aligned) -->
+  <!-- Worker base & prices -->
   <script>
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
@@ -79,7 +77,6 @@
 <body class="min-h-full" data-auth="guest" data-plan="free">
   <div class="halo" style="left:-14rem; top:-10rem;"></div><div class="halo h2"></div><div class="halo h3"></div>
 
-  <!-- ===== HEADER / NAV ===== -->
   <header class="sticky top-0 z-40 backdrop-blur bg-white/55 dark:bg-black/20 border-b border-white/30">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-4 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3" aria-label="ContentRepurpose home">
@@ -96,6 +93,7 @@
         <a href="#integrations" class="hover:opacity-80">Integrations</a>
         <a href="#calendar" class="hover:opacity-80">Calendar</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
+
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg.white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
@@ -109,30 +107,24 @@
 
     <div class="border-t border-white/40 bg-white/70 dark:bg-white/10">
       <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
-          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
-          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a>
-        </div>
+        <div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
+          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span></div>
+        <div class="flex items-center gap-2"><button id="copyPromoBtn" class="px-3 py-1 rounded-lg border">Copy code</button>
+          <a href="#pricing" class="px-3 py-1 rounded-lg bg-black text-white">See pricing</a></div>
       </div>
     </div>
 
     <!-- Mobile sheet -->
     <div id="mobileNav" class="nav-sheet" aria-hidden="true">
       <div class="nav-panel text-sm text-white">
-        <div class="flex items-center justify-between">
-          <span class="font-semibold">Menu</span>
-          <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button>
-        </div>
+        <div class="flex items-center justify-between"><span class="font-semibold">Menu</span>
+          <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button></div>
         <nav class="mt-4 grid gap-2">
           <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Generator</a>
-          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
-          <a href="#integrations" class="px-3 py-2 rounded-lg hover:bg-white/10">Integrations</a>
-          <a href="#calendar" class="px-3 py-2 rounded-lg hover:bg-white/10">Calendar</a>
-          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
+          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg.white/10">Article Optimizer</a>
+          <a href="#integrations" class="px-3 py-2 rounded-lg hover:bg.white/10">Integrations</a>
+          <a href="#calendar" class="px-3 py-2 rounded-lg hover:bg.white/10">Calendar</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg.white/10">Pricing</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
@@ -144,39 +136,36 @@
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
+  <!-- Hero -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
+          <span class="only-guest">Preview the demo (no login)</span>
           <span class="only-authed hidden">Signed in — <strong id="heroPlanName">Free</strong> plan active</span>
         </div>
         <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
-          AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
+          AI <span class="txt-grad">Content Repurposing</span> — turn one idea into everywhere content.
         </h1>
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Paste once → get drafts for <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, <strong>Instagram</strong>, <strong>Reddit</strong>,
-          <strong>Facebook</strong>, <strong>Quora</strong>, and <strong>TikTok</strong>. Export to <strong>Notion</strong> & <strong>Trello</strong>.
-          Built-in <strong>Article Optimizer</strong>. <strong>BYOK</strong> supported.
+          Generate for <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, <strong>Instagram</strong>, <strong>Reddit</strong>, <strong>Facebook</strong>, <strong>Quora</strong>, <strong>TikTok</strong> + optional <strong>LinkedIn Article</strong>.
+          Export to <strong>Notion</strong> & <strong>Trello</strong>. <strong>BYOK</strong> supported.
         </p>
+        <ul class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+          <li>• <strong>Free (signed-in)</strong>: Generator <strong>5/day</strong>, Optimizer <strong>1/day</strong>.</li>
+          <li>• Upgrade for batch, scheduler, calendar, team seats & unlimited presets.</li>
+        </ul>
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open Generator</a>
           <a href="#optimizer" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Open Article Optimizer</a>
           <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <span class="badge">AI Generator</span>
-          <span class="badge">Article Optimizer</span>
-          <span class="badge">Scheduler & Calendar</span>
-          <span class="badge">Notion/Trello</span>
-          <span class="badge">BYOK</span>
+          <span class="badge">Multi-channel</span><span class="badge">Article Optimizer</span><span class="badge">Scheduler & Calendar</span><span class="badge">BYOK</span>
         </div>
       </div>
 
-      <!-- simple hero visual -->
       <div class="relative">
         <div class="orbit" aria-hidden="true"></div>
         <div class="grid gap-4">
@@ -184,124 +173,66 @@
             <div class="text-xs text-slate-400">Command</div>
             <div class="mt-3 rounded-lg border p-3 bg-white/60 dark:bg-white/5">
               <svg width="100%" height="64" viewBox="0 0 600 64" role="img" aria-label="Generation progress">
-                <defs><linearGradient id="lg" x1="0" y="0" x2="1" y2="0"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
+                <defs><linearGradient id="lg" x1="0" y="0" x2="1" y="0"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
                 <rect x="12" y="20" width="160" height="24" rx="12" fill="url(#lg)"></rect>
                 <rect x="184" y="20" width="120" height="24" rx="12" fill="url(#lg)" opacity=".85"></rect>
                 <rect x="316" y="20" width="150" height="24" rx="12" fill="url(#lg)" opacity=".7"></rect>
                 <rect x="478" y="20" width="110" height="24" rx="12" fill="url(#lg)" opacity=".55"></rect>
               </svg>
               <pre class="mono text-xs mt-2">repurpose generate --channels linkedin,x,email,instagram,reddit,facebook,quora,tiktok
-outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+onscreen ✓</pre>
+outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ===== SEO / PRE-SIGN-IN FAQ & INTERNAL LINKS ===== -->
-  <section id="faq" class="relative">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 md:py-14">
-      <h2 class="text-2xl md:text-3xl font-black tracking-tight">FAQs: content repurposing & SEO</h2>
-      <div class="mt-6 grid md:grid-cols-2 gap-6">
-        <div class="card p-5">
-          <h3 class="font-semibold text-lg">What is content repurposing?</h3>
-          <p class="mt-2 text-slate-600 dark:text-slate-300 text-sm">
-            Turning one idea or article into platform-ready posts across LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, and TikTok. Our tool automates outlines, variants, and formatting.
-          </p>
-          <a class="text-sm underline mt-3 inline-block" href="https://contentrepurpose.pro/blog/content-repurposing-101/">Learn: Content Repurposing 101</a>
-        </div>
-        <div class="card p-5">
-          <h3 class="font-semibold text-lg">Does repurposing help SEO?</h3>
-          <p class="mt-2 text-slate-600 dark:text-slate-300 text-sm">
-            Yes—consistent multi-channel distribution amplifies engagement and links. Our Article Optimizer improves HTML, titles/meta, FAQs (JSON-LD), and on-page checks.
-          </p>
-          <a class="text-sm underline mt-3 inline-block" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Guide: Content Repurposing for SEO</a>
-        </div>
-        <div class="card p-5">
-          <h3 class="font-semibold text-lg">Best practices for social versions?</h3>
-          <p class="mt-2 text-slate-600 dark:text-slate-300 text-sm">
-            Write native to each platform, keep X < 280 chars, add LinkedIn line breaks, and tailor captions/hashtags on Instagram. We do this automatically from your source.
-          </p>
-          <a class="text-sm underline mt-3 inline-block" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social post generator tips</a>
-        </div>
-        <div class="card p-5">
-          <h3 class="font-semibold text-lg">Can I export to Notion/Trello?</h3>
-          <p class="mt-2 text-slate-600 dark:text-slate-300 text-sm">
-            Yes—connect once, then export drafts or LinkedIn Articles to Notion and Trello. You can also schedule reminders in your calendar to publish on time.
-          </p>
-          <a class="text-sm underline mt-3 inline-block" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion & Trello export</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== ACCOUNT / BYOK ===== -->
-  <section id="account" class="relative scroll-mt-24 only-authed hidden">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 md:py-14">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <h2 class="text-2xl md:text-3xl font-black tracking-tight">Account</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-            Plan: <strong id="acctPlan">Free</strong> • Generator: <span id="acctGenDaily">—</span>/day • Optimizer: <span id="acctOptDaily">—</span>/day
-          </p>
-        </div>
-        <div class="flex gap-2">
-          <button id="manageBilling_acct" class="btn">Manage billing</button>
-          <a href="#pricing" class="btn">Upgrade</a>
-        </div>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-6 mt-6">
-        <!-- BYOK -->
-        <div class="card p-5">
-          <div class="flex items-center justify-between">
-            <strong>Use my OpenRouter key (BYOK)</strong>
-            <span id="byokStatus" class="chip">status: —</span>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">LinkedIn</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">• Hook that earns the scroll<br>• 6–10 crisp lines, one CTA<br>• Optional LinkedIn Article</div></div>
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">X (Twitter)</div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">Two fast variants or sequence<br>≤ 280 chars<br>Ready to post ✓</div></div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">
-            Run generations on your own API key for cost control and privacy. Your key is stored locally in your browser (never on our servers).
-          </p>
-          <div class="mt-4 grid gap-3">
-            <label class="grid gap-1">
-              <span class="text-xs text-slate-500">OpenRouter API Key</span>
-              <input id="byokKey" type="password" class="border rounded-lg px-3 py-2" placeholder="sk-or-v1-..." autocomplete="off">
-            </label>
-            <details class="mt-1">
-              <summary class="text-sm font-semibold cursor-pointer">Advanced (optional)</summary>
-              <div class="mt-3 grid md:grid-cols-2 gap-3">
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">Provider label</span>
-                  <input id="byokProvider" class="border rounded-lg px-3 py-2" placeholder="openrouter">
-                </label>
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">Base URL</span>
-                  <input id="byokBase" class="border rounded-lg px-3 py-2" placeholder="https://openrouter.ai/api/v1">
-                </label>
-              </div>
-            </details>
-            <div class="flex gap-2">
-              <button id="byokSave" class="btn btn-primary" type="button">Save</button>
-              <button id="byokClear" class="btn" type="button">Clear</button>
-              <span class="text-xs text-slate-500">When active, your runs use BYOK instead of our pool.</span>
-            </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">Reddit</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Best subs + rules & flair tips<br>3 starter comments</div></div>
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">TikTok</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">3 hooks + script + on-screen plan</div></div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Plan features recap & upgrade hints -->
-        <div class="card p-5">
-          <strong>What’s included</strong>
-          <ul class="mt-3 text-sm space-y-2">
-            <li>• <strong>Free</strong>: Generator 5/day, Optimizer 1/day, 1 preset, publish 1/day, read-only calendar.</li>
-            <li>• <strong>Starter</strong>: Generator 10/day, Optimizer 5/day, Batch 10/run, publish 5/day, personal calendar.</li>
-            <li>• <strong>Creator</strong>: Generator 30/day, Optimizer 15/day, Batch 30/run, priority pool, personal calendar.</li>
-            <li>• <strong>Business</strong>: Generator 80/day, Optimizer 30/day, Batch 60/run, unlimited publish, shared calendar + <strong>3 seats</strong>.</li>
-          </ul>
-          <p class="mt-3 text-xs text-slate-500">Your dashboard automatically unlocks features based on your plan.</p>
+    <!-- Live strip -->
+    <div class="mt-8 md:mt-10">
+      <div class="max-w-7xl mx-auto px-4 md:px-5">
+        <div class="card p-4 md:p-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <strong class="tracking-tight">Generations today</strong><span class="chip" data-live-count>–</span></div>
+            <div class="text-xs text-slate-500">Real results update every 30s</div>
+          </div>
+          <div class="mt-3 overflow-hidden">
+            <div class="flex gap-3 whitespace-nowrap text-[13px] will-change-transform" style="animation: scrollx 28s linear infinite" data-live-feed></div>
+          </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Auth dialog (robust: works even if showModal is unsupported) -->
+  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md crp-fallback">
+    <form method="dialog" class="panel grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Sign in</h3>
+        <button class="btn" value="cancel" type="button" id="authClose">Close</button>
+      </div>
+      <p class="text-sm text-slate-300">Enter your email to receive a magic link or continue with Google.</p>
+      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2 bg-white/10 placeholder-slate-400">
+      <div class="grid grid-cols-2 gap-2">
+        <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
+        <button id="authGoogle" class="btn" type="button">Continue with Google</button>
+      </div>
+      <p id="authNote" class="text-xs text-slate-400">We’ll never share your email.</p>
+    </form>
+  </dialog>
   <!-- ===== GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -309,10 +240,12 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
-            No login needed — <span class="font-semibold">5 runs / day</span> on the public pool.
+            No login needed — <span class="font-semibold">5 runs/day</span> (free preview).
           </p>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
-            Signed in — your plan limits apply per day/month by tier. Free: 5/day • Optimizer: 1/day.
+            Signed in — your plan applies: <span class="chip">Free: 5/day</span> •
+            <span class="chip">Starter: 10/day</span> • <span class="chip">Creator: 30/day</span> •
+            <span class="chip">Business: 80/day</span>.
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -321,15 +254,15 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
         </div>
       </div>
 
-      <!-- Promo -->
+      <!-- Plan notice ribbon -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2 text-sm">
-            <span class="badge">LIMITED</span>
-            <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
+            <span class="badge">Heads up</span>
+            <span id="planNotice">Free: 5 generator runs/day & 1 optimizer/day. Upgrade for batch, scheduler, and unlimited presets.</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
+            <button id="copyPromoBtn2" class="btn" type="button">Copy 90% OFF code</button>
             <a class="btn btn-primary" href="#pricing">Upgrade</a>
           </div>
         </div>
@@ -348,7 +281,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
                 <span class="chip">fastest</span>
               </label>
               <label class="tab flex items-center">
-                <input type="radio" name="sourceType" value="blog" class="mr-2"> Full Blog
+                <input type="radio" name="sourceType" value="blog" class="mr-2"> Full Blog (long form)
               </label>
               <label class="tab flex items-center">
                 <input type="radio" name="sourceType" value="url" class="mr-2"> URL
@@ -359,8 +292,57 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             </div>
           </fieldset>
 
-          <!-- Article Optimizer toggles (optional; generator will pass through if selected) -->
-          <details class="mt-1">
+          <!-- Channels -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Channels to generate</legend>
+            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
+            </div>
+          </fieldset>
+
+          <!-- Per-channel extras -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">LinkedIn</legend>
+              <label class="flex items-center gap-2 mt-2">
+                <input type="checkbox" name="li_article"> Also generate a LinkedIn Article
+              </label>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">X (Twitter)</legend>
+              <div class="mt-2 flex items-center gap-3">
+                <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
+                <label class="flex items-center gap-2">Max posts:
+                  <select name="x_posts" class="border rounded-lg px-2 py-1">
+                    <option>2</option><option selected>4</option><option>6</option>
+                  </select>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">Reddit</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (rules & flair)</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
+            </fieldset>
+
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">TikTok</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label>
+            </fieldset>
+          </div>
+
+          <!-- Article Optimizer toggle (optional inside generator) -->
+          <details>
             <summary class="text-sm font-semibold cursor-pointer">Article Optimizer (optional)</summary>
             <div class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
@@ -389,43 +371,15 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             </div>
           </details>
 
-          <fieldset>
-            <legend class="text-sm font-semibold">Channels to generate</legend>
-            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
-            </div>
-          </fieldset>
-
-          <div class="grid md:grid-cols-2 gap-6">
-            <fieldset class="card p-4"><legend class="text-sm font-semibold">LinkedIn</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label></fieldset>
-            <fieldset class="card p-4"><legend class="text-sm font-semibold">X (Twitter)</legend>
-              <div class="mt-2 flex items-center gap-3">
-                <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
-                <label class="flex items-center gap-2">Max posts:
-                  <select name="x_posts" class="border rounded-lg px-2 py-1"><option>2</option><option selected>4</option><option>6</option></select>
-                </label></div></fieldset>
-            <fieldset class="card p-4"><legend class="text-sm font-semibold">Reddit</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label></fieldset>
-            <fieldset class="card p-4"><legend class="text-sm font-semibold">TikTok</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label></fieldset>
-          </div>
-
-          <!-- Presets & Batch -->
-          <div class="grid md:grid-cols-2 gap-6">
+          <!-- Presets & Batch & BYOK -->
+          <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Presets -->
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Presets</legend>
               <div class="mt-2 grid gap-2">
-                <select id="presetSelect" class="border rounded-lg px-3 py-2"><option value="">— Select preset —</option></select>
+                <select id="presetSelect" class="border rounded-lg px-3 py-2">
+                  <option value="">— Select preset —</option>
+                </select>
                 <input id="presetName" class="border rounded-lg px-3 py-2" placeholder="Name new preset" />
                 <div class="flex gap-2 flex-wrap">
                   <button type="button" id="presetSave" class="btn">Save</button>
@@ -433,43 +387,56 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
                   <button type="button" id="presetLoadAndRun" class="btn">Apply & Generate</button>
                   <button type="button" id="presetDelete" class="btn">Delete</button>
                 </div>
-                <p class="text-xs text-slate-500">Free: 1 preset • Paid: unlimited.</p>
+                <p class="text-xs text-slate-500">
+                  Free: 1 preset • Starter/Creator/Business: unlimited.
+                </p>
               </div>
             </fieldset>
 
+            <!-- Batch inputs -->
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Batch inputs</legend>
-              <label class="flex items-center gap-2 mt-2"><input id="batchEnable" type="checkbox"> Enable</label>
-              <div class="grid sm:grid-cols-2 gap-3 mt-2">
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">Pick a date</span>
-                  <input id="batchDate" type="date" class="border rounded-lg px-3 py-2">
+              <div class="mt-2 grid gap-2">
+                <label class="flex items-center gap-2">
+                  <input id="batchEnable" type="checkbox"> Enable
                 </label>
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">Pick a time</span>
-                  <input id="batchTime" type="time" class="border rounded-lg px-3 py-2" step="60">
-                </label>
+                <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px]" placeholder="One idea per line…"></textarea>
+                <p class="text-xs text-slate-500">
+                  Free: — • Starter: up to 10/run • Creator: 30/run • Business: 60/run.
+                </p>
               </div>
-              <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px] mt-2" placeholder="One idea per line…"></textarea>
+            </fieldset>
+
+            <!-- BYOK -->
+            <fieldset class="card p-4">
+              <legend class="text-sm font-semibold">Use my OpenRouter key (BYOK)</legend>
               <p class="text-xs text-slate-500">
-                Free: — • Starter: up to 10/run • Creator: 30/run • Business: 60/run.
-                <span class="block">If date/time set, we’ll pre-fill the Scheduler per draft.</span>
+                Use your own model key (ChatGPT, Claude, Gemini, etc via OpenRouter). Saves cost & unlocks private generations.
               </p>
+              <div class="mt-2 grid gap-2">
+                <label class="grid gap-1">
+                  <span class="text-xs text-slate-500">API key</span>
+                  <input id="byokKey" class="border rounded-lg px-3 py-2" placeholder="sk-or-v1-..." />
+                </label>
+                <label class="grid gap-1">
+                  <span class="text-xs text-slate-500">Preferred model (optional)</span>
+                  <input id="byokModel" class="border rounded-lg px-3 py-2" placeholder="e.g. openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro" />
+                </label>
+                <div class="flex items-center gap-2">
+                  <button id="byokSave" type="button" class="btn">Save BYOK</button>
+                  <button id="byokClear" type="button" class="btn">Clear</button>
+                </div>
+                <p id="byokStatus" class="text-xs text-slate-500">Status: not set</p>
+              </div>
             </fieldset>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
-            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">
-              Generate (demo)
-            </button>
-            <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">
-              Generate
-            </button>
+            <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Generate (demo)</button>
+            <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Generate</button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-
             <div class="text-sm text-slate-500 only-guest">You have <span id="demoQuota">—</span> runs left today.</div>
             <div class="text-sm text-slate-500 only-authed hidden">You have <span id="memberQuota">—</span> runs left today.</div>
-
             <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
           </div>
         </form>
@@ -503,9 +470,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Article Optimizer</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-            Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.
-          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.</p>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">
             Free: 1/day • Starter: 5/day • Creator: 15/day • Business: 30/day.
           </p>
@@ -565,9 +530,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
           <div class="flex items-center gap-3">
             <button id="optRun" class="btn btn-primary" type="submit">Optimize</button>
             <button id="optClear" class="btn" type="button">Clear</button>
-            <div class="text-sm text-slate-500 only-authed hidden">
-              Optimizer uses your plan’s daily cap.
-            </div>
+            <div class="text-sm text-slate-500 only-authed hidden">Optimizer uses your plan’s daily cap.</div>
           </div>
         </form>
       </div>
@@ -580,7 +543,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Integrations</h2>
-      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Connect once, then publish from outputs instantly.</p>
+      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Connect once, then export/publish drafts instantly.</p>
 
       <div class="grid md:grid-cols-2 gap-6 mt-6">
         <div class="card p-5">
@@ -592,7 +555,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
               <button id="disconnectNotion" class="btn">Disconnect</button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">After connecting, export LinkedIn Articles and posts directly to your Notion.</p>
+          <p class="mt-2 text-sm text-slate-500">Export LinkedIn Articles and posts directly to your Notion workspace.</p>
         </div>
 
         <div class="card p-5">
@@ -604,13 +567,13 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
               <button id="disconnectTrello" class="btn">Disconnect</button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello list; we’ll create a board/list if needed.</p>
+          <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello list. We’ll create a default board/list if needed.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== SCHEDULE MODAL ===== -->
+  <!-- ===== SCHEDULER MODAL ===== -->
   <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
@@ -632,27 +595,23 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
         </select>
       </label>
 
-      <div class="grid grid-cols-2 gap-3">
-        <label class="grid gap-1">
-          <span class="text-sm text-slate-500">Date</span>
-          <input id="schDate" type="date" class="border rounded-lg px-3 py-2" required />
-        </label>
-        <label class="grid gap-1">
-          <span class="text-sm text-slate-500">Time</span>
-          <input id="schTime" type="time" step="60" class="border rounded-lg px-3 py-2" required />
-        </label>
-      </div>
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">When</span>
+        <input id="schWhen" type="datetime-local" class="border rounded-lg px-3 py-2" required />
+      </label>
 
       <label class="grid gap-1">
         <span class="text-sm text-slate-500">Content</span>
         <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Your post…" required></textarea>
       </label>
 
-      <div class="flex items-center justify-end gap-2">
-        <button class="btn" type="button" id="schCancel">Cancel</button>
-        <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
+      <div class="flex items-center justify-between gap-2">
+        <div class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</div>
+        <div class="flex items-center gap-2">
+          <button class="btn" type="button" id="schCancel">Cancel</button>
+          <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
+        </div>
       </div>
-      <p class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</p>
     </form>
   </dialog>
 
@@ -661,7 +620,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Calendar & Scheduler</h2>
       <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & seats.
+        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & seats (3).
       </p>
 
       <div class="card p-5 md:p-6 mt-4">
@@ -679,7 +638,9 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             <button id="calToday" class="btn">Today</button>
             <button id="calNext" class="btn">›</button>
           </div>
-          <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
+          <div class="flex items-center gap-2">
+            <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
+          </div>
         </div>
         <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
           (Calendar view loads here)
@@ -692,7 +653,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Pricing</h2>
-      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Start free. Upgrade for more runs, batch, publishing, scheduler & calendar.</p>
+      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Start free. Upgrade for batch, scheduler & calendar, unlimited presets, and higher daily caps.</p>
 
       <div class="grid lg:grid-cols-4 gap-6 mt-6">
         <!-- Free -->
@@ -733,11 +694,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             <li>• Calendar: <strong>personal calendar</strong></li>
             <li>• BYOK daily bonus & cost control</li>
           </ul>
-          <button
-            class="btn btn-primary mt-5 js-checkout"
-            data-plan="starter"
-            data-price-id="price_1S7y58JYjIKHzKcjzL7cIKiB"
-            type="button">Choose Starter</button>
+          <button class="btn btn-primary mt-5 js-checkout" data-plan="starter" type="button">Choose Starter</button>
         </div>
 
         <!-- Creator -->
@@ -757,11 +714,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             <li>• Calendar: <strong>personal calendar</strong></li>
             <li>• Priority platform pool</li>
           </ul>
-          <button
-            class="btn btn-primary mt-5 js-checkout"
-            data-plan="creator"
-            data-price-id="price_1S7y77JYjIKHzKcjKQYjiqZH"
-            type="button">Choose Creator</button>
+          <button class="btn btn-primary mt-5 js-checkout" data-plan="creator" type="button">Choose Creator</button>
         </div>
 
         <!-- Business -->
@@ -781,11 +734,7 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
             <li>• Priority support & higher pool</li>
             <li>• BYOK caps increased</li>
           </ul>
-          <button
-            class="btn btn-primary mt-5 js-checkout"
-            data-plan="business"
-            data-price-id="price_1S7y8OJYjIKHzKcjqA9uJdyh"
-            type="button">Choose Business</button>
+          <button class="btn btn-primary mt-5 js-checkout" data-plan="business" type="button">Choose Business</button>
         </div>
       </div>
     </div>
@@ -809,356 +758,243 @@ outline ✓ • social variants ✓ • email subject+body ✓ • tiktok hooks+
       <span id="toastMsg">…</span>
     </div>
   </div>
-
-  <!-- ===== APP BOOT (first half) ===== -->
+  <!-- ===== APP BOOT (Full JS) ===== -->
   <script type="module">
-  if (!window.__CRP_FINAL_BOOT__) {
-    window.__CRP_FINAL_BOOT__ = true;
-
-    /* ---------- Utilities ---------- */
-    const $  = (s, el=document)=> el.querySelector(s);
-    const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-    const byId = (id)=> document.getElementById(id);
-    const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
-    const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000); };
-
-    /* ---------- Config (from Part 1) ---------- */
-    const WORKER_BASE = window.WORKER_BASE || "";
-    const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
-    const PRICE_IDS   = window.PRICE_IDS || {};
-    const PLAN_RANK   = { free:0, starter:1, creator:2, business:3 };
-
-    /* ---------- Supabase auth ---------- */
-    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-    let supabase=null, AUTHTED=false, CURRENT_PLAN="free", USER_ID=null, LAST_OUTPUT=null;
-    let INTEGRATIONS={ notion:false, trello:false };
-
-    async function ensureSupabase(){
-      if (window.supabase){ supabase=window.supabase; return; }
-      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-      supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-      window.supabase = supabase;
-    }
-    async function finishOAuthAndCleanUrl(){
-      try{
-        const u=new URL(location.href);
-        const code=u.searchParams.get("code");
-        if (code){ const { error } = await supabase.auth.exchangeCodeForSession({ code });
-          if (error) toast(error.message);
-          ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
-          history.replaceState({}, "", u.toString());
-        }
-        if (location.hash.includes("access_token")){
-          await supabase.auth.getSession();
-          history.replaceState({}, "", location.pathname + location.search);
-        }
-      }catch{}
-    }
-    async function getAuthHeaders(){
-      const h = { "Content-Type":"application/json" };
-      try{
-        const { data } = await supabase.auth.getSession();
-        const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
-        if (tok) h["Authorization"] = `Bearer ${tok}`;
-        if (uid) h["X-User-Id"]    = uid;
-      }catch{}
-      // BYOK header if user opted in
-      const byok = (localStorage.getItem("crp_byok_key")||"").trim();
-      if (byok) h["X-User-OpenRouter-Key"] = byok;
-      const base = (localStorage.getItem("crp_byok_base")||"").trim();
-      if (base) h["X-User-API-Base"] = base;
-      const prov = (localStorage.getItem("crp_byok_provider")||"openrouter").trim();
-      if (prov) h["X-BYOK-Provider"] = prov;
-      return h;
-    }
-
-    function setAuthFlag(authed){ AUTHTED=!!authed; document.body.setAttribute("data-auth", authed? "authed":"guest"); }
-    function setPlan(plan){
-      CURRENT_PLAN = ["free","starter","creator","business"].includes((plan||"").toLowerCase())? plan.toLowerCase():"free";
-      document.body.setAttribute("data-plan", CURRENT_PLAN);
-      const label = `Plan: ${cap(CURRENT_PLAN)}`;
-      byId("planbadge")&&(byId("planbadge").textContent=label);
-      byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
-      byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(CURRENT_PLAN));
-      const r = PLAN_RANK[CURRENT_PLAN]||0;
-      $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r<1));
-      $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r<2));
-      $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r<3));
-    }
-    function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
-    function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
-
-    /* ---------- Status (plan + quotas + integrations) ---------- */
-    async function fetchStatus(){
-      try{
-        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
-        const j = await r.json();
-        const authed = j.scope==="user";
-        setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
-
-        // Show/hide buttons per auth:
-        ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
-        byId("generateBtn")?.classList.toggle("hidden", authed);
-        byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-
-        // Quotas
-        const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
-        if (!authed){
-          const cap = 5; // free per day
-          // we only know used from worker for IP demo monthly; display static prompt for clarity
-          demoEl&&(demoEl.textContent=cap);
-          paintGuestUi();
-        } else {
-          const cap=j.platform?.daily?.cap; const used=j.platform?.daily?.used ?? 0;
-          memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used)));
-          paintAuthedUi();
-        }
-
-        // BYOK status chip
-        const byokChip = byId("byokStatusChip");
-        const hasByok  = !!(localStorage.getItem("crp_byok_key")||"").trim();
-        if (byokChip) byokChip.textContent = hasByok ? "BYOK: on" : "BYOK: off";
-
-        // Integration chips
-        INTEGRATIONS = {
-          notion: !!j.integrations?.notion,
-          trello: !!j.integrations?.trello
-        };
-        const ns=byId("notionStatus"), ts=byId("trelloStatus");
-        ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
-        ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
-      }catch{
-        setAuthFlag(false); setPlan("free"); paintGuestUi();
-      }
-    }
-
-    /* ---------- Nav + Auth modals ---------- */
-    function wireNav(){
-      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
-      toggle&&toggle.addEventListener("click",()=> document.body.classList.add("nav-open"));
-      close&&close.addEventListener("click",()=> document.body.classList.remove("nav-open"));
-      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{ const id=a.getAttribute("href"); if(!id||id==="#") return;
-        const el=$(id); if(el){ e.preventDefault(); try{el.scrollIntoView({behavior:"smooth",block:"start"})}catch{el.scrollIntoView()} document.body.classList.remove("nav-open"); history.replaceState(null,"",id); } }));
-    }
-    function wireAuth(){
-      const dlg=byId("auth"); const openAuth=()=> dlg?.showModal?.();
-      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
-      $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
-      byId("authGoogle")?.addEventListener("click", async ()=>{ try{
-        await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
-      }catch(e){ toast(e?.message||"Google sign-in failed"); }});
-      byId("authSend")?.addEventListener("click", async ()=>{
-        const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
-        try{ const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } }); if(error) throw error; toast("Check your email for the magic link."); }catch(e){ toast(e?.message||"Sign-in error"); }
-      });
-      ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} }));
-    }
-
-    /* ---------- BYOK drawer ---------- */
-    function wireByok(){
-      const open = byId("byokOpen"), close = byId("byokClose"), sheet = byId("byokSheet"), save = byId("byokSave");
-      const provider = byId("byokProvider"), key = byId("byokInput"), base = byId("byokBase");
-      const chip = byId("byokStatusChip");
-
-      // load from storage
-      const load = ()=>{
-        provider && (provider.value = localStorage.getItem("crp_byok_provider") || "openrouter");
-        key && (key.value = localStorage.getItem("crp_byok_key") || "");
-        base && (base.value = localStorage.getItem("crp_byok_base") || "");
-        if (chip) chip.textContent = key?.value ? "BYOK: on" : "BYOK: off";
-      };
-      load();
-
-      open?.addEventListener("click", ()=> sheet?.showModal?.());
-      close?.addEventListener("click", ()=> sheet?.close?.());
-
-      save?.addEventListener("click", ()=>{
-        const prov=(provider?.value||"openrouter").trim();
-        const k=(key?.value||"").trim();
-        const b=(base?.value||"").trim();
-        if(!k){ localStorage.removeItem("crp_byok_key"); }
-        else { localStorage.setItem("crp_byok_key", k); }
-        if(b){ localStorage.setItem("crp_byok_base", b); } else { localStorage.removeItem("crp_byok_base"); }
-        localStorage.setItem("crp_byok_provider", prov||"openrouter");
-        chip && (chip.textContent = k? "BYOK: on":"BYOK: off");
-        toast("BYOK saved"); sheet?.close?.();
-      });
-    }
-
-    /* ---------- Presets (list/save/load/delete) ---------- */
-    async function refreshPresets(){
-      const sel=byId("presetSelect"); if(!sel) return;
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-        const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
-        (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
-      }catch{}
-    }
-    function readPresetPayload(){
-      const form=byId("demoForm"); if(!form) return {};
-      const fd = new FormData(form); const obj={};
-      fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
-      obj.sourceText = byId("sourceText")?.value||"";
-      // also include batch settings in the preset
-      obj.batchEnable = byId("batchEnable")?.checked || false;
-      obj.batchDate   = byId("batchDate")?.value || "";
-      obj.batchTime   = byId("batchTime")?.value || "";
-      obj.batchList   = byId("batchList")?.value || "";
-      return obj;
-    }
-    function applyPresetPayload(p){
-      const form=byId("demoForm"); if(!form||!p) return;
-      if(p.sourceText) byId("sourceText").value=p.sourceText;
-
-      // radios & checkboxes, selects
-      for (const [k,v] of Object.entries(p)){
-        const els = $$(`[name="${k}"]`, form);
-        if(!els.length) continue;
-        if(els[0].type==="checkbox"){
-          els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
-        } else if(els[0].type==="radio"){
-          els.forEach(el=> el.checked = (String(el.value)===String(v)));
-        } else {
-          els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
-        }
-      }
-      // batch fields
-      if(byId("batchEnable")) byId("batchEnable").checked = !!p.batchEnable;
-      if(byId("batchDate"))   byId("batchDate").value   = p.batchDate || "";
-      if(byId("batchTime"))   byId("batchTime").value   = p.batchTime || "";
-      if(byId("batchList"))   byId("batchList").value   = p.batchList || "";
-    }
-    async function savePreset(){
-      const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
-      const payload=readPresetPayload();
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-        toast("Preset saved ✅"); refreshPresets();
-      }catch(e){ toast(e.message||"Save failed"); }
-    }
-    async function loadPreset(run=false){
-      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
-        const p=j?.payload||{};
-        applyPresetPayload(p);
-        toast("Preset loaded ✅");
-        if(run){ byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true})); }
-      }catch(e){ toast(e.message||"Load failed"); }
-    }
-    async function deletePreset(){
-      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
-        toast("Preset deleted ✅"); refreshPresets();
-      }catch(e){ toast(e.message||"Delete failed"); }
-    }
-
-    // (The rest of the script — generator, optimizer, quick publish, scheduler & calendar wiring, Stripe checkout, integrations —
-    // comes in Part 4.)
-
-    // Boot part 1
-    document.addEventListener("DOMContentLoaded", async ()=>{
-      await ensureSupabase();
-      await finishOAuthAndCleanUrl();
-      wireNav();
-      wireAuth();
-      wireByok();
-      await fetchStatus();
-      await refreshPresets();
-
-      // keep plan badge and BYOK chip fresh on auth changes
-      supabase.auth.onAuthStateChange((_evt, session)=>{
-        setAuthFlag(!!session);
-        USER_ID=session?.user?.id||null;
-        fetchStatus().catch(()=>{});
-        try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
-      });
-
-      // footer year
-      const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
-    });
-  }
-  </script>
-<!-- ===== APP BOOT (second half) ===== -->
-<script type="module">
-/* safety guard: if the first script didn’t run, don’t double-init */
-if (window.__CRP_FINAL_BOOT__) {
-
-  /* tiny DOM helpers (scoped here) */
+  // ---------- Small DOM helpers ----------
   const $  = (s, el=document)=> el.querySelector(s);
   const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
   const byId = (id)=> document.getElementById(id);
-  const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000); };
+  const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); };
+  const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
-  const WORKER_BASE = window.WORKER_BASE || "";
-  const PLAN_RANK   = { free:0, starter:1, creator:2, business:3 };
+  // ---------- Config from Part 1 ----------
+  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
+  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-  /* pull values seeded by Part 3 */
-  const supabase = window.supabase;
-  let CURRENT_PLAN = document.body.getAttribute("data-plan") || "free";
-  let AUTHTED = document.body.getAttribute("data-auth")==="authed";
-  let LAST_OUTPUT = null;
+  // ---------- Auth (Supabase) ----------
+  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+  let supabase=null, AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
+  let LAST_OUTPUT=null; // stores last generated snippets per channel
+  let INTEGRATIONS={ notion:false, trello:false };
 
-  const getAuthHeaders = async ()=>{
-    const h = { "Content-Type":"application/json" };
+  async function ensureSupabase(){
+    if (window.supabase){ supabase=window.supabase; return; }
+    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
+    window.supabase = supabase;
+  }
+  async function finishOAuthAndCleanUrl(){
     try{
-      const { data } = await supabase.auth.getSession();
-      const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
-      if (tok) h["Authorization"] = `Bearer ${tok}`;
-      if (uid) h["X-User-Id"]    = uid;
-    }catch{}
-    // BYOK header if provided
-    const byok = (localStorage.getItem("crp_byok_key")||"").trim();
-    if (byok) h["X-User-OpenRouter-Key"] = byok;
-    const base = (localStorage.getItem("crp_byok_base")||"").trim();
-    if (base) h["X-User-API-Base"] = base;
-    const prov = (localStorage.getItem("crp_byok_provider")||"openrouter").trim();
-    if (prov) h["X-BYOK-Provider"] = prov;
-    return h;
-  };
-
-  /* ---------- Live ticker ---------- */
-  async function paintLive(){
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/stats/today`);
-      if(!r.ok) return;
-      const j=await r.json();
-      if(typeof j.today_count==="number"){
-        $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count)));
+      const u=new URL(location.href);
+      const code=u.searchParams.get("code");
+      if(code){
+        const { error } = await supabase.auth.exchangeCodeForSession({ code });
+        if(error) toast(error.message||"Sign-in error");
+        ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
+        history.replaceState({}, "", u.toString());
       }
-      // fabricates a little marquee text
-      const feed = $('[data-live-feed]');
-      if(feed){
-        const now = new Date().toLocaleTimeString();
-        const pill = document.createElement("span");
-        pill.className = "px-2 py-1 border rounded-lg text-xs whitespace-nowrap";
-        pill.textContent = `${now} · new generations rolling in`;
-        feed.appendChild(pill);
-        // keep it from growing forever
-        if(feed.children.length > 24) feed.removeChild(feed.firstChild);
+      // also clean hash from third-party redirects if present
+      if(location.hash && (location.hash.includes("access_token")||location.hash.includes("token="))){
+        await supabase.auth.getSession();
+        history.replaceState({}, "", location.pathname + location.search);
       }
     }catch{}
   }
+  async function getAuthHeaders(extra={}){
+    const h = { "Content-Type":"application/json", ...extra };
+    try{
+      const { data } = await supabase.auth.getSession();
+      const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
+      if(tok) h["Authorization"] = `Bearer ${tok}`;
+      if(uid) h["X-User-Id"] = uid;
+    }catch{}
+    return h;
+  }
+  function setAuthFlag(on){ AUTHTED=!!on; document.body.setAttribute("data-auth", on? "authed":"guest"); }
+  function setPlan(plan){
+    const p = ["free","starter","creator","business"].includes((plan||"").toLowerCase())? plan.toLowerCase() : "free";
+    CURRENT_PLAN = p; document.body.setAttribute("data-plan", p);
+    const label = `Plan: ${cap(p)}`;
+    byId("planbadge")&&(byId("planbadge").textContent=label);
+    byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
+    byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
+    const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
+    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
+    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
+    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
+  }
+  function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
+  function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
 
-  /* ---------- Minimal helpers shared by generator/optimizer ---------- */
-  const parseJsonLoose = (txt)=>{
-    if(!txt) return null;
-    let s=String(txt).trim();
-    s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim();
-    const a=s.indexOf("{"), b=s.lastIndexOf("}");
-    if(a>=0&&b>a) s=s.slice(a,b+1);
-    try{ return JSON.parse(s);}catch{}
-    s=s.replace(/,\s*([}\]])/g,"$1");
-    try{ return JSON.parse(s);}catch{}
-    return null;
-  };
+  // ---------- Status / Plan / Integrations ----------
+  async function fetchStatus(){
+    try{
+      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
+      const j = await r.json();
+      const authed = j.scope==="user";
+      setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
+      ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
+      byId("generateBtn")?.classList.toggle("hidden", authed);
+      byId("generateBtn_member")?.classList.toggle("hidden", !authed);
+      const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
+      if(!authed){
+        // Free (guest) now shows 5/day (frontend messaging); worker enforces actual caps.
+        demoEl&&(demoEl.textContent="5");
+        paintGuestUi();
+      } else {
+        const cap=j.platform?.daily?.cap; const used=j.platform?.daily?.used ?? 0;
+        memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used)));
+        paintAuthedUi();
+      }
+      // integrations
+      INTEGRATIONS = { notion: !!j.integrations?.notion, trello: !!j.integrations?.trello };
+      const ns=byId("notionStatus"), ts=byId("trelloStatus");
+      ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
+      ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
+    }catch{
+      setAuthFlag(false); setPlan("free"); paintGuestUi();
+    }
+  }
 
-  /* ---------- Generator wiring (with Batch + Preset buttons) ---------- */
+  // ---------- Nav & Auth UI wiring (fixes “can’t click Sign in”) ----------
+  function wireNav(){
+    const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
+    toggle&&toggle.addEventListener("click",()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); });
+    close&&close.addEventListener("click",()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); });
+    // smooth in-page scroll
+    $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{
+      const id=a.getAttribute("href"); if(!id||id==="#") return;
+      const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); document.body.classList.remove("nav-open"); history.replaceState(null,"",id); }
+    }));
+  }
+  function openAuthDialog(){
+    const dlg=byId("auth");
+    if(!dlg) return;
+    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
+  }
+  function wireAuth(){
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuthDialog));
+    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuthDialog));
+    byId("authGoogle")?.addEventListener("click", async ()=>{
+      try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN } }); }
+      catch(e){ toast(e?.message||"Google sign-in failed"); }
+    });
+    byId("authSend")?.addEventListener("click", async ()=>{
+      const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
+      try{
+        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
+        if(error) throw error; toast("Check your email for the magic link.");
+      }catch(e){ toast(e?.message||"Sign-in error"); }
+    });
+    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} }));
+  }
+
+  // ---------- Promo & Misc ----------
+  function wirePromo(){
+    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+    }));
+  }
+  function wireMisc(){
+    const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
+    try{
+      const u=new URL(location.href); const ok=u.searchParams.get("billing")==="success"; const no=u.searchParams.get("billing")==="cancel";
+      if(ok) toast("Billing updated — thank you!"); if(no) toast("Billing cancelled");
+      if(ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
+    }catch{}
+  }
+
+  // ---------- Live ticker (optional) ----------
+  async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
+
+  // ---------- Presets (fixed: use API routes, no undefined funcs) ----------
+  async function refreshPresets(){
+    const sel=byId("presetSelect"); if(!sel) return;
+    try{
+      const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+      const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
+      (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
+    }catch{}
+  }
+  function readPresetPayload(){
+    const form=byId("demoForm"); if(!form) return {};
+    const fd = new FormData(form); const obj={};
+    fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
+    obj.sourceText = byId("sourceText")?.value||"";
+    return obj;
+  }
+  function applyPresetPayload(p){
+    const form=byId("demoForm"); if(!form||!p) return;
+    if(p.sourceText) byId("sourceText").value=p.sourceText;
+    for (const [k,v] of Object.entries(p)){
+      const els = $$(`[name="${k}"]`, form); if(!els.length) continue;
+      if(els[0].type==="checkbox"){
+        els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
+      } else if(els[0].type==="radio"){
+        els.forEach(el=> el.checked = (String(el.value)===String(v)));
+      } else {
+        els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
+      }
+    }
+  }
+  async function savePreset(){
+    const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
+    const payload=readPresetPayload();
+    try{
+      const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
+      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
+      toast("Preset saved ✅"); refreshPresets();
+    }catch(e){ toast(e.message||"Save failed"); }
+  }
+  async function loadPreset(run=false){
+    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
+    try{
+      const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
+      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
+      applyPresetPayload(j?.payload||{});
+      toast("Preset loaded ✅");
+      if(run){ byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true})); }
+    }catch(e){ toast(e.message||"Load failed"); }
+  }
+  async function deletePreset(){
+    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
+    try{
+      const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
+      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
+      toast("Preset deleted ✅"); refreshPresets();
+    }catch(e){ toast(e.message||"Delete failed"); }
+  }
+
+  // ---------- BYOK (use my OpenRouter key) ----------
+  function getByokHeaders(){
+    const use = byId("useByok")?.checked;
+    const key = (byId("byokKey")?.value||"").trim();
+    const base = (byId("byokBase")?.value||"").trim();
+    const prov = (byId("byokProvider")?.value||"").trim();
+    const h={};
+    if(use && key){ h["X-User-OpenRouter-Key"]=key; }
+    if(use && base){ h["X-User-API-Base"]=base; }
+    if(use && prov){ h["X-BYOK-Provider"]=prov; }
+    return h;
+  }
+  async function saveByokToAccount(){
+    if(!AUTHTED) return toast("Sign in to save your BYOK");
+    const key=(byId("byokKey")?.value||"").trim(); const base=(byId("byokBase")?.value||"").trim(); const provider=(byId("byokProvider")?.value||"").trim();
+    if(!key) return toast("Paste your API key first");
+    try{
+      const r=await fetch(`${WORKER_BASE}/api/account/byok`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key, base, provider }) });
+      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
+      toast("BYOK saved ✅");
+    }catch(e){ toast(e.message||"Save failed"); }
+  }
+
+  // ---------- JSON helper ----------
+  const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
+    s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
+    try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
+
+  // ---------- Generator ----------
   function readToggles(form){
     const g=(n)=> form.elements[n];
     return {
@@ -1167,18 +1003,9 @@ if (window.__CRP_FINAL_BOOT__) {
         svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, reddit:g("opt_reddit")?.checked,
         li_article:g("opt_li_article")?.checked
       },
-      ch:{
-        linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked,
-        reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked
-      },
-      extras:{
-        li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4",
-        rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked,
-        tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked
-      },
-      seo:{
-        keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational"
-      }
+      ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
+      extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
+      seo:{ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" }
     };
   }
   function systemPrompt(tog){ return { role:"system", content:
@@ -1196,10 +1023,12 @@ Return ONLY valid JSON with this shape:
   "tiktok": { "hooks": string[], "script": string, "onscreen": string[] }|null,
   "linkedin_article_html": string|null
 }
-Respect toggles exactly. No prose outside the JSON.`};}
-  function userPrompt(raw, form, tog){
-    const srcType=form.elements["sourceType"]?.value||"paragraph";
-    const head=srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
+Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
+Rules:
+- Platform-native, concise. X posts ≤ 280 chars; if multiple, prefix "Post N:".
+- Provide 3–5 meaningful Instagram hashtags.
+- No prose outside the JSON.` }; }
+  function userPrompt(raw, form, tog){ const srcType=form.elements["sourceType"]?.value||"paragraph"; const head=srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
     const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
     return { role:"user", content:
 `${head}:
@@ -1208,8 +1037,7 @@ ${raw}
 Task:
 1) Create a one-line outline.
 2) Generate content ONLY for these channels: ${channels||"linkedin,x,email"}.
-3) Apply the toggles and extras exactly.`};
-  }
+3) Apply the toggles and extras exactly.`}; }
 
   function addCard(wrap, title, bodyText, key, allowPublish=true){
     const id = `card_${key}_${Math.random().toString(36).slice(2,8)}`;
@@ -1232,28 +1060,20 @@ Task:
     const pre     = $("pre.content", card);
 
     copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-
     pubBtn?.addEventListener("click", async ()=>{
-      const text = pre?.innerText||"";
-      if(!text) return toast("Nothing to publish");
+      const text = pre?.innerText||""; if(!text) return toast("Nothing to publish");
       try{
-        const r=await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+        const r=await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(getByokHeaders()), body: JSON.stringify({ text }) });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Publish failed");
         toast("Published / queued ✅");
       }catch(e){ toast(e.message||"Publish failed"); }
     });
-
     schBtn?.addEventListener("click", ()=> {
-      const text = pre?.innerText||"";
-      if(!text) return toast("Nothing to schedule");
+      const text = pre?.innerText||""; if(!text) return toast("Nothing to schedule");
       openScheduleModal({ channel:key, text });
     });
 
-    if(key){
-      window.__CRP_LAST_OUTPUT__ = window.__CRP_LAST_OUTPUT__ || {};
-      window.__CRP_LAST_OUTPUT__[key]=pre.innerText;
-      LAST_OUTPUT = window.__CRP_LAST_OUTPUT__;
-    }
+    if(key){ LAST_OUTPUT = LAST_OUTPUT||{}; LAST_OUTPUT[key]=pre.innerText; }
   }
 
   function paintOutput(j){
@@ -1264,7 +1084,7 @@ Task:
       addCard(wrap, "X (Twitter)", seq, "x");
     }
     if(j.email&&(j.email.subject||j.email.body)){
-      const txt = `Subject: ${j.email.subject||""}\n\n${j.email.body||""}`;
+      const txt=`Subject: ${j.email.subject||""}\n\n${j.email.body||""}`;
       addCard(wrap, "Email", txt, "email", false);
     }
     if(j.instagram){
@@ -1304,114 +1124,48 @@ Task:
     clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
 
     async function runOne(raw){
-      const authed = document.body.getAttribute("data-auth")==="authed";
-      const plan   = document.body.getAttribute("data-plan")||"free";
-      const btn=authed? genMember: genGuest; const old=btn?.textContent;
+      const btn=AUTHTED? genMember: genGuest; const old=btn?.textContent;
       try{
         btn&&(btn.disabled=true, btn.textContent="Generating…"); out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
         const tog=readToggles(form); const messages=[ systemPrompt(tog), userPrompt(raw, form, tog) ];
-        const lane = (!authed || plan==="free") ? "free" : "pro";
-        const r=await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ plan: lane, temperature:0.5, messages })});
+        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+        const headers = await getAuthHeaders(getByokHeaders());
+        const r=await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.5, messages })});
         const data=await r.json(); if(!r.ok) throw new Error(data?.error?.message||"Generation failed");
         const content=data?.choices?.[0]?.message?.content||""; const j=parseJsonLoose(content); if(!j) throw new Error("Model did not return JSON");
-        paintOutput(j); toast("Done ✅");
-      }catch(e){
-        out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`;
-      }finally{
-        btn&&(btn.disabled=false, btn.textContent=old|| (authed?"Generate":"Generate (demo)"));
-      }
+        paintOutput(j); toast("Done ✅"); fetchStatus().catch(()=>{});
+      }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
+      finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
     }
 
     form.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const raw=(src.value||"").trim(); const batchOn = byId("batchEnable")?.checked;
+      const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
+
+      // Batch
+      const batchOn = byId("batchEnable")?.checked;
       if(batchOn){
-        const lines=(byId("batchList")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-        const plan = document.body.getAttribute("data-plan")||"free";
-        const limit = plan==="business"? 60 : plan==="creator"? 30 : plan==="starter"? 10 : 0;
-        if(limit===0) return toast("Batch requires Starter+");
+        const lines = (byId("batchList")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
         if(!lines.length) return toast("Add lines to batch");
-        if(lines.length>limit) return toast(`Your plan allows up to ${limit} items per run`);
-        out.innerHTML="";
-        for(const ln of lines){ await runOne(ln); } // sequential to avoid quota bursts
+        const limit = CURRENT_PLAN==="business"? 60 : CURRENT_PLAN==="creator"? 30 : CURRENT_PLAN==="starter"? 10 : 0;
+        if(limit===0) return toast("Batch requires Starter+");
+        if(lines.length>limit) return toast(`Your plan allows up to ${limit} per run`);
+        byId("demoOutput").innerHTML="";
+        for(const ln of lines){ await runOne(ln); }
         return;
       }
-      if(!raw) return toast("Paste content (or enable Batch)");
+
       await runOne(raw);
     });
 
-    // Preset buttons (define inline to avoid cross-script scope issues)
-    const readPresetPayload=()=>{
-      const fd = new FormData(form); const obj={};
-      fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
-      obj.sourceText = byId("sourceText")?.value||"";
-      obj.batchEnable = byId("batchEnable")?.checked || false;
-      obj.batchList   = byId("batchList")?.value || "";
-      return obj;
-    };
-    const applyPresetPayload=(p)=>{
-      if(!p) return;
-      if(p.sourceText) byId("sourceText").value=p.sourceText;
-      for (const [k,v] of Object.entries(p)){
-        const els = $$(`[name="${k}"]`, form);
-        if(!els.length) continue;
-        if(els[0].type==="checkbox"){
-          els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
-        } else if(els[0].type==="radio"){
-          els.forEach(el=> el.checked = (String(el.value)===String(v)));
-        } else {
-          els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
-        }
-      }
-      if(byId("batchEnable")) byId("batchEnable").checked = !!p.batchEnable;
-      if(byId("batchList")) byId("batchList").value = p.batchList || "";
-    };
-    async function refreshPresets(){
-      const sel=byId("presetSelect"); if(!sel) return;
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-        const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
-        (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
-      }catch{}
-    }
-    async function savePreset(){
-      const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
-      const payload=readPresetPayload();
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-        toast("Preset saved ✅"); refreshPresets();
-      }catch(e){ toast(e.message||"Save failed"); }
-    }
-    async function loadPreset(run=false){
-      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
-        const p=j?.payload||{};
-        applyPresetPayload(p);
-        toast("Preset loaded ✅");
-        if(run){ form.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true})); }
-      }catch(e){ toast(e.message||"Load failed"); }
-    }
-    async function deletePreset(){
-      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
-        toast("Preset deleted ✅"); refreshPresets();
-      }catch(e){ toast(e.message||"Delete failed"); }
-    }
-
+    // Preset buttons
     byId("presetSave")?.addEventListener("click", savePreset);
     byId("presetLoad")?.addEventListener("click", ()=>loadPreset(false));
     byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true));
     byId("presetDelete")?.addEventListener("click", deletePreset);
-
-    refreshPresets();
   }
 
-  /* ---------- Optimizer wiring ---------- */
+  // ---------- Optimizer ----------
   function optSystemPrompt(flags){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY valid JSON with this shape:
 {
@@ -1426,9 +1180,9 @@ Task:
   "linkedin_article_html": string|null
 }
 Constraints:
-- Semantic H2/H3, clean copy-paste ready HTML.
-- If 'SEO check' is on, include alt keyword ideas and link advice.
-- No text outside the JSON.`}; }
+- Semantic H2/H3, good spacing, and clean copy-paste ready HTML.
+- If 'SEO check' is on, ensure image alt, internal/external link advice, plus alt_keywords.
+- No text outside the JSON.` }; }
   function optUserPrompt(src, flags, seo){ return { role:"user", content:
 `Source (HTML or Markdown):
 ${src}
@@ -1449,7 +1203,6 @@ SEO:
 - Focus keyword: ${seo.keyword||"(none)"}
 - Secondary keywords: ${seo.secondaries||"(none)"}
 - Intent: ${seo.intent||"informational"}`}; }
-
   function paintOptOutput(j){
     const wrap=byId("optOutput"); if(!wrap) return; wrap.innerHTML="";
     const card=(title, content, copySel=".content")=>{
@@ -1465,7 +1218,6 @@ SEO:
     if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `<pre class="whitespace-pre-wrap text-sm mt-1 content">Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}</pre>`);
     if(j.linkedin_article_html) card("LinkedIn Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.linkedin_article_html}</pre>`);
   }
-
   function wireOptimizer(){
     const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
     if(!form||!src||!out) return;
@@ -1474,14 +1226,11 @@ SEO:
       e.preventDefault(); const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
       const old=btn.textContent; try{
         btn.disabled=true; btn.textContent="Optimizing…"; out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        const fd=new FormData(form);
-        const flags={ humanize:fd.get("opt_humanize")==="on", lengthen:!!fd.get("opt_lengthen"), headings:fd.get("opt_headings")==="on", meta:fd.get("opt_meta")==="on", ab:fd.get("opt_ab")==="on", seo:fd.get("opt_seo")==="on", svg:fd.get("opt_svg")==="on", faqs:fd.get("opt_faqs")==="on", reddit:fd.get("opt_reddit")==="on", li_article:fd.get("opt_li_article")==="on" };
-        const seo={ keyword:fd.get("seo_keyword")||"", secondaries:fd.get("seo_secondaries")||"", intent:fd.get("seo_intent")||"informational" };
+        const t=readToggles(form); const flags=t.opt, seo=t.seo;
         const messages=[ optSystemPrompt(flags), optUserPrompt(raw, flags, seo) ];
-        const authed = document.body.getAttribute("data-auth")==="authed";
-        const plan   = document.body.getAttribute("data-plan")||"free";
-        const lane   = (!authed || plan==="free") ? "free" : "pro";
-        const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ plan: lane, temperature:0.4, messages, options:{ flags, seo } }) });
+        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+        const headers = await getAuthHeaders(getByokHeaders());
+        const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.4, messages, options:{ flags, seo } }) });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Optimize failed");
         const content=j?.choices?.[0]?.message?.content||""; const obj=parseJsonLoose(content); if(!obj) throw new Error("Model did not return JSON");
         paintOptOutput(obj); toast("Optimized ✅");
@@ -1490,9 +1239,9 @@ SEO:
     });
   }
 
-  /* ---------- Quick publish + Integrations shortcuts ---------- */
+  // ---------- Quick publish (+ Integrations direct) ----------
   function wireQuickPublish(){
-    const need=(k)=> (window.__CRP_LAST_OUTPUT__&&window.__CRP_LAST_OUTPUT__[k])? window.__CRP_LAST_OUTPUT__[k]: null;
+    const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
     byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
     byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
     byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
@@ -1516,7 +1265,7 @@ SEO:
     });
   }
 
-  /* ---------- Integrations connect/disconnect ---------- */
+  // ---------- Integrations connect/disconnect ----------
   function wireIntegrations(){
     byId("connectNotion")?.addEventListener("click", async ()=>{
       try{
@@ -1529,7 +1278,7 @@ SEO:
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion disconnect failed");
-        toast("Notion disconnected"); 
+        toast("Notion disconnected"); fetchStatus();
       }catch(e){ toast(e.message||"Notion disconnect failed"); }
     });
 
@@ -1544,17 +1293,23 @@ SEO:
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello disconnect failed");
-        toast("Trello disconnected");
+        toast("Trello disconnected"); fetchStatus();
       }catch(e){ toast(e.message||"Trello disconnect failed"); }
     });
   }
 
-  /* ---------- Stripe checkout/portal ---------- */
+  // ---------- Checkout / Billing ----------
   function wireCheckout(){
     $$(".js-checkout").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
-        const priceId = btn.getAttribute("data-price-id");
-        if(!priceId) return toast("Missing price id");
+        const plan=btn.getAttribute("data-plan")||"starter";
+        const priceMap = {
+          starter: "price_1S7y58JYjIKHzKcjzL7cIKiB",
+          creator: "price_1S7y77JYjIKHzKcjKQYjiqZH",
+          business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
+        };
+        const priceId = priceMap[plan];
+        if(!priceId){ toast("Missing price id"); return; }
         try{
           btn.disabled=true; const old=btn.textContent; btn.textContent="Redirecting…";
           const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
@@ -1570,9 +1325,10 @@ SEO:
           const j=await r.json();
           if(!r.ok) throw new Error(j?.error?.message||"Checkout failed");
           if(j?.url) location.href=j.url; else throw new Error("Missing checkout url");
+          btn.textContent=old; btn.disabled=false;
         }catch(e){
-          toast(e.message||"Checkout error");
-        }finally{ btn.disabled=false; }
+          toast(e.message||"Checkout error"); btn.disabled=false;
+        }
       });
     });
     ["manageBilling","manageBilling_m"].forEach(id=>{
@@ -1588,69 +1344,19 @@ SEO:
     });
   }
 
-  /* ---------- Scheduler modal ---------- */
+  // ---------- Scheduler / Calendar ----------
   function openScheduleModal(pref={ channel:"linkedin", text:"" }){
     const dlg = byId("scheduleDlg"); if(!dlg) return;
     byId("schChannel").value = pref.channel || "linkedin";
     byId("schText").value = pref.text || "";
-    // default next whole hour
+    // default to next whole hour
     const dt = new Date(); dt.setMinutes(0,0,0); dt.setHours(dt.getHours()+1);
-    byId("schDate").value = dt.toISOString().slice(0,10);
-    byId("schTime").value = dt.toTimeString().slice(0,5);
-    dlg.showModal();
+    const iso = dt.toISOString().slice(0,16);
+    byId("schWhen").value = iso;
+    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
   }
-  function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{} }
+  function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{ byId("scheduleDlg").open=false; byId("scheduleDlg").style.display="none"; } }
 
-  function wireScheduleModal(){
-    const dlg=byId("scheduleDlg");
-    if(!dlg) return;
-    byId("schCancel")?.addEventListener("click", closeSchedule);
-    byId("schClose")?.addEventListener("click", closeSchedule);
-    byId("scheduleForm")?.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const d = byId("schDate")?.value, t=byId("schTime")?.value, text=byId("schText")?.value?.trim();
-      if(!d || !t || !text) return toast("Pick a date, time, and content");
-      const when = new Date(`${d}T${t}:00`);
-      if(isNaN(when)) return toast("Invalid date/time");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when: when.toISOString() }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-        toast("Scheduled ✅"); closeSchedule();
-        // local reminder store
-        const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
-        list.push({ id:j.id||("local_"+Date.now()), text, when: when.toISOString(), shown:false });
-        localStorage.setItem("crp_local_sched", JSON.stringify(list));
-        loadCalendar();
-      }catch(e){ toast(e.message||"Schedule failed"); }
-    });
-    // click-outside to close
-    dlg?.addEventListener("click", (ev)=>{
-      const rect=dlg.querySelector("form")?.getBoundingClientRect();
-      if(!rect) return;
-      const inBox = ev.clientX>=rect.left&&ev.clientX<=rect.right&&ev.clientY>=rect.top&&ev.clientY<=rect.bottom;
-      if(!inBox) closeSchedule();
-    });
-  }
-
-  // local reminder poller
-  setInterval(()=>{
-    try{
-      const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
-      const now = Date.now();
-      let changed=false;
-      for(const item of list){
-        if(item.shown) continue;
-        const t = new Date(item.when).getTime();
-        if(!isNaN(t) && now >= t){
-          toast("It's time to publish: " + (item.text.slice(0,80)+"…"));
-          item.shown = true; changed=true;
-        }
-      }
-      if(changed) localStorage.setItem("crp_local_sched", JSON.stringify(list));
-    }catch{}
-  }, 30000);
-
-  /* ---------- Calendar ---------- */
   let calCursor = new Date();
   function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
   function addMonths(d,n){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
@@ -1667,27 +1373,26 @@ SEO:
     const grid=byId("calGrid"); if(!grid) return;
     const first = startOfMonth(calCursor);
     const last  = addMonths(first,1);
-    // Build day map
+
     const byDay = {};
     for(const ev of events){
       const key = (ev.when||"").slice(0,10);
       if(!byDay[key]) byDay[key]=[];
       byDay[key].push(ev);
     }
-    // header
+
     const header = `<div class="grid grid-cols-7 gap-2 text-xs text-slate-400">
       <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
     </div>`;
-    // leading blanks
+
     const tmp = new Date(first);
     let wday = (tmp.getDay()+6)%7; // Monday=0
     const cells = [];
     for(let i=0;i<wday;i++) cells.push('<div class="min-h-[90px] rounded-lg border border-transparent"></div>');
 
-    // days
     while(tmp < last){
       const key = fmtDayKey(tmp);
-      const items = (byDay[key]||[]).slice(0,3).map(ev=> `<div class="text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate" title="${ev.text.replace(/"/g,'&quot;')}">${ev.text}</div>`).join("");
+      const items = (byDay[key]||[]).map(ev=> `<button data-ev="${ev.id}" class="w-full text-left text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate hover:bg-white/20">${ev.text}</button>`).join("");
       cells.push(`<div class="min-h-[90px] rounded-lg border p-1">
         <div class="text-[11px] text-slate-400">${tmp.getDate()}</div>
         <div class="mt-1 grid gap-1">${items||""}</div>
@@ -1698,16 +1403,42 @@ SEO:
     grid.innerHTML = `
       <div class="flex items-center justify-between">
         <div class="font-semibold">${first.toLocaleString([], { month:"long", year:"numeric" })}</div>
-        <div class="text-xs text-slate-500">Your scheduled posts appear here</div>
+        <div class="text-xs text-slate-500">Click an item to edit</div>
       </div>
       ${header}
       <div class="grid grid-cols-7 gap-2">${cells.join("")}</div>`;
+
+    // Open editor when clicking an item
+    $$('[data-ev]', grid).forEach(b=>{
+      b.addEventListener("click", async ()=>{
+        const id = b.getAttribute("data-ev");
+        const ev = events.find(e=>e.id===id);
+        if(!ev) return;
+        byId("schChannel").value = "linkedin";
+        byId("schText").value = ev.text || "";
+        byId("schWhen").value = (ev.when||"").slice(0,16);
+        openScheduleModal({ text: ev.text });
+        // attach a one-off handler to update
+        const form=byId("scheduleForm");
+        const submitOnce = async (e)=>{
+          e.preventDefault();
+          try{
+            const payload = { id, text: byId("schText").value.trim(), when: byId("schWhen").value };
+            const r = await fetch(`${WORKER_BASE}/api/schedule/update`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify(payload) });
+            const j = await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Update failed");
+            toast("Updated ✅");
+            form.removeEventListener("submit", submitOnce);
+            closeSchedule(); loadCalendar();
+          }catch(err){ toast(err.message||"Update failed"); }
+        };
+        form.addEventListener("submit", submitOnce, { once:true });
+      });
+    });
   }
   async function loadCalendar(){
     const grid=byId("calGrid"); if(!grid) return;
-    const plan = document.body.getAttribute("data-plan")||"free";
-    grid.textContent = plan==="free"
-      ? "Read-only preview — upgrade to schedule posts."
+    grid.textContent = CURRENT_PLAN==="free"
+      ? "Read-only preview — upgrade to create & manage schedules."
       : "Loading your calendar…";
     const items = await fetchScheduleList();
     renderMonth(items);
@@ -1717,31 +1448,55 @@ SEO:
     byId("calNext")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor, 1); loadCalendar(); });
     byId("calToday")?.addEventListener("click", ()=>{ calCursor=new Date(); loadCalendar(); });
     byId("calNew")?.addEventListener("click", ()=>{
-      const cand = window.__CRP_LAST_OUTPUT__;
-      const text = (cand?.linkedin || cand?.x || cand?.instagram || cand?.facebook || "").slice(0,600);
+      const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || LAST_OUTPUT?.facebook || "").slice(0,600);
       if(!text) return toast("Generate something first");
       openScheduleModal({ text });
     });
+
+    // schedule dialog close handling
+    byId("schCancel")?.addEventListener("click", ()=> closeSchedule());
+    byId("schClose")?.addEventListener("click", ()=> closeSchedule());
+
+    // create new schedule
+    byId("scheduleForm")?.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const when = byId("schWhen")?.value;
+      const text = byId("schText")?.value?.trim();
+      if(!when||!text) return toast("Pick a date/time and content");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
+        toast("Scheduled ✅"); closeSchedule();
+        loadCalendar();
+      }catch(e){ toast(e.message||"Schedule failed"); }
+    });
+
+    // Close dialog when clicking outside form
+    byId("scheduleDlg")?.addEventListener("click", (e)=> {
+      const d=e.currentTarget; const rect=d.querySelector("form")?.getBoundingClientRect(); if(!rect) return;
+      const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
+      if(!inBox) closeSchedule();
+    });
   }
 
-  /* ---------- Boot (second half) ---------- */
+  // ---------- Boot ----------
   document.addEventListener("DOMContentLoaded", async ()=>{
-    // pick up current plan/auth flags from DOM set earlier
-    AUTHTED = document.body.getAttribute("data-auth")==="authed";
-    CURRENT_PLAN = document.body.getAttribute("data-plan")||"free";
+    await ensureSupabase();
+    await finishOAuthAndCleanUrl();
+    wireNav(); wireAuth(); wirePromo(); wireMisc(); wireCheckout(); wireIntegrations();
+    wireGenerator(); wireQuickPublish(); wireOptimizer(); wireCalendar();
+    await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
+    await refreshPresets();
 
-    wireGenerator();
-    wireOptimizer();
-    wireQuickPublish();
-    wireIntegrations();
-    wireCheckout();
-    wireScheduleModal();
-    wireCalendar();
-    await loadCalendar();
+    // BYOK save
+    byId("saveByok")?.addEventListener("click", saveByokToAccount);
 
-    await paintLive();
-    setInterval(paintLive, 30000);
+    // Keep UI reactive to auth changes
+    supabase.auth.onAuthStateChange((_evt, session)=>{
+      setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{});
+      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
+    });
+
+    loadCalendar();
   });
-}
-</script>
-<!-- /APP BOOT (second half) -->
+  </script>
