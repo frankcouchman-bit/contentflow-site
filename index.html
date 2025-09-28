@@ -4,15 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ContentRepurpose.pro — AI Content Repurposing Tool & Generator</title>
-  <meta name="description" content="Repurpose content with AI. LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok — plus LinkedIn Article & Article Optimizer. Export to Notion & Trello. BYOK supported." />
+  <meta name="description" content="Content repurposing AI that turns one idea into LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported." />
   <link rel="canonical" href="https://contentrepurpose.pro/">
   <meta name="theme-color" content="#0a0d18"><meta name="color-scheme" content="dark light">
   <meta name="robots" content="index,follow,max-video-preview:-1,max-image-preview:large,max-snippet:-1">
   <meta property="og:type" content="website"><meta property="og:title" content="ContentRepurpose.pro — AI Content Repurposing Tool">
-  <meta property="og:description" content="Turn one idea into everywhere content. Multi-channel drafts + Article Optimizer. Export to Notion & Trello. BYOK supported.">
+  <meta property="og:description" content="Repurpose content with AI. Paste once → get LinkedIn, X, Email & Instagram drafts. Export to Notion & Trello. BYOK supported.">
   <meta property="og:url" content="https://contentrepurpose.pro/"><meta property="og:image" content="/og-cover.png">
   <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="ContentRepurpose.pro — AI Content Generator">
-  <meta name="twitter:description" content="Repurpose content with AI across LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, TikTok. Export to Notion & Trello."><meta name="twitter:image" content="/og-cover.png">
+  <meta name="twitter:description" content="Content repurposing AI for multi-channel drafts. Export to Notion & Trello. BYOK supported."><meta name="twitter:image" content="/og-cover.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,12 +55,8 @@
     body[data-plan="creator"] .plan-creator-plus, body[data-plan="business"] .plan-creator-plus{display:revert}
     body[data-plan="business"] .plan-business-only{display:revert}
     :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
-
-    /* dialog fallback so Sign in works everywhere */
-    dialog.crp-fallback { position: fixed; inset: 0; display: none; z-index: 1000; background: rgba(0,0,0,.5);}
-    dialog.crp-fallback[open]{ display:block }
-    dialog.crp-fallback .panel{ position:absolute; left:50%; top:10%; transform:translateX(-50%);
-      width:min(92vw,480px); background:rgba(14,16,22,.98); color:white; border-radius:14px; border:1px solid rgba(255,255,255,.12); padding:16px}
+    /* new: small utility for hidden sections */
+    .hidden-important{display:none !important}
   </style>
 
   <!-- Worker base & prices -->
@@ -88,12 +84,11 @@
       </a>
 
       <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#demo" class="hover:opacity-80">Generator</a>
+        <a href="#demo" class="hover:opacity-80">Live Demo</a>
         <a href="#optimizer" class="hover:opacity-80">Article Optimizer</a>
+        <a href="#pricing" class="hover:opacity-80">Pricing</a>
         <a href="#integrations" class="hover:opacity-80">Integrations</a>
         <a href="#calendar" class="hover:opacity-80">Calendar</a>
-        <a href="#pricing" class="hover:opacity-80">Pricing</a>
-
         <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg.white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden">Manage billing</button>
         <div class="flex items-center gap-2">
@@ -120,11 +115,11 @@
         <div class="flex items-center justify-between"><span class="font-semibold">Menu</span>
           <button id="navClose" class="touch-target px-3 py-2 rounded-lg border border-white/20" aria-label="Close menu">✕</button></div>
         <nav class="mt-4 grid gap-2">
-          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Generator</a>
-          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg.white/10">Article Optimizer</a>
-          <a href="#integrations" class="px-3 py-2 rounded-lg hover:bg.white/10">Integrations</a>
-          <a href="#calendar" class="px-3 py-2 rounded-lg hover:bg.white/10">Calendar</a>
-          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg.white/10">Pricing</a>
+          <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Live Demo</a>
+          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
+          <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
+          <a href="#integrations" class="px-3 py-2 rounded-lg hover:bg-white/10">Integrations</a>
+          <a href="#calendar" class="px-3 py-2 rounded-lg hover:bg-white/10">Calendar</a>
         </nav>
         <div class="mt-6 grid gap-2">
           <span id="planbadge_m" class="px-3 py-1 rounded-full text-xs bg-white/10 border border-white/20 w-fit">Plan: Free</span>
@@ -142,27 +137,24 @@
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span class="only-guest">Preview the demo (no login)</span>
+          <span class="only-guest">Demo — <strong class="mx-1">5 runs / month</strong> (no login)</span>
           <span class="only-authed hidden">Signed in — <strong id="heroPlanName">Free</strong> plan active</span>
         </div>
         <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
-          AI <span class="txt-grad">Content Repurposing</span> — turn one idea into everywhere content.
+          AI <span class="txt-grad">Content Repurposing Tool</span> — turn one idea into everywhere content.
         </h1>
         <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-          Generate for <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, <strong>Instagram</strong>, <strong>Reddit</strong>, <strong>Facebook</strong>, <strong>Quora</strong>, <strong>TikTok</strong> + optional <strong>LinkedIn Article</strong>.
-          Export to <strong>Notion</strong> & <strong>Trello</strong>. <strong>BYOK</strong> supported.
+          Paste content → get <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong> &amp; <strong>Instagram</strong> drafts.
+          Export to <strong>Notion</strong> or <strong>Trello</strong>. BYOK supported.
         </p>
-        <ul class="mt-3 text-sm text-slate-600 dark:text-slate-300">
-          <li>• <strong>Free (signed-in)</strong>: Generator <strong>5/day</strong>, Optimizer <strong>1/day</strong>.</li>
-          <li>• Upgrade for batch, scheduler, calendar, team seats & unlimited presets.</li>
-        </ul>
         <div class="mt-6 flex flex-wrap gap-3">
-          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open Generator</a>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Try the Live Demo</a>
+          <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Open Generator</a>
           <a href="#optimizer" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60">Open Article Optimizer</a>
           <button id="heroSignIn" class="px-4 py-3 rounded-xl font-semibold border border-slate-300/60 only-guest">Sign in</button>
         </div>
         <div class="mt-6 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-          <span class="badge">Multi-channel</span><span class="badge">Article Optimizer</span><span class="badge">Scheduler & Calendar</span><span class="badge">BYOK</span>
+          <span class="badge">AI Content Generator</span><span class="badge">Repurposing Tool</span><span class="badge">SEO-ready</span><span class="badge">BYOK</span>
         </div>
       </div>
 
@@ -171,30 +163,36 @@
         <div class="grid gap-4">
           <div class="mock p-4 card">
             <div class="text-xs text-slate-400">Command</div>
+
+            <!-- replaced the raw "?" lines with a tiny inline SVG progress viz -->
             <div class="mt-3 rounded-lg border p-3 bg-white/60 dark:bg-white/5">
               <svg width="100%" height="64" viewBox="0 0 600 64" role="img" aria-label="Generation progress">
-                <defs><linearGradient id="lg" x1="0" y="0" x2="1" y="0"><stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/></linearGradient></defs>
+                <defs>
+                  <linearGradient id="lg" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#7AA2FF"/><stop offset="100%" stop-color="#FF2D2D"/>
+                  </linearGradient>
+                </defs>
                 <rect x="12" y="20" width="160" height="24" rx="12" fill="url(#lg)"></rect>
                 <rect x="184" y="20" width="120" height="24" rx="12" fill="url(#lg)" opacity=".85"></rect>
                 <rect x="316" y="20" width="150" height="24" rx="12" fill="url(#lg)" opacity=".7"></rect>
                 <rect x="478" y="20" width="110" height="24" rx="12" fill="url(#lg)" opacity=".55"></rect>
               </svg>
-              <pre class="mono text-xs mt-2">repurpose generate --channels linkedin,x,email,instagram,reddit,facebook,quora,tiktok
-outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
+              <pre class="mono text-xs mt-2">repurpose generate --channels linkedin,x,email,instagram
+outline ✓ • 3 social variants ✓ • email subject+body ✓ • instagram caption+hashtags ✓</pre>
             </div>
           </div>
 
           <div class="grid md:grid-cols-2 gap-4">
             <div class="mock p-4 card"><div class="text-xs text-slate-400">LinkedIn</div>
-              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">• Hook that earns the scroll<br>• 6–10 crisp lines, one CTA<br>• Optional LinkedIn Article</div></div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">• Hook that earns the scroll<br>• 6–10 crisp lines, one CTA<br>• On-brand tone & keywords</div></div>
             <div class="mock p-4 card"><div class="text-xs text-slate-400">X (Twitter)</div>
-              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">Two fast variants or sequence<br>≤ 280 chars<br>Ready to post ✓</div></div>
+              <div class="mt-2 h-24 text-sm text-slate-200/90 leading-relaxed">Two fast variants<br>≤ 280 chars<br>Ready to post ✓</div></div>
           </div>
           <div class="grid md:grid-cols-2 gap-4">
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">Reddit</div>
-              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Best subs + rules & flair tips<br>3 starter comments</div></div>
-            <div class="mock p-4 card"><div class="text-xs text-slate-400">TikTok</div>
-              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">3 hooks + script + on-screen plan</div></div>
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">Email</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Subject & body prepped<br>Preview & send from your client</div></div>
+            <div class="mock p-4 card"><div class="text-xs text-slate-400">Instagram</div>
+              <div class="mt-2 h-20 text-sm text-slate-200/90 leading-relaxed">Caption + 3–5 hashtags<br>Short, skimmable, on-brand</div></div>
           </div>
         </div>
       </div>
@@ -216,37 +214,28 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
-  <!-- Auth dialog (robust: works even if showModal is unsupported) -->
-  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md crp-fallback">
-    <form method="dialog" class="panel grid gap-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Sign in</h3>
-        <button class="btn" value="cancel" type="button" id="authClose">Close</button>
-      </div>
-      <p class="text-sm text-slate-300">Enter your email to receive a magic link or continue with Google.</p>
-      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2 bg-white/10 placeholder-slate-400">
+  <!-- Auth dialog -->
+  <dialog id="auth" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between"><h3 class="text-lg font-semibold">Sign in</h3><button class="btn" value="cancel">Close</button></div>
+      <p class="text-sm text-slate-500">Enter your email to receive a magic link or continue with Google.</p>
+      <input id="authEmail" type="email" required placeholder="you@domain.com" class="border rounded-lg px-3 py-2">
       <div class="grid grid-cols-2 gap-2">
         <button id="authSend" class="btn btn-primary" type="button">Send magic link</button>
         <button id="authGoogle" class="btn" type="button">Continue with Google</button>
       </div>
-      <p id="authNote" class="text-xs text-slate-400">We’ll never share your email.</p>
+      <p id="authNote" class="text-xs text-slate-500">We’ll never share your email.</p>
     </form>
   </dialog>
+
   <!-- ===== GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
-            No login needed — <span class="font-semibold">5 runs/day</span> (free preview).
-          </p>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
-            Signed in — your plan applies: <span class="chip">Free: 5/day</span> •
-            <span class="chip">Starter: 10/day</span> • <span class="chip">Creator: 30/day</span> •
-            <span class="chip">Business: 80/day</span>.
-          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">No login needed — <span class="font-semibold">5 runs/month</span> on the public pool.</p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">Signed in — your plan limits apply per day/month by tier.</p>
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
@@ -254,15 +243,13 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         </div>
       </div>
 
-      <!-- Plan notice ribbon -->
+      <!-- Promo -->
       <div class="card p-4 md:p-5 mb-6">
         <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-2 text-sm">
-            <span class="badge">Heads up</span>
-            <span id="planNotice">Free: 5 generator runs/day & 1 optimizer/day. Upgrade for batch, scheduler, and unlimited presets.</span>
-          </div>
+          <div class="flex items-center gap-2 text-sm"><span class="badge">LIMITED</span>
+            <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span></div>
           <div class="flex items-center gap-2">
-            <button id="copyPromoBtn2" class="btn" type="button">Copy 90% OFF code</button>
+            <button id="copyPromoBtn2" class="btn" type="button">Copy code</button>
             <a class="btn btn-primary" href="#pricing">Upgrade</a>
           </div>
         </div>
@@ -274,75 +261,18 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           <fieldset>
             <legend class="text-sm font-semibold">Source</legend>
             <div class="mt-2 grid md:grid-cols-3 gap-3">
-              <label class="tab flex items-center justify-between">
-                <span class="flex items-center gap-2">
-                  <input type="radio" name="sourceType" value="paragraph" checked> Paragraph / Notes
-                </span>
-                <span class="chip">fastest</span>
-              </label>
-              <label class="tab flex items-center">
-                <input type="radio" name="sourceType" value="blog" class="mr-2"> Full Blog (long form)
-              </label>
-              <label class="tab flex items-center">
-                <input type="radio" name="sourceType" value="url" class="mr-2"> URL
-              </label>
+              <label class="tab flex items-center justify-between"><span class="flex items-center gap-2">
+                <input type="radio" name="sourceType" value="paragraph" checked> Paragraph / Notes</span><span class="chip">fastest</span></label>
+              <label class="tab flex items-center"><input type="radio" name="sourceType" value="blog" class="mr-2"> Full Blog</label>
+              <label class="tab flex items-center"><input type="radio" name="sourceType" value="url" class="mr-2"> URL</label>
             </div>
             <div class="mt-3">
               <textarea id="sourceText" class="w-full rounded-xl border p-4 min-h-[140px]" placeholder="Paste your paragraph, full article, or a URL."></textarea>
             </div>
           </fieldset>
 
-          <!-- Channels -->
-          <fieldset>
-            <legend class="text-sm font-semibold">Channels to generate</legend>
-            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
-            </div>
-          </fieldset>
-
-          <!-- Per-channel extras -->
-          <div class="grid md:grid-cols-2 gap-6">
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">LinkedIn</legend>
-              <label class="flex items-center gap-2 mt-2">
-                <input type="checkbox" name="li_article"> Also generate a LinkedIn Article
-              </label>
-            </fieldset>
-
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">X (Twitter)</legend>
-              <div class="mt-2 flex items-center gap-3">
-                <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
-                <label class="flex items-center gap-2">Max posts:
-                  <select name="x_posts" class="border rounded-lg px-2 py-1">
-                    <option>2</option><option selected>4</option><option>6</option>
-                  </select>
-                </label>
-              </div>
-            </fieldset>
-
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">Reddit</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (rules & flair)</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label>
-            </fieldset>
-
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">TikTok</legend>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
-              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label>
-            </fieldset>
-          </div>
-
-          <!-- Article Optimizer toggle (optional inside generator) -->
-          <details>
+          <!-- Optional Optimizer flags inside Generator (kept minimal UI) -->
+          <details class="mt-1">
             <summary class="text-sm font-semibold cursor-pointer">Article Optimizer (optional)</summary>
             <div class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
@@ -369,17 +299,46 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
                   <option value="navigational">Navigational</option>
                 </select></label>
             </div>
+            <p class="mt-2 text-[12px] text-slate-500">Optimizer outputs: improved HTML article, CTR-optimized title & meta, FAQ JSON-LD, Reddit-ready title + TL;DR, and optional LinkedIn Article HTML.</p>
           </details>
 
-          <!-- Presets & Batch & BYOK -->
-          <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Presets -->
+          <fieldset>
+            <legend class="text-sm font-semibold">Channels to generate</legend>
+            <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_linkedin" checked> LinkedIn</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_x" checked> X (Twitter)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_email" checked> Email</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_instagram"> Instagram</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_reddit" checked> Reddit</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_facebook"> Facebook</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_quora"> Quora</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="ch_tiktok"> TikTok</label>
+            </div>
+          </fieldset>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <fieldset class="card p-4"><legend class="text-sm font-semibold">LinkedIn</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="li_article"> Also generate a LinkedIn Article</label></fieldset>
+            <fieldset class="card p-4"><legend class="text-sm font-semibold">X (Twitter)</legend>
+              <div class="mt-2 flex items-center gap-3">
+                <label class="flex items-center gap-2"><input type="checkbox" name="x_sequence" checked> Output as sequence</label>
+                <label class="flex items-center gap-2">Max posts:
+                  <select name="x_posts" class="border rounded-lg px-2 py-1"><option>2</option><option selected>4</option><option>6</option></select>
+                </label></div></fieldset>
+            <fieldset class="card p-4"><legend class="text-sm font-semibold">Reddit</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_communities" checked> Suggest best communities (with rules & flair tips)</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="rdt_comments" checked> Include 3 starter comment angles</label></fieldset>
+            <fieldset class="card p-4"><legend class="text-sm font-semibold">TikTok</legend>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_hooks" checked> Provide 3 hook variants</label>
+              <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label></fieldset>
+          </div>
+
+          <!-- Presets & Batch -->
+          <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Presets</legend>
               <div class="mt-2 grid gap-2">
-                <select id="presetSelect" class="border rounded-lg px-3 py-2">
-                  <option value="">— Select preset —</option>
-                </select>
+                <select id="presetSelect" class="border rounded-lg px-3 py-2"><option value="">— Select preset —</option></select>
                 <input id="presetName" class="border rounded-lg px-3 py-2" placeholder="Name new preset" />
                 <div class="flex gap-2 flex-wrap">
                   <button type="button" id="presetSave" class="btn">Save</button>
@@ -387,47 +346,15 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
                   <button type="button" id="presetLoadAndRun" class="btn">Apply & Generate</button>
                   <button type="button" id="presetDelete" class="btn">Delete</button>
                 </div>
-                <p class="text-xs text-slate-500">
-                  Free: 1 preset • Starter/Creator/Business: unlimited.
-                </p>
+                <p class="text-xs text-slate-500">Free: 1 preset • Paid: unlimited.</p>
               </div>
             </fieldset>
 
-            <!-- Batch inputs -->
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Batch inputs</legend>
-              <div class="mt-2 grid gap-2">
-                <label class="flex items-center gap-2">
-                  <input id="batchEnable" type="checkbox"> Enable
-                </label>
-                <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px]" placeholder="One idea per line…"></textarea>
-                <p class="text-xs text-slate-500">
-                  Free: — • Starter: up to 10/run • Creator: 30/run • Business: 60/run.
-                </p>
-              </div>
-            </fieldset>
-
-            <!-- BYOK -->
-            <fieldset class="card p-4">
-              <legend class="text-sm font-semibold">Use my OpenRouter key (BYOK)</legend>
-              <p class="text-xs text-slate-500">
-                Use your own model key (ChatGPT, Claude, Gemini, etc via OpenRouter). Saves cost & unlocks private generations.
-              </p>
-              <div class="mt-2 grid gap-2">
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">API key</span>
-                  <input id="byokKey" class="border rounded-lg px-3 py-2" placeholder="sk-or-v1-..." />
-                </label>
-                <label class="grid gap-1">
-                  <span class="text-xs text-slate-500">Preferred model (optional)</span>
-                  <input id="byokModel" class="border rounded-lg px-3 py-2" placeholder="e.g. openai/gpt-4o, anthropic/claude-3.5-sonnet, google/gemini-pro" />
-                </label>
-                <div class="flex items-center gap-2">
-                  <button id="byokSave" type="button" class="btn">Save BYOK</button>
-                  <button id="byokClear" type="button" class="btn">Clear</button>
-                </div>
-                <p id="byokStatus" class="text-xs text-slate-500">Status: not set</p>
-              </div>
+              <label class="flex items-center gap-2 mt-2"><input id="batchEnable" type="checkbox"> Enable</label>
+              <textarea id="batchList" class="w-full rounded-xl border p-3 min-h-[110px]" placeholder="One idea per line…"></textarea>
+              <p class="text-xs text-slate-500">Free: — • Starter: up to 10/run • Creator: 30/run • Business: 60/run.</p>
             </fieldset>
           </div>
 
@@ -435,7 +362,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Generate (demo)</button>
             <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Generate</button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-            <div class="text-sm text-slate-500 only-guest">You have <span id="demoQuota">—</span> runs left today.</div>
+            <div class="text-sm text-slate-500 only-guest">You have <span id="demoQuota">—</span> demo runs left this month.</div>
             <div class="text-sm text-slate-500 only-authed hidden">You have <span id="memberQuota">—</span> runs left today.</div>
             <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
           </div>
@@ -448,7 +375,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div class="mt-10 card p-5">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Publish / Export</strong>
-          <div class="text-xs text-slate-500">Uses outputs from your last generation.</div>
+          <div class="text-xs text-slate-500">Use outputs from your last generation.</div>
         </div>
         <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <button id="qp-x" class="btn">Post to X</button>
@@ -464,6 +391,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
+
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -471,9 +399,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Article Optimizer</h2>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.</p>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">
-            Free: 1/day • Starter: 5/day • Creator: 15/day • Business: 30/day.
-          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">Starter: 5/day • Creator: 15/day • Business: 30/day</p>
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
@@ -543,7 +469,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Integrations</h2>
-      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Connect once, then export/publish drafts instantly.</p>
+      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Connect once, then publish from outputs instantly.</p>
 
       <div class="grid md:grid-cols-2 gap-6 mt-6">
         <div class="card p-5">
@@ -555,7 +481,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
               <button id="disconnectNotion" class="btn">Disconnect</button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">Export LinkedIn Articles and posts directly to your Notion workspace.</p>
+          <p class="mt-2 text-sm text-slate-500">After connecting, you can export LinkedIn Articles and posts directly to your Notion DB.</p>
         </div>
 
         <div class="card p-5">
@@ -567,13 +493,13 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
               <button id="disconnectTrello" class="btn">Disconnect</button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello list. We’ll create a default board/list if needed.</p>
+          <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello board/list with labels automatically.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===== SCHEDULER MODAL ===== -->
+  <!-- New: Schedule Modal -->
   <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
     <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
       <div class="flex items-center justify-between">
@@ -605,22 +531,19 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" placeholder="Your post…" required></textarea>
       </label>
 
-      <div class="flex items-center justify-between gap-2">
-        <div class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</div>
-        <div class="flex items-center gap-2">
-          <button class="btn" type="button" id="schCancel">Cancel</button>
-          <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
-        </div>
+      <div class="flex items-center justify-end gap-2">
+        <button class="btn" type="button" id="schCancel">Cancel</button>
+        <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
       </div>
+      <p class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</p>
     </form>
   </dialog>
-
   <!-- ===== CALENDAR ===== -->
   <section id="calendar" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Calendar & Scheduler</h2>
       <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & seats (3).
+        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & scheduler.
       </p>
 
       <div class="card p-5 md:p-6 mt-4">
@@ -638,9 +561,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <button id="calToday" class="btn">Today</button>
             <button id="calNext" class="btn">›</button>
           </div>
-          <div class="flex items-center gap-2">
-            <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
-          </div>
+          <button id="calNew" class="btn plan-starter-plus">New scheduled post</button>
         </div>
         <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
           (Calendar view loads here)
@@ -653,7 +574,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Pricing</h2>
-      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Start free. Upgrade for batch, scheduler & calendar, unlimited presets, and higher daily caps.</p>
+      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Start free. Upgrade for more runs, batch, publishing, scheduler & calendar.</p>
 
       <div class="grid lg:grid-cols-4 gap-6 mt-6">
         <!-- Free -->
@@ -664,8 +585,8 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           </div>
           <div class="mt-2 text-3xl font-black">$0 <span class="text-sm font-semibold text-slate-500">/ forever</span></div>
           <ul class="mt-4 text-sm space-y-2">
-            <li>• Generator: <strong>5 runs / day</strong> (public pool)</li>
-            <li>• Article Optimizer: <strong>1 / day</strong></li>
+            <li>• Generator: <strong>5 runs / month</strong> (public pool)</li>
+            <li>• Article Optimizer: <strong>1 demo / month</strong></li>
             <li>• Presets: <strong>1 saved preset</strong></li>
             <li>• Batch: <strong>—</strong></li>
             <li>• Notion/Trello publish: <strong>1 / day</strong></li>
@@ -694,7 +615,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <li>• Calendar: <strong>personal calendar</strong></li>
             <li>• BYOK daily bonus & cost control</li>
           </ul>
-          <button class="btn btn-primary mt-5 js-checkout" data-plan="starter" type="button">Choose Starter</button>
+          <button
+            class="btn btn-primary mt-5 js-checkout"
+            data-plan="starter"
+            data-price-id="price_1S7y58JYjIKHzKcjzL7cIKiB"
+            type="button">Choose Starter</button>
         </div>
 
         <!-- Creator -->
@@ -714,7 +639,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <li>• Calendar: <strong>personal calendar</strong></li>
             <li>• Priority platform pool</li>
           </ul>
-          <button class="btn btn-primary mt-5 js-checkout" data-plan="creator" type="button">Choose Creator</button>
+          <button
+            class="btn btn-primary mt-5 js-checkout"
+            data-plan="creator"
+            data-price-id="price_1S7y77JYjIKHzKcjKQYjiqZH"
+            type="button">Choose Creator</button>
         </div>
 
         <!-- Business -->
@@ -734,7 +663,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <li>• Priority support & higher pool</li>
             <li>• BYOK caps increased</li>
           </ul>
-          <button class="btn btn-primary mt-5 js-checkout" data-plan="business" type="button">Choose Business</button>
+          <button
+            class="btn btn-primary mt-5 js-checkout"
+            data-plan="business"
+            data-price-id="price_1S7y8OJYjIKHzKcjqA9uJdyh"
+            type="button">Choose Business</button>
         </div>
       </div>
     </div>
@@ -754,261 +687,308 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
 
   <!-- Toast -->
   <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden">
-    <div class="px-4 py-2 rounded-lg bg-black text-white text-sm shadow">
-      <span id="toastMsg">…</span>
-    </div>
+    <div class="px-4 py-2 rounded-lg bg-black text-white text-sm shadow"><span id="toastMsg">…</span></div>
   </div>
-  <!-- ===== APP BOOT (Full JS) ===== -->
+
+  <!-- ===== APP BOOT (full) ===== -->
   <script type="module">
-  // ---------- Small DOM helpers ----------
-  const $  = (s, el=document)=> el.querySelector(s);
-  const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-  const byId = (id)=> document.getElementById(id);
-  const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); };
-  const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+  if (!window.__CRP_FINAL_BOOT__) {
+    window.__CRP_FINAL_BOOT__ = true;
 
-  // ---------- Config from Part 1 ----------
-  const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
-  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+    const $  = (s, el=document)=> el.querySelector(s);
+    const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+    const byId = (id)=> document.getElementById(id);
+    const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+    const WORKER_BASE = window.WORKER_BASE || "";
+    const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+    const PRICE_IDS = window.PRICE_IDS || {};
+    const PLAN_RANK = { free:0, starter:1, creator:2, business:3 };
+    const toast = (msg)=>{ const t=byId("toast"), m=byId("toastMsg"); if(!t||!m) return alert(msg); m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000); };
 
-  // ---------- Auth (Supabase) ----------
-  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
-  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-  let supabase=null, AUTHTED=false, USER_ID=null, CURRENT_PLAN="free";
-  let LAST_OUTPUT=null; // stores last generated snippets per channel
-  let INTEGRATIONS={ notion:false, trello:false };
+    /* ---------- Supabase auth ---------- */
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    let supabase=null, AUTHTED=false, CURRENT_PLAN="free", USER_ID=null, LAST_OUTPUT=null;
+    let INTEGRATIONS={ notion:false, trello:false };
 
-  async function ensureSupabase(){
-    if (window.supabase){ supabase=window.supabase; return; }
-    const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-    window.supabase = supabase;
-  }
-  async function finishOAuthAndCleanUrl(){
-    try{
-      const u=new URL(location.href);
-      const code=u.searchParams.get("code");
-      if(code){
-        const { error } = await supabase.auth.exchangeCodeForSession({ code });
-        if(error) toast(error.message||"Sign-in error");
-        ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
-        history.replaceState({}, "", u.toString());
-      }
-      // also clean hash from third-party redirects if present
-      if(location.hash && (location.hash.includes("access_token")||location.hash.includes("token="))){
-        await supabase.auth.getSession();
-        history.replaceState({}, "", location.pathname + location.search);
-      }
-    }catch{}
-  }
-  async function getAuthHeaders(extra={}){
-    const h = { "Content-Type":"application/json", ...extra };
-    try{
-      const { data } = await supabase.auth.getSession();
-      const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
-      if(tok) h["Authorization"] = `Bearer ${tok}`;
-      if(uid) h["X-User-Id"] = uid;
-    }catch{}
-    return h;
-  }
-  function setAuthFlag(on){ AUTHTED=!!on; document.body.setAttribute("data-auth", on? "authed":"guest"); }
-  function setPlan(plan){
-    const p = ["free","starter","creator","business"].includes((plan||"").toLowerCase())? plan.toLowerCase() : "free";
-    CURRENT_PLAN = p; document.body.setAttribute("data-plan", p);
-    const label = `Plan: ${cap(p)}`;
-    byId("planbadge")&&(byId("planbadge").textContent=label);
-    byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
-    byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
-    const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
-    $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
-    $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
-    $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
-  }
-  function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
-  function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
-
-  // ---------- Status / Plan / Integrations ----------
-  async function fetchStatus(){
-    try{
-      const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
-      const j = await r.json();
-      const authed = j.scope==="user";
-      setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
-      ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
-      byId("generateBtn")?.classList.toggle("hidden", authed);
-      byId("generateBtn_member")?.classList.toggle("hidden", !authed);
-      const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
-      if(!authed){
-        // Free (guest) now shows 5/day (frontend messaging); worker enforces actual caps.
-        demoEl&&(demoEl.textContent="5");
-        paintGuestUi();
-      } else {
-        const cap=j.platform?.daily?.cap; const used=j.platform?.daily?.used ?? 0;
-        memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used)));
-        paintAuthedUi();
-      }
-      // integrations
-      INTEGRATIONS = { notion: !!j.integrations?.notion, trello: !!j.integrations?.trello };
-      const ns=byId("notionStatus"), ts=byId("trelloStatus");
-      ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
-      ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
-    }catch{
-      setAuthFlag(false); setPlan("free"); paintGuestUi();
+    async function ensureSupabase(){
+      if (window.supabase){ supabase=window.supabase; return; }
+      const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
+      window.supabase = supabase;
     }
-  }
-
-  // ---------- Nav & Auth UI wiring (fixes “can’t click Sign in”) ----------
-  function wireNav(){
-    const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
-    toggle&&toggle.addEventListener("click",()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); });
-    close&&close.addEventListener("click",()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); });
-    // smooth in-page scroll
-    $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{
-      const id=a.getAttribute("href"); if(!id||id==="#") return;
-      const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); document.body.classList.remove("nav-open"); history.replaceState(null,"",id); }
-    }));
-  }
-  function openAuthDialog(){
-    const dlg=byId("auth");
-    if(!dlg) return;
-    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
-  }
-  function wireAuth(){
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuthDialog));
-    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuthDialog));
-    byId("authGoogle")?.addEventListener("click", async ()=>{
-      try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN } }); }
-      catch(e){ toast(e?.message||"Google sign-in failed"); }
-    });
-    byId("authSend")?.addEventListener("click", async ()=>{
-      const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
+    async function finishOAuthAndCleanUrl(){
       try{
-        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        if(error) throw error; toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message||"Sign-in error"); }
-    });
-    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} }));
-  }
+        const u=new URL(location.href);
+        const code=u.searchParams.get("code");
+        if (code){ const { error } = await supabase.auth.exchangeCodeForSession({ code });
+          if (error) toast(error.message);
+          ["code","state","scope","provider_id","redirected_from"].forEach(p=>u.searchParams.delete(p));
+          history.replaceState({}, "", u.toString());
+        }
+        if (location.hash.includes("access_token")){
+          await supabase.auth.getSession();
+          history.replaceState({}, "", location.pathname + location.search);
+        }
+      }catch{}
+    }
+    async function getAuthHeaders(){
+      const h = { "Content-Type":"application/json" };
+      try{
+        const { data } = await supabase.auth.getSession();
+        const tok = data?.session?.access_token; const uid = data?.session?.user?.id;
+        if (tok) h["Authorization"] = `Bearer ${tok}`; if (uid) h["X-User-Id"] = uid;
+      }catch{}
+      return h;
+    }
+    function setAuthFlag(authed){ AUTHTED=!!authed; document.body.setAttribute("data-auth", authed? "authed":"guest"); }
+    function setPlan(plan){
+      CURRENT_PLAN = ["free","starter","creator","business"].includes(plan)? plan:"free";
+      document.body.setAttribute("data-plan", CURRENT_PLAN);
+      const label = `Plan: ${cap(CURRENT_PLAN)}`;
+      byId("planbadge")&&(byId("planbadge").textContent=label);
+      byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
+      byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(CURRENT_PLAN));
+      const r = PLAN_RANK[CURRENT_PLAN]||0;
+      $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", r<1));
+      $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", r<2));
+      $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", r<3));
+    }
+    function paintGuestUi(){ $$(".only-guest").forEach(el=> el.classList.remove("hidden")); $$(".only-authed").forEach(el=> el.classList.add("hidden")); }
+    function paintAuthedUi(){ $$(".only-guest").forEach(el=> el.classList.add("hidden")); $$(".only-authed").forEach(el=> el.classList.remove("hidden")); }
 
-  // ---------- Promo & Misc ----------
-  function wirePromo(){
-    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-    }));
-  }
-  function wireMisc(){
-    const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
-    try{
-      const u=new URL(location.href); const ok=u.searchParams.get("billing")==="success"; const no=u.searchParams.get("billing")==="cancel";
-      if(ok) toast("Billing updated — thank you!"); if(no) toast("Billing cancelled");
-      if(ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
-    }catch{}
-  }
-
-  // ---------- Live ticker (optional) ----------
-  async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
-
-  // ---------- Presets (fixed: use API routes, no undefined funcs) ----------
-  async function refreshPresets(){
-    const sel=byId("presetSelect"); if(!sel) return;
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-      const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
-      (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
-    }catch{}
-  }
-  function readPresetPayload(){
-    const form=byId("demoForm"); if(!form) return {};
-    const fd = new FormData(form); const obj={};
-    fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
-    obj.sourceText = byId("sourceText")?.value||"";
-    return obj;
-  }
-  function applyPresetPayload(p){
-    const form=byId("demoForm"); if(!form||!p) return;
-    if(p.sourceText) byId("sourceText").value=p.sourceText;
-    for (const [k,v] of Object.entries(p)){
-      const els = $$(`[name="${k}"]`, form); if(!els.length) continue;
-      if(els[0].type==="checkbox"){
-        els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
-      } else if(els[0].type==="radio"){
-        els.forEach(el=> el.checked = (String(el.value)===String(v)));
-      } else {
-        els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
+    async function fetchStatus(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders()});
+        const j = await r.json();
+        const authed = j.scope==="user";
+        setAuthFlag(authed); USER_ID = authed? (j.userId||null) : null; setPlan((j.plan||"free").toLowerCase());
+        ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
+        byId("generateBtn")?.classList.toggle("hidden", authed);
+        byId("generateBtn_member")?.classList.toggle("hidden", !authed);
+        const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
+        if (!authed){
+          const cap=j.platform?.monthly?.cap ?? 5, used=j.platform?.monthly?.used ?? 0;
+          demoEl&&(demoEl.textContent=Math.max(0,cap-used)); paintGuestUi();
+        } else {
+          const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used ?? 0;
+          memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used))); paintAuthedUi();
+        }
+        // integration chips
+        INTEGRATIONS = {
+          notion: !!j.integrations?.notion,
+          trello: !!j.integrations?.trello
+        };
+        const ns=byId("notionStatus"), ts=byId("trelloStatus");
+        ns && (ns.textContent = `status: ${INTEGRATIONS.notion? "connected":"—"}`);
+        ts && (ts.textContent = `status: ${INTEGRATIONS.trello? "connected":"—"}`);
+      }catch{
+        setAuthFlag(false); setPlan("free"); paintGuestUi();
       }
     }
-  }
-  async function savePreset(){
-    const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
-    const payload=readPresetPayload();
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-      toast("Preset saved ✅"); refreshPresets();
-    }catch(e){ toast(e.message||"Save failed"); }
-  }
-  async function loadPreset(run=false){
-    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
-      applyPresetPayload(j?.payload||{});
-      toast("Preset loaded ✅");
-      if(run){ byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true})); }
-    }catch(e){ toast(e.message||"Load failed"); }
-  }
-  async function deletePreset(){
-    const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
-      toast("Preset deleted ✅"); refreshPresets();
-    }catch(e){ toast(e.message||"Delete failed"); }
-  }
 
-  // ---------- BYOK (use my OpenRouter key) ----------
-  function getByokHeaders(){
-    const use = byId("useByok")?.checked;
-    const key = (byId("byokKey")?.value||"").trim();
-    const base = (byId("byokBase")?.value||"").trim();
-    const prov = (byId("byokProvider")?.value||"").trim();
-    const h={};
-    if(use && key){ h["X-User-OpenRouter-Key"]=key; }
-    if(use && base){ h["X-User-API-Base"]=base; }
-    if(use && prov){ h["X-BYOK-Provider"]=prov; }
-    return h;
-  }
-  async function saveByokToAccount(){
-    if(!AUTHTED) return toast("Sign in to save your BYOK");
-    const key=(byId("byokKey")?.value||"").trim(); const base=(byId("byokBase")?.value||"").trim(); const provider=(byId("byokProvider")?.value||"").trim();
-    if(!key) return toast("Paste your API key first");
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/account/byok`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key, base, provider }) });
-      const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
-      toast("BYOK saved ✅");
-    }catch(e){ toast(e.message||"Save failed"); }
-  }
+    /* ---------- Nav + auth UI ---------- */
+    function wireNav(){
+      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
+      toggle&&toggle.addEventListener("click",()=> document.body.classList.add("nav-open"));
+      close&&close.addEventListener("click",()=> document.body.classList.remove("nav-open"));
+      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{ const id=a.getAttribute("href"); if(!id||id==="#") return;
+        const el=$(id); if(el){ e.preventDefault(); try{el.scrollIntoView({behavior:"smooth",block:"start"})}catch{el.scrollIntoView()} document.body.classList.remove("nav-open"); history.replaceState(null,"",id); } }));
+    }
+    function wireAuth(){
+      const dlg=byId("auth"); const openAuth=()=> dlg?.showModal?.();
+      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
+      $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
+      byId("authGoogle")?.addEventListener("click", async ()=>{ try{
+        await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }});
+      }catch(e){ toast(e?.message||"Google sign-in failed"); }});
+      byId("authSend")?.addEventListener("click", async ()=>{
+        const email=byId("authEmail")?.value?.trim(); if(!email) return toast("Enter your email");
+        try{ const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } }); if(error) throw error; toast("Check your email for the magic link."); }catch(e){ toast(e?.message||"Sign-in error"); }
+      });
+      ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); }catch{} }));
+    }
 
-  // ---------- JSON helper ----------
-  const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
-    s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
-    try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
+    /* ---------- Promo + misc ---------- */
+    function wirePromo(){ ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); } })); }
+    function wireMisc(){
+      const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
+      try{ const u=new URL(location.href); const ok=u.searchParams.get("billing")==="success"; const no=u.searchParams.get("billing")==="cancel";
+        if(ok) toast("Billing updated — thank you!"); if(no) toast("Billing cancelled");
+        if(ok||no){ u.searchParams.delete("billing"); history.replaceState({},"",u.toString()); }
+      }catch{}
+    }
 
-  // ---------- Generator ----------
-  function readToggles(form){
-    const g=(n)=> form.elements[n];
-    return {
-      opt:{
+    /* ---------- Live ticker (no-op if worker lacks endpoint) ---------- */
+    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); if(!r.ok) return; const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
+
+    /* ---------- Presets ---------- */
+    async function refreshPresets(){
+      const sel=byId("presetSelect"); if(!sel) return;
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+        const j=await r.json(); sel.innerHTML='<option value="">— Select preset —</option>';
+        (j?.items||[]).forEach(p=> sel.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`));
+      }catch{}
+    }
+    function readPresetPayload(){
+      const form=byId("demoForm"); if(!form) return {};
+      const fd = new FormData(form); const obj={};
+      fd.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
+      obj.sourceText = byId("sourceText")?.value||"";
+      return obj;
+    }
+    function applyPresetPayload(p){
+      const form=byId("demoForm"); if(!form||!p) return;
+      // restore text
+      if(p.sourceText) byId("sourceText").value=p.sourceText;
+      // radios & checkboxes, selects
+      for (const [k,v] of Object.entries(p)){
+        const els = $$(`[name="${k}"]`, form);
+        if(!els.length) continue;
+        if(els[0].type==="checkbox"){
+          els.forEach(el=> el.checked = !!(v===true || v==="on" || v==="true" || v===el.value));
+        } else if(els[0].type==="radio"){
+          els.forEach(el=> el.checked = (String(el.value)===String(v)));
+        } else {
+          els.forEach(el=> el.value = Array.isArray(v)? v[0]: v);
+        }
+      }
+    }
+    async function savePreset(){
+      const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Name your preset");
+      const payload=readPresetPayload();
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
+        toast("Preset saved ✅"); refreshPresets();
+      }catch(e){ toast(e.message||"Save failed"); }
+    }
+    async function loadPreset(run=false){
+      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
+        const p=j?.payload||{};
+        applyPresetPayload(p);
+        toast("Preset loaded ✅");
+        if(run){ // auto-generate after load if asked
+          byId("demoForm")?.dispatchEvent(new Event("submit",{cancelable:true, bubbles:true}));
+        }
+      }catch(e){ toast(e.message||"Load failed"); }
+    }
+    async function deletePreset(){
+      const id=byId("presetSelect")?.value; if(!id) return toast("Choose a preset");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/delete`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
+        toast("Preset deleted ✅"); refreshPresets();
+      }catch(e){ toast(e.message||"Delete failed"); }
+    }
+
+    /* ---------- Integrations ---------- */
+    function wireIntegrations(){
+      byId("connectNotion")?.addEventListener("click", async ()=>{
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/notion/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion connect failed");
+          location.href=j.url;
+        }catch(e){ toast(e.message||"Notion connect failed"); }
+      });
+      byId("disconnectNotion")?.addEventListener("click", async ()=>{
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion disconnect failed");
+          toast("Notion disconnected"); fetchStatus();
+        }catch(e){ toast(e.message||"Notion disconnect failed"); }
+      });
+
+      byId("connectTrello")?.addEventListener("click", async ()=>{
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/trello/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello connect failed");
+          location.href=j.url;
+        }catch(e){ toast(e.message||"Trello connect failed"); }
+      });
+      byId("disconnectTrello")?.addEventListener("click", async ()=>{
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello disconnect failed");
+          toast("Trello disconnected"); fetchStatus();
+        }catch(e){ toast(e.message||"Trello disconnect failed"); }
+      });
+    }
+
+    /* ---------- Checkout (Stripe) ---------- */
+    function wireCheckout(){
+      $$(".js-checkout").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const priceId = btn.getAttribute("data-price-id") || PRICE_IDS[btn.getAttribute("data-plan")||"starter"];
+          if(!priceId){ toast("Missing price id"); return; }
+          try{
+            btn.disabled=true; const old=btn.textContent; btn.textContent="Redirecting…";
+            const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
+              method:"POST",
+              headers: await getAuthHeaders(),
+              body: JSON.stringify({
+                price_id: priceId,
+                mode: "subscription",
+                success_url: location.origin + location.pathname + "?billing=success",
+                cancel_url: location.origin + location.pathname + "?billing=cancel"
+              })
+            });
+            const j=await r.json();
+            if(!r.ok) throw new Error(j?.error?.message||"Checkout failed");
+            if(j?.url) location.href=j.url; else throw new Error("Missing checkout url");
+          }catch(e){
+            toast(e.message||"Checkout error");
+          }finally{ btn.disabled=false; }
+        });
+      });
+      ["manageBilling","manageBilling_m"].forEach(id=>{
+        const b=byId(id); if(!b) return;
+        b.addEventListener("click", async ()=>{
+          const old=b.textContent; b.disabled=true; b.textContent="Opening…";
+          try{
+            const r=await fetch(`${WORKER_BASE}/api/billing/portal`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
+            const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Portal error");
+            location.href=j.url;
+          }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
+        });
+      });
+    }
+
+    /* ---------- JSON helpers ---------- */
+    const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
+      s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
+      try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
+
+    /* ---------- Schedule Modal helpers ---------- */
+    function openScheduleModal(pref={ channel:"linkedin", text:"" }){
+      const dlg = byId("scheduleDlg"); if(!dlg) return;
+      byId("schChannel").value = pref.channel || "linkedin";
+      byId("schText").value = pref.text || "";
+      // default to next whole hour
+      const dt = new Date(); dt.setMinutes(0,0,0); dt.setHours(dt.getHours()+1);
+      const iso = dt.toISOString().slice(0,16);
+      byId("schWhen").value = iso;
+      dlg.showModal();
+    }
+    function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{} }
+
+    /* ---------- Generator ---------- */
+    function readToggles(form){
+      const g=(n)=> form.elements[n];
+      return { opt:{
         humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked,
         svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, reddit:g("opt_reddit")?.checked,
         li_article:g("opt_li_article")?.checked
-      },
-      ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
-      extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
-      seo:{ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" }
-    };
-  }
-  function systemPrompt(tog){ return { role:"system", content:
+      }, ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
+        extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
+        seo:{ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" }
+      };
+    }
+    function systemPrompt(tog){ return { role:"system", content:
 `You are a senior social copywriter.
 Return ONLY valid JSON with this shape:
 {
@@ -1025,12 +1005,12 @@ Return ONLY valid JSON with this shape:
 }
 Respect toggles exactly (humanize:${tog.opt.humanize}, lengthen:${tog.opt.lengthen}, faqs:${tog.opt.faqs}, headings:${tog.opt.headings}, svg:${tog.opt.svg}, seo:${tog.opt.seo}, x_posts:${tog.extras.x_posts}, x_sequence:${tog.extras.x_sequence}, li_article:${tog.extras.li_article}, rdt_communities:${tog.extras.rdt_communities}, rdt_comments:${tog.extras.rdt_comments}, tt_hooks:${tog.extras.tt_hooks}, tt_onscreen:${tog.extras.tt_onscreen}).
 Rules:
-- Platform-native, concise. X posts ≤ 280 chars; if multiple, prefix "Post N:".
+- Platform-native, concise. X posts ≤ 280 chars where possible; if multiple, prefix "Post N:".
 - Provide 3–5 meaningful Instagram hashtags.
 - No prose outside the JSON.` }; }
-  function userPrompt(raw, form, tog){ const srcType=form.elements["sourceType"]?.value||"paragraph"; const head=srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
-    const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-    return { role:"user", content:
+    function userPrompt(raw, form, tog){ const srcType=form.elements["sourceType"]?.value||"paragraph"; const head=srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
+      const channels = Object.entries(tog.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
+      return { role:"user", content:
 `${head}:
 ${raw}
 
@@ -1039,134 +1019,253 @@ Task:
 2) Generate content ONLY for these channels: ${channels||"linkedin,x,email"}.
 3) Apply the toggles and extras exactly.`}; }
 
-  function addCard(wrap, title, bodyText, key, allowPublish=true){
-    const id = `card_${key}_${Math.random().toString(36).slice(2,8)}`;
-    wrap.insertAdjacentHTML("beforeend", `
-      <div class="card p-5" id="${id}">
-        <div class="flex justify-between items-center gap-2 flex-wrap">
-          <strong class="tracking-tight">${title}</strong>
-          <div class="flex gap-2">
-            <button class="btn copy" type="button">Copy</button>
-            <button class="btn publish" type="button"${allowPublish? "":" disabled"}>Publish</button>
-            <button class="btn schedule plan-starter-plus" type="button">Schedule</button>
+    function addCard(wrap, title, bodyText, key, allowPublish=true){
+      const id = `card_${key}_${Math.random().toString(36).slice(2,8)}`;
+      wrap.insertAdjacentHTML("beforeend", `
+        <div class="card p-5" id="${id}">
+          <div class="flex justify-between items-center gap-2 flex-wrap">
+            <strong class="tracking-tight">${title}</strong>
+            <div class="flex gap-2">
+              <button class="btn copy" type="button">Copy</button>
+              <button class="btn publish" type="button"${allowPublish? "":" disabled"}>Publish</button>
+              <button class="btn schedule plan-starter-plus" type="button">Schedule</button>
+            </div>
           </div>
-        </div>
-        <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
-      </div>`);
-    const card = byId(id);
-    const copyBtn = $(".btn.copy", card);
-    const pubBtn  = $(".btn.publish", card);
-    const schBtn  = $(".btn.schedule", card);
-    const pre     = $("pre.content", card);
+          <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
+        </div>`);
+      const card = byId(id);
+      const copyBtn = $(".btn.copy", card);
+      const pubBtn  = $(".btn.publish", card);
+      const schBtn  = $(".btn.schedule", card);
+      const pre     = $("pre.content", card);
 
-    copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-    pubBtn?.addEventListener("click", async ()=>{
-      const text = pre?.innerText||""; if(!text) return toast("Nothing to publish");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(getByokHeaders()), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Publish failed");
-        toast("Published / queued ✅");
-      }catch(e){ toast(e.message||"Publish failed"); }
-    });
-    schBtn?.addEventListener("click", ()=> {
-      const text = pre?.innerText||""; if(!text) return toast("Nothing to schedule");
-      openScheduleModal({ channel:key, text });
-    });
+      copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
 
-    if(key){ LAST_OUTPUT = LAST_OUTPUT||{}; LAST_OUTPUT[key]=pre.innerText; }
-  }
+      pubBtn?.addEventListener("click", async ()=>{
+        const text = pre?.innerText||"";
+        if(!text) return toast("Nothing to publish");
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Publish failed");
+          toast("Published / queued ✅");
+        }catch(e){ toast(e.message||"Publish failed"); }
+      });
 
-  function paintOutput(j){
-    const wrap=byId("demoOutput"); if(!wrap) return; wrap.innerHTML="";
-    if(j.linkedin) addCard(wrap, "LinkedIn", j.linkedin, "linkedin");
-    if(Array.isArray(j.x)&&j.x.length){
-      const seq=j.x.map((t,i)=> t?.trim()?`Post ${i+1}: ${t.trim()}`:"").filter(Boolean).join("\n\n");
-      addCard(wrap, "X (Twitter)", seq, "x");
-    }
-    if(j.email&&(j.email.subject||j.email.body)){
-      const txt=`Subject: ${j.email.subject||""}\n\n${j.email.body||""}`;
-      addCard(wrap, "Email", txt, "email", false);
-    }
-    if(j.instagram){
-      const cap=j.instagram.caption||"";
-      const tags=(j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ");
-      addCard(wrap, "Instagram", `${cap}\n\n${tags}`, "instagram");
-    }
-    if(j.reddit){
-      const subs=(j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-      const starters=(j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-      const txt = `${j.reddit.title||""}\n\n${j.reddit.body||""}\n\nSubs: ${subs||"—"}\n\nStarters:\n${starters||"—"}`;
-      addCard(wrap, "Reddit", txt, "reddit");
-    }
-    if(j.facebook){
-      const txt = `Primary:\n${j.facebook.primary||""}\n\nLink preview:\n${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}`;
-      addCard(wrap, "Facebook", txt, "facebook");
-    }
-    if(j.quora){
-      const follow=(j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
-      const txt=`Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${follow||"—"}`;
-      addCard(wrap, "Quora", txt, "quora");
-    }
-    if(j.tiktok){
-      const hooks=(j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
-      const ons=(j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
-      const txt=`Script:\n${j.tiktok.script||""}\n\nHooks:\n${hooks||"—"}\n\nOn-screen:\n${ons||"—"}`;
-      addCard(wrap, "TikTok", txt, "tiktok");
-    }
-    if(j.linkedin_article_html){
-      addCard(wrap, "LinkedIn Article (HTML)", j.linkedin_article_html, "li_article_html");
-    }
-  }
+      schBtn?.addEventListener("click", ()=> {
+        const text = pre?.innerText||"";
+        if(!text) return toast("Nothing to schedule");
+        openScheduleModal({ channel:key, text });
+      });
 
-  function wireGenerator(){
-    const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput"), clearBtn=byId("clearBtn"), genGuest=byId("generateBtn"), genMember=byId("generateBtn_member");
-    if(!form||!src||!out) return;
-    clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
-
-    async function runOne(raw){
-      const btn=AUTHTED? genMember: genGuest; const old=btn?.textContent;
-      try{
-        btn&&(btn.disabled=true, btn.textContent="Generating…"); out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        const tog=readToggles(form); const messages=[ systemPrompt(tog), userPrompt(raw, form, tog) ];
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-        const headers = await getAuthHeaders(getByokHeaders());
-        const r=await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.5, messages })});
-        const data=await r.json(); if(!r.ok) throw new Error(data?.error?.message||"Generation failed");
-        const content=data?.choices?.[0]?.message?.content||""; const j=parseJsonLoose(content); if(!j) throw new Error("Model did not return JSON");
-        paintOutput(j); toast("Done ✅"); fetchStatus().catch(()=>{});
-      }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
-      finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
+      if(key){ LAST_OUTPUT = LAST_OUTPUT||{}; LAST_OUTPUT[key]=pre.innerText; }
     }
 
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
+    function paintOutput(j){
+      const wrap=byId("demoOutput"); if(!wrap) return; wrap.innerHTML="";
+      if(j.linkedin) addCard(wrap, "LinkedIn", j.linkedin, "linkedin");
+      if(Array.isArray(j.x)&&j.x.length){
+        const seq=j.x.map((t,i)=> t?.trim()?`Post ${i+1}: ${t.trim()}`:"").filter(Boolean).join("\n\n");
+        addCard(wrap, "X (Twitter)", seq, "x");
+      }
+      if(j.email&&(j.email.subject||j.email.body)){
+        const txt = `Subject: ${j.email.subject||""}\n\n${j.email.body||""}`;
+        addCard(wrap, "Email", txt, "email", false);
+      }
+      if(j.instagram){
+        const cap=j.instagram.caption||"";
+        const tags=(j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ");
+        addCard(wrap, "Instagram", `${cap}\n\n${tags}`, "instagram");
+      }
+      if(j.reddit){
+        const subs=(j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
+        const starters=(j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
+        const txt = `${j.reddit.title||""}\n\n${j.reddit.body||""}\n\nSubs: ${subs||"—"}\n\nStarters:\n${starters||"—"}`;
+        addCard(wrap, "Reddit", txt, "reddit");
+      }
+      if(j.facebook){
+        const txt = `Primary:\n${j.facebook.primary||""}\n\nLink preview:\n${(j.facebook.meta?.headline||"")}\n${(j.facebook.meta?.description||"")}`;
+        addCard(wrap, "Facebook", txt, "facebook");
+      }
+      if(j.quora){
+        const follow=(j.quora.followups||[]).map(f=>`• ${f}`).join("\n");
+        const txt=`Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${follow||"—"}`;
+        addCard(wrap, "Quora", txt, "quora");
+      }
+      if(j.tiktok){
+        const hooks=(j.tiktok.hooks||[]).map(h=>`• ${h}`).join("\n");
+        const ons=(j.tiktok.onscreen||[]).map(o=>`• ${o}`).join("\n");
+        const txt=`Script:\n${j.tiktok.script||""}\n\nHooks:\n${hooks||"—"}\n\nOn-screen:\n${ons||"—"}`;
+        addCard(wrap, "TikTok", txt, "tiktok");
+      }
+      if(j.linkedin_article_html){
+        addCard(wrap, "LinkedIn Article (HTML)", j.linkedin_article_html, "li_article_html");
+      }
+    }
 
-      // Batch
-      const batchOn = byId("batchEnable")?.checked;
-      if(batchOn){
-        const lines = (byId("batchList")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-        if(!lines.length) return toast("Add lines to batch");
-        const limit = CURRENT_PLAN==="business"? 60 : CURRENT_PLAN==="creator"? 30 : CURRENT_PLAN==="starter"? 10 : 0;
-        if(limit===0) return toast("Batch requires Starter+");
-        if(lines.length>limit) return toast(`Your plan allows up to ${limit} per run`);
-        byId("demoOutput").innerHTML="";
-        for(const ln of lines){ await runOne(ln); }
-        return;
+    function wireGenerator(){
+      const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput"), clearBtn=byId("clearBtn"), genGuest=byId("generateBtn"), genMember=byId("generateBtn_member");
+      if(!form||!src||!out) return;
+      clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; LAST_OUTPUT=null; });
+
+      async function runOne(raw){
+        const btn=AUTHTED? genMember: genGuest; const old=btn?.textContent;
+        try{
+          btn&&(btn.disabled=true, btn.textContent="Generating…"); out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+          const tog=readToggles(form); const messages=[ systemPrompt(tog), userPrompt(raw, form, tog) ];
+          const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+          const r=await fetch(`${WORKER_BASE}/api/generate`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ plan: lane, temperature:0.5, messages })});
+          const data=await r.json(); if(!r.ok) throw new Error(data?.error?.message||"Generation failed");
+          const content=data?.choices?.[0]?.message?.content||""; const j=parseJsonLoose(content); if(!j) throw new Error("Model did not return JSON");
+          paintOutput(j); toast("Done ✅"); fetchStatus().catch(()=>{});
+        }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
+        finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
       }
 
-      await runOne(raw);
-    });
+      form.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
 
-    // Preset buttons
-    byId("presetSave")?.addEventListener("click", savePreset);
-    byId("presetLoad")?.addEventListener("click", ()=>loadPreset(false));
-    byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true));
-    byId("presetDelete")?.addEventListener("click", deletePreset);
-  }
+        // Batch handling
+        const batchOn = byId("batchEnable")?.checked;
+        if(batchOn){
+          const lines = (byId("batchList")?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+          if(!lines.length) return toast("Add lines to batch");
+          const limit = CURRENT_PLAN==="business"? 60 : CURRENT_PLAN==="creator"? 30 : CURRENT_PLAN==="starter"? 10 : 0;
+          if(limit===0) return toast("Batch requires Starter+");
+          if(lines.length>limit) return toast(`Your plan allows up to ${limit} per run`);
+          byId("demoOutput").innerHTML="";
+          for(const ln of lines){ await runOne(ln); }
+          return;
+        }
 
-  // ---------- Optimizer ----------
-  function optSystemPrompt(flags){ return { role:"system", content:
+        await runOne(raw);
+      });
+
+      // Preset buttons
+      byId("presetSave")?.addEventListener("click", savePreset);
+      byId("presetLoad")?.addEventListener("click", ()=>loadPreset(false));
+      byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true));
+      byId("presetDelete")?.addEventListener("click", deletePreset);
+    }
+
+    /* ---------- Schedule modal wiring + server create + local reminder ---------- */
+    function wireScheduleModal(){
+      const dlg=byId("scheduleDlg");
+      if(!dlg) return;
+      const close=()=> closeSchedule();
+      byId("schCancel")?.addEventListener("click", close);
+      byId("schClose")?.addEventListener("click", close);
+      byId("scheduleForm")?.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const when = byId("schWhen")?.value;
+        const text = byId("schText")?.value?.trim();
+        if(!when||!text) return toast("Pick a date/time and content");
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
+          toast("Scheduled ✅"); closeSchedule();
+          // Save local reminder (for popup):
+          const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
+          list.push({ id:j.id||("local_"+Date.now()), text, when, shown:false });
+          localStorage.setItem("crp_local_sched", JSON.stringify(list));
+          // repaint calendar
+          loadCalendar();
+        }catch(e){ toast(e.message||"Schedule failed"); }
+      });
+    }
+
+    // Local reminder poller: checks every 30s and shows alert toast if due (client-side convenience)
+    setInterval(()=>{
+      try{
+        const list = JSON.parse(localStorage.getItem("crp_local_sched")||"[]");
+        const now = Date.now();
+        let changed=false;
+        for(const item of list){
+          if(item.shown) continue;
+          const t = new Date(item.when).getTime();
+          if(!isNaN(t) && now >= t){
+            toast("It's time to publish: " + (item.text.slice(0,80)+"…"));
+            item.shown = true; changed=true;
+          }
+        }
+        if(changed) localStorage.setItem("crp_local_sched", JSON.stringify(list));
+      }catch{}
+    }, 30000);
+
+    /* ---------- Calendar ---------- */
+    let calCursor = new Date();
+    function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
+    function addMonths(d,n){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
+    function fmtDayKey(d){ return d.toISOString().slice(0,10); }
+
+    async function fetchScheduleList(){
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/schedule/list`, { headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) return [];
+        return j.items||[];
+      }catch{ return []; }
+    }
+    function renderMonth(events){
+      const grid=byId("calGrid"); if(!grid) return;
+      const first = startOfMonth(calCursor);
+      const last  = addMonths(first,1);
+      // Build day map
+      const byDay = {};
+      for(const ev of events){
+        const key = (ev.when||"").slice(0,10);
+        if(!byDay[key]) byDay[key]=[];
+        byDay[key].push(ev);
+      }
+      // calendar header
+      const header = `<div class="grid grid-cols-7 gap-2 text-xs text-slate-400">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>`;
+      // leading blanks
+      const tmp = new Date(first);
+      let wday = (tmp.getDay()+6)%7; // Monday=0
+      const cells = [];
+      for(let i=0;i<wday;i++) cells.push('<div class="min-h-[90px] rounded-lg border border-transparent"></div>');
+
+      // days
+      while(tmp < last){
+        const key = fmtDayKey(tmp);
+        const items = (byDay[key]||[]).slice(0,3).map(ev=> `<div class="text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate">${ev.text}</div>`).join("");
+        cells.push(`<div class="min-h-[90px] rounded-lg border p-1">
+          <div class="text-[11px] text-slate-400">${tmp.getDate()}</div>
+          <div class="mt-1 grid gap-1">${items||""}</div>
+        </div>`);
+        tmp.setDate(tmp.getDate()+1);
+      }
+
+      grid.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">${first.toLocaleString([], { month:"long", year:"numeric" })}</div>
+          <div class="text-xs text-slate-500">Your scheduled posts appear here</div>
+        </div>
+        ${header}
+        <div class="grid grid-cols-7 gap-2">${cells.join("")}</div>`;
+    }
+    async function loadCalendar(){
+      const grid=byId("calGrid"); if(!grid) return;
+      grid.textContent = CURRENT_PLAN==="free"
+        ? "Read-only preview — upgrade to schedule posts."
+        : "Loading your calendar…";
+      const items = await fetchScheduleList();
+      renderMonth(items);
+    }
+    function wireCalendar(){
+      byId("calPrev")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor,-1); loadCalendar(); });
+      byId("calNext")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor, 1); loadCalendar(); });
+      byId("calToday")?.addEventListener("click", ()=>{ calCursor=new Date(); loadCalendar(); });
+      byId("calNew")?.addEventListener("click", ()=>{
+        const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || LAST_OUTPUT?.facebook || "").slice(0,600);
+        if(!text) return toast("Generate something first");
+        openScheduleModal({ text });
+      });
+    }
+
+    /* ---------- Optimizer ---------- */
+    function optSystemPrompt(flags){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY valid JSON with this shape:
 {
   "html": string,
@@ -1183,7 +1282,7 @@ Constraints:
 - Semantic H2/H3, good spacing, and clean copy-paste ready HTML.
 - If 'SEO check' is on, ensure image alt, internal/external link advice, plus alt_keywords.
 - No text outside the JSON.` }; }
-  function optUserPrompt(src, flags, seo){ return { role:"user", content:
+    function optUserPrompt(src, flags, seo){ return { role:"user", content:
 `Source (HTML or Markdown):
 ${src}
 
@@ -1203,300 +1302,125 @@ SEO:
 - Focus keyword: ${seo.keyword||"(none)"}
 - Secondary keywords: ${seo.secondaries||"(none)"}
 - Intent: ${seo.intent||"informational"}`}; }
-  function paintOptOutput(j){
-    const wrap=byId("optOutput"); if(!wrap) return; wrap.innerHTML="";
-    const card=(title, content, copySel=".content")=>{
-      wrap.insertAdjacentHTML("beforeend", `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong class="tracking-tight">${title}</strong><button class="btn copy" type="button">Copy</button></div>${content}</div>`);
-      const c=wrap.lastElementChild, btn=$(".btn.copy",c), pre=$(copySel,c)||$("pre",c);
-      btn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||pre?.textContent||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-    };
-    if(j.title || j.meta_description) card("Title & Meta", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.title||""}</pre><div class="text-xs text-slate-400 mt-3">Meta description</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.meta_description||""}</pre>`);
-    if(j.ab_titles?.length) card("A/B titles", `<pre class="whitespace-pre-wrap text-sm mt-1 content">${j.ab_titles.map((t,i)=>`${i+1}. ${t}`).join("\n")}</pre>`);
-    if(j.html) card("Improved Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.html}</pre>`);
-    if(j.faqs_jsonld) card("FAQ JSON-LD", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${JSON.stringify(j.faqs_jsonld,null,2)}</pre>`);
-    if(j.reddit) card("Reddit-ready", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.reddit.title||""}</pre><div class="text-xs text-slate-400 mt-3">TL;DR</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.reddit.tldr||""}</pre>`);
-    if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `<pre class="whitespace-pre-wrap text-sm mt-1 content">Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}</pre>`);
-    if(j.linkedin_article_html) card("LinkedIn Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.linkedin_article_html}</pre>`);
-  }
-  function wireOptimizer(){
-    const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
-    if(!form||!src||!out) return;
-    clr?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
-      const old=btn.textContent; try{
-        btn.disabled=true; btn.textContent="Optimizing…"; out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        const t=readToggles(form); const flags=t.opt, seo=t.seo;
-        const messages=[ optSystemPrompt(flags), optUserPrompt(raw, flags, seo) ];
-        const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-        const headers = await getAuthHeaders(getByokHeaders());
-        const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.4, messages, options:{ flags, seo } }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Optimize failed");
-        const content=j?.choices?.[0]?.message?.content||""; const obj=parseJsonLoose(content); if(!obj) throw new Error("Model did not return JSON");
-        paintOptOutput(obj); toast("Optimized ✅");
-      }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
-      finally{ btn.disabled=false; btn.textContent=old; }
-    });
-  }
 
-  // ---------- Quick publish (+ Integrations direct) ----------
-  function wireQuickPublish(){
-    const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
-    byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
-    byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
-    byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
-    byId("qp-email")?.addEventListener("click", ()=>{ const em=need("email")||""; const subj=(em.split("\n")[0]||"Your draft").slice(0,120); const body=em; location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; });
-
-    byId("li-notion")?.addEventListener("click", async ()=>{
-      const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-        toast("Exported to Notion ✅");
-      }catch(e){ toast(e.message||"Export failed"); }
-    });
-    byId("li-trello")?.addEventListener("click", async ()=>{
-      const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
-        toast("Sent to Trello ✅");
-      }catch(e){ toast(e.message||"Export failed"); }
-    });
-  }
-
-  // ---------- Integrations connect/disconnect ----------
-  function wireIntegrations(){
-    byId("connectNotion")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion connect failed");
-        location.href=j.url;
-      }catch(e){ toast(e.message||"Notion connect failed"); }
-    });
-    byId("disconnectNotion")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Notion disconnect failed");
-        toast("Notion disconnected"); fetchStatus();
-      }catch(e){ toast(e.message||"Notion disconnect failed"); }
-    });
-
-    byId("connectTrello")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/connect`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello connect failed");
-        location.href=j.url;
-      }catch(e){ toast(e.message||"Trello connect failed"); }
-    });
-    byId("disconnectTrello")?.addEventListener("click", async ()=>{
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Trello disconnect failed");
-        toast("Trello disconnected"); fetchStatus();
-      }catch(e){ toast(e.message||"Trello disconnect failed"); }
-    });
-  }
-
-  // ---------- Checkout / Billing ----------
-  function wireCheckout(){
-    $$(".js-checkout").forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const plan=btn.getAttribute("data-plan")||"starter";
-        const priceMap = {
-          starter: "price_1S7y58JYjIKHzKcjzL7cIKiB",
-          creator: "price_1S7y77JYjIKHzKcjKQYjiqZH",
-          business:"price_1S7y8OJYjIKHzKcjqA9uJdyh"
-        };
-        const priceId = priceMap[plan];
-        if(!priceId){ toast("Missing price id"); return; }
-        try{
-          btn.disabled=true; const old=btn.textContent; btn.textContent="Redirecting…";
-          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`, {
-            method:"POST",
-            headers: await getAuthHeaders(),
-            body: JSON.stringify({
-              price_id: priceId,
-              mode: "subscription",
-              success_url: location.origin + location.pathname + "?billing=success",
-              cancel_url: location.origin + location.pathname + "?billing=cancel"
-            })
-          });
-          const j=await r.json();
-          if(!r.ok) throw new Error(j?.error?.message||"Checkout failed");
-          if(j?.url) location.href=j.url; else throw new Error("Missing checkout url");
-          btn.textContent=old; btn.disabled=false;
-        }catch(e){
-          toast(e.message||"Checkout error"); btn.disabled=false;
-        }
-      });
-    });
-    ["manageBilling","manageBilling_m"].forEach(id=>{
-      const b=byId(id); if(!b) return;
-      b.addEventListener("click", async ()=>{
-        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
-        try{
-          const r=await fetch(`${WORKER_BASE}/api/billing/portal`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Portal error");
-          location.href=j.url;
-        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
-      });
-    });
-  }
-
-  // ---------- Scheduler / Calendar ----------
-  function openScheduleModal(pref={ channel:"linkedin", text:"" }){
-    const dlg = byId("scheduleDlg"); if(!dlg) return;
-    byId("schChannel").value = pref.channel || "linkedin";
-    byId("schText").value = pref.text || "";
-    // default to next whole hour
-    const dt = new Date(); dt.setMinutes(0,0,0); dt.setHours(dt.getHours()+1);
-    const iso = dt.toISOString().slice(0,16);
-    byId("schWhen").value = iso;
-    try{ dlg.showModal(); }catch{ dlg.open=true; dlg.style.display="block"; }
-  }
-  function closeSchedule(){ try{ byId("scheduleDlg").close(); }catch{ byId("scheduleDlg").open=false; byId("scheduleDlg").style.display="none"; } }
-
-  let calCursor = new Date();
-  function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
-  function addMonths(d,n){ const x=new Date(d); x.setMonth(x.getMonth()+n); return x; }
-  function fmtDayKey(d){ return d.toISOString().slice(0,10); }
-
-  async function fetchScheduleList(){
-    try{
-      const r=await fetch(`${WORKER_BASE}/api/schedule/list`, { headers: await getAuthHeaders() });
-      const j=await r.json(); if(!r.ok) return [];
-      return j.items||[];
-    }catch{ return []; }
-  }
-  function renderMonth(events){
-    const grid=byId("calGrid"); if(!grid) return;
-    const first = startOfMonth(calCursor);
-    const last  = addMonths(first,1);
-
-    const byDay = {};
-    for(const ev of events){
-      const key = (ev.when||"").slice(0,10);
-      if(!byDay[key]) byDay[key]=[];
-      byDay[key].push(ev);
+    function paintOptOutput(j){
+      const wrap=byId("optOutput"); if(!wrap) return; wrap.innerHTML="";
+      const card=(title, content, copySel=".content")=>{
+        wrap.insertAdjacentHTML("beforeend", `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong class="tracking-tight">${title}</strong><button class="btn copy" type="button">Copy</button></div>${content}</div>`);
+        const c=wrap.lastElementChild, btn=$(".btn.copy",c), pre=$(copySel,c)||$("pre",c);
+        btn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||pre?.textContent||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
+      };
+      if(j.title || j.meta_description) card("Title & Meta", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.title||""}</pre><div class="text-xs text-slate-400 mt-3">Meta description</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.meta_description||""}</pre>`);
+      if(j.ab_titles?.length) card("A/B titles", `<pre class="whitespace-pre-wrap text-sm mt-1 content">${j.ab_titles.map((t,i)=>`${i+1}. ${t}`).join("\n")}</pre>`);
+      if(j.html) card("Improved Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.html}</pre>`);
+      if(j.faqs_jsonld) card("FAQ JSON-LD", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${JSON.stringify(j.faqs_jsonld,null,2)}</pre>`);
+      if(j.reddit) card("Reddit-ready", `<div class="text-xs text-slate-400">Title</div><pre class="whitespace-pre-wrap text-sm mt-1 content">${j.reddit.title||""}</pre><div class="text-xs text-slate-400 mt-3">TL;DR</div><pre class="whitespace-pre-wrap text-sm mt-1">${j.reddit.tldr||""}</pre>`);
+      if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `<pre class="whitespace-pre-wrap text-sm mt-1 content">Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}</pre>`);
+      if(j.linkedin_article_html) card("LinkedIn Article (HTML)", `<pre class="whitespace-pre-wrap text-xs mt-3 content">${j.linkedin_article_html}</pre>`);
     }
 
-    const header = `<div class="grid grid-cols-7 gap-2 text-xs text-slate-400">
-      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-    </div>`;
-
-    const tmp = new Date(first);
-    let wday = (tmp.getDay()+6)%7; // Monday=0
-    const cells = [];
-    for(let i=0;i<wday;i++) cells.push('<div class="min-h-[90px] rounded-lg border border-transparent"></div>');
-
-    while(tmp < last){
-      const key = fmtDayKey(tmp);
-      const items = (byDay[key]||[]).map(ev=> `<button data-ev="${ev.id}" class="w-full text-left text-[11px] p-1 rounded bg-white/10 border border-white/20 truncate hover:bg-white/20">${ev.text}</button>`).join("");
-      cells.push(`<div class="min-h-[90px] rounded-lg border p-1">
-        <div class="text-[11px] text-slate-400">${tmp.getDate()}</div>
-        <div class="mt-1 grid gap-1">${items||""}</div>
-      </div>`);
-      tmp.setDate(tmp.getDate()+1);
+    function wireOptimizer(){
+      const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
+      if(!form||!src||!out) return;
+      clr?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
+      form.addEventListener("submit", async (e)=>{
+        e.preventDefault(); const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
+        const old=btn.textContent; try{
+          btn.disabled=true; btn.textContent="Optimizing…"; out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
+          const t=readToggles(form); const flags=t.opt, seo=t.seo;
+          const messages=[ optSystemPrompt(flags), optUserPrompt(raw, flags, seo) ];
+          const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+          const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ plan: lane, temperature:0.4, messages, options:{ flags, seo } }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Optimize failed");
+          const content=j?.choices?.[0]?.message?.content||""; const obj=parseJsonLoose(content); if(!obj) throw new Error("Model did not return JSON");
+          paintOptOutput(obj); toast("Optimized ✅");
+        }catch(e){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${e.message||e}</div>`; }
+        finally{ btn.disabled=false; btn.textContent=old; }
+      });
     }
 
-    grid.innerHTML = `
-      <div class="flex items-center justify-between">
-        <div class="font-semibold">${first.toLocaleString([], { month:"long", year:"numeric" })}</div>
-        <div class="text-xs text-slate-500">Click an item to edit</div>
-      </div>
-      ${header}
-      <div class="grid grid-cols-7 gap-2">${cells.join("")}</div>`;
+    /* ---------- Quick publish ---------- */
+    function wireQuickPublish(){
+      const need=(k)=> (LAST_OUTPUT&&LAST_OUTPUT[k])? LAST_OUTPUT[k]: null;
+      byId("qp-x")?.addEventListener("click", ()=>{ const text=need("x")||need("linkedin"); if(!text) return toast("Generate first"); const t=text.split(/\n+/).map(s=>s.trim()).filter(Boolean).join(" — "); window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(t.slice(0,270))}`,"_blank"); });
+      byId("qp-reddit")?.addEventListener("click", ()=>{ const body=need("reddit")||need("linkedin")||need("x"); if(!body) return toast("Generate first"); const title=(body.split("\n")[0]||"").replace(/^Post \d+:\s*/,"").slice(0,280); window.open(`https://www.reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(body)}`,"_blank"); });
+      byId("qp-linkedin")?.addEventListener("click", async ()=>{ const text=need("linkedin")||need("x"); if(!text) return toast("Generate first"); try{ await navigator.clipboard.writeText(text);}catch{} window.open("https://www.linkedin.com/feed/","_blank"); });
+      byId("qp-email")?.addEventListener("click", ()=>{ const em=need("email")||""; const subj=(em.split("\n")[0]||"Your draft").slice(0,120); const body=em; location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; });
 
-    // Open editor when clicking an item
-    $$('[data-ev]', grid).forEach(b=>{
-      b.addEventListener("click", async ()=>{
-        const id = b.getAttribute("data-ev");
-        const ev = events.find(e=>e.id===id);
-        if(!ev) return;
-        byId("schChannel").value = "linkedin";
-        byId("schText").value = ev.text || "";
-        byId("schWhen").value = (ev.when||"").slice(0,16);
-        openScheduleModal({ text: ev.text });
-        // attach a one-off handler to update
-        const form=byId("scheduleForm");
-        const submitOnce = async (e)=>{
-          e.preventDefault();
-          try{
-            const payload = { id, text: byId("schText").value.trim(), when: byId("schWhen").value };
-            const r = await fetch(`${WORKER_BASE}/api/schedule/update`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify(payload) });
-            const j = await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Update failed");
-            toast("Updated ✅");
-            form.removeEventListener("submit", submitOnce);
-            closeSchedule(); loadCalendar();
-          }catch(err){ toast(err.message||"Update failed"); }
-        };
-        form.addEventListener("submit", submitOnce, { once:true });
+      byId("li-notion")?.addEventListener("click", async ()=>{
+        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
+          toast("Exported to Notion ✅");
+        }catch(e){ toast(e.message||"Export failed"); }
       });
+      byId("li-trello")?.addEventListener("click", async ()=>{
+        const text=need("linkedin")||need("x")||need("facebook")||need("quora")||need("reddit"); if(!text) return toast("Generate first");
+        try{
+          const r=await fetch(`${WORKER_BASE}/api/integrations/trello/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text }) });
+          const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Export failed");
+          toast("Sent to Trello ✅");
+        }catch(e){ toast(e.message||"Export failed"); }
+      });
+    }
+
+    /* ---------- Boot ---------- */
+    document.addEventListener("DOMContentLoaded", async ()=>{
+      await ensureSupabase(); await finishOAuthAndCleanUrl();
+      wireNav(); wireAuth(); wirePromo(); wireMisc(); wireCheckout(); wireIntegrations();
+      wireGenerator(); wireQuickPublish(); wireOptimizer(); wireScheduleModal(); wireCalendar();
+      await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
+      await refreshPresets();
+      supabase.auth.onAuthStateChange((_evt, session)=>{ setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{}); try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{} });
+      // Close schedule dialog with ESC clicks outside
+      byId("scheduleDlg")?.addEventListener("click", (e)=> { const d=e.currentTarget; const rect=d.querySelector("form")?.getBoundingClientRect(); if(!rect) return; const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom; if(!inBox) closeSchedule(); });
+      // Initial calendar load
+      loadCalendar();
     });
   }
-  async function loadCalendar(){
-    const grid=byId("calGrid"); if(!grid) return;
-    grid.textContent = CURRENT_PLAN==="free"
-      ? "Read-only preview — upgrade to create & manage schedules."
-      : "Loading your calendar…";
-    const items = await fetchScheduleList();
-    renderMonth(items);
-  }
-  function wireCalendar(){
-    byId("calPrev")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor,-1); loadCalendar(); });
-    byId("calNext")?.addEventListener("click", ()=>{ calCursor=addMonths(calCursor, 1); loadCalendar(); });
-    byId("calToday")?.addEventListener("click", ()=>{ calCursor=new Date(); loadCalendar(); });
-    byId("calNew")?.addEventListener("click", ()=>{
-      const text = (LAST_OUTPUT?.linkedin || LAST_OUTPUT?.x || LAST_OUTPUT?.instagram || LAST_OUTPUT?.facebook || "").slice(0,600);
-      if(!text) return toast("Generate something first");
-      openScheduleModal({ text });
-    });
-
-    // schedule dialog close handling
-    byId("schCancel")?.addEventListener("click", ()=> closeSchedule());
-    byId("schClose")?.addEventListener("click", ()=> closeSchedule());
-
-    // create new schedule
-    byId("scheduleForm")?.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const when = byId("schWhen")?.value;
-      const text = byId("schText")?.value?.trim();
-      if(!when||!text) return toast("Pick a date/time and content");
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
-        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-        toast("Scheduled ✅"); closeSchedule();
-        loadCalendar();
-      }catch(e){ toast(e.message||"Schedule failed"); }
-    });
-
-    // Close dialog when clicking outside form
-    byId("scheduleDlg")?.addEventListener("click", (e)=> {
-      const d=e.currentTarget; const rect=d.querySelector("form")?.getBoundingClientRect(); if(!rect) return;
-      const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
-      if(!inBox) closeSchedule();
-    });
-  }
-
-  // ---------- Boot ----------
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    await ensureSupabase();
-    await finishOAuthAndCleanUrl();
-    wireNav(); wireAuth(); wirePromo(); wireMisc(); wireCheckout(); wireIntegrations();
-    wireGenerator(); wireQuickPublish(); wireOptimizer(); wireCalendar();
-    await fetchStatus(); await paintLive(); setInterval(paintLive, 30000);
-    await refreshPresets();
-
-    // BYOK save
-    byId("saveByok")?.addEventListener("click", saveByokToAccount);
-
-    // Keep UI reactive to auth changes
-    supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus().catch(()=>{});
-      try{ $$('dialog[open]#auth').forEach(d=> d.close()); }catch{}
-    });
-
-    loadCalendar();
-  });
   </script>
+  <!-- ===== SCHEDULE DIALOG ===== -->
+  <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md">
+    <form id="scheduleForm" method="dialog" class="p-5 grid gap-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Schedule a post</h3>
+        <button id="schClose" class="btn" value="cancel" type="button">✕</button>
+      </div>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Channel</span>
+        <select id="schChannel" class="border rounded-lg px-3 py-2" disabled>
+          <option value="linkedin">LinkedIn</option>
+          <option value="x">X (Twitter)</option>
+          <option value="email">Email</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+          <option value="reddit">Reddit</option>
+          <option value="quora">Quora</option>
+          <option value="tiktok">TikTok</option>
+        </select>
+        <p class="text-[12px] text-slate-500">We’ll remind you at the time you pick.</p>
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Date & time</span>
+        <input id="schWhen" type="datetime-local" class="border rounded-lg px-3 py-2" required />
+      </label>
+
+      <label class="grid gap-1">
+        <span class="text-sm text-slate-500">Content</span>
+        <textarea id="schText" class="border rounded-lg px-3 py-2 min-h-[120px]" required placeholder="Paste or generate content…"></textarea>
+      </label>
+
+      <div class="flex items-center justify-end gap-2">
+        <button id="schCancel" class="btn" type="button">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save schedule</button>
+      </div>
+
+      <p class="text-[12px] text-slate-500">When the time comes, you’ll get an on-site popup reminder to publish.</p>
+    </form>
+  </dialog>
+
+</body>
+</html>
