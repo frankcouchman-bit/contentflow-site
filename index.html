@@ -62,7 +62,7 @@
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = "https://contentrepurpose.pro";
 
-    // Stripe Prices
+    // Stripe Prices (FIX): used by checkout buttons
     window.PRICE_IDS = {
       starter:  "price_1S7y58JYjIKHzKcjzL7cIKiB",
       creator:  "price_1S7y77JYjIKHzKcjKQYjiqZH",
@@ -242,7 +242,7 @@
         </div>
       </div>
 
-      <!-- Source + Channels -->
+      <!-- Source + Channels (unchanged from working) -->
       <div class="card p-5 md:p-6">
         <form id="demoForm" class="grid gap-6" autocomplete="off">
           <fieldset>
@@ -258,6 +258,7 @@
             </div>
           </fieldset>
 
+          <!-- (kept) Article Optimizer toggles inside Generator for future — visually collapsed for now -->
           <details class="mt-1">
             <summary class="text-sm font-semibold cursor-pointer">Article Optimizer (optional)</summary>
             <div class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -272,7 +273,6 @@
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_reddit"> Reddit-ready (title + TL;DR)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_li_article"> LinkedIn Article HTML</label>
             </div>
-
             <div class="mt-3 grid md:grid-cols-3 gap-3">
               <label class="grid gap-1"><span class="text-xs text-slate-500">Focus keyword</span>
                 <input name="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO" /></label>
@@ -321,6 +321,7 @@
               <label class="flex items-center gap-2 mt-2"><input type="checkbox" name="tt_onscreen" checked> Include on-screen text plan</label></fieldset>
           </div>
 
+          <!-- Presets & Batch (plan-gated) -->
           <div class="grid md:grid-cols-2 gap-6">
             <fieldset class="card p-4">
               <legend class="text-sm font-semibold">Presets</legend>
@@ -377,6 +378,7 @@
       </div>
     </div>
   </section>
+
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -384,7 +386,7 @@
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Article Optimizer</h2>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.</p>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">Free (signed-in): <strong>1/day</strong> • Starter: <strong>5/day</strong> • Creator: <strong>15/day</strong> • Business: <strong>30/day</strong></p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">Starter: 5/day • Creator: 15/day • Business: 30/day</p>
         </div>
         <div class="flex items-center gap-3">
           <a href="#pricing" class="btn">See pricing</a>
@@ -418,7 +420,7 @@
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
-                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose workflow, repurpose project, repurpose content" />
+                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="content repurpose workflow, repurpose project, repurporse content" />
               </label>
               <label class="grid gap-1">
                 <span class="text-xs text-slate-500">Target SERP intent</span>
@@ -465,7 +467,7 @@
               <button id="disconnectNotion" class="btn">Disconnect</button>
             </div>
           </div>
-          <p class="mt-2 text-sm text-slate-500">After connecting, you can export LinkedIn Articles and posts directly to your Notion workspace.</p>
+          <p class="mt-2 text-sm text-slate-500">After connecting, you can export LinkedIn Articles and posts directly to your Notion DB.</p>
           <p class="mt-2 text-xs text-slate-500">Free: 1 publish/day • Starter: 5/day • Creator/Business: unlimited.</p>
         </div>
 
@@ -489,7 +491,7 @@
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <h2 class="text-2xl md:text-3xl font-black tracking-tight">Calendar & Scheduler</h2>
       <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-        Free (signed-in): read-only • Starter/Creator: personal calendar • Business: shared team calendar & scheduler.
+        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & scheduler.
       </p>
 
       <div class="card p-5 md:p-6 mt-4">
@@ -515,52 +517,6 @@
       </div>
     </div>
   </section>
-
-  <!-- ===== FAQ / SEO ===== -->
-  <section id="faq" class="relative scroll-mt-24">
-    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <h2 class="text-2xl md:text-3xl font-black tracking-tight">FAQs</h2>
-      <div class="mt-6 grid md:grid-cols-2 gap-6">
-        <div class="card p-5">
-          <details open>
-            <summary class="font-semibold cursor-pointer">What can I repurpose with ContentRepurpose?</summary>
-            <div class="mt-2 text-sm text-slate-500">
-              Paste a paragraph, full blog or a URL. We generate LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora and TikTok drafts.
-              See examples in our guide: <a class="underline" href="/blog/ai-content-repurposing-examples-workflows/">AI content repurposing examples & workflows</a>.
-            </div>
-          </details>
-        </div>
-        <div class="card p-5">
-          <details>
-            <summary class="font-semibold cursor-pointer">Does it help SEO?</summary>
-            <div class="mt-2 text-sm text-slate-500">
-              Yes. The Article Optimizer improves titles/meta, adds structured FAQ, and suggests internal links & alt text. Start here:
-              <a class="underline" href="/blog/content-repurposing-for-seo/">Content repurposing for SEO</a>.
-            </div>
-          </details>
-        </div>
-        <div class="card p-5">
-          <details>
-            <summary class="font-semibold cursor-pointer">How do Notion & Trello exports work?</summary>
-            <div class="mt-2 text-sm text-slate-500">
-              Connect once in <a class="underline" href="#integrations">Integrations</a>, then export outputs with one click.
-              Read the setup: <a class="underline" href="/blog/notion-trello-export/">Notion & Trello export</a>.
-            </div>
-          </details>
-        </div>
-        <div class="card p-5">
-          <details>
-            <summary class="font-semibold cursor-pointer">Any tips for high-performing LinkedIn posts?</summary>
-            <div class="mt-2 text-sm text-slate-500">
-              Use scannable lines, keep the CTA clear, and test hooks. Grab free templates:
-              <a class="underline" href="/blog/linkedin-post-templates/">LinkedIn post templates</a>.
-            </div>
-          </details>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -576,12 +532,12 @@
           </div>
           <div class="mt-2 text-3xl font-black">$0 <span class="text-sm font-semibold text-slate-500">/ forever</span></div>
           <ul class="mt-4 text-sm space-y-2">
-            <li>• Generator: <strong>5 runs / day</strong> (signed-in)<br><span class="text-slate-500">Guest demo: 5 / month</span></li>
-            <li>• Article Optimizer: <strong>1 / day</strong> (signed-in)<br><span class="text-slate-500">Guest demo: 1 / month</span></li>
+            <li>• Generator: <strong>5 runs / month</strong> (public pool)</li>
+            <li>• Article Optimizer: <strong>1 demo / month</strong></li>
             <li>• Presets: <strong>1 saved preset</strong></li>
             <li>• Batch: <strong>—</strong></li>
             <li>• Notion/Trello publish: <strong>1 / day</strong></li>
-            <li>• Scheduler: <strong>visible</strong> (upgrade to use)</li>
+            <li>• Scheduler: <strong>visible (upgrade to use)</strong></li>
             <li>• Calendar: <strong>read-only</strong></li>
             <li>• BYOK supported (5/day)</li>
           </ul>
@@ -758,11 +714,9 @@
         byId("generateBtn_member")?.classList.toggle("hidden", !authed);
         const demoEl=byId("demoQuota"), memEl=byId("memberQuota");
         if (!authed){
-          // Guests: 5/mo generator, 1/mo optimizer (shown on landing copy; enforced in worker)
           const cap=j.platform?.monthly?.cap ?? 5, used=j.platform?.monthly?.used ?? 0;
           demoEl&&(demoEl.textContent=Math.max(0,cap-used)); paintGuestUi();
         } else {
-          // Signed-in free users get daily caps; worker returns the real daily cap per plan
           const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used ?? 0;
           memEl&&(memEl.textContent=(cap==null? "∞" : Math.max(0,cap-used))); paintAuthedUi();
         }
@@ -804,20 +758,7 @@
     }
 
     /* ---------- Live ticker ---------- */
-    async function paintLive(){
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/stats/today`);
-        const j=await r.json();
-        if(r.ok && typeof j.today_count==="number"){
-          $$('[data-live-count], #liveCount').forEach(el=> el&&(el.textContent=String(j.today_count)));
-          const feed = j.items || [];
-          const wrap = $('[data-live-feed]');
-          if (wrap && Array.isArray(feed)){
-            wrap.innerHTML = feed.map(x=>`<span class="chip">${x}</span>`).join(" ");
-          }
-        }
-      }catch{}
-    }
+    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); const j=await r.json(); if(r.ok && typeof j.today_count==="number"){ $$('[data-live-count], #liveCount').forEach(el=> el&&(el.textContent=String(j.today_count))); } }catch{} }
 
     /* ---------- Presets (KV via worker) ---------- */
     async function refreshPresets(){
@@ -830,6 +771,7 @@
     }
     function readPresetPayload(){
       const form=byId("demoForm"); if(!form) return {};
+      // capture all relevant generator toggles & SEO fields & channels
       const payload = new FormData(form); const obj={};
       payload.forEach((v,k)=>{ if(obj[k]!==undefined){ if(!Array.isArray(obj[k])) obj[k]=[obj[k]]; obj[k].push(v);} else obj[k]=v; });
       obj.sourceText = byId("sourceText")?.value||"";
@@ -850,6 +792,7 @@
         const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
         const p=j?.payload||{};
+        // restore minimal: sourceText + common toggles (best-effort)
         if(p.sourceText) byId("sourceText").value=p.sourceText;
         toast("Preset loaded ✅");
       }catch(e){ toast(e.message||"Load failed"); }
@@ -910,7 +853,6 @@
               body: JSON.stringify({
                 price_id: priceId,
                 mode: "subscription",
-                user_id: USER_ID || undefined,             // pass to worker → metadata.user_id
                 success_url: location.origin + location.pathname + "?billing=success",
                 cancel_url: location.origin + location.pathname + "?billing=cancel"
               })
@@ -936,7 +878,7 @@
       });
     }
 
-    /* ---------- Generator + Output ---------- */
+    /* ---------- Generator + Output (adds Publish/Schedule) ---------- */
     const parseJsonLoose = (txt)=>{ if(!txt) return null; let s=String(txt).trim();
       s=s.replace(/^```(?:json)?/i,"").replace(/```$/i,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1);
       try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
@@ -949,7 +891,7 @@
         li_article:g("opt_li_article")?.checked
       }, ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
         extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
-        seo:{ keyword=g("seo_keyword")?.value||"", secondaries=g("seo_secondaries")?.value||"", intent=g("seo_intent")?.value||"informational" }
+        seo:{ keyword:g("seo_keyword")?.value||"", secondaries:g("seo_secondaries")?.value||"", intent:g("seo_intent")?.value||"informational" }
       };
     }
     function systemPrompt(tog){ return { role:"system", content:
@@ -1138,7 +1080,7 @@ Task:
       });
     }
 
-    /* ---------- Optimizer ---------- */
+    /* ---------- Optimizer (unchanged outputs, cleans headings) ---------- */
     function optSystemPrompt(flags){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY valid JSON with this shape:
 {
