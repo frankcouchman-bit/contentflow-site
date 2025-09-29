@@ -809,9 +809,10 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   <!-- ===== APP BOOT (auth overlay fixed + non-refresh submits) ===== -->
   <script>
   (function(){
-    const $ = (s,el=document)=>el.querySelector(s);
-    const $$ = (s,el=document)=>Array.from(el.querySelectorAll(s));
-    const byId = (id)=>document.getElementById(id);
+  const byId = (id)=> document.getElementById(id);
+   const $  = (s, el)=> (el && typeof el.querySelector==="function" ? el.querySelector(s) : document.querySelector(s));
+   const $$ = (s, el)=> (el && typeof el.querySelectorAll==="function" ? Array.from(el.querySelectorAll(s)) : Array.from(document.querySelectorAll(s)));
+
     const toast=(msg)=>{const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){alert(msg);return;} m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000);};
     const cap=(s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
