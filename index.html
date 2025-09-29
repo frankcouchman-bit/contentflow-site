@@ -245,7 +245,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <p id="authNote" class="text-xs text-slate-400 mt-2">We’ll never share your email.</p>
     </div>
   </div>
-
   <!-- ===== GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -350,34 +349,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             </fieldset>
           </div>
 
-          <details>
-            <summary class="text-sm font-semibold cursor-pointer">Article Optimizer (optional)</summary>
-            <div class="mt-3 grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_humanize" checked> Humanize content</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_lengthen" value="30"> Lengthen ~30%</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_faqs"> Add FAQs (+ JSON-LD)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_headings" checked> Auto-headings (H2/H3)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Improve title & meta (CTR)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_ab" checked> A/B test 5 titles</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo" checked> SEO check (alt/links/length)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_svg"> Add platform-fit SVG ideas</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_reddit"> Reddit-ready (title + TL;DR)</label>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_li_article"> LinkedIn Article HTML</label>
-            </div>
-            <div class="mt-3 grid md:grid-cols-3 gap-3">
-              <label class="grid gap-1"><span class="text-xs text-slate-500">Focus keyword</span>
-                <input name="seo_keyword" class="border rounded-lg px-3 py-2" placeholder="e.g. content repurposing for SEO" /></label>
-              <label class="grid gap-1"><span class="text-xs text-slate-500">Secondary keywords (comma-sep)</span>
-                <input name="seo_secondaries" class="border rounded-lg px-3 py-2" placeholder="repurposing workflow, repurpose project" /></label>
-              <label class="grid gap-1"><span class="text-xs text-slate-500">Target SERP intent</span>
-                <select name="seo_intent" class="border rounded-lg px-3 py-2">
-                  <option value="informational" selected>Informational</option>
-                  <option value="commercial">Commercial</option>
-                  <option value="transactional">Transactional</option>
-                  <option value="navigational">Navigational</option>
-                </select></label>
-            </div>
-          </details>
+          <!-- NOTE: Removed the "Article Optimizer (optional)" block here to keep Optimizer as its own tool below -->
 
           <div class="grid lg:grid-cols-3 gap-6">
             <fieldset class="card p-4">
@@ -467,6 +439,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
+
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -546,7 +519,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div id="optOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
-
   <!-- ===== INTEGRATIONS ===== -->
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -694,7 +666,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- ===== PRICING ===== -->
   <section id="pricing" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -805,66 +776,59 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <span id="toastMsg">…</span>
     </div>
   </div>
-  <!-- ===== APP BOOT (auth overlay fixed + non-refresh submits) ===== -->
+
+  <!-- ===== APP BOOT (auth overlay fixed + non-refresh submits + integrations + scheduler + referral) ===== -->
   <script>
   (function(){
-  const byId = (id)=> document.getElementById(id);
-   const $  = (s, el)=> (el && typeof el.querySelector==="function" ? el.querySelector(s) : document.querySelector(s));
-   const $$ = (s, el)=> (el && typeof el.querySelectorAll==="function" ? Array.from(el.querySelectorAll(s)) : Array.from(document.querySelectorAll(s)));
-
-    const toast=(msg)=>{const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){alert(msg);return;} m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000);};
+    const byId=(id)=>document.getElementById(id);
+    const $=(s,el)=> (el&&el.querySelector)? el.querySelector(s):document.querySelector(s);
+    const $$=(s,el)=> (el&&el.querySelectorAll)? Array.from(el.querySelectorAll(s)):Array.from(document.querySelectorAll(s));
+    const toast=(m)=>{const t=byId("toast"),msg=byId("toastMsg"); if(!t||!msg){alert(m);return;} msg.textContent=m; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200);};
     const cap=(s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
     const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
     const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-    // Supabase client (UMD already loaded in <head>)
+    // Supabase (UMD)
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
 
     let AUTHTED=false, CURRENT_PLAN="free";
 
-    /* ---------- auth overlay (never uses <dialog>, mobile safe) ---------- */
-    const authSheet = byId("authSheet");
-    const openAuth = ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","false"); byId("authEmail")?.focus(); } };
-    const closeAuth= ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","true"); } };
-
+    // ========== Auth overlay ==========
+    const authSheet=byId("authSheet");
+    const openAuth=()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","false"); byId("authEmail")?.focus(); } };
+    const closeAuth=()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","true"); } };
     ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
     $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
     byId("authClose")?.addEventListener("click", closeAuth);
     authSheet?.addEventListener("click",(e)=>{ if(e.target===authSheet) closeAuth(); });
 
     // Auth actions
-    byId("authGoogle")?.addEventListener("click", async ()=>{
-      try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }}); }
-      catch(e){ toast(e?.message||"Google sign-in failed"); }
-    });
+    byId("authGoogle")?.addEventListener("click", async ()=>{ try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo:SITE_ORIGIN }}); }catch(e){ toast(e?.message||"Google sign-in failed"); }});
     byId("authSend")?.addEventListener("click", async ()=>{
       const email=(byId("authEmail")?.value||"").trim(); if(!email) return toast("Enter your email");
-      try{
-        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-        if(error) throw error; toast("Check your email for the magic link.");
-      }catch(e){ toast(e?.message||"Sign-in error"); }
+      try{ const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo:SITE_ORIGIN } }); if(error) throw error; toast("Check your email for the magic link."); }catch(e){ toast(e?.message||"Sign-in error"); }
     });
-    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-      try{ await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); }catch{}
-    }));
+    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); }catch{} }));
 
-    // Finish OAuth params & clean URL
-    (async function finalizeOAuth(){
+    // OAuth finalize & clean URL (+ detect Trello/affiliate hash/query)
+    (async function finalize(){
       try{
         const u=new URL(location.href);
         if(u.searchParams.get("code")){
-          await supabase.auth.exchangeCodeForSession({ code: u.searchParams.get("code") });
+          await supabase.auth.exchangeCodeForSession({ code:u.searchParams.get("code") });
           ["code","state","scope","provider_id","redirected_from"].forEach(k=>u.searchParams.delete(k));
           history.replaceState({}, "", u.toString());
         }
-        if(location.hash && (/#access_token=|#token=/.test(location.hash))){
-          await supabase.auth.getSession();
-          history.replaceState({}, "", location.pathname + location.search);
-        }
-      }catch(e){ console.warn("OAuth finalize failed", e); }
+        // Affiliate capture ?ref=
+        const ref=u.searchParams.get("ref");
+        if(ref){ localStorage.setItem("cr_ref", ref); }
+
+        // Any hash noise from integrations? Clean (we don’t receive Trello token here due to worker redirect)
+        if(location.hash){ history.replaceState({}, "", location.pathname + location.search); }
+      }catch(e){ console.warn("Finalize failed", e); }
     })();
 
     // Mobile nav
@@ -876,7 +840,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{ const id=a.getAttribute("href"); const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); history.replaceState(null,"",id); document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); } }));
     })();
 
-    // UI state helpers
+    // UI helpers
     function setAuthFlag(on){
       AUTHTED=!!on;
       document.body.setAttribute("data-auth", on? "authed":"guest");
@@ -886,7 +850,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     function setPlan(plan){
       const p=(plan||"free").toLowerCase();
       CURRENT_PLAN=p; document.body.setAttribute("data-plan", p);
-      const label=`Plan: ${cap(p)}`;
+      const label=`PLAN ACTIVATED: ${cap(p)}`;
       byId("planbadge")&&(byId("planbadge").textContent=label);
       byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
       byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
@@ -895,20 +859,18 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
       $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
     }
-
     async function getAuthHeaders(extra={}){
       const h={ "Content-Type":"application/json", ...extra };
       try{
         const { data } = await supabase.auth.getSession();
-        const tok = data?.session?.access_token;
-        const uid = data?.session?.user?.id;
+        const tok=data?.session?.access_token, uid=data?.session?.user?.id;
         if(tok) h["Authorization"]=`Bearer ${tok}`;
-        if(uid) h["X-User-Id"] = uid;
+        if(uid) h["X-User-Id"]=uid;
       }catch{}
       return h;
     }
 
-    // Status & quotas
+    // Status / quotas / integrations state
     async function fetchStatus(){
       try{
         const r=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
@@ -917,31 +879,33 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         setAuthFlag(authed);
         setPlan((j.plan||"free").toLowerCase());
 
-        // quotas
+        // quotas display
         const memEl=byId("memberQuota"), demoEl=byId("demoQuota");
         if(authed){
           const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used||0;
-          if(memEl) memEl.textContent = (cap==null? "∞" : Math.max(0,(cap-used)));
-        }else{
+          if(memEl) memEl.textContent=(cap==null? "∞": Math.max(0,(cap-used)));
+          byId("manageBilling")?.classList.remove("hidden");
+          byId("manageBilling_m")?.classList.remove("hidden");
+        } else {
           if(demoEl && j.platform?.monthly){
             const cap=j.platform.monthly.cap ?? 5;
             const used=j.platform.monthly.used || 0;
-            demoEl.textContent = String(Math.max(0, cap-used));
+            demoEl.textContent=String(Math.max(0, cap-used));
           }
+          byId("manageBilling")?.classList.add("hidden");
+          byId("manageBilling_m")?.classList.add("hidden");
         }
 
-        // integration badges
+        // integration status
         byId("notionStatus")&&(byId("notionStatus").textContent = `status: ${j.integrations?.notion? "connected":"—"}`);
         byId("trelloStatus")&&(byId("trelloStatus").textContent = `status: ${j.integrations?.trello? "connected":"—"}`);
       }catch(e){ console.warn("status fail", e); setAuthFlag(false); setPlan("free"); }
     }
 
-    // Promo buttons
-    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-    }));
+    // Promo code copy + banner buttons
+    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); } }));
 
-    // Billing buttons
+    // Billing
     $$(".js-checkout").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
         const plan=btn.getAttribute("data-plan")||"starter";
@@ -978,247 +942,106 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     });
 
     // Live ticker
-    async function paintLive(){
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/stats/today`);
-        const j=await r.json();
-        if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el.textContent=String(j.today_count)); }
-      }catch{}
-    }
+    async function paintLive(){ try{ const r=await fetch(`${WORKER_BASE}/api/stats/today`); const j=await r.json(); if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el.textContent=String(j.today_count)); } }catch{} }
 
-    // Generator wiring
-    function readToggles(form){
-      const g=(n)=> form.elements[n];
-      return {
-        ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
-        extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
-        opt:{ humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked, svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, reddit:g("opt_reddit")?.checked, li_article:g("opt_li_article")?.checked }
-      };
-    }
-    const parseJsonLoose=(txt)=>{ if(!txt) return null; let s=String(txt).trim(); s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1); try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
-    function systemPrompt(t){ return { role:"system", content:
-`You are a senior social copywriter.
-Return ONLY JSON:
-{ "outline":string,
-  "linkedin":string|null,
-  "x":string[]|null,
-  "email":{ "subject":string, "body":string }|null,
-  "instagram":{ "caption":string, "hashtags":string[] }|null,
-  "reddit":{ "title":string, "body":string, "communities":string[], "starter_comments":string[] }|null,
-  "facebook":{ "primary":string, "meta":{ "headline":string, "description":string } }|null,
-  "quora":{ "answer":string, "followups":string[] }|null,
-  "tiktok":{ "hooks":string[], "script":string, "onscreen":string[] }|null,
-  "linkedin_article_html":string|null }
-X posts ≤ 280 chars; if multiple, prefix "Post N:".
-No text outside JSON.` }; }
-    function userPrompt(raw, form, t){
-      const srcType=form.elements["sourceType"]?.value||"paragraph";
-      const head = srcType==="url"?"URL":(srcType==="blog"?"Full Blog":"Paragraph/Notes");
-      const channels = Object.entries(t.ch).filter(([,v])=>v).map(([k])=>k).join(", ");
-      return { role:"user", content:
-`${head}:
-${raw}
+    // -------- Generator wiring (submit kept in Part 2) --------
 
-Task:
-1) One-line outline.
-2) Generate ONLY for: ${channels||"linkedin,x,email"}.
-3) Respect toggles exactly.`};
-    }
+    // -------- Optimizer wiring (submit kept in Part 2) --------
 
-    // FIXED: proper template literal interpolation (no backslashes)
-    function addCard(wrap, title, bodyText){
-      const id=`c_${Math.random().toString(36).slice(2,8)}`;
-      wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5" id="${id}">
-          <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">${title}</strong>
-            <div class="flex gap-2">
-              <button class="btn copy" type="button">Copy</button>
-            </div>
-          </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
-        </div>`);
-      const card=byId(id), copyBtn=$(".btn.copy", card), pre=$("pre.content", card);
-      copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-    }
-
-    function paintOutput(j){
-      const wrap=byId("demoOutput"); wrap.innerHTML="";
-      if(j.linkedin) addCard(wrap,"LinkedIn",j.linkedin);
-      if(Array.isArray(j.x)&&j.x.length){ addCard(wrap,"X (Twitter)", j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n")); }
-      if(j.email){ addCard(wrap,"Email",`Subject: ${j.email.subject||""}\n\n${j.email.body||""}`); }
-      if(j.instagram){ addCard(wrap,"Instagram",`${j.instagram.caption||""}\n\n${(j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ")}`); }
-      if(j.reddit){
-        const subs=(j.reddit.communities||[]).map(s=>`r/${s}`).join(", ");
-        const starters=(j.reddit.starter_comments||[]).map(c=>`• ${c}`).join("\n");
-        addCard(wrap,"Reddit",`${j.reddit.title||""}\n\n${j.reddit.body||""}\n\nSubs: ${subs||"—"}\n\nStarters:\n${starters||"—"}`);
-      }
-      if(j.facebook){ addCard(wrap,"Facebook",`Primary:\n${j.facebook.primary||""}\n\nLink preview:\n${j.facebook?.meta?.headline||""}\n${j.facebook?.meta?.description||""}`); }
-      if(j.quora){ addCard(wrap,"Quora",`Answer:\n${j.quora.answer||""}\n\nFollow-ups:\n${(j.quora.followups||[]).map(f=>"• "+f).join("\n")}`); }
-      if(j.tiktok){ addCard(wrap,"TikTok",`Script:\n${j.tiktok.script||""}\n\nHooks:\n${(j.tiktok.hooks||[]).map(h=>"• "+h).join("\n")}\n\nOn-screen:\n${(j.tiktok.onscreen||[]).map(o=>"• "+o).join("\n")}`); }
-      if(j.linkedin_article_html){ addCard(wrap,"LinkedIn Article (HTML)",j.linkedin_article_html); }
-    }
-    function ctaAfterGuestTries(used, cap){
-      if(AUTHTED) return;
-      const wrap=byId("demoOutput");
-      if(!wrap) return;
-      const left=Math.max(0, cap-used);
-      if(used>=2){
-        wrap.insertAdjacentHTML("afterbegin", `
-          <div class="card p-5">
-            <div class="flex items-center justify-between gap-3 flex-wrap">
-              <div><strong>Getting value?</strong> Sign in for <strong>5 runs/day</strong> plus the Article Optimizer.</div>
-              <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
-            </div>
-            <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${left}</p>
-          </div>
-        `);
-        $$(".js-open-auth", wrap).forEach(b=> b.addEventListener("click", openAuth));
-      }
-    }
-    function wireGenerator(){
-      const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput");
-      const guestBtn=byId("generateBtn"), memBtn=byId("generateBtn_member"), clearBtn=byId("clearBtn");
-      if(!form || !src) return;
-
-      clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
-
-      form.addEventListener("submit", async (e)=>{
-        e.preventDefault();
-        const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
-        const btn = AUTHTED ? memBtn : guestBtn; const old=btn?.textContent;
-        try{
-          btn&&(btn.disabled=true, btn.textContent="Generating…");
-          out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-          const t=readToggles(form);
-          const messages=[ systemPrompt(t), userPrompt(raw, form, t) ];
-          const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
-          const headers = await getAuthHeaders();
-          const r=await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.5, messages }) });
-          const j=await r.json();
-          if(!r.ok) throw new Error(j?.error?.message||"Generation failed");
-          const content=j?.choices?.[0]?.message?.content||"";
-          const data=parseJsonLoose(content); if(!data) throw new Error("Model did not return JSON");
-          paintOutput(data); toast("Done ✅");
-          try{
-            const s=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
-            if(s?.scope==="ip" && s.platform?.monthly){ ctaAfterGuestTries(s.platform.monthly.used, s.platform.monthly.cap ?? 5); }
-          }catch{}
-          fetchStatus().catch(()=>{});
-        }catch(err){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${err.message||err}</div>`; }
-        finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
-      });
-    }
-
-    // Optimizer
-    function optSystem(){ return { role:"system", content:
-`You are an expert editor & SEO. Return ONLY JSON:
-{ "html":string, "title":string, "meta_description":string,
-  "faqs_jsonld":object|null,
-  "reddit":{ "title":string, "tldr":string }|null,
-  "ab_titles":string[]|null,
-  "alt_keywords":string[]|null,
-  "rank_likelihood":string|null,
-  "linkedin_article_html":string|null }`}; }
-    function optUser(src){ return { role:"user", content:`Improve this HTML/Markdown:\n\n${src}\n\nAdd headings, meta, optional FAQs & Reddit TL;DR. Return JSON only.`}; }
-
-    // FIXED card builder also uses real interpolation
-    function paintOpt(j){
-      const wrap=byId("optOutput"); wrap.innerHTML="";
-      const card=(title, txt)=>{
-        const id=`o_${Math.random().toString(36).slice(2,8)}`;
-        wrap.insertAdjacentHTML("beforeend", `
-          <div class="card p-5" id="${id}">
-            <div class="flex justify-between items-center gap-2 flex-wrap">
-              <strong>${title}</strong>
-              <button class="btn copy" type="button">Copy</button>
-            </div>
-            <pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre>
-          </div>
-        `);
-        const c=byId(id);
-        $(".btn.copy",c)?.addEventListener("click", async()=>{ try{ await navigator.clipboard.writeText($(".content",c)?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
-      };
-      if(j.title||j.meta_description) card("Title & Meta", `Title: ${j.title||""}\n\n${j.meta_description||""}`);
-      if(j.ab_titles?.length) card("A/B Titles", j.ab_titles.map((t,i)=>`${i+1}. ${t}`).join("\n"));
-      if(j.html) card("Improved Article (HTML)", j.html);
-      if(j.faqs_jsonld) card("FAQ JSON-LD", JSON.stringify(j.faqs_jsonld,null,2));
-      if(j.reddit) card("Reddit-ready", `Title:\n${j.reddit.title||""}\n\nTL;DR:\n${j.reddit.tldr||""}`);
-      if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}`);
-      if(j.linkedin_article_html) card("LinkedIn Article (HTML)", j.linkedin_article_html);
-    }
-
-    function wireOptimizer(){
-      const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
-      if(!form || !src) return;
-      clr?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
-      form.addEventListener("submit", async (e)=>{
-        e.preventDefault();
-        if(!AUTHTED) return openAuth();
-        const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
-        const old=btn.textContent; btn.disabled=true; btn.textContent="Optimizing…";
-        out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
-        try{
-          const messages=[ optSystem(), optUser(raw) ];
-          const lane = (CURRENT_PLAN==="free") ? "free" : "pro";
-          const headers = await getAuthHeaders();
-          const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.4, messages }) });
-          const j=await r.json();
-          if(!r.ok) throw new Error(j?.error?.message||"Optimize failed");
-          const content=j?.choices?.[0]?.message?.content||"";
-          const data=parseJsonLoose(content); if(!data) throw new Error("Model did not return JSON");
-          paintOpt(data); toast("Optimized ✅"); fetchStatus().catch(()=>{});
-        }catch(err){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${err.message||err}</div>`; }
-        finally{ btn.disabled=false; btn.textContent=old; }
-      });
-    }
-
-    // Calendar preview + schedule
-    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="none"; } }
+    // -------- Calendar / Scheduler ----------
+    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="block"; } }
     function closeModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "close" in HTMLDialogElement.prototype){ if(dlg.open) dlg.close(); } else { dlg.removeAttribute("open"); dlg.style.display="none"; } }catch{ dlg.removeAttribute("open"); dlg.style.display="none"; } }
+
     function wireCalendar(){
       const grid=byId("calGrid");
       if(grid){ grid.textContent="Read-only preview — sign in & upgrade to schedule posts."; }
-      byId("calNew")?.addEventListener("click", ()=>{ showModalSafe(byId("scheduleDlg")); });
+      byId("calNew")?.addEventListener("click", ()=>{ if(CURRENT_PLAN==="free"){ toast("Scheduler requires Starter+"); return; } showModalSafe(byId("scheduleDlg")); });
       byId("schClose")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("schCancel")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("scheduleDlg")?.addEventListener("click",(e)=>{ const form=byId("scheduleForm"); const rect=form?.getBoundingClientRect(); if(!rect) return; const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom; if(!inBox) closeModalSafe(byId("scheduleDlg")); });
+
+      // Local notifications while the tab is open (best-effort)
+      async function notifyAt(iso, text){
+        try{
+          if(!("Notification" in window)) return;
+          if(Notification.permission==="default"){ await Notification.requestPermission(); }
+          if(Notification.permission!=="granted") return;
+          const delay = Math.max(0, new Date(iso).getTime()-Date.now());
+          setTimeout(()=>{ new Notification("Scheduled post ready", { body: text.slice(0,120) }); }, delay);
+        }catch{}
+      }
+
       byId("scheduleForm")?.addEventListener("submit", async (e)=>{
         e.preventDefault();
         const when=byId("schWhen")?.value, text=(byId("schText")?.value||"").trim();
         if(!when||!text) return toast("Pick a date/time and content");
+        if(CURRENT_PLAN==="free"){ toast("Upgrade to Starter+ to use Scheduler"); return; }
         try{
           const r=await fetch(`${WORKER_BASE}/api/schedule/create`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text, when }) });
           const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Schedule failed");
-          toast("Scheduled ✅"); closeModalSafe(byId("scheduleDlg"));
+          toast("Scheduled ✅"); notifyAt(new Date(when).toISOString(), text); closeModalSafe(byId("scheduleDlg"));
         }catch(err){ toast(err.message||"Schedule failed"); }
       });
     }
 
-    // Export quick actions
+    // -------- Quick publish buttons (uses result of last generation rendered into cards) ----------
     byId("qp-x")?.addEventListener("click", ()=> window.open("https://x.com/compose/post","_blank"));
     byId("qp-reddit")?.addEventListener("click", ()=> window.open("https://www.reddit.com/submit","_blank"));
     byId("qp-linkedin")?.addEventListener("click", ()=> window.open("https://www.linkedin.com/feed/","_blank"));
     byId("qp-email")?.addEventListener("click", ()=> window.open("mailto:","_blank"));
 
-    // BYOK save/clear
+    // -------- Integrations (Notion / Trello) ----------
+    byId("connectNotion")?.addEventListener("click", async ()=>{
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/connect`, { method:"POST", headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Failed to start Notion connect");
+        window.open(j.url, "_blank");
+        toast("Notion auth opened — finish in the new tab, then refresh status.");
+      }catch(e){ toast(e.message||"Notion connect failed"); }
+    });
+    byId("disconnectNotion")?.addEventListener("click", async ()=>{
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`, { method:"POST", headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Failed to disconnect");
+        toast("Notion disconnected"); fetchStatus();
+      }catch(e){ toast(e.message||"Notion disconnect failed"); }
+    });
+
+    byId("connectTrello")?.addEventListener("click", async ()=>{
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/connect`, { method:"POST", headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Failed to start Trello connect");
+        // Opens Trello OAuth. The worker redirect currently lands back on the worker. We'll address full token flow in worker step.
+        window.open(j.url, "_blank");
+        toast("Trello auth opened — complete the flow, then refresh status.");
+      }catch(e){ toast(e.message||"Trello connect failed"); }
+    });
+    byId("disconnectTrello")?.addEventListener("click", async ()=>{
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`, { method:"POST", headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Failed to disconnect");
+        toast("Trello disconnected"); fetchStatus();
+      }catch(e){ toast(e.message||"Trello disconnect failed"); }
+    });
+
+    // -------- BYOK save/clear ----------
     byId("byokSave")?.addEventListener("click", async ()=>{
       const key=(byId("byokKey")?.value||"").trim(); if(!key) return toast("Enter your OpenRouter key");
       try{
-        const r=await fetch(`${WORKER_BASE}/api/account/byok/save`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key })});
+        const r=await fetch(`${WORKER_BASE}/api/account/byok/save`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key }) });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
         byId("byokStatus").textContent=`Status: saved (${j.mask||"****"})`; toast("BYOK saved ✅");
       }catch(e){ toast(e.message||"Save failed"); }
     });
     byId("byokClear")?.addEventListener("click", async ()=>{
       try{
-        const r=await fetch(`${WORKER_BASE}/api/account/byok/clear`,{ method:"POST", headers: await getAuthHeaders()});
+        const r=await fetch(`${WORKER_BASE}/api/account/byok/clear`, { method:"POST", headers: await getAuthHeaders() });
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Clear failed");
         byId("byokStatus").textContent="Status: not set"; toast("BYOK cleared");
       }catch(e){ toast(e.message||"Clear failed"); }
     });
 
-    // Year + billing result
+    // Footer year + billing URL cleanup
     byId("year")&&(byId("year").textContent=new Date().getFullYear());
     try{
       const u=new URL(location.href);
@@ -1228,26 +1051,18 @@ Task:
       history.replaceState({}, "", u.toString());
     }catch{}
 
-    // Auth change → update UI & close auth
-    supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session); setPlan("free"); // base until status returns
-      fetchStatus();
-      closeAuth();
-    });
+    // Auth change → refresh status
+    supabase.auth.onAuthStateChange((_evt, session)=>{ setAuthFlag(!!session); setPlan("free"); fetchStatus(); closeAuth(); });
 
     // Boot
     (async function boot(){
       try{
-        wireGenerator();
-        wireOptimizer();
+        // Generator/Optimizer listeners & builders are in earlier parts; here we only wire calendar and status/liveticker.
         wireCalendar();
         await fetchStatus();
         await paintLive(); setInterval(paintLive, 30000);
-      }catch(e){
-        console.error(e); toast("App failed to initialize");
-      }
+      }catch(e){ console.error(e); toast("App failed to initialize"); }
     })();
-
   })();
   </script>
 </body>
