@@ -57,9 +57,7 @@
     "name":"ContentRepurpose.pro",
     "url":"https://contentrepurpose.pro",
     "logo":"https://contentrepurpose.pro/og-cover.png",
-    "sameAs":[
-      "https://twitter.com/contentrepurpose"
-    ]
+    "sameAs":[ "https://twitter.com/contentrepurpose" ]
   }
   </script>
 
@@ -71,16 +69,8 @@
     "name":"ContentRepurpose.pro",
     "applicationCategory":"MarketingApplication",
     "operatingSystem":"Web",
-    "offers":{
-      "@type":"Offer",
-      "price":"0",
-      "priceCurrency":"USD"
-    },
-    "aggregateRating":{
-      "@type":"AggregateRating",
-      "ratingValue":"4.9",
-      "reviewCount":"127"
-    }
+    "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
+    "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"127"}
   }
   </script>
 
@@ -91,11 +81,7 @@
     "@type":"WebSite",
     "url":"https://contentrepurpose.pro",
     "name":"ContentRepurpose.pro",
-    "potentialAction":{
-      "@type":"SearchAction",
-      "target":"https://contentrepurpose.pro/?q={search_term_string}",
-      "query-input":"required name=search_term_string"
-    }
+    "potentialAction":{"@type":"SearchAction","target":"https://contentrepurpose.pro/?q={search_term_string}","query-input":"required name=search_term_string"}
   }
   </script>
 
@@ -163,52 +149,7 @@
 </head>
 
 <body class="min-h-full" data-auth="guest" data-plan="free">
-
-  <!-- AUTH OPEN: early, dependency-free, works even if other scripts fail -->
-  <script>
-  (function () {
-    function openAuth() {
-      var sheet = document.getElementById("authSheet");
-      if (!sheet) return;
-      sheet.setAttribute("aria-hidden", "false");
-      var email = document.getElementById("authEmail");
-      if (email && email.focus) email.focus();
-    }
-    function closeAuth() {
-      var sheet = document.getElementById("authSheet");
-      if (sheet) sheet.setAttribute("aria-hidden", "true");
-    }
-    window.__openAuth = openAuth; window.__closeAuth = closeAuth;
-
-    if (!document.getElementById("auth-overlay-zfix")) {
-      var css = document.createElement("style");
-      css.id = "auth-overlay-zfix";
-      css.textContent = ".auth-overlay{z-index:2147483000}";
-      document.head.appendChild(css);
-    }
-
-    document.addEventListener("click", function (e) {
-      var t = e.target && (e.target.closest
-        ? e.target.closest("#loginBtn, #loginBtn_m, #heroSignIn, .js-open-auth, [data-auth-open]")
-        : null);
-      if (t) { e.preventDefault(); openAuth(); }
-      var sheet = document.getElementById("authSheet");
-      if (sheet && e.target === sheet) closeAuth();
-    }, true);
-
-    document.addEventListener("DOMContentLoaded", function () {
-      var x = document.getElementById("authClose");
-      if (x && !x.__bound) { x.addEventListener("click", closeAuth); x.__bound = true; }
-    });
-
-    ["loginBtn","loginBtn_m","heroSignIn"].forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.setAttribute("data-auth-open", "");
-    });
-  })();
-  </script>
-
-  <!-- PLAN ACTIVATED ribbon (driven by data-plan) -->
+  <!-- PLAN ACTIVATED ribbon (updated dynamically by JS) -->
   <div id="planRibbon" class="plan-ribbon">
     <span class="plan-dot" aria-hidden="true"></span>
     <strong id="planRibbonText" class="tracking-tight">PLAN ACTIVATED: Free</strong>
@@ -284,7 +225,7 @@
     </div>
   </header>
 
-  <!-- ✅ ADDED: AUTH OVERLAY (required by your JS) -->
+  <!-- AUTH OVERLAY (wired later in scripts) -->
   <div id="authSheet" class="auth-overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="auth-panel card">
       <div class="flex items-center justify-between">
@@ -308,8 +249,7 @@
       </div>
     </div>
   </div>
-
-  <!-- HERO + rest of page -->
+  <!-- ===== HERO ===== -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
       <div>
@@ -410,6 +350,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in</button>
         </div>
       </div>
+
       <!-- Free plan upsell to Optimizer (shown only when plan = Free; toggled by JS) -->
       <div id="genUpsellOpt" class="card p-4 md:p-5 mb-6" style="display:none">
         <div class="flex items-center justify-between flex-wrap gap-3">
@@ -582,7 +523,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -622,7 +562,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             </fieldset>
             <fieldset class="grid gap-2">
               <legend class="text-sm font-semibold">SEO</legend>
-              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Improve title & meta (CTR)</label>
+              <label class="flex items-center gap-2"><input type="checkbox" name="opt_meta" checked> Improve title &amp; meta (CTR)</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_ab" checked> A/B test 5 titles</label>
               <label class="flex items-center gap-2"><input type="checkbox" name="opt_seo" checked> SEO check (alt/links/length)</label>
               <label class="grid gap-1 mt-1">
@@ -652,7 +592,8 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           </div>
 
           <div class="flex items-center gap-3">
-            <button id="optRun" class="btn btn-primary" type="submit">Optimize</button>
+            <button id="optRun" class="btn btn-primary only-authed hidden" type="submit">Optimize</button>
+            <button class="btn btn-primary js-open-auth only-guest" type="button">Sign in to optimize</button>
             <button id="optClear" class="btn" type="button">Clear</button>
             <div class="text-sm text-slate-500 only-authed hidden">Optimizer uses your plan’s daily cap.</div>
           </div>
@@ -662,7 +603,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div id="optOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
-
   <!-- ===== INTEGRATIONS ===== -->
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -675,8 +615,9 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <strong>Notion</strong>
             <div class="flex gap-2">
               <span id="notionStatus" class="chip">status: —</span>
-              <button id="connectNotion" class="btn" type="button">Connect</button>
-              <button id="disconnectNotion" class="btn" type="button">Disconnect</button>
+              <button id="connectNotion" class="btn only-authed hidden" type="button">Connect</button>
+              <button id="disconnectNotion" class="btn only-authed hidden" type="button">Disconnect</button>
+              <button class="btn only-guest js-open-auth" type="button">Sign in</button>
             </div>
           </div>
           <p class="mt-2 text-sm text-slate-500">Export LinkedIn Articles and posts directly to your Notion workspace.</p>
@@ -687,8 +628,9 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <strong>Trello</strong>
             <div class="flex gap-2">
               <span id="trelloStatus" class="chip">status: —</span>
-              <button id="connectTrello" class="btn" type="button">Connect</button>
-              <button id="disconnectTrello" class="btn" type="button">Disconnect</button>
+              <button id="connectTrello" class="btn only-authed hidden" type="button">Connect</button>
+              <button id="disconnectTrello" class="btn only-authed hidden" type="button">Disconnect</button>
+              <button class="btn only-guest js-open-auth" type="button">Sign in</button>
             </div>
           </div>
           <p class="mt-2 text-sm text-slate-500">Send drafts to a Trello list. We’ll create a default board/list if needed.</p>
@@ -767,12 +709,12 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <div class="text-xs text-slate-500">You’ll get a popup reminder at the scheduled time.</div>
         <div class="flex items-center gap-2">
           <button class="btn" type="button" id="schCancel">Cancel</button>
-          <button class="btn btn-primary" id="schSubmit" type="submit">Schedule</button>
+          <button class="btn btn-primary plan-starter-plus" id="schSubmit" type="submit">Schedule</button>
+          <button class="btn only-guest js-open-auth" type="button">Sign in</button>
         </div>
       </div>
     </form>
   </dialog>
-
   <!-- ===== SEO: FAQs / Testimonials ===== -->
   <section id="faqs" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -967,108 +909,129 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <span id="toastMsg">…</span>
     </div>
   </div>
-
-  <!-- ===== APP BOOT (unchanged business logic; now works because auth overlay exists) ===== -->
-  <script>
-/* HOTFIX: make "Sign in" buttons always open the auth overlay, even if Supabase init fails */
-(function(){
-  const byId = (id)=> document.getElementById(id);
-  const $$   = (s)=> Array.from(document.querySelectorAll(s));
-
-  function openAuth(){
-    const sheet = byId("authSheet");
-    if(!sheet) return;
-    sheet.setAttribute("aria-hidden","false");
-    (byId("authEmail")||{}).focus?.();
-  }
-  function closeAuth(){
-    const sheet = byId("authSheet");
-    sheet && sheet.setAttribute("aria-hidden","true");
-  }
-
-  // Wire up all “Sign in” entry points defensively
-  ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=>{
-    const el = byId(id);
-    if(el && !el.__authBound){ el.addEventListener("click", openAuth); el.__authBound=true; }
-  });
-  $$(".js-open-auth").forEach(el=>{
-    if(el && !el.__authBound){ el.addEventListener("click", openAuth); el.__authBound=true; }
-  });
-
-  // Ensure overlay closes if user clicks the dim background or the Close button
-  const sheet = byId("authSheet");
-  if(sheet && !sheet.__closeBound){
-    sheet.addEventListener("click",(e)=>{ if(e.target===sheet) closeAuth(); });
-    byId("authClose")?.addEventListener("click", closeAuth);
-    sheet.__closeBound = true;
-  }
-
-  // Make sure overlay sits above everything
-  const styleId = "auth-overlay-zfix";
-  if(!byId(styleId)){
-    const css = document.createElement("style");
-    css.id = styleId;
-    css.textContent = `.auth-overlay{z-index:2147483000}`;
-    document.head.appendChild(css);
-  }
-})();
-</script>
-
+  <!-- ===== APP BOOT (plans, quotas, presets, scheduler, integrations) ===== -->
   <script>
   (function(){
     const byId = (id)=> document.getElementById(id);
-    const $    = (s, el)=> (el && typeof el.querySelector==="function" ? el.querySelector(s) : document.querySelector(s));
-    const $$   = (s, el)=> (el && typeof el.querySelectorAll==="function" ? Array.from(el.querySelectorAll(s)) : Array.from(document.querySelectorAll(s)));
-
-    const toast=(msg)=>{const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){alert(msg);return;} m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200);};
+    const $    = (s, root)=> (root||document).querySelector(s);
+    const $$   = (s, root)=> Array.from((root||document).querySelectorAll(s));
+    const toast=(msg)=>{ const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){ alert(msg); return; } m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); };
     const cap=(s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
+    // === Config (from <head> bootstrap) ===
     const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
     const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-    // Affiliate capture (?ref=CODE)
-    (function captureAffiliate(){
-      try{
-        const u=new URL(location.href); const ref=u.searchParams.get("ref");
-        if(ref){ localStorage.setItem("aff_ref", ref); }
-      }catch{}
-    })();
-
-    // Supabase UMD loaded in <head>
+    // === Supabase (UMD already loaded in <head>) ===
     const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
     let supabase = null;
-try{
-  supabase = window.supabase?.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON,
-    { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }}
-  );
-} catch(e){
-  console.warn("Supabase failed to initialize; auth overlay will still open.", e);
-}
+    try{
+      supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
+    }catch(e){ console.warn("Supabase init failed", e); }
 
+    // === State ===
     let AUTHTED=false, CURRENT_PLAN="free";
 
-    // Mobile nav
-    (function wireNav(){
-      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
-      toggle?.addEventListener("click", ()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); sheet?.setAttribute("aria-hidden","false"); });
-      close?.addEventListener("click", ()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); sheet?.setAttribute("aria-hidden","true"); });
-      sheet?.addEventListener("click",(e)=>{ if(e.target===sheet){ document.body.classList.remove("nav-open"); toggle?.setAttribute("aria-expanded","false"); sheet.setAttribute("aria-hidden","true"); } });
-      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{ const id=a.getAttribute("href"); const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); history.replaceState(null,"",id); document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); } }));
-    })();
+    // === Helpers ===
+    async function getAuthHeaders(extra={}){
+      const h={ "Content-Type":"application/json", ...extra };
+      try{
+        const { data } = await supabase.auth.getSession();
+        const tok = data?.session?.access_token;
+        const uid = data?.session?.user?.id;
+        if(tok) h["Authorization"] = `Bearer ${tok}`;
+        if(uid) h["X-User-Id"]     = uid;
+      }catch{}
+      return h;
+    }
+    function setAuthFlag(on){
+      AUTHTED=!!on;
+      document.body.setAttribute("data-auth", on? "authed":"guest");
+      $$(".only-guest").forEach(el=> el.classList.toggle("hidden", !!on));
+      $$(".only-authed").forEach(el=> el.classList.toggle("hidden", !on));
+    }
+    function setPlan(plan){
+      const p=(plan||"free").toLowerCase();
+      CURRENT_PLAN=p;
+      document.body.setAttribute("data-plan", p);
 
-    // Auth overlay (now exists in DOM)
+      // Header badges & ribbon
+      const ribbonText = byId("planRibbonText");
+      if(ribbonText) ribbonText.textContent = `PLAN ACTIVATED: ${cap(p)}`;
+      const planBadge  = byId("planbadge");  if(planBadge)  planBadge.textContent  = `Plan: ${cap(p)}`;
+      const planBadgeM = byId("planbadge_m");if(planBadgeM) planBadgeM.textContent = `Plan: ${cap(p)}`;
+      const heroName   = byId("heroPlanName"); if(heroName) heroName.textContent = cap(p);
+
+      // Gate paid-only UI
+      const rank={ free:0, starter:1, creator:2, business:3 }[p] ?? 0;
+      $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
+      $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
+      $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
+
+      // Calendar read-only vs enabled message
+      const calGrid = byId("calGrid");
+      if(calGrid){
+        if(rank>=1) calGrid.textContent = "Your personal scheduler is enabled. Create a post to see it appear here.";
+        else calGrid.textContent = "Read-only preview — sign in & upgrade to schedule posts.";
+      }
+    }
+
+    // === Status / quotas ===
+    async function fetchStatus(){
+      try{
+        const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
+        const j = await r.json();
+        const authed = j.scope === "user";
+        setAuthFlag(authed);
+        setPlan((j.plan||"free").toLowerCase());
+
+        // Member quotas (daily left)
+        if(authed){
+          const memEl = byId("memberQuota");
+          const cap = j.platform?.daily?.cap; const used = j.platform?.daily?.used||0;
+          if(memEl) memEl.textContent = cap==null ? "∞" : Math.max(0,(cap-used));
+        } else {
+          const demoEl = byId("demoQuota");
+          const cap = j.platform?.monthly?.cap ?? 5;
+          const used = j.platform?.monthly?.used || 0;
+          if(demoEl) demoEl.textContent = String(Math.max(0, cap-used));
+        }
+
+        // Integrations UI
+        const notion = j.integrations?.notion ? "connected":"—";
+        const trello = j.integrations?.trello ? "connected":"—";
+        const ns = byId("notionStatus"); if(ns) ns.textContent = `status: ${notion}`;
+        const ts = byId("trelloStatus"); if(ts) ts.textContent = `status: ${trello}`;
+
+        // Manage billing buttons visible when subscribed
+        ["manageBilling","manageBilling_m"].forEach(id=>{
+          const el=byId(id); if(el) el.classList.toggle("hidden", !j.is_subscribed);
+        });
+      }catch(e){
+        console.warn("status fail", e);
+        setAuthFlag(false); setPlan("free");
+      }
+    }
+
+    // === Live counter ===
+    async function paintLive(){
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/stats/today`);
+        const j=await r.json();
+        if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el.textContent=String(j.today_count)); }
+      }catch{}
+    }
+
+    // === Auth overlay ===
     const authSheet = byId("authSheet");
-    const openAuth = ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","false"); byId("authEmail")?.focus(); } };
-    const closeAuth= ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","true"); } };
+    function openAuth(){ if(authSheet){ authSheet.setAttribute("aria-hidden","false"); byId("authEmail")?.focus(); } }
+    function closeAuth(){ if(authSheet){ authSheet.setAttribute("aria-hidden","true"); } }
     ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
     $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
     byId("authClose")?.addEventListener("click", closeAuth);
     authSheet?.addEventListener("click",(e)=>{ if(e.target===authSheet) closeAuth(); });
 
-    // Auth actions
     byId("authGoogle")?.addEventListener("click", async ()=>{
       try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }}); }
       catch(e){ toast(e?.message||"Google sign-in failed"); }
@@ -1084,7 +1047,7 @@ try{
       try{ await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); }catch{}
     }));
 
-    // Finalize OAuth & clean URL
+    // Finalize OAuth (clean URL fragments)
     (async function finalizeOAuth(){
       try{
         const u=new URL(location.href);
@@ -1100,97 +1063,21 @@ try{
       }catch(e){ console.warn("OAuth finalize failed", e); }
     })();
 
-    // UI state helpers
-    function setAuthFlag(on){
-      AUTHTED=!!on;
-      document.body.setAttribute("data-auth", on? "authed":"guest");
-      $$(".only-guest").forEach(el=> el.classList.toggle("hidden", !!on));
-      $$(".only-authed").forEach(el=> el.classList.toggle("hidden", !on));
-    }
-    function setPlan(plan){
-      const p=(plan||"free").toLowerCase();
-      CURRENT_PLAN=p; document.body.setAttribute("data-plan", p);
-      const label=`Plan: ${cap(p)}`;
-      byId("planbadge")&&(byId("planbadge").textContent=label);
-      byId("planbadge_m")&&(byId("planbadge_m").textContent=label);
-      byId("heroPlanName")&&(byId("heroPlanName").textContent=cap(p));
-      const rank={free:0, starter:1, creator:2, business:3}[p]??0;
-      $$(".plan-starter-plus").forEach(el=> el.classList.toggle("hidden", rank<1));
-      $$(".plan-creator-plus").forEach(el=> el.classList.toggle("hidden", rank<2));
-      $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
-    }
-
-    async function getAuthHeaders(extra={}){
-      const h={ "Content-Type":"application/json", ...extra };
-      try{
-        const { data } = await supabase.auth.getSession();
-        const tok = data?.session?.access_token;
-        const uid = data?.session?.user?.id;
-        if(tok) h["Authorization"]=`Bearer ${tok}`;
-        if(uid) h["X-User-Id"] = uid;
-      }catch{}
-      return h;
-    }
-
-    // Status & quotas
-    async function fetchStatus(){
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
-        const j=await r.json();
-        const authed=j.scope==="user";
-        setAuthFlag(authed);
-        setPlan((j.plan||"free").toLowerCase());
-
-        // quotas
-        const memEl=byId("memberQuota"), demoEl=byId("demoQuota");
-        if(authed){
-          const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used||0;
-          if(memEl) memEl.textContent = (cap==null? "∞" : Math.max(0,(cap-used)));
-        }else{
-          if(demoEl && j.platform?.monthly){
-            const cap=j.platform.monthly.cap ?? 5;
-            const used=j.platform.monthly.used || 0;
-            demoEl.textContent = String(Math.max(0, cap-used));
-          }
-        }
-
-        // integration badges
-        byId("notionStatus")&&(byId("notionStatus").textContent = `status: ${j.integrations?.notion? "connected":"—"}`);
-        byId("trelloStatus")&&(byId("trelloStatus").textContent = `status: ${j.integrations?.trello? "connected":"—"}`);
-
-        // Manage billing visibility for authed users with customer
-        ["manageBilling","manageBilling_m"].forEach(id=>{
-          const el=byId(id);
-          if(el) el.classList.toggle("hidden", !j.is_subscribed);
-        });
-      }catch(e){ console.warn("status fail", e); setAuthFlag(false); setPlan("free"); }
-    }
-
-    // Promo buttons
-    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-    }));
-
-    // Billing buttons
+    // === Billing / checkout ===
     $$(".js-checkout").forEach(btn=>{
       btn.addEventListener("click", async ()=>{
-        const plan=btn.getAttribute("data-plan")||"starter";
-        const MAP={ starter:window.PRICE_IDS?.starter, creator:window.PRICE_IDS?.creator, business:window.PRICE_IDS?.business };
-        const priceId=MAP[plan]; if(!priceId) return toast("Missing price id");
-        const old=btn.textContent; btn.disabled=true; btn.textContent="Redirecting…";
+        const plan = btn.getAttribute("data-plan")||"starter";
+        const MAP  = { starter:window.PRICE_IDS?.starter, creator:window.PRICE_IDS?.creator, business:window.PRICE_IDS?.business };
+        const priceId = MAP[plan]; if(!priceId) return toast("Missing price id");
+        const old = btn.textContent; btn.disabled=true; btn.textContent="Redirecting…";
         try{
           const ref = localStorage.getItem("aff_ref");
           const successUrl = location.origin + location.pathname + "?billing=success" + (ref? `&ref=${encodeURIComponent(ref)}`:"");
           const cancelUrl  = location.origin + location.pathname + "?billing=cancel"  + (ref? `&ref=${encodeURIComponent(ref)}`:"");
-          const r=await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+          const r = await fetch(`${WORKER_BASE}/api/billing/checkout`,{
             method:"POST",
             headers: await getAuthHeaders(),
-            body: JSON.stringify({
-              price_id: priceId,
-              mode: "subscription",
-              success_url: successUrl,
-              cancel_url: cancelUrl
-            })
+            body: JSON.stringify({ price_id: priceId, mode:"subscription", success_url: successUrl, cancel_url: cancelUrl })
           });
           const j=await r.json();
           if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Checkout failed");
@@ -1210,26 +1097,21 @@ try{
       });
     });
 
-    // Live ticker
-    async function paintLive(){
-      try{
-        const r=await fetch(`${WORKER_BASE}/api/stats/today`);
-        const j=await r.json();
-        if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el.textContent=String(j.today_count)); }
-      }catch{}
-    }
+    // Promo copy buttons
+    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+    }));
 
-    // ===== Generator wiring =====
+    // === GENERATOR (→ /api/generate) ===
     function readToggles(form){
       const g=(n)=> form.elements[n];
       return {
         ch:{ linkedin:g("ch_linkedin")?.checked, x:g("ch_x")?.checked, email:g("ch_email")?.checked, instagram:g("ch_instagram")?.checked, reddit:g("ch_reddit")?.checked, facebook:g("ch_facebook")?.checked, quora:g("ch_quora")?.checked, tiktok:g("ch_tiktok")?.checked },
-        extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked },
-        opt:{ humanize:g("opt_humanize")?.checked, lengthen:g("opt_lengthen")?.checked, faqs:g("opt_faqs")?.checked, headings:g("opt_headings")?.checked, svg:g("opt_svg")?.checked, seo:g("opt_seo")?.checked, meta:g("opt_meta")?.checked, ab:g("opt_ab")?.checked, reddit:g("opt_reddit")?.checked, li_article:g("opt_li_article")?.checked }
+        extras:{ li_article:g("li_article")?.checked, x_sequence:g("x_sequence")?.checked, x_posts:g("x_posts")?.value||"4", rdt_communities:g("rdt_communities")?.checked, rdt_comments:g("rdt_comments")?.checked, tt_hooks:g("tt_hooks")?.checked, tt_onscreen:g("tt_onscreen")?.checked }
       };
     }
     const parseJsonLoose=(txt)=>{ if(!txt) return null; let s=String(txt).trim(); s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1); try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
-    function systemPrompt(t){ return { role:"system", content:
+    function systemPrompt(){ return { role:"system", content:
 `You are a senior social copywriter.
 Return ONLY JSON:
 { "outline":string,
@@ -1346,11 +1228,11 @@ Task:
               <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
             </div>
             <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${left}</p>
-          </div>
-        `);
+          </div>`);
         $$(".js-open-auth", wrap).forEach(b=> b.addEventListener("click", openAuth));
       }
     }
+
     function wireGenerator(){
       const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput");
       const guestBtn=byId("generateBtn"), memBtn=byId("generateBtn_member"), clearBtn=byId("clearBtn");
@@ -1366,13 +1248,17 @@ Task:
           btn&&(btn.disabled=true, btn.textContent="Generating…");
           out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
           const t=readToggles(form);
-          const messages=[ systemPrompt(t), userPrompt(raw, form, t) ];
-          const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+          const messages=[ systemPrompt(), userPrompt(raw, form, t) ];
+
+          // Lane: BYOK header or platform free/pro
           const headers = await getAuthHeaders();
           const byokKey=(byId("byokKey")?.value||"").trim();
+          const preferModel=(byId("byokModel")?.value||"").trim();
+          const lane = byokKey ? "byok" : (AUTHTED && CURRENT_PLAN!=="free" ? "pro":"free");
           if(byokKey) headers["X-User-OpenRouter-Key"]=byokKey;
-          const body = { plan: byokKey? "byok": lane, temperature:0.5, messages };
-          const preferModel=(byId("byokModel")?.value||"").trim(); if(preferModel) body.model=preferModel;
+
+          const body = { plan: lane, temperature:0.5, messages };
+          if(preferModel) body.model=preferModel;
 
           const r=await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify(body) });
           const j=await r.json();
@@ -1380,17 +1266,21 @@ Task:
           const content=j?.choices?.[0]?.message?.content||"";
           const data=parseJsonLoose(content); if(!data) throw new Error("Model did not return JSON");
           paintOutput(data); toast("Done ✅");
+
           try{
             const s=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
             if(s?.scope==="ip" && s.platform?.monthly){ ctaAfterGuestTries(s.platform.monthly.used, s.platform.monthly.cap ?? 5); }
           }catch{}
           fetchStatus().catch(()=>{});
-        }catch(err){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${err.message||err}</div>`; }
-        finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
+        }catch(err){
+          out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${err.message||err}</div>`;
+        }finally{
+          btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)"));
+        }
       });
     }
 
-    // ===== Optimizer wiring =====
+    // === OPTIMIZER (→ /api/optimize) ===
     function optSystem(){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY JSON:
 { "html":string, "title":string, "meta_description":string,
@@ -1412,8 +1302,7 @@ Task:
               <button class="btn copy" type="button">Copy</button>
             </div>
             <pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre>
-          </div>
-        `);
+          </div>`);
         const c=byId(id);
         $(".btn.copy",c)?.addEventListener("click", async()=>{ try{ await navigator.clipboard.writeText($(".content",c)?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
       };
@@ -1440,9 +1329,10 @@ Task:
           const lane = (CURRENT_PLAN==="free") ? "free" : "pro";
           const headers = await getAuthHeaders();
           const byokKey=(byId("byokKey")?.value||"").trim();
+          const preferModel=(byId("byokModel")?.value||"").trim();
           if(byokKey) headers["X-User-OpenRouter-Key"]=byokKey;
           const body = { plan: byokKey? "byok": lane, temperature:0.4, messages };
-          const preferModel=(byId("byokModel")?.value||"").trim(); if(preferModel) body.model=preferModel;
+          if(preferModel) body.model=preferModel;
 
           const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify(body) });
           const j=await r.json();
@@ -1455,18 +1345,88 @@ Task:
       });
     }
 
-    // Calendar preview + schedule
-    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="none"; } }
+    // === PRESETS (→ /api/presets/*) ===
+    function collectPresetPayload(){
+      const form=byId("demoForm");
+      const t=readToggles(form);
+      const srcType=form.elements["sourceType"]?.value||"paragraph";
+      return { srcType, toggles:t };
+    }
+    async function refreshPresetList(){
+      if(!AUTHTED) return;
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"List failed");
+        const sel=byId("presetSelect"); if(!sel) return;
+        sel.innerHTML = `<option value="">— Select preset —</option>` + (j.items||[]).map(it=>`<option value="${it.id}">${it.name}</option>`).join("");
+      }catch(e){ console.warn(e); }
+    }
+    async function savePreset(){
+      if(!AUTHTED) return openAuth();
+      const name=(byId("presetName")?.value||"").trim(); if(!name) return toast("Enter a preset name");
+      const payload = collectPresetPayload();
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/save`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ name, payload }) });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
+        toast("Preset saved ✅"); byId("presetName").value=""; refreshPresetList();
+      }catch(e){ toast(e.message||"Save failed"); }
+    }
+    async function loadPreset(apply=false, andRun=false){
+      if(!AUTHTED) return openAuth();
+      const id=(byId("presetSelect")?.value||""); if(!id) return toast("Choose a preset");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`,{ headers: await getAuthHeaders() });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Load failed");
+        if(apply){
+          const form=byId("demoForm"); const p=j?.payload||{};
+          if(p?.srcType) { $$('input[name="sourceType"]').forEach(radio=>{ radio.checked = (radio.value===p.srcType); }); }
+          const t=p?.toggles||{};
+          const set = (n,v)=>{ const el=form.elements[n]; if(!el) return; if(el.type==="checkbox") el.checked=!!v; else if(el.tagName==="SELECT"||el.tagName==="INPUT") el.value=v; };
+          if(t.ch){ Object.entries(t.ch).forEach(([k,v])=> set(`ch_${k}`, !!v)); }
+          if(t.extras){
+            set("li_article", t.extras.li_article);
+            set("x_sequence", t.extras.x_sequence);
+            set("x_posts", t.extras.x_posts||"4");
+            set("rdt_communities", t.extras.rdt_communities);
+            set("rdt_comments", t.extras.rdt_comments);
+            set("tt_hooks", t.extras.tt_hooks);
+            set("tt_onscreen", t.extras.tt_onscreen);
+          }
+          toast("Preset applied ✅");
+          if(andRun){ byId("demoForm").dispatchEvent(new Event("submit",{cancelable:true})); }
+        }
+      }catch(e){ toast(e.message||"Load failed"); }
+    }
+    async function deletePreset(){
+      if(!AUTHTED) return openAuth();
+      const id=(byId("presetSelect")?.value||""); if(!id) return toast("Choose a preset");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/presets/delete`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ id }) });
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Delete failed");
+        toast("Preset deleted"); refreshPresetList();
+      }catch(e){ toast(e.message||"Delete failed"); }
+    }
+    // Wire preset buttons
+    byId("presetSave")?.addEventListener("click", savePreset);
+    byId("presetLoad")?.addEventListener("click", ()=>loadPreset(true,false));
+    byId("presetLoadAndRun")?.addEventListener("click", ()=>loadPreset(true,true));
+    byId("presetDelete")?.addEventListener("click", deletePreset);
+
+    // === Calendar & Scheduler (→ /api/schedule/*) ===
+    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="block"; } }
     function closeModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "close" in HTMLDialogElement.prototype){ if(dlg.open) dlg.close(); } else { dlg.removeAttribute("open"); dlg.style.display="none"; } }catch{ dlg.removeAttribute("open"); dlg.style.display="none"; } }
     function wireCalendar(){
       const grid=byId("calGrid");
-      if(grid){ grid.textContent="Read-only preview — sign in & upgrade to schedule posts."; }
-      byId("calNew")?.addEventListener("click", ()=>{ showModalSafe(byId("scheduleDlg")); });
+      if(grid){ grid.textContent = (["starter","creator","business"].includes(CURRENT_PLAN) ? "Your personal scheduler is enabled. Create a post to see it appear here." : "Read-only preview — sign in & upgrade to schedule posts."); }
+      byId("calNew")?.addEventListener("click", ()=>{ if(!AUTHTED || CURRENT_PLAN==="free") return toast("Scheduler requires Starter+"); showModalSafe(byId("scheduleDlg")); });
       byId("schClose")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("schCancel")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("scheduleDlg")?.addEventListener("click",(e)=>{ const form=byId("scheduleForm"); const rect=form?.getBoundingClientRect(); if(!rect) return; const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom; if(!inBox) closeModalSafe(byId("scheduleDlg")); });
+
       byId("scheduleForm")?.addEventListener("submit", async (e)=>{
         e.preventDefault();
+        if(!AUTHTED) return openAuth();
+        if(CURRENT_PLAN==="free") return toast("Scheduler requires Starter+");
         const when=byId("schWhen")?.value, text=(byId("schText")?.value||"").trim();
         if(!when||!text) return toast("Pick a date/time and content");
         try{
@@ -1477,8 +1437,9 @@ Task:
       });
     }
 
-    // Integrations connect/disconnect
+    // === Integrations ===
     byId("connectNotion")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/notion/connect`,{ method:"POST", headers: await getAuthHeaders()});
         const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Connect failed");
@@ -1486,6 +1447,7 @@ Task:
       }catch(e){ toast(e.message||"Notion connect failed"); }
     });
     byId("disconnectNotion")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/notion/disconnect`,{ method:"POST", headers: await getAuthHeaders()});
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Disconnect failed");
@@ -1493,6 +1455,7 @@ Task:
       }catch(e){ toast(e.message||"Disconnect failed"); }
     });
     byId("connectTrello")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/trello/connect`,{ method:"POST", headers: await getAuthHeaders()});
         const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Connect failed");
@@ -1500,6 +1463,7 @@ Task:
       }catch(e){ toast(e.message||"Trello connect failed"); }
     });
     byId("disconnectTrello")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       try{
         const r=await fetch(`${WORKER_BASE}/api/integrations/trello/disconnect`,{ method:"POST", headers: await getAuthHeaders()});
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Disconnect failed");
@@ -1507,8 +1471,9 @@ Task:
       }catch(e){ toast(e.message||"Disconnect failed"); }
     });
 
-    // BYOK save/clear
+    // === BYOK ===
     byId("byokSave")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       const key=(byId("byokKey")?.value||"").trim(); if(!key) return toast("Enter your OpenRouter key");
       try{
         const r=await fetch(`${WORKER_BASE}/api/account/byok/save`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key })});
@@ -1517,6 +1482,7 @@ Task:
       }catch(e){ toast(e.message||"Save failed"); }
     });
     byId("byokClear")?.addEventListener("click", async ()=>{
+      if(!AUTHTED) return openAuth();
       try{
         const r=await fetch(`${WORKER_BASE}/api/account/byok/clear`,{ method:"POST", headers: await getAuthHeaders()});
         const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Clear failed");
@@ -1524,8 +1490,8 @@ Task:
       }catch(e){ toast(e.message||"Clear failed"); }
     });
 
-    // Year + billing result
-    byId("year")&&(byId("year").textContent=new Date().getFullYear());
+    // === Boot ===
+    byId("year")&&(byId("year").textContent=(new Date()).getFullYear());
     try{
       const u=new URL(location.href);
       if(u.searchParams.get("billing")==="success") toast("Billing updated — thank you!");
@@ -1534,26 +1500,27 @@ Task:
       history.replaceState({}, "", u.toString());
     }catch{}
 
-    // Auth change → update UI & close auth
+    // Auth change → reflect plan and load lists
     supabase.auth.onAuthStateChange((_evt, session)=>{
-      setAuthFlag(!!session); setPlan("free"); // base until status returns
-      fetchStatus();
+      setAuthFlag(!!session); setPlan("free"); // temporary until status fetch
+      fetchStatus().then(refreshPresetList).catch(()=>{});
       closeAuth();
     });
 
-    // Boot
+    // Initial run
     (async function boot(){
       try{
+        // Wire features
         wireGenerator();
         wireOptimizer();
         wireCalendar();
+
+        // Status & live counts
         await fetchStatus();
-        await paintLive(); setInterval(paintLive, 30000);
-      }catch(e){
-        console.error(e); toast("App failed to initialize");
-      }
+        await refreshPresetList();
+        await paintLive();
+        setInterval(paintLive, 30000);
+      }catch(e){ console.error(e); toast("App failed to initialize"); }
     })();
   })();
   </script>
-</body>
-</html>
