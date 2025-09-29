@@ -805,7 +805,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <span id="toastMsg">…</span>
     </div>
   </div>
-
   <!-- ===== APP BOOT (auth overlay fixed + non-refresh submits) ===== -->
   <script>
   (function(){
@@ -1025,21 +1024,24 @@ Task:
 2) Generate ONLY for: ${channels||"linkedin,x,email"}.
 3) Respect toggles exactly.`};
     }
+
+    // FIXED: proper template literal interpolation (no backslashes)
     function addCard(wrap, title, bodyText){
       const id=`c_${Math.random().toString(36).slice(2,8)}`;
       wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5" id="\${id}">
+        <div class="card p-5" id="${id}">
           <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">\${title}</strong>
+            <strong class="tracking-tight">${title}</strong>
             <div class="flex gap-2">
               <button class="btn copy" type="button">Copy</button>
             </div>
           </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">\${bodyText}</pre>
+          <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
         </div>`);
       const card=byId(id), copyBtn=$(".btn.copy", card), pre=$("pre.content", card);
       copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
     }
+
     function paintOutput(j){
       const wrap=byId("demoOutput"); wrap.innerHTML="";
       if(j.linkedin) addCard(wrap,"LinkedIn",j.linkedin);
@@ -1061,7 +1063,7 @@ Task:
       const wrap=byId("demoOutput");
       if(!wrap) return;
       const left=Math.max(0, cap-used);
-      if(used>=2){ // show CTA after 2 guest runs this month
+      if(used>=2){
         wrap.insertAdjacentHTML("afterbegin", `
           <div class="card p-5">
             <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -1082,7 +1084,7 @@ Task:
       clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
 
       form.addEventListener("submit", async (e)=>{
-        e.preventDefault(); // stop refresh
+        e.preventDefault();
         const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
         const btn = AUTHTED ? memBtn : guestBtn; const old=btn?.textContent;
         try{
@@ -1098,7 +1100,6 @@ Task:
           const content=j?.choices?.[0]?.message?.content||"";
           const data=parseJsonLoose(content); if(!data) throw new Error("Model did not return JSON");
           paintOutput(data); toast("Done ✅");
-          // refresh status to update counters and trigger CTA for guests
           try{
             const s=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
             if(s?.scope==="ip" && s.platform?.monthly){ ctaAfterGuestTries(s.platform.monthly.used, s.platform.monthly.cap ?? 5); }
@@ -1120,9 +1121,24 @@ Task:
   "rank_likelihood":string|null,
   "linkedin_article_html":string|null }`}; }
     function optUser(src){ return { role:"user", content:`Improve this HTML/Markdown:\n\n${src}\n\nAdd headings, meta, optional FAQs & Reddit TL;DR. Return JSON only.`}; }
+
+    // FIXED card builder also uses real interpolation
     function paintOpt(j){
       const wrap=byId("optOutput"); wrap.innerHTML="";
-      const card=(title, txt)=>{ wrap.insertAdjacentHTML("beforeend", `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>${title}</strong><button class="btn copy" type="button">Copy</button></div><pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre></div>`); const c=wrap.lastElementChild; $(".btn.copy",c)?.addEventListener("click", async()=>{ try{ await navigator.clipboard.writeText($(".content",c)?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } }); };
+      const card=(title, txt)=>{
+        const id=`o_${Math.random().toString(36).slice(2,8)}`;
+        wrap.insertAdjacentHTML("beforeend", `
+          <div class="card p-5" id="${id}">
+            <div class="flex justify-between items-center gap-2 flex-wrap">
+              <strong>${title}</strong>
+              <button class="btn copy" type="button">Copy</button>
+            </div>
+            <pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre>
+          </div>
+        `);
+        const c=byId(id);
+        $(".btn.copy",c)?.addEventListener("click", async()=>{ try{ await navigator.clipboard.writeText($(".content",c)?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
+      };
       if(j.title||j.meta_description) card("Title & Meta", `Title: ${j.title||""}\n\n${j.meta_description||""}`);
       if(j.ab_titles?.length) card("A/B Titles", j.ab_titles.map((t,i)=>`${i+1}. ${t}`).join("\n"));
       if(j.html) card("Improved Article (HTML)", j.html);
@@ -1131,6 +1147,7 @@ Task:
       if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}`);
       if(j.linkedin_article_html) card("LinkedIn Article (HTML)", j.linkedin_article_html);
     }
+
     function wireOptimizer(){
       const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
       if(!form || !src) return;
@@ -1157,7 +1174,7 @@ Task:
     }
 
     // Calendar preview + schedule
-    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="block"; } }
+    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="none"; } }
     function closeModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "close" in HTMLDialogElement.prototype){ if(dlg.open) dlg.close(); } else { dlg.removeAttribute("open"); dlg.style.display="none"; } }catch{ dlg.removeAttribute("open"); dlg.style.display="none"; } }
     function wireCalendar(){
       const grid=byId("calGrid");
@@ -1178,7 +1195,7 @@ Task:
       });
     }
 
-    // Export quick actions (stubs open sites; backend integration buttons stay visible for Creator+)
+    // Export quick actions
     byId("qp-x")?.addEventListener("click", ()=> window.open("https://x.com/compose/post","_blank"));
     byId("qp-reddit")?.addEventListener("click", ()=> window.open("https://www.reddit.com/submit","_blank"));
     byId("qp-linkedin")?.addEventListener("click", ()=> window.open("https://www.linkedin.com/feed/","_blank"));
