@@ -163,8 +163,54 @@
 </head>
 
 <body class="min-h-full" data-auth="guest" data-plan="free">
+
+  <!-- AUTH OPEN: early, dependency-free, works even if other scripts fail -->
+  <script>
+  (function () {
+    function openAuth() {
+      var sheet = document.getElementById("authSheet");
+      if (!sheet) return;
+      sheet.setAttribute("aria-hidden", "false");
+      var email = document.getElementById("authEmail");
+      if (email && email.focus) email.focus();
+    }
+    function closeAuth() {
+      var sheet = document.getElementById("authSheet");
+      if (sheet) sheet.setAttribute("aria-hidden", "true");
+    }
+    window.__openAuth = openAuth; window.__closeAuth = closeAuth;
+
+    if (!document.getElementById("auth-overlay-zfix")) {
+      var css = document.createElement("style");
+      css.id = "auth-overlay-zfix";
+      css.textContent = ".auth-overlay{z-index:2147483000}";
+      document.head.appendChild(css);
+    }
+
+    document.addEventListener("click", function (e) {
+      var t = e.target && (e.target.closest
+        ? e.target.closest("#loginBtn, #loginBtn_m, #heroSignIn, .js-open-auth, [data-auth-open]")
+        : null);
+      if (t) { e.preventDefault(); openAuth(); }
+      var sheet = document.getElementById("authSheet");
+      if (sheet && e.target === sheet) closeAuth();
+    }, true);
+
+    document.addEventListener("DOMContentLoaded", function () {
+      var x = document.getElementById("authClose");
+      if (x && !x.__bound) { x.addEventListener("click", closeAuth); x.__bound = true; }
+    });
+
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.setAttribute("data-auth-open", "");
+    });
+  })();
+  </script>
+
   <!-- PLAN ACTIVATED ribbon (driven by data-plan) -->
   <div id="planRibbon" class="plan-ribbon">
+
     <span class="plan-dot" aria-hidden="true"></span>
     <strong id="planRibbonText" class="tracking-tight">PLAN ACTIVATED: Free</strong>
     <span class="text-xs opacity-70">Enjoy your current caps. Upgrade anytime for batch, scheduler & higher limits.</span>
