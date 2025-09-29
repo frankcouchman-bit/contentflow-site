@@ -68,14 +68,14 @@
     body[data-plan="business"] .plan-business-only{display:revert}
     :focus-visible{ outline:2px solid var(--brandA); outline-offset:2px }
 
-    /* NEW: rock-solid auth overlay (works on iOS/Android/desktop) */
+    /* Mobile-safe auth overlay */
     .auth-overlay{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.5); z-index:1000}
     .auth-overlay[aria-hidden="false"]{display:grid}
     .auth-panel{width:min(92vw,480px); background:rgba(14,16,22,.98); color:white; border-radius:14px; border:1px solid rgba(255,255,255,.12); padding:16px}
     .auth-panel input{background:rgba(255,255,255,.1)}
   </style>
 
-  <!-- Worker base & prices -->
+  <!-- Worker base & Stripe price IDs -->
   <script>
     window.WORKER_BASE = "https://contentflow-worker.frank-couchman.workers.dev";
     window.SITE_ORIGIN = location.origin;
@@ -154,7 +154,7 @@
       <div>
         <div id="heroBadgeWrap" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/40">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span class="only-guest">Preview the demo (no login)</span>
+          <span class="only-guest">Preview the demo — <strong>5 runs/month</strong> (no login)</span>
           <span class="only-authed hidden">Signed in — <strong id="heroPlanName">Free</strong> plan active</span>
         </div>
         <h1 class="mt-4 text-3xl md:text-5xl font-black leading-tight tracking-tight">
@@ -165,8 +165,8 @@
           Export to <strong>Notion</strong> & <strong>Trello</strong>. <strong>BYOK</strong> supported.
         </p>
         <ul class="mt-3 text-sm text-slate-600 dark:text-slate-300">
-          <li>• <strong>Free (signed-in)</strong>: Generator <strong>5/day</strong>, Optimizer <strong>1/day</strong>.</li>
-          <li>• Upgrade for batch, scheduler, calendar, team seats & unlimited presets.</li>
+          <li>• <strong>Guest (no login):</strong> Generator <strong>5/month</strong> (IP-based).</li>
+          <li>• <strong>Free (signed-in):</strong> Generator <strong>5/day</strong>, Optimizer <strong>1/day</strong>.</li>
         </ul>
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#demo" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90">Open Generator</a>
@@ -229,7 +229,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     </div>
   </section>
 
-  <!-- AUTH OVERLAY (replaces <dialog>) -->
+  <!-- AUTH OVERLAY (email magic link + Google) -->
   <div id="authSheet" class="auth-overlay" aria-hidden="true" role="dialog" aria-modal="true">
     <div class="auth-panel">
       <div class="flex items-center justify-between">
@@ -245,6 +245,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <p id="authNote" class="text-xs text-slate-400 mt-2">We’ll never share your email.</p>
     </div>
   </div>
+
   <!-- ===== GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -252,7 +253,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Generator</h2>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-guest">
-            No login needed — <span class="font-semibold">5 runs/day</span> (free preview).
+            Guest preview — <span class="font-semibold">5 runs/month</span> (IP-based; no login).
           </p>
           <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm only-authed hidden">
             Signed in — your plan applies: <span class="chip">Free: 5/day</span> •
@@ -270,7 +271,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2 text-sm">
             <span class="badge">Heads up</span>
-            <span id="planNotice">Free: 5 generator runs/day & 1 optimizer/day. Upgrade for batch, scheduler, and unlimited presets.</span>
+            <span id="planNotice">Guests: 5/month on the generator. Sign in for 5/day + access the Article Optimizer.</span>
           </div>
           <div class="flex items-center gap-2">
             <button id="copyPromoBtn2" class="btn" type="button">Copy 90% OFF code</button>
@@ -438,7 +439,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
             <button id="generateBtn" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-guest">Generate (demo)</button>
             <button id="generateBtn_member" type="submit" class="px-4 py-3 rounded-xl font-semibold text-white bg-black hover:opacity-90 only-authed hidden">Generate</button>
             <button type="button" id="clearBtn" class="px-4 py-3 rounded-xl font-semibold border">Clear</button>
-            <div class="text-sm text-slate-500 only-guest">You have <span id="demoQuota">—</span> runs left today.</div>
+            <div class="text-sm text-slate-500 only-guest">You have <span id="demoQuota">—</span> runs left this month.</div>
             <div class="text-sm text-slate-500 only-authed hidden">You have <span id="memberQuota">—</span> runs left today.</div>
             <a href="#pricing" class="text-sm underline hover:opacity-80 ml-auto">Need more? See plans</a>
           </div>
@@ -466,15 +467,19 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
       <div class="flex items-end justify-between gap-4 mb-6">
         <div>
           <h2 class="text-2xl md:text-3xl font-black tracking-tight">Article Optimizer</h2>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.</p>
-          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs">
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
+            Paste <strong>HTML or Markdown</strong>. We’ll return an improved article + SEO assets.
+          </p>
+          <p class="mt-1 text-amber-600 dark:text-amber-400 text-sm only-guest">
+            You must <strong>sign in</strong> to use the Article Optimizer (Free: 1/day).
+          </p>
+          <p class="mt-1 text-slate-500 dark:text-slate-300 text-xs only-authed hidden">
             Free: 1/day • Starter: 5/day • Creator: 15/day • Business: 30/day.
           </p>
         </div>
@@ -541,6 +546,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div id="optOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
+
   <!-- ===== INTEGRATIONS ===== -->
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -575,7 +581,41 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     </div>
   </section>
 
-  <!-- ===== SCHEDULER MODAL ===== -->
+  <!-- ===== CALENDAR ===== -->
+  <section id="calendar" class="relative scroll-mt-24">
+    <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
+      <h2 class="text-2xl md:text-3xl font-black tracking-tight">Calendar & Scheduler</h2>
+      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
+        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & seats (3).
+      </p>
+
+      <div class="card p-5 md:p-6 mt-4">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-2">
+            <span class="chip">View</span>
+            <select id="calView" class="border rounded-lg px-2 py-1">
+              <option value="week">Week</option>
+              <option value="month" selected>Month</option>
+              <option value="agenda">Agenda</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="calPrev" class="btn" type="button">‹</button>
+            <button id="calToday" class="btn" type="button">Today</button>
+            <button id="calNext" class="btn" type="button">›</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="calNew" class="btn plan-starter-plus" type="button">New scheduled post</button>
+          </div>
+        </div>
+        <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
+          (Calendar view loads here)
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schedule modal -->
   <dialog id="scheduleDlg" class="rounded-xl p-0 w-[92vw] max-w-md" aria-labelledby="scheduleTitle" aria-modal="true">
     <form id="scheduleForm" method="dialog" class="p-5 grid gap-4" novalidate onsubmit="return false;">
       <div class="flex items-center justify-between">
@@ -617,35 +657,39 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     </form>
   </dialog>
 
-  <!-- ===== CALENDAR ===== -->
-  <section id="calendar" class="relative scroll-mt-24">
+  <!-- ===== SEO: FAQs for Guest View ===== -->
+  <section id="faqs" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
-      <h2 class="text-2xl md:text-3xl font-black tracking-tight">Calendar & Scheduler</h2>
-      <p class="mt-1 text-slate-500 dark:text-slate-300 text-sm">
-        Free: read-only preview • Starter/Creator: personal calendar • Business: shared team calendar & seats (3).
-      </p>
+      <div class="card p-6 md:p-8">
+        <h2 class="text-2xl md:text-3xl font-black tracking-tight">Content Repurposing FAQs</h2>
+        <p class="mt-2 text-slate-500 dark:text-slate-300">Answers for people searching for “content repurpose”, “repurposing content”, “social media generator”, and “AI content creation tool”.</p>
 
-      <div class="card p-5 md:p-6 mt-4">
-        <div class="flex items-center justify-between flex-wrap gap-3">
-          <div class="flex items-center gap-2">
-            <span class="chip">View</span>
-            <select id="calView" class="border rounded-lg px-2 py-1">
-              <option value="week">Week</option>
-              <option value="month" selected>Month</option>
-              <option value="agenda">Agenda</option>
-            </select>
+        <div class="mt-6 grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold">What is content repurposing?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-300 mt-1">It’s the process of turning one asset (like a blog post or notes) into multiple platform-native pieces: LinkedIn, X, Email, Instagram, Reddit, Facebook, Quora, and TikTok. Our AI generator keeps voice and intent while optimizing length, hooks, hashtags, and CTAs.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button id="calPrev" class="btn" type="button">‹</button>
-            <button id="calToday" class="btn" type="button">Today</button>
-            <button id="calNext" class="btn" type="button">›</button>
+          <div>
+            <h3 class="font-semibold">How is this different from a generic AI generator?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-300 mt-1">We are a focused <em>content repurpose tool</em>—not a chat box. You paste once, choose channels, and get platform-ready drafts + an optional LinkedIn Article. Presets, batch mode, scheduler, calendar, Notion/Trello export, and BYOK make it production-ready.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <button id="calNew" class="btn plan-starter-plus" type="button">New scheduled post</button>
+          <div>
+            <h3 class="font-semibold">Will this help SEO?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-300 mt-1">Yes. The Article Optimizer adds headings, title/meta, FAQs (JSON-LD), alt text hints, and A/B titles to improve click-through and on-page structure for your target keywords.</p>
+          </div>
+          <div>
+            <h3 class="font-semibold">Do I need to sign in?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-300 mt-1">Guest preview is <strong>5 runs/month</strong> (IP-based). Sign in to unlock <strong>5/day</strong>, the Article Optimizer, saved presets, and higher caps on paid plans.</p>
           </div>
         </div>
-        <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
-          (Calendar view loads here)
+
+        <div class="mt-8">
+          <h3 class="font-semibold">Recommended reads</h3>
+          <ul class="list-disc pl-6 text-sm mt-2 space-y-1">
+            <li><a class="underline" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI Social Media Post Generator</a></li>
+            <li><a class="underline" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Content Repurposing for SEO</a></li>
+            <li><a class="underline" href="https://contentrepurpose.pro/blog/linkedin-post-templates/">LinkedIn Post Templates</a></li>
+          </ul>
         </div>
       </div>
     </div>
@@ -666,10 +710,10 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           </div>
           <div class="mt-2 text-3xl font-black">$0 <span class="text-sm font-semibold text-slate-500">/ forever</span></div>
           <ul class="mt-4 text-sm space-y-2">
-            <li>• Generator: <strong>5 runs / day</strong> (public pool)</li>
-            <li>• Article Optimizer: <strong>1 / day</strong></li>
+            <li>• Generator: <strong>5 runs / day</strong> (signed-in)</li>
+            <li>• Guest preview: <strong>5 / month</strong> (no login)</li>
+            <li>• Article Optimizer: <strong>1 / day</strong> (signed-in)</li>
             <li>• Presets: <strong>1 saved preset</strong></li>
-            <li>• Batch: <strong>—</strong></li>
             <li>• Notion/Trello publish: <strong>1 / day</strong></li>
             <li>• Scheduler: <strong>visible (upgrade to use)</strong></li>
             <li>• Calendar: <strong>read-only</strong></li>
@@ -744,9 +788,12 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   <footer class="mt-20 border-t">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-10 text-sm flex flex-wrap items-center justify-between gap-3">
       <div class="opacity-80">© <span id="year">2025</span> ContentRepurpose.pro</div>
-      <nav class="flex items-center gap-4 opacity-80">
+      <nav class="flex flex-wrap items-center gap-4 opacity-80">
         <a href="#pricing" class="hover:opacity-100">Pricing</a>
         <a href="#integrations" class="hover:opacity-100">Integrations</a>
+        <a href="https://contentrepurpose.pro/blog/" class="hover:opacity-100">Blog</a>
+        <a href="https://contentrepurpose.pro/terms" class="hover:opacity-100">Terms</a>
+        <a href="https://contentrepurpose.pro/privacy" class="hover:opacity-100">Privacy</a>
         <a href="mailto:hello@contentrepurpose.pro" class="hover:opacity-100">Contact</a>
       </nav>
     </div>
@@ -758,80 +805,54 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <span id="toastMsg">…</span>
     </div>
   </div>
-  <!-- ===== APP BOOT (fixed) ===== -->
-  <script type="module">
-  (()=>{
 
-    /* ----------------- small helpers ----------------- */
-    const $  = (s, el=document)=> el.querySelector(s);
-    const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
-    const byId = (id)=> document.getElementById(id);
-    const toast=(msg)=>{ const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){ alert(msg); return; } m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000); };
-    const cap = (s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
+  <!-- ===== APP BOOT (auth overlay fixed + non-refresh submits) ===== -->
+  <script>
+  (function(){
+    const $ = (s,el=document)=>el.querySelector(s);
+    const $$ = (s,el=document)=>Array.from(el.querySelectorAll(s));
+    const byId = (id)=>document.getElementById(id);
+    const toast=(msg)=>{const t=byId("toast"),m=byId("toastMsg"); if(!t||!m){alert(msg);return;} m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2000);};
+    const cap=(s)=> (s||"").slice(0,1).toUpperCase()+(s||"").slice(1);
 
-    // Config
     const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
     const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-    // Supabase (from head, but we harden it with a loader + fallback)
-    const SUPABASE_URL  = window.SUPABASE_URL  || "https://ynkoavaeadlzlwylmfmu.supabase.co";
-    const SUPABASE_ANON = window.SUPABASE_ANON || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
-    let supabase=null, AUTHTED=false, CURRENT_PLAN="free", USER_ID=null;
+    // Supabase client (UMD already loaded in <head>)
+    const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
 
-    // Dialog polyfill (mobile Safari etc.)
-    function showModalSafe(dlg){
-      if(!dlg) return;
+    let AUTHTED=false, CURRENT_PLAN="free";
+
+    /* ---------- auth overlay (never uses <dialog>, mobile safe) ---------- */
+    const authSheet = byId("authSheet");
+    const openAuth = ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","false"); byId("authEmail")?.focus(); } };
+    const closeAuth= ()=>{ if(authSheet){ authSheet.setAttribute("aria-hidden","true"); } };
+
+    ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
+    $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
+    byId("authClose")?.addEventListener("click", closeAuth);
+    authSheet?.addEventListener("click",(e)=>{ if(e.target===authSheet) closeAuth(); });
+
+    // Auth actions
+    byId("authGoogle")?.addEventListener("click", async ()=>{
+      try{ await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }}); }
+      catch(e){ toast(e?.message||"Google sign-in failed"); }
+    });
+    byId("authSend")?.addEventListener("click", async ()=>{
+      const email=(byId("authEmail")?.value||"").trim(); if(!email) return toast("Enter your email");
       try{
-        if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){
-          if(!dlg.open) dlg.showModal();
-        }else{ dlg.setAttribute("open",""); dlg.style.display="block"; }
-      }catch{ dlg.setAttribute("open",""); dlg.style.display="block"; }
-    }
-    function closeModalSafe(dlg){
-      if(!dlg) return;
-      try{
-        if(typeof HTMLDialogElement!=="undefined" && "close" in HTMLDialogElement.prototype){
-          if(dlg.open) dlg.close();
-        }else{ dlg.removeAttribute("open"); dlg.style.display="none"; }
-      }catch{ dlg.removeAttribute("open"); dlg.style.display="none"; }
-    }
+        const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
+        if(error) throw error; toast("Check your email for the magic link.");
+      }catch(e){ toast(e?.message||"Sign-in error"); }
+    });
+    ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+      try{ await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); }catch{}
+    }));
 
-    // Prevent ANY accidental form navigation (we opt-in later)
-    document.addEventListener("submit",(e)=>{
-      // generator, optimizer, schedule handled manually below
-      const id=e.target?.id||"";
-      if(id==="demoForm"||id==="optForm"||id==="scheduleForm") return; // handled
-      e.preventDefault();
-    }, true);
-
-    // Load Supabase with robust fallback (ESM → UMD)
-    async function ensureSupabase(){
-      if(supabase && supabase.auth) return supabase;
-      try{
-        if (window.supabase?.createClient){
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-          return supabase;
-        }
-        const mod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-        supabase = mod.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-        return supabase;
-      }catch{
-        // UMD fallback
-        await new Promise((res,rej)=>{
-          const s=document.createElement("script");
-          s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js";
-          s.onload=res; s.onerror=rej; document.head.appendChild(s);
-        }).catch(()=>{});
-        if(window.supabase?.createClient){
-          supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }});
-          return supabase;
-        }
-        throw new Error("Could not load Supabase client");
-      }
-    }
-
-    // Clean OAuth URL params (supabase app link → this origin)
-    async function finishOAuthAndCleanUrl(){
+    // Finish OAuth params & clean URL
+    (async function finalizeOAuth(){
       try{
         const u=new URL(location.href);
         if(u.searchParams.get("code")){
@@ -844,20 +865,18 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           history.replaceState({}, "", location.pathname + location.search);
         }
       }catch(e){ console.warn("OAuth finalize failed", e); }
-    }
+    })();
 
-    async function getAuthHeaders(extra={}){
-      const h={ "Content-Type":"application/json", ...extra };
-      try{
-        const { data } = await supabase.auth.getSession();
-        const tok = data?.session?.access_token;
-        const uid = data?.session?.user?.id;
-        if(tok) h["Authorization"]=`Bearer ${tok}`;
-        if(uid) h["X-User-Id"] = uid;
-      }catch{}
-      return h;
-    }
+    // Mobile nav
+    (function wireNav(){
+      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
+      toggle?.addEventListener("click", ()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); sheet?.setAttribute("aria-hidden","false"); });
+      close?.addEventListener("click", ()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); sheet?.setAttribute("aria-hidden","true"); });
+      sheet?.addEventListener("click",(e)=>{ if(e.target===sheet){ document.body.classList.remove("nav-open"); toggle?.setAttribute("aria-expanded","false"); sheet.setAttribute("aria-hidden","true"); } });
+      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{ const id=a.getAttribute("href"); const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); history.replaceState(null,"",id); document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); } }));
+    })();
 
+    // UI state helpers
     function setAuthFlag(on){
       AUTHTED=!!on;
       document.body.setAttribute("data-auth", on? "authed":"guest");
@@ -877,80 +896,88 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       $$(".plan-business-only").forEach(el=> el.classList.toggle("hidden", rank<3));
     }
 
+    async function getAuthHeaders(extra={}){
+      const h={ "Content-Type":"application/json", ...extra };
+      try{
+        const { data } = await supabase.auth.getSession();
+        const tok = data?.session?.access_token;
+        const uid = data?.session?.user?.id;
+        if(tok) h["Authorization"]=`Bearer ${tok}`;
+        if(uid) h["X-User-Id"] = uid;
+      }catch{}
+      return h;
+    }
+
+    // Status & quotas
     async function fetchStatus(){
       try{
         const r=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
         const j=await r.json();
         const authed=j.scope==="user";
         setAuthFlag(authed);
-        USER_ID = authed? (j.userId||null) : null;
         setPlan((j.plan||"free").toLowerCase());
+
         // quotas
         const memEl=byId("memberQuota"), demoEl=byId("demoQuota");
         if(authed){
           const cap=j.platform?.daily?.cap, used=j.platform?.daily?.used||0;
-          if(memEl) memEl.textContent = (cap==null? "∞" : Math.max(0,cap-used));
+          if(memEl) memEl.textContent = (cap==null? "∞" : Math.max(0,(cap-used)));
         }else{
-          if(demoEl) demoEl.textContent = "5";
+          if(demoEl && j.platform?.monthly){
+            const cap=j.platform.monthly.cap ?? 5;
+            const used=j.platform.monthly.used || 0;
+            demoEl.textContent = String(Math.max(0, cap-used));
+          }
         }
-        // buttons
-        ["manageBilling","manageBilling_m"].forEach(id=> byId(id)?.classList.toggle("hidden", !authed));
-        byId("generateBtn")?.classList.toggle("hidden", authed);
-        byId("generateBtn_member")?.classList.toggle("hidden", !authed);
 
         // integration badges
         byId("notionStatus")&&(byId("notionStatus").textContent = `status: ${j.integrations?.notion? "connected":"—"}`);
         byId("trelloStatus")&&(byId("trelloStatus").textContent = `status: ${j.integrations?.trello? "connected":"—"}`);
-      }catch(e){
-        console.warn("status fail", e);
-        setAuthFlag(false); setPlan("free");
-      }
+      }catch(e){ console.warn("status fail", e); setAuthFlag(false); setPlan("free"); }
     }
 
-    /* ----------------- nav + auth UI ----------------- */
-    function wireNav(){
-      const toggle=byId("navToggle"), sheet=byId("mobileNav"), close=byId("navClose");
-      toggle?.addEventListener("click", ()=>{ document.body.classList.add("nav-open"); toggle.setAttribute("aria-expanded","true"); sheet?.setAttribute("aria-hidden","false"); });
-      close?.addEventListener("click", ()=>{ document.body.classList.remove("nav-open"); toggle.setAttribute("aria-expanded","false"); sheet?.setAttribute("aria-hidden","true"); });
-      // close sheet when clicking outside panel
-      sheet?.addEventListener("click",(e)=>{ if(e.target===sheet){ document.body.classList.remove("nav-open"); toggle?.setAttribute("aria-expanded","false"); sheet.setAttribute("aria-hidden","true"); } });
-      // smooth anchors
-      $$('a[href^="#"]').forEach(a=> a.addEventListener("click",(e)=>{
-        const id=a.getAttribute("href"); if(!id || id==="#") return;
-        const el=$(id); if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); history.replaceState(null,"",id); document.body.classList.remove("nav-open"); sheet?.setAttribute("aria-hidden","true"); }
-      }));
-    }
+    // Promo buttons
+    ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
+    }));
 
-    function openAuthDialog(){ const dlg=byId("auth"); showModalSafe(dlg); byId("authEmail")?.focus(); }
-    function closeAuthDialog(){ closeModalSafe(byId("auth")); }
-
-    function wireAuth(){
-      // openers
-      ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuthDialog));
-      $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuthDialog));
-      byId("authClose")?.addEventListener("click", closeAuthDialog);
-
-      // actions
-      byId("authGoogle")?.addEventListener("click", async ()=>{
+    // Billing buttons
+    $$(".js-checkout").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const plan=btn.getAttribute("data-plan")||"starter";
+        const MAP={ starter:window.PRICE_IDS?.starter, creator:window.PRICE_IDS?.creator, business:window.PRICE_IDS?.business };
+        const priceId=MAP[plan]; if(!priceId) return toast("Missing price id");
+        const old=btn.textContent; btn.disabled=true; btn.textContent="Redirecting…";
         try{
-          await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN } });
-        }catch(e){ toast(e?.message||"Google sign-in failed"); }
+          const r=await fetch(`${WORKER_BASE}/api/billing/checkout`,{
+            method:"POST",
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({
+              price_id: priceId,
+              mode: "subscription",
+              success_url: location.origin + location.pathname + "?billing=success",
+              cancel_url: location.origin + location.pathname + "?billing=cancel"
+            })
+          });
+          const j=await r.json();
+          if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Checkout failed");
+          location.href=j.url;
+        }catch(e){ toast(e.message||"Checkout error"); btn.disabled=false; btn.textContent=old; }
       });
-      byId("authSend")?.addEventListener("click", async ()=>{
-        const email=(byId("authEmail")?.value||"").trim(); if(!email) return toast("Enter your email");
+    });
+    ["manageBilling","manageBilling_m"].forEach(id=>{
+      const b=byId(id); if(!b) return;
+      b.addEventListener("click", async ()=>{
+        const old=b.textContent; b.disabled=true; b.textContent="Opening…";
         try{
-          const { error } = await supabase.auth.signInWithOtp({ email, options:{ emailRedirectTo: SITE_ORIGIN } });
-          if(error) throw error; toast("Check your email for the magic link.");
-        }catch(e){ toast(e?.message||"Sign-in error"); }
+          const r=await fetch(`${WORKER_BASE}/api/billing/portal`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
+          const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Portal error");
+          location.href=j.url;
+        }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
       });
+    });
 
-      // logout
-      ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-        try{ await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); }catch{}
-      }));
-    }
-
-    /* ----------------- live ticker & misc ----------------- */
+    // Live ticker
     async function paintLive(){
       try{
         const r=await fetch(`${WORKER_BASE}/api/stats/today`);
@@ -958,49 +985,8 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         if(typeof j.today_count==="number"){ $$('[data-live-count]').forEach(el=> el.textContent=String(j.today_count)); }
       }catch{}
     }
-    function wirePromo(){
-      ["copyPromoBtn","copyPromoBtn2"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-        try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Code copied ✅"); }catch{ toast("Copy failed"); }
-      }));
-    }
-    function wireBilling(){
-      $$(".js-checkout").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const plan=btn.getAttribute("data-plan")||"starter";
-          const MAP={ starter:window.PRICE_IDS?.starter, creator:window.PRICE_IDS?.creator, business:window.PRICE_IDS?.business };
-          const priceId=MAP[plan]; if(!priceId) return toast("Missing price id");
-          const old=btn.textContent; btn.disabled=true; btn.textContent="Redirecting…";
-          try{
-            const r=await fetch(`${WORKER_BASE}/api/billing/checkout`,{
-              method:"POST",
-              headers: await getAuthHeaders(),
-              body: JSON.stringify({
-                price_id: priceId,
-                mode: "subscription",
-                success_url: location.origin + location.pathname + "?billing=success",
-                cancel_url: location.origin + location.pathname + "?billing=cancel"
-              })
-            });
-            const j=await r.json();
-            if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Checkout failed");
-            location.href=j.url;
-          }catch(e){ toast(e.message||"Checkout error"); btn.disabled=false; btn.textContent=old; }
-        });
-      });
-      ["manageBilling","manageBilling_m"].forEach(id=>{
-        const b=byId(id); if(!b) return;
-        b.addEventListener("click", async ()=>{
-          const old=b.textContent; b.disabled=true; b.textContent="Opening…";
-          try{
-            const r=await fetch(`${WORKER_BASE}/api/billing/portal`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ return_url: location.href }) });
-            const j=await r.json(); if(!r.ok || !j?.url) throw new Error(j?.error?.message||"Portal error");
-            location.href=j.url;
-          }catch(e){ toast(e.message||"Portal error"); b.disabled=false; b.textContent=old; }
-        });
-      });
-    }
 
-    /* ----------------- generator ----------------- */
+    // Generator wiring
     function readToggles(form){
       const g=(n)=> form.elements[n];
       return {
@@ -1010,7 +996,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       };
     }
     const parseJsonLoose=(txt)=>{ if(!txt) return null; let s=String(txt).trim(); s=s.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim(); const a=s.indexOf("{"), b=s.lastIndexOf("}"); if(a>=0&&b>a) s=s.slice(a,b+1); try{ return JSON.parse(s);}catch{} s=s.replace(/,\s*([}\]])/g,"$1"); try{ return JSON.parse(s);}catch{} return null; };
-
     function systemPrompt(t){ return { role:"system", content:
 `You are a senior social copywriter.
 Return ONLY JSON:
@@ -1039,23 +1024,21 @@ Task:
 2) Generate ONLY for: ${channels||"linkedin,x,email"}.
 3) Respect toggles exactly.`};
     }
-
     function addCard(wrap, title, bodyText){
       const id=`c_${Math.random().toString(36).slice(2,8)}`;
       wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5" id="${id}">
+        <div class="card p-5" id="\${id}">
           <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong class="tracking-tight">${title}</strong>
+            <strong class="tracking-tight">\${title}</strong>
             <div class="flex gap-2">
               <button class="btn copy" type="button">Copy</button>
             </div>
           </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
+          <pre class="whitespace-pre-wrap text-sm mt-3 content">\${bodyText}</pre>
         </div>`);
       const card=byId(id), copyBtn=$(".btn.copy", card), pre=$("pre.content", card);
       copyBtn?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(pre?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } });
     }
-
     function paintOutput(j){
       const wrap=byId("demoOutput"); wrap.innerHTML="";
       if(j.linkedin) addCard(wrap,"LinkedIn",j.linkedin);
@@ -1072,7 +1055,24 @@ Task:
       if(j.tiktok){ addCard(wrap,"TikTok",`Script:\n${j.tiktok.script||""}\n\nHooks:\n${(j.tiktok.hooks||[]).map(h=>"• "+h).join("\n")}\n\nOn-screen:\n${(j.tiktok.onscreen||[]).map(o=>"• "+o).join("\n")}`); }
       if(j.linkedin_article_html){ addCard(wrap,"LinkedIn Article (HTML)",j.linkedin_article_html); }
     }
-
+    function ctaAfterGuestTries(used, cap){
+      if(AUTHTED) return;
+      const wrap=byId("demoOutput");
+      if(!wrap) return;
+      const left=Math.max(0, cap-used);
+      if(used>=2){ // show CTA after 2 guest runs this month
+        wrap.insertAdjacentHTML("afterbegin", `
+          <div class="card p-5">
+            <div class="flex items-center justify-between gap-3 flex-wrap">
+              <div><strong>Getting value?</strong> Sign in for <strong>5 runs/day</strong> plus the Article Optimizer.</div>
+              <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${left}</p>
+          </div>
+        `);
+        $$(".js-open-auth", wrap).forEach(b=> b.addEventListener("click", openAuth));
+      }
+    }
     function wireGenerator(){
       const form=byId("demoForm"), src=byId("sourceText"), out=byId("demoOutput");
       const guestBtn=byId("generateBtn"), memBtn=byId("generateBtn_member"), clearBtn=byId("clearBtn");
@@ -1081,7 +1081,7 @@ Task:
       clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
 
       form.addEventListener("submit", async (e)=>{
-        e.preventDefault(); // <<< stop page refresh
+        e.preventDefault(); // stop refresh
         const raw=(src.value||"").trim(); if(!raw) return toast("Paste some content first");
         const btn = AUTHTED ? memBtn : guestBtn; const old=btn?.textContent;
         try{
@@ -1096,13 +1096,19 @@ Task:
           if(!r.ok) throw new Error(j?.error?.message||"Generation failed");
           const content=j?.choices?.[0]?.message?.content||"";
           const data=parseJsonLoose(content); if(!data) throw new Error("Model did not return JSON");
-          paintOutput(data); toast("Done ✅"); fetchStatus().catch(()=>{});
+          paintOutput(data); toast("Done ✅");
+          // refresh status to update counters and trigger CTA for guests
+          try{
+            const s=await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
+            if(s?.scope==="ip" && s.platform?.monthly){ ctaAfterGuestTries(s.platform.monthly.used, s.platform.monthly.cap ?? 5); }
+          }catch{}
+          fetchStatus().catch(()=>{});
         }catch(err){ out.innerHTML=`<div class="card p-5 text-sm text-red-500">Error: ${err.message||err}</div>`; }
         finally{ btn&&(btn.disabled=false, btn.textContent=old|| (AUTHTED?"Generate":"Generate (demo)")); }
       });
     }
 
-    /* ----------------- optimizer ----------------- */
+    // Optimizer
     function optSystem(){ return { role:"system", content:
 `You are an expert editor & SEO. Return ONLY JSON:
 { "html":string, "title":string, "meta_description":string,
@@ -1113,7 +1119,6 @@ Task:
   "rank_likelihood":string|null,
   "linkedin_article_html":string|null }`}; }
     function optUser(src){ return { role:"user", content:`Improve this HTML/Markdown:\n\n${src}\n\nAdd headings, meta, optional FAQs & Reddit TL;DR. Return JSON only.`}; }
-
     function paintOpt(j){
       const wrap=byId("optOutput"); wrap.innerHTML="";
       const card=(title, txt)=>{ wrap.insertAdjacentHTML("beforeend", `<div class="card p-5"><div class="flex justify-between items-center gap-2 flex-wrap"><strong>${title}</strong><button class="btn copy" type="button">Copy</button></div><pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre></div>`); const c=wrap.lastElementChild; $(".btn.copy",c)?.addEventListener("click", async()=>{ try{ await navigator.clipboard.writeText($(".content",c)?.innerText||""); toast("Copied ✅"); }catch{ toast("Copy failed"); } }); };
@@ -1125,19 +1130,19 @@ Task:
       if(j.alt_keywords?.length || j.rank_likelihood) card("SEO Insights", `Alt keyword ideas:\n${(j.alt_keywords||[]).map(k=>"• "+k).join("\n")}\n\nEstimated ranking likelihood: ${j.rank_likelihood||"—"}`);
       if(j.linkedin_article_html) card("LinkedIn Article (HTML)", j.linkedin_article_html);
     }
-
     function wireOptimizer(){
       const form=byId("optForm"), src=byId("optSource"), out=byId("optOutput"), btn=byId("optRun"), clr=byId("optClear");
       if(!form || !src) return;
       clr?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
       form.addEventListener("submit", async (e)=>{
-        e.preventDefault(); // <<< stop page refresh
+        e.preventDefault();
+        if(!AUTHTED) return openAuth();
         const raw=(src.value||"").trim(); if(!raw) return toast("Paste HTML or Markdown first");
         const old=btn.textContent; btn.disabled=true; btn.textContent="Optimizing…";
         out.innerHTML=`<div class="card p-5 text-sm text-slate-500">Working…</div>`;
         try{
           const messages=[ optSystem(), optUser(raw) ];
-          const lane = (!AUTHTED || CURRENT_PLAN==="free") ? "free" : "pro";
+          const lane = (CURRENT_PLAN==="free") ? "free" : "pro";
           const headers = await getAuthHeaders();
           const r=await fetch(`${WORKER_BASE}/api/optimize`, { method:"POST", headers, body: JSON.stringify({ plan: lane, temperature:0.4, messages }) });
           const j=await r.json();
@@ -1150,18 +1155,16 @@ Task:
       });
     }
 
-    /* ----------------- scheduler / calendar (read-only for free) ----------------- */
+    // Calendar preview + schedule
+    function showModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype){ if(!dlg.open) dlg.showModal(); } else { dlg.setAttribute("open",""); dlg.style.display="block"; } }catch{ dlg.setAttribute("open",""); dlg.style.display="block"; } }
+    function closeModalSafe(dlg){ try{ if(typeof HTMLDialogElement!=="undefined" && "close" in HTMLDialogElement.prototype){ if(dlg.open) dlg.close(); } else { dlg.removeAttribute("open"); dlg.style.display="none"; } }catch{ dlg.removeAttribute("open"); dlg.style.display="none"; } }
     function wireCalendar(){
-      // simple static preview text; full CRUD wired by worker routes when authed
       const grid=byId("calGrid");
       if(grid){ grid.textContent="Read-only preview — sign in & upgrade to schedule posts."; }
-      // open modal from button
       byId("calNew")?.addEventListener("click", ()=>{ showModalSafe(byId("scheduleDlg")); });
       byId("schClose")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("schCancel")?.addEventListener("click", ()=> closeModalSafe(byId("scheduleDlg")));
       byId("scheduleDlg")?.addEventListener("click",(e)=>{ const form=byId("scheduleForm"); const rect=form?.getBoundingClientRect(); if(!rect) return; const inBox = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom; if(!inBox) closeModalSafe(byId("scheduleDlg")); });
-
-      // create schedule (Starter+ only; backend enforces)
       byId("scheduleForm")?.addEventListener("submit", async (e)=>{
         e.preventDefault();
         const when=byId("schWhen")?.value, text=(byId("schText")?.value||"").trim();
@@ -1174,42 +1177,56 @@ Task:
       });
     }
 
-    /* ----------------- boot ----------------- */
+    // Export quick actions (stubs open sites; backend integration buttons stay visible for Creator+)
+    byId("qp-x")?.addEventListener("click", ()=> window.open("https://x.com/compose/post","_blank"));
+    byId("qp-reddit")?.addEventListener("click", ()=> window.open("https://www.reddit.com/submit","_blank"));
+    byId("qp-linkedin")?.addEventListener("click", ()=> window.open("https://www.linkedin.com/feed/","_blank"));
+    byId("qp-email")?.addEventListener("click", ()=> window.open("mailto:","_blank"));
+
+    // BYOK save/clear
+    byId("byokSave")?.addEventListener("click", async ()=>{
+      const key=(byId("byokKey")?.value||"").trim(); if(!key) return toast("Enter your OpenRouter key");
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/account/byok/save`,{ method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ key })});
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Save failed");
+        byId("byokStatus").textContent=`Status: saved (${j.mask||"****"})`; toast("BYOK saved ✅");
+      }catch(e){ toast(e.message||"Save failed"); }
+    });
+    byId("byokClear")?.addEventListener("click", async ()=>{
+      try{
+        const r=await fetch(`${WORKER_BASE}/api/account/byok/clear`,{ method:"POST", headers: await getAuthHeaders()});
+        const j=await r.json(); if(!r.ok) throw new Error(j?.error?.message||"Clear failed");
+        byId("byokStatus").textContent="Status: not set"; toast("BYOK cleared");
+      }catch(e){ toast(e.message||"Clear failed"); }
+    });
+
+    // Year + billing result
+    byId("year")&&(byId("year").textContent=new Date().getFullYear());
+    try{
+      const u=new URL(location.href);
+      if(u.searchParams.get("billing")==="success") toast("Billing updated — thank you!");
+      if(u.searchParams.get("billing")==="cancel")  toast("Billing cancelled");
+      u.searchParams.delete("billing");
+      history.replaceState({}, "", u.toString());
+    }catch{}
+
+    // Auth change → update UI & close auth
+    supabase.auth.onAuthStateChange((_evt, session)=>{
+      setAuthFlag(!!session); setPlan("free"); // base until status returns
+      fetchStatus();
+      closeAuth();
+    });
+
+    // Boot
     (async function boot(){
       try{
-        await ensureSupabase();
-        await finishOAuthAndCleanUrl();
-
-        wireNav();
-        wireAuth();
-        wirePromo();
-        wireBilling();
         wireGenerator();
         wireOptimizer();
         wireCalendar();
-
-        // year & billing notice in URL
-        const y=byId("year"); y&&(y.textContent=new Date().getFullYear());
-        try{
-          const u=new URL(location.href);
-          if(u.searchParams.get("billing")==="success") toast("Billing updated — thank you!");
-          if(u.searchParams.get("billing")==="cancel")  toast("Billing cancelled");
-          ["billing"].forEach(k=> u.searchParams.delete(k));
-          history.replaceState({}, "", u.toString());
-        }catch{}
-
-        // auth state + first paint
-        supabase.auth.onAuthStateChange((_evt, session)=>{
-          setAuthFlag(!!session); USER_ID=session?.user?.id||null; fetchStatus();
-          closeAuthDialog();
-        });
-
         await fetchStatus();
         await paintLive(); setInterval(paintLive, 30000);
-
       }catch(e){
-        console.error(e);
-        toast("App failed to initialize");
+        console.error(e); toast("App failed to initialize");
       }
     })();
 
