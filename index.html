@@ -1067,5 +1067,73 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     });
   })();
   </script>
+  <script>
+(function(){
+  const byId = (id)=> document.getElementById(id);
+  const toast = (msg)=>{
+    const t=byId("toast"), m=byId("toastMsg");
+    if(t && m){ m.textContent=msg; t.classList.remove("hidden"); setTimeout(()=>t.classList.add("hidden"),2200); }
+    else { alert(msg); }
+  };
+
+  const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
+
+  // Ensure Supabase client (create a global one if not already available)
+  const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
+  const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
+  const SB = (window.__sb) || (window.__sb = (window.supabase
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+        auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      })
+    : null));
+
+  function bindAuthButtons(){
+    const magic  = byId("authSend");
+    const google = byId("authGoogle");
+
+    if (!SB) {
+      // Supabase failed to load — keep the UI graceful
+      magic?.addEventListener("click", ()=> toast("Auth library not loaded. Try refreshing the page."));
+      google?.addEventListener("click", ()=> toast("Auth library not loaded. Try refreshing the page."));
+      return;
+    }
+
+    if (magic && !magic.__bound) {
+      magic.addEventListener("click", async ()=>{
+        const email = (byId("authEmail")?.value||"").trim();
+        if(!email) return toast("Enter your email");
+        try{
+          const { error } = await SB.auth.signInWithOtp({
+            email,
+            options:{ emailRedirectTo: SITE_ORIGIN }
+          });
+          if(error) throw error;
+          toast("Check your email for the magic link.");
+        }catch(e){ toast(e?.message || "Sign-in error"); }
+      });
+      magic.__bound = true;
+    }
+
+    if (google && !google.__bound) {
+      google.addEventListener("click", async ()=>{
+        try{
+          await SB.auth.signInWithOAuth({
+            provider: "google",
+            options: { redirectTo: SITE_ORIGIN }
+          });
+        }catch(e){ toast(e?.message || "Google sign-in failed"); }
+      });
+      google.__bound = true;
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindAuthButtons);
+  } else {
+    bindAuthButtons();
+  }
+})();
+</script>
+
 </body>
 </html>
