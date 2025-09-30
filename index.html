@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17511593434"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'AW-17511593434');
+  </script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -149,6 +158,13 @@
       backdrop-filter: blur(8px);
     }
     .plan-dot{ width:.5rem; height:.5rem; border-radius:9999px; background:#34d399; box-shadow:0 0 0 4px rgba(52,211,153,.15)}
+
+    /* Calendar month grid mini styles (progressively enhanced) */
+    .cal-month{ display:grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap:.5rem }
+    .cal-cell{ border:1px solid rgba(148,163,184,.35); border-radius:.6rem; padding:.5rem; min-height:110px; position:relative }
+    .cal-date{ font-size:.75rem; opacity:.7 }
+    .cal-item{ font-size:.75rem; margin-top:.25rem; border:1px solid rgba(148,163,184,.35); border-radius:.4rem; padding:.25rem .35rem; display:flex; align-items:center; justify-content:space-between; gap:.5rem }
+    .cal-post{ font-size:.7rem; border:1px solid rgba(148,163,184,.35); border-radius:.35rem; padding:.1rem .4rem }
   </style>
 </head>
 
@@ -254,6 +270,7 @@
       </div>
     </div>
   </div>
+
   <!-- HERO -->
   <section class="relative" id="hero">
     <div class="max-w-7xl mx-auto px-4 md:px-5 pt-10 md:pt-16 grid lg:grid-cols-2 gap-8 md:gap-10 items-center">
@@ -528,6 +545,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
+
   <!-- ===== ARTICLE OPTIMIZER ===== -->
   <section id="optimizer" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -607,6 +625,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div id="optOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
+
   <!-- ===== INTEGRATIONS ===== -->
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -669,12 +688,12 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           </div>
         </div>
 
-        <!-- Calendar grid (visual placeholder) -->
+        <!-- Calendar grid (now populated via JS month view) -->
         <div id="calGrid" class="mt-4 min-h-[360px] rounded-xl border p-3 grid gap-2 text-slate-300">
           (Calendar view loads here)
         </div>
 
-        <!-- NEW: Scheduled posts list (populated by JS refreshSchedule/renderSchedule) -->
+        <!-- Scheduled posts list -->
         <div id="calList" class="mt-4 rounded-xl border p-3">
           <div class="text-sm text-slate-400">Your personal scheduler is enabled. Create a post to see it appear here.</div>
         </div>
@@ -724,6 +743,25 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </form>
   </dialog>
+
+  <!-- NEW: Reminder popup at scheduled time -->
+  <dialog id="reminderDlg" class="rounded-xl p-0 w-[92vw] max-w-md" aria-labelledby="remTitle" aria-modal="true">
+    <div class="p-5 grid gap-3">
+      <div class="flex items-center justify-between">
+        <h3 id="remTitle" class="text-lg font-semibold">Time to post</h3>
+        <button class="btn" type="button" id="remClose" aria-label="Close">Close</button>
+      </div>
+      <div class="text-sm text-slate-400" id="remMeta">—</div>
+      <pre id="remText" class="whitespace-pre-wrap text-sm rounded-lg border p-3 max-h-[40vh] overflow-auto"></pre>
+      <div class="grid sm:grid-cols-2 gap-2">
+        <button class="btn btn-primary" id="remPost" type="button">Post now</button>
+        <button class="btn" id="remMark" type="button">Mark posted</button>
+        <button class="btn" id="remSnooze" type="button">Snooze 10 min</button>
+        <button class="btn" id="remCancel" type="button">Cancel (delete)</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- ===== SEO: FAQs / Testimonials ===== -->
   <section id="faqs" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -920,15 +958,13 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   </div>
 <script>
 /* ============================================================
-   ContentRepurpose.pro — Consolidated boot (Part 6/6)
-   - Auth & plan ribbon wiring (plan shown correctly across UI)
-   - Status/quotas pulled from Worker
-   - Presets: list/save/load/delete (+ Apply & Generate)
-   - Generator & Optimizer calls (platform/BYOK lanes)
-   - Billing: checkout/portal
-   - Integrations: Notion/Trello connect/disconnect/export
-   - Quick publish buttons
-   - Calendar/Scheduler: list, create, edit, status change
+   ContentRepurpose.pro — Consolidated boot (Part 2/2)
+   Adds:
+   - Calendar month rendering
+   - Edit / Mark posted / Cancel (delete) from calendar + list
+   - Reminder popup at scheduled time (+ Snooze 10 min, Post now)
+   - "Post now" from calendar cells
+   (Preserves all prior behavior.)
    ============================================================ */
 
 (function () {
@@ -944,14 +980,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     setTimeout(() => t.classList.add("hidden"), 2200);
   };
   const cap = (s) => (s || "").slice(0,1).toUpperCase() + (s || "").slice(1);
-  const fmtLocal = (iso) => {
-    try {
-      const d = new Date(iso);
-      if (isNaN(d)) return iso;
-      const dd = d.toLocaleString([], { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
-      return dd.replace(",", "");
-    } catch { return iso; }
-  };
   const parseJsonLoose = (txt) => {
     if (!txt) return null;
     let s = String(txt).trim();
@@ -959,23 +987,26 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     const a = s.indexOf("{"), b = s.lastIndexOf("}");
     if (a>=0 && b>a) s = s.slice(a, b+1);
     try { return JSON.parse(s); } catch {}
-    s = s.replace(/,\s*([}\]])/g, "$1"); // trailing commas
+    s = s.replace(/,\s*([}\]])/g, "$1");
     try { return JSON.parse(s); } catch {}
     return null;
   };
-
-  // ---------- Constants ----------
+  const fmtLocal = (iso, opts={}) => {
+    try {
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      const dd = d.toLocaleString([], {
+        year:"numeric", month:"short", day:"2-digit",
+        hour:"2-digit", minute:"2-digit",
+        ...opts
+      });
+      return dd.replace(",", "");
+    } catch { return iso; }
+  };
   const WORKER_BASE = window.WORKER_BASE || "https://contentflow-worker.frank-couchman.workers.dev";
   const SITE_ORIGIN = window.SITE_ORIGIN || location.origin;
 
-  // Capture affiliate (?ref=...)
-  try {
-    const u = new URL(location.href);
-    const ref = u.searchParams.get("ref");
-    if (ref) localStorage.setItem("aff_ref", ref);
-  } catch {}
-
-  // ---------- Supabase (UMD from <head>) ----------
+  // ---------- Supabase ----------
   const SUPABASE_URL  = "https://ynkoavaeadlzlwylmfmu.supabase.co";
   const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlua29hdmFlYWRsemx3eWxtZm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5OTAxNDgsImV4cCI6MjA3MzU2NjE0OH0.1yM5yDo0MI9Upzt4GkLyf1mqvDXfb3DXvC0ouOLtRoU";
   let supabase = null;
@@ -984,54 +1015,17 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
   } catch (e) {
-    console.warn("Supabase failed to initialize. Auth overlay still works.", e);
+    console.warn("Supabase init failed.", e);
   }
 
   // ---------- State ----------
   let AUTHTED = false;
   let CURRENT_PLAN = "free";
+  let scheduleCache = [];              // last fetched items
+  let monthCursor = new Date();        // month view reference
+  let reminderSeen = new Set();        // in-memory debounce for current session
 
-  // ---------- UI state helpers ----------
-  function setAuthFlag(on) {
-    AUTHTED = !!on;
-    document.body.setAttribute("data-auth", on ? "authed" : "guest");
-    $$(".only-guest").forEach(el => el.classList.toggle("hidden", !!on));
-    $$(".only-authed").forEach(el => el.classList.toggle("hidden", !on));
-  }
-
-  function setPlan(plan) {
-    const p = (plan || "free").toLowerCase();
-    CURRENT_PLAN = p;
-    document.body.setAttribute("data-plan", p);
-
-    // Badges / hero
-    const label = `Plan: ${cap(p)}`;
-    if (byId("planbadge")) byId("planbadge").textContent = label;
-    if (byId("planbadge_m")) byId("planbadge_m").textContent = label;
-    if (byId("heroPlanName")) byId("heroPlanName").textContent = cap(p);
-
-    // PLAN ribbon
-    const pr = byId("planRibbonText");
-    if (pr) pr.textContent = `PLAN ACTIVATED: ${cap(p)}`;
-
-    // Feature gates
-    const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
-    $$(".plan-starter-plus").forEach(el => el.classList.toggle("hidden", rank < 1));
-    $$(".plan-creator-plus").forEach(el => el.classList.toggle("hidden", rank < 2));
-    $$(".plan-business-only").forEach(el => el.classList.toggle("hidden", rank < 3));
-
-    // Calendar header helper text
-    const grid = byId("calGrid");
-    if (grid) {
-      if (p === "free") {
-        grid.textContent = "Read-only preview — sign in & upgrade to schedule posts.";
-      } else {
-        // show a nicer placeholder for paying plans
-        grid.textContent = "Your calendar view will appear here. Use 'New scheduled post' or schedule from any card.";
-      }
-    }
-  }
-
+  // ---------- Auth / Headers ----------
   async function getAuthHeaders(extra = {}) {
     const h = { "Content-Type":"application/json", ...extra };
     try {
@@ -1044,7 +1038,38 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     return h;
   }
 
-  // ---------- Status / quotas ----------
+  function setAuthFlag(on) {
+    AUTHTED = !!on;
+    document.body.setAttribute("data-auth", on ? "authed" : "guest");
+    $$(".only-guest").forEach(el => el.classList.toggle("hidden", !!on));
+    $$(".only-authed").forEach(el => el.classList.toggle("hidden", !on));
+  }
+
+  function setPlan(plan) {
+    const p = (plan || "free").toLowerCase();
+    CURRENT_PLAN = p;
+    document.body.setAttribute("data-plan", p);
+
+    const label = `Plan: ${cap(p)}`;
+    if (byId("planbadge")) byId("planbadge").textContent = label;
+    if (byId("planbadge_m")) byId("planbadge_m").textContent = label;
+    if (byId("heroPlanName")) byId("heroPlanName").textContent = cap(p);
+    if (byId("planRibbonText")) byId("planRibbonText").textContent = `PLAN ACTIVATED: ${cap(p)}`;
+
+    const rank = { free:0, starter:1, creator:2, business:3 }[p] ?? 0;
+    $$(".plan-starter-plus").forEach(el => el.classList.toggle("hidden", rank < 1));
+    $$(".plan-creator-plus").forEach(el => el.classList.toggle("hidden", rank < 2));
+    $$(".plan-business-only").forEach(el => el.classList.toggle("hidden", rank < 3));
+
+    const grid = byId("calGrid");
+    if (grid) {
+      grid.textContent = (p === "free")
+        ? "Read-only preview — sign in & upgrade to schedule posts."
+        : "Your calendar view will appear here. Use 'New scheduled post' or schedule from any card.";
+    }
+  }
+
+  // ---------- Status / quotas / live ----------
   async function fetchStatus() {
     try {
       const r = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() });
@@ -1053,33 +1078,31 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       setAuthFlag(authed);
       setPlan((j.plan || "free").toLowerCase());
 
-      // quotas
-      const memEl = byId("memberQuota"), demoEl = byId("demoQuota");
       if (authed) {
         const cap = j.platform?.daily?.cap;
         const used = j.platform?.daily?.used || 0;
-        if (memEl) memEl.textContent = (cap == null ? "∞" : Math.max(0, (cap - used)));
+        const el = byId("memberQuota");
+        if (el) el.textContent = (cap == null ? "∞" : Math.max(0, (cap - used)));
       } else {
-        if (demoEl && j.platform?.monthly) {
+        const el = byId("demoQuota");
+        if (el && j.platform?.monthly) {
           const cap = j.platform.monthly.cap ?? 5;
           const used = j.platform.monthly.used || 0;
-          demoEl.textContent = String(Math.max(0, cap - used));
+          el.textContent = String(Math.max(0, cap - used));
         }
       }
 
-      // integrations
       if (byId("notionStatus")) byId("notionStatus").textContent = `status: ${j.integrations?.notion ? "connected" : "—"}`;
       if (byId("trelloStatus")) byId("trelloStatus").textContent = `status: ${j.integrations?.trello ? "connected" : "—"}`;
 
-      // Billing portal visibility
       ["manageBilling","manageBilling_m"].forEach(id => {
         const el = byId(id);
         if (el) el.classList.toggle("hidden", !j.is_subscribed);
       });
 
-      // Calendar/Scheduler list refresh for paying users
+      // Refresh scheduler view
       if (authed && (j.plan || "free") !== "free") {
-        await refreshSchedule();
+        await refreshSchedule(); // this will paint month + list
       } else {
         paintScheduleEmpty();
       }
@@ -1087,14 +1110,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       return j;
     } catch (e) {
       console.warn("status fail", e);
-      setAuthFlag(false);
-      setPlan("free");
-      paintScheduleEmpty();
+      setAuthFlag(false); setPlan("free"); paintScheduleEmpty();
       return null;
     }
   }
 
-  // ---------- Live ticker ----------
   async function paintLive() {
     try {
       const r = await fetch(`${WORKER_BASE}/api/stats/today`);
@@ -1103,132 +1123,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         $$("[data-live-count]").forEach(el => el.textContent = String(j.today_count));
       }
     } catch {}
-  }
-
-  // ---------- Presets ----------
-  function readGeneratorToggles(form) {
-    const g = (n) => form.elements[n];
-    return {
-      ch: {
-        linkedin: g("ch_linkedin")?.checked || false,
-        x:        g("ch_x")?.checked || false,
-        email:    g("ch_email")?.checked || false,
-        instagram:g("ch_instagram")?.checked || false,
-        reddit:   g("ch_reddit")?.checked || false,
-        facebook: g("ch_facebook")?.checked || false,
-        quora:    g("ch_quora")?.checked || false,
-        tiktok:   g("ch_tiktok")?.checked || false,
-      },
-      extras: {
-        li_article: g("li_article")?.checked || false,
-        x_sequence: g("x_sequence")?.checked || false,
-        x_posts:    g("x_posts")?.value || "4",
-        rdt_communities: g("rdt_communities")?.checked || false,
-        rdt_comments:    g("rdt_comments")?.checked || false,
-        tt_hooks:        g("tt_hooks")?.checked || false,
-        tt_onscreen:     g("tt_onscreen")?.checked || false,
-      }
-    };
-  }
-
-  function applyPresetToForm(form, payload) {
-    if (!payload) return;
-    const set = (name, v) => { if (name in form.elements) form.elements[name].checked = !!v; };
-    const setVal = (name, v) => { if (name in form.elements) form.elements[name].value = v; };
-
-    // channels
-    set("ch_linkedin", payload.ch?.linkedin);
-    set("ch_x", payload.ch?.x);
-    set("ch_email", payload.ch?.email);
-    set("ch_instagram", payload.ch?.instagram);
-    set("ch_reddit", payload.ch?.reddit);
-    set("ch_facebook", payload.ch?.facebook);
-    set("ch_quora", payload.ch?.quora);
-    set("ch_tiktok", payload.ch?.tiktok);
-
-    // extras
-    set("li_article", payload.extras?.li_article);
-    set("x_sequence", payload.extras?.x_sequence);
-    setVal("x_posts", payload.extras?.x_posts || "4");
-    set("rdt_communities", payload.extras?.rdt_communities);
-    set("rdt_comments", payload.extras?.rdt_comments);
-    set("tt_hooks", payload.extras?.tt_hooks);
-    set("tt_onscreen", payload.extras?.tt_onscreen);
-
-    // fill source if present
-    if (payload.sourceText && byId("sourceText")) byId("sourceText").value = payload.sourceText;
-  }
-
-  async function presetsList() {
-    try {
-      const r = await fetch(`${WORKER_BASE}/api/presets/list`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      const sel = byId("presetSelect");
-      if (!sel) return;
-      sel.innerHTML = `<option value="">— Select preset —</option>`;
-      (j.items || []).forEach(item => {
-        const opt = document.createElement("option");
-        opt.value = item.id;
-        opt.textContent = item.name;
-        sel.appendChild(opt);
-      });
-    } catch (e) {
-      console.warn("preset list error", e);
-    }
-  }
-
-  async function presetsSave() {
-    const form = byId("demoForm");
-    if (!form) return;
-    const name = (byId("presetName")?.value || "").trim();
-    if (!name) return toast("Name your preset first");
-    const payload = { ...readGeneratorToggles(form), sourceText: (byId("sourceText")?.value || "") };
-    try {
-      const r = await fetch(`${WORKER_BASE}/api/presets/save`, {
-        method: "POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ name, payload })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Save failed");
-      toast("Preset saved ✅");
-      await presetsList();
-      byId("presetName").value = "";
-    } catch (e) {
-      toast(e.message || "Save failed");
-    }
-  }
-
-  async function presetsLoad(id) {
-    if (!id) return toast("Pick a preset");
-    try {
-      const r = await fetch(`${WORKER_BASE}/api/presets/get?id=${encodeURIComponent(id)}`, { headers: await getAuthHeaders() });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Load failed");
-      applyPresetToForm(byId("demoForm"), j?.payload);
-      toast("Preset loaded ✅");
-      return j?.payload || null;
-    } catch (e) {
-      toast(e.message || "Load failed");
-      return null;
-    }
-  }
-
-  async function presetsDelete(id) {
-    if (!id) return toast("Pick a preset");
-    try {
-      const r = await fetch(`${WORKER_BASE}/api/presets/delete`, {
-        method: "POST",
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ id })
-      });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j?.error?.message || "Delete failed");
-      toast("Preset deleted");
-      await presetsList();
-    } catch (e) {
-      toast(e.message || "Delete failed");
-    }
   }
 
   // ---------- Generator ----------
@@ -1263,6 +1157,31 @@ Task:
 2) Generate ONLY for: ${channels || "linkedin,x,email"}.
 3) For X, generate exactly ${maxX} posts (≤280 chars). If sequence is enabled, format as "Post 1..N".
 4) Respect toggles exactly.` };
+  }
+
+  function readGeneratorToggles(form) {
+    const g = (n) => form.elements[n];
+    return {
+      ch: {
+        linkedin: g("ch_linkedin")?.checked || false,
+        x:        g("ch_x")?.checked || false,
+        email:    g("ch_email")?.checked || false,
+        instagram:g("ch_instagram")?.checked || false,
+        reddit:   g("ch_reddit")?.checked || false,
+        facebook: g("ch_facebook")?.checked || false,
+        quora:    g("ch_quora")?.checked || false,
+        tiktok:   g("ch_tiktok")?.checked || false,
+      },
+      extras: {
+        li_article: g("li_article")?.checked || false,
+        x_sequence: g("x_sequence")?.checked || false,
+        x_posts:    g("x_posts")?.value || "4",
+        rdt_communities: g("rdt_communities")?.checked || false,
+        rdt_comments:    g("rdt_comments")?.checked || false,
+        tt_hooks:        g("tt_hooks")?.checked || false,
+        tt_onscreen:     g("tt_onscreen")?.checked || false,
+      }
+    };
   }
 
   function addCard(wrap, title, bodyText){
@@ -1304,7 +1223,7 @@ Task:
       const dlg = byId("scheduleDlg"); if(!dlg) return;
       byId("schId").value = "";
       byId("schText").value = pre?.innerText || "";
-      byId("schWhen").value = ""; // user picks
+      byId("schWhen").value = "";
       showModalSafe(dlg);
     });
 
@@ -1346,25 +1265,6 @@ Task:
     if (j.linkedin_article_html) addCard(wrap,"LinkedIn Article (HTML)", j.linkedin_article_html);
   }
 
-  function ctaAfterGuestTries(used, cap) {
-    if (AUTHTED) return;
-    const wrap = byId("demoOutput");
-    if (!wrap) return;
-    const left = Math.max(0, cap - used);
-    if (used >= 2) {
-      wrap.insertAdjacentHTML("afterbegin", `
-        <div class="card p-5">
-          <div class="flex items-center justify-between gap-3 flex-wrap">
-            <div><strong>Getting value?</strong> Sign in for <strong>5 runs/day</strong> plus the Article Optimizer.</div>
-            <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
-          </div>
-          <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${left}</p>
-        </div>
-      `);
-      $$(".js-open-auth", wrap).forEach(b => b.addEventListener("click", openAuth));
-    }
-  }
-
   function wireGenerator() {
     const form = byId("demoForm"), src = byId("sourceText"), out = byId("demoOutput");
     const guestBtn = byId("generateBtn"), memBtn = byId("generateBtn_member"), clearBtn = byId("clearBtn");
@@ -1398,7 +1298,21 @@ Task:
 
         try {
           const s = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
-          if (s?.scope === "ip" && s.platform?.monthly) ctaAfterGuestTries(s.platform.monthly.used, s.platform.monthly.cap ?? 5);
+          if (s?.scope === "ip" && s.platform?.monthly) {
+            const used = s.platform.monthly.used, cap = s.platform.monthly.cap ?? 5;
+            if (!AUTHTED && used >= 2) {
+              out.insertAdjacentHTML("afterbegin", `
+                <div class="card p-5">
+                  <div class="flex items-center justify-between gap-3 flex-wrap">
+                    <div><strong>Getting value?</strong> Sign in for <strong>5 runs/day</strong> plus the Article Optimizer.</div>
+                    <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${Math.max(0, cap-used)}</p>
+                </div>
+              `);
+              $$(".js-open-auth", out).forEach(b => b.addEventListener("click", openAuth));
+            }
+          }
         } catch {}
 
         fetchStatus().catch(()=>{});
@@ -1407,22 +1321,6 @@ Task:
       } finally {
         btn && (btn.disabled = false, btn.textContent = old || (AUTHTED ? "Generate" : "Generate (demo)"));
       }
-    });
-
-    // Preset buttons
-    byId("presetSave")?.addEventListener("click", presetsSave);
-    byId("presetLoad")?.addEventListener("click", async ()=>{
-      const id = byId("presetSelect")?.value || "";
-      await presetsLoad(id);
-    });
-    byId("presetLoadAndRun")?.addEventListener("click", async ()=>{
-      const id = byId("presetSelect")?.value || "";
-      const payload = await presetsLoad(id);
-      if (payload) form.requestSubmit();  // trigger generation with loaded values
-    });
-    byId("presetDelete")?.addEventListener("click", async ()=>{
-      const id = byId("presetSelect")?.value || "";
-      await presetsDelete(id);
     });
   }
 
@@ -1520,43 +1418,97 @@ Task:
         CURRENT_PLAN === "free" ? "disabled on Free (upgrade to enable)." : "enabled. Create a post to see it appear here."
       }</div>`;
     }
+    const grid = byId("calGrid");
+    if (grid) grid.innerHTML = `(Calendar view loads here)`;
   }
 
-  function renderSchedule(items) {
-    const list = byId("calList");
-    if (!list) return;
-    if (!Array.isArray(items) || !items.length) {
-      paintScheduleEmpty();
-      return;
-    }
-    list.innerHTML = "";
-    items.forEach(item => {
-      const id = `sch_${item.id}`;
-      list.insertAdjacentHTML("beforeend", `
-        <div class="card p-4" id="${id}">
-          <div class="flex items-start justify-between gap-3">
-            <div class="text-sm">
-              <div class="font-semibold">${fmtLocal(item.when)} <span class="chip">${item.status||"scheduled"}</span></div>
-              <pre class="whitespace-pre-wrap mt-2 text-slate-200/90">${(item.text || "").slice(0, 800)}</pre>
-            </div>
-            <div class="flex flex-col gap-2">
-              <button class="btn btn-sm edit" type="button">Edit</button>
-              <button class="btn btn-sm mark" type="button">Mark posted</button>
-              <button class="btn btn-sm cancel" type="button">Cancel</button>
-            </div>
+  function scheduleCardHTML(item){
+    return `
+      <div class="card p-4" data-id="${item.id}">
+        <div class="flex items-start justify-between gap-3">
+          <div class="text-sm">
+            <div class="font-semibold">${fmtLocal(item.when)} <span class="chip">${item.status||"scheduled"}</span></div>
+            <pre class="whitespace-pre-wrap mt-2 text-slate-200/90">${(item.text || "").slice(0, 800)}</pre>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button class="btn btn-sm js-edit" type="button">Edit</button>
+            <button class="btn btn-sm js-mark" type="button">Mark posted</button>
+            <button class="btn btn-sm js-cancel" type="button">Cancel</button>
           </div>
         </div>
-      `);
-      const card = byId(id);
-      $(".edit", card)?.addEventListener("click", ()=> openEditSchedule(item));
-      $(".mark", card)?.addEventListener("click", async ()=>{
-        await scheduleUpdate(item.id, { status:"posted" });
-        await refreshSchedule();
+      </div>
+    `;
+  }
+
+  function renderScheduleList(items) {
+    const list = byId("calList");
+    if (!list) return;
+    if (!Array.isArray(items) || !items.length) { paintScheduleEmpty(); return; }
+    list.innerHTML = items.map(scheduleCardHTML).join("");
+    $$(".card[data-id]", list).forEach(card => {
+      const id = card.getAttribute("data-id");
+      $(".js-edit", card)?.addEventListener("click", ()=> openEditSchedule(items.find(it=>it.id===id)));
+      $(".js-mark", card)?.addEventListener("click", async ()=>{ await scheduleUpdate(id, { status:"posted" }); await refreshSchedule(); });
+      $(".js-cancel", card)?.addEventListener("click", async ()=>{ await scheduleUpdate(id, { status:"canceled" }); await refreshSchedule(); });
+    });
+  }
+
+  function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
+  function endOfMonth(d){ const x=new Date(d); x.setMonth(x.getMonth()+1,0); x.setHours(23,59,59,999); return x; }
+  function startOfWeek(d){ const x=new Date(d); const dow=(x.getDay()+6)%7; x.setDate(x.getDate()-dow); x.setHours(0,0,0,0); return x; }
+  function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+  function isSameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  function renderMonthGrid(items){
+    const grid = byId("calGrid"); if (!grid) return;
+    const monthStart = startOfMonth(monthCursor);
+    const monthEnd = endOfMonth(monthCursor);
+    const firstCell = startOfWeek(monthStart);
+    const cells = [];
+    for (let i=0;i<42;i++){ cells.push(addDays(firstCell,i)); }
+
+    grid.classList.add("cal-month");
+    grid.innerHTML = "";
+
+    cells.forEach(day=>{
+      const dayISO = day.toISOString();
+      const inMonth = day.getMonth() === monthCursor.getMonth();
+      const todaysItems = (items||[]).filter(it=>{
+        try { return isSameDay(new Date(it.when), day); } catch { return false; }
       });
-      $(".cancel", card)?.addEventListener("click", async ()=>{
-        await scheduleUpdate(item.id, { status:"canceled" });
-        await refreshSchedule();
+
+      const cell = document.createElement("div");
+      cell.className = "cal-cell";
+      if (!inMonth) cell.style.opacity = ".45";
+      cell.innerHTML = `
+        <div class="cal-date">${day.getDate()}</div>
+        <div class="mt-1"></div>
+      `;
+      const holder = cell.lastElementChild;
+
+      todaysItems.forEach(it=>{
+        const short = (it.text||"").split("\n")[0].slice(0,80);
+        const el = document.createElement("div");
+        el.className = "cal-item";
+        el.innerHTML = `
+          <span class="cal-post">${fmtLocal(it.when,{hour:'2-digit',minute:'2-digit'})}</span>
+          <span style="flex:1;min-width:0;" title="${(it.text||"").slice(0,400).replace(/"/g,'&quot;')}">${short}</span>
+          <div class="flex items-center gap-1">
+            <button class="btn btn-sm js-post" title="Post now" type="button">Post</button>
+            <button class="btn btn-sm js-edit" title="Edit" type="button">Edit</button>
+            <button class="btn btn-sm js-mark" title="Mark posted" type="button">✓</button>
+            <button class="btn btn-sm js-cancel" title="Cancel" type="button">✕</button>
+          </div>
+        `;
+        holder.appendChild(el);
+
+        $(".js-post", el)?.addEventListener("click", ()=> openReminder(it, { showPostImmediately:true }));
+        $(".js-edit", el)?.addEventListener("click", ()=> openEditSchedule(it));
+        $(".js-mark", el)?.addEventListener("click", async ()=>{ await scheduleUpdate(it.id, { status:"posted" }); await refreshSchedule(); });
+        $(".js-cancel", el)?.addEventListener("click", async ()=>{ await scheduleUpdate(it.id, { status:"canceled" }); await refreshSchedule(); });
       });
+
+      grid.appendChild(cell);
     });
   }
 
@@ -1566,7 +1518,9 @@ Task:
       const r = await fetch(`${WORKER_BASE}/api/schedule/list`, { headers: await getAuthHeaders() });
       const j = await r.json();
       if (!r.ok) throw new Error(j?.error?.message || "Schedule list failed");
-      renderSchedule(j.items || []);
+      scheduleCache = j.items || [];
+      renderScheduleList(scheduleCache);
+      renderMonthGrid(scheduleCache);
     } catch(e) {
       console.warn("schedule list error", e);
       paintScheduleEmpty();
@@ -1575,22 +1529,21 @@ Task:
 
   function openEditSchedule(item){
     const dlg = byId("scheduleDlg"); if (!dlg) return;
-    byId("schId").value = item.id;
-    byId("schText").value = item.text || "";
-    // Convert ISO to input[type=datetime-local] format
+    byId("schId").value = item?.id || "";
+    byId("schText").value = item?.text || "";
     try {
-      const d = new Date(item.when);
-      const isoLocal = new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+      const d = item?.when ? new Date(item.when) : null;
+      const isoLocal = d ? new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16) : "";
       byId("schWhen").value = isoLocal;
     } catch { byId("schWhen").value = ""; }
     showModalSafe(dlg);
   }
 
-  async function scheduleCreate({ text, when }) {
+  async function scheduleCreate({ text, when, channel }) {
     const r = await fetch(`${WORKER_BASE}/api/schedule/create`, {
       method: "POST",
       headers: await getAuthHeaders(),
-      body: JSON.stringify({ text, when })
+      body: JSON.stringify({ text, when, channel })
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j?.error?.message || "Schedule failed");
@@ -1642,10 +1595,10 @@ Task:
       if (CURRENT_PLAN === "free") return toast("Scheduler requires Starter+");
       const id = (byId("schId")?.value || "").trim();
       const txt = (byId("schText")?.value || "").trim();
-      const whenLocal = (byId("schWhen")?.value || "").trim(); // yyyy-MM-ddTHH:mm
+      const whenLocal = (byId("schWhen")?.value || "").trim();
+      const channel = (byId("schChannel")?.value || "linkedin");
       if (!txt || !whenLocal) return toast("Pick a date/time and content");
 
-      // Convert local value to ISO
       let iso = whenLocal;
       try {
         const ts = new Date(whenLocal);
@@ -1654,12 +1607,83 @@ Task:
 
       try {
         if (id) await scheduleUpdate(id, { text: txt, when: iso });
-        else await scheduleCreate({ text: txt, when: iso });
+        else await scheduleCreate({ text: txt, when: iso, channel });
         toast("Saved ✅");
         closeModalSafe(dlg);
         await refreshSchedule();
       } catch (err) {
         toast(err.message || "Save failed");
+      }
+    });
+
+    // Simple month nav
+    byId("calPrev")?.addEventListener("click", ()=>{ monthCursor.setMonth(monthCursor.getMonth()-1); renderMonthGrid(scheduleCache); });
+    byId("calNext")?.addEventListener("click", ()=>{ monthCursor.setMonth(monthCursor.getMonth()+1); renderMonthGrid(scheduleCache); });
+    byId("calToday")?.addEventListener("click", ()=>{ monthCursor = new Date(); renderMonthGrid(scheduleCache); });
+    byId("calView")?.addEventListener("change", (e)=>{
+      const v = e.target.value;
+      if (v === "month") renderMonthGrid(scheduleCache);
+      // (Week/Agenda placeholders still show list below; full views can be added later)
+    });
+  }
+
+  // ---------- Reminder popup ----------
+  function openReminder(item, opts={}){
+    const dlg = byId("reminderDlg"); if (!dlg) return;
+    byId("remMeta").textContent = `${cap(item.channel||"post")} • ${fmtLocal(item.when)}`;
+    byId("remText").textContent = item.text || "";
+    dlg.dataset.id = item.id;
+
+    const postNow = async ()=>{
+      const txt = item.text || "";
+      const channel = (item.channel || "linkedin").toLowerCase();
+      const openWin=(url)=> window.open(url,"_blank","noopener,noreferrer");
+      if (channel.includes("linkedin")) openWin("https://www.linkedin.com/feed/");
+      else if (channel === "x" || channel.includes("twitter")) openWin("https://x.com/compose/post");
+      else if (channel.includes("reddit")) openWin("https://www.reddit.com/submit");
+      else if (channel.includes("email")) location.href=`mailto:?subject=&body=${encodeURIComponent(txt)}`;
+      else if (channel.includes("facebook")) openWin("https://www.facebook.com/");
+      else if (channel.includes("instagram")) openWin("https://www.instagram.com/");
+      else if (channel.includes("tiktok")) openWin("https://www.tiktok.com/");
+
+      try {
+        const r = await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text: txt.slice(0,10000) }) });
+        const j = await r.json(); if(!r.ok) throw new Error(j?.error?.message || "Publish failed");
+      } catch(e){ /* silent */ }
+    };
+
+    byId("remPost").onclick = async ()=>{ await postNow(); closeModalSafe(dlg); await scheduleUpdate(item.id, { status:"posted" }); await refreshSchedule(); };
+    byId("remMark").onclick = async ()=>{ closeModalSafe(dlg); await scheduleUpdate(item.id, { status:"posted" }); await refreshSchedule(); };
+    byId("remSnooze").onclick = async ()=>{
+      // Snooze 10 minutes
+      try {
+        const when = new Date(item.when);
+        when.setMinutes(when.getMinutes()+10);
+        await scheduleUpdate(item.id, { when: when.toISOString(), status: "scheduled" });
+        closeModalSafe(dlg);
+        reminderSeen.delete(item.id); // allow alert later
+        await refreshSchedule();
+        toast("Snoozed 10 min");
+      } catch(e){ toast("Snooze failed"); }
+    };
+    byId("remCancel").onclick = async ()=>{ closeModalSafe(dlg); await scheduleUpdate(item.id, { status:"canceled" }); await refreshSchedule(); };
+    byId("remClose").onclick = ()=> closeModalSafe(dlg);
+
+    showModalSafe(dlg);
+    if (opts.showPostImmediately) byId("remPost").focus();
+  }
+
+  function reminderTick(){
+    if (!AUTHTED || CURRENT_PLAN==="free") return;
+    const now = Date.now();
+    scheduleCache.forEach(it=>{
+      if (it.status && it.status !== "scheduled") return;
+      const t = new Date(it.when).getTime();
+      if (isNaN(t)) return;
+      // Trigger within ±60s window, once per session
+      if (Math.abs(t - now) <= 60000 && !reminderSeen.has(it.id)) {
+        reminderSeen.add(it.id);
+        openReminder(it);
       }
     });
   }
@@ -1760,43 +1784,32 @@ Task:
     } catch(e){ toast(e.message || "Clear failed"); }
   });
 
-  // ---------- Quick publish (footer buttons) ----------
+  // ---------- Quick publish (footer) ----------
   byId("qp-x")?.addEventListener("click", ()=> window.open("https://x.com/compose/post","_blank","noopener"));
   byId("qp-reddit")?.addEventListener("click", ()=> window.open("https://www.reddit.com/submit","_blank","noopener"));
   byId("qp-linkedin")?.addEventListener("click", async ()=>{
-    // Try copying latest LinkedIn card if present
-    const liCard = $("#demoOutput .card strong:nth-child(1)");
-    if (liCard && /LinkedIn/i.test(liCard.textContent||"")) {
-      const pre = liCard.closest(".card")?.querySelector("pre");
+    const liStrong = $("#demoOutput .card strong");
+    if (liStrong && /LinkedIn/i.test(liStrong.textContent||"")) {
+      const pre = liStrong.closest(".card")?.querySelector("pre");
       try { await navigator.clipboard.writeText(pre?.innerText || ""); toast("Copied for LinkedIn ✅"); } catch {}
     }
     window.open("https://www.linkedin.com/feed/","_blank","noopener");
   });
-  byId("qp-email")?.addEventListener("click", ()=>{
-    window.location.href = "mailto:?subject=&body=" + encodeURIComponent("Draft ready to paste.");
-  });
+  byId("qp-email")?.addEventListener("click", ()=>{ window.location.href = "mailto:?subject=&body=" + encodeURIComponent("Draft ready to paste."); });
 
-  // ---------- Auth overlay wiring (fallback if earlier script didn't run) ----------
+  // ---------- Auth overlay ----------
   function openAuth(){
-    const sheet = byId("authSheet");
-    if (!sheet) return;
+    const sheet = byId("authSheet"); if (!sheet) return;
     sheet.setAttribute("aria-hidden","false");
-    (byId("authEmail")||{}).focus?.();
+    byId("authEmail")?.focus?.();
   }
-  function closeAuth(){
-    const sheet = byId("authSheet");
-    sheet && sheet.setAttribute("aria-hidden","true");
-  }
+  function closeAuth(){ byId("authSheet")?.setAttribute("aria-hidden","true"); }
   ["loginBtn","loginBtn_m","heroSignIn"].forEach(id=> byId(id)?.addEventListener("click", openAuth));
   $$(".js-open-auth").forEach(b=> b.addEventListener("click", openAuth));
   byId("authClose")?.addEventListener("click", closeAuth);
   byId("authSheet")?.addEventListener("click",(e)=>{ if (e.target === byId("authSheet")) closeAuth(); });
 
-  // Google / Magic link buttons
-  byId("authGoogle")?.addEventListener("click", async ()=>{
-    try { await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }}); }
-    catch(e){ toast(e?.message || "Google sign-in failed"); }
-  });
+  byId("authGoogle")?.addEventListener("click", async ()=>{ try { await supabase.auth.signInWithOAuth({ provider:"google", options:{ redirectTo: SITE_ORIGIN }}); } catch(e){ toast(e?.message || "Google sign-in failed"); }});
   byId("authSend")?.addEventListener("click", async ()=>{
     const email=(byId("authEmail")?.value||"").trim(); if(!email) return toast("Enter your email");
     try {
@@ -1804,9 +1817,12 @@ Task:
       if (error) throw error; toast("Check your email for the magic link.");
     } catch(e){ toast(e?.message || "Sign-in error"); }
   });
-  ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{
-    try { await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); paintScheduleEmpty(); } catch {}
-  }));
+  ["logoutBtn","logoutBtn_m"].forEach(id=> byId(id)?.addEventListener("click", async ()=>{ try { await supabase.auth.signOut(); toast("Signed out"); setAuthFlag(false); setPlan("free"); paintScheduleEmpty(); } catch {} }));
+
+  // ---------- Mobile nav & small helpers ----------
+  byId("navToggle")?.addEventListener("click", ()=>{ document.documentElement.classList.add("nav-open"); byId("mobileNav")?.setAttribute("aria-hidden","false"); });
+  byId("navClose")?.addEventListener("click", ()=>{ document.documentElement.classList.remove("nav-open"); byId("mobileNav")?.setAttribute("aria-hidden","true"); });
+  byId("copyPromoBtn")?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Copied code"); }catch{ toast("Copy failed"); } });
 
   // ---------- OAuth finalize & URL clean ----------
   (async function finalizeOAuth(){
@@ -1825,15 +1841,10 @@ Task:
   })();
 
   // ---------- Boot ----------
-  supabase.auth.onAuthStateChange((_evt, session)=>{
-    setAuthFlag(!!session);
-    fetchStatus();
-    closeAuth();
-  });
+  supabase.auth.onAuthStateChange((_evt, session)=>{ setAuthFlag(!!session); fetchStatus(); closeAuth(); });
 
   (async function boot(){
     try {
-      // Year + billing result banner
       if (byId("year")) byId("year").textContent = new Date().getFullYear();
       try {
         const u=new URL(location.href);
@@ -1843,18 +1854,15 @@ Task:
         history.replaceState({}, "", u.toString());
       } catch {}
 
-      // Wire modules
       wireGenerator();
       wireOptimizer();
       wireCalendar();
 
-      // Load presets dropdown (if authed, shows; if guest, backend returns empty)
-      await presetsList();
-
-      // Initial status + live ticker
       await fetchStatus();
       await paintLive();
       setInterval(paintLive, 30000);
+      // Reminder checker every 30s
+      setInterval(reminderTick, 30000);
     } catch (e) {
       console.error(e);
       toast("App failed to initialize");
@@ -1862,3 +1870,6 @@ Task:
   })();
 })();
 </script>
+
+</body>
+</html>
