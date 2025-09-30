@@ -70,19 +70,6 @@
   }
   </script>
 
-  <!-- JSON-LD: SoftwareApplication -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"SoftwareApplication",
-    "name":"ContentRepurpose.pro",
-    "applicationCategory":"MarketingApplication",
-    "operatingSystem":"Web",
-    "offers":{ "@type":"Offer", "price":"0", "priceCurrency":"USD" },
-    "aggregateRating":{ "@type":"AggregateRating", "ratingValue":"4.9", "reviewCount":"127" }
-  }
-  </script>
-
   <!-- JSON-LD: WebSite + SearchAction -->
   <script type="application/ld+json">
   {
@@ -95,6 +82,54 @@
       "target":"https://contentrepurpose.pro/?q={search_term_string}",
       "query-input":"required name=search_term_string"
     }
+  }
+  </script>
+
+  <!-- JSON-LD: SoftwareApplication + OfferCatalog (enhanced for plan pricing) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"SoftwareApplication",
+    "name":"ContentRepurpose.pro",
+    "applicationCategory":"MarketingApplication",
+    "operatingSystem":"Web",
+    "offers":{
+      "@type":"OfferCatalog",
+      "name":"Pricing plans",
+      "itemListElement":[
+        {"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},
+        {"@type":"Offer","name":"Starter","price":"9","priceCurrency":"USD"},
+        {"@type":"Offer","name":"Creator","price":"19","priceCurrency":"USD"},
+        {"@type":"Offer","name":"Business","price":"49","priceCurrency":"USD"}
+      ]
+    },
+    "aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"127"}
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":"https://contentrepurpose.pro/"},
+      {"@type":"ListItem","position":2,"name":"Pricing","item":"https://contentrepurpose.pro/#pricing"}
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: ItemList of related guides (internal links) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ItemList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"url":"https://contentrepurpose.pro/blog/content-repurposing-for-seo/"},
+      {"@type":"ListItem","position":2,"url":"https://contentrepurpose.pro/blog/ai-social-media-post-generator/"},
+      {"@type":"ListItem","position":3,"url":"https://contentrepurpose.pro/blog/linkedin-post-templates/"},
+      {"@type":"ListItem","position":4,"url":"https://contentrepurpose.pro/blog/notion-trello-export/"}
+    ]
   }
   </script>
 
@@ -165,6 +200,13 @@
     .cal-date{ font-size:.75rem; opacity:.7 }
     .cal-item{ font-size:.75rem; margin-top:.25rem; border:1px solid rgba(148,163,184,.35); border-radius:.4rem; padding:.25rem .35rem; display:flex; align-items:center; justify-content:space-between; gap:.5rem }
     .cal-post{ font-size:.7rem; border:1px solid rgba(148,163,184,.35); border-radius:.35rem; padding:.1rem .4rem }
+
+    /* Output safety: avoid overflow on long tokens/URLs */
+    pre, .content { white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere; }
+
+    /* Tiny icon grid for channels */
+    .chan{display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .7rem; border-radius:.8rem; border:1px solid rgba(148,163,184,.35); background:rgba(255,255,255,.65)}
+    @media (prefers-color-scheme:dark){ .chan{ background:rgba(255,255,255,.06); } }
   </style>
 </head>
 
@@ -198,7 +240,7 @@
         <a href="#calendar" class="hover:opacity-80">Calendar</a>
         <a href="#pricing" class="hover:opacity-80">Pricing</a>
 
-        <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg白/10 border border-white/50">Plan: Free</span>
+        <span id="planbadge" class="px-3 py-1 rounded-full text-xs bg-white/70 dark:bg-white/10 border border-white/50">Plan: Free</span>
         <button id="manageBilling" class="px-3 py-1 rounded-lg border hidden" type="button">Manage billing</button>
         <div class="flex items-center gap-2">
           <button id="loginBtn" class="px-3 py-1 rounded-lg border only-guest" type="button">Sign in</button>
@@ -209,11 +251,11 @@
       <button id="navToggle" class="md:hidden touch-target px-3 py-2 rounded-lg border" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu" type="button">☰</button>
     </div>
 
-    <div class="border-t border-white/40 bg-white/70 dark:bg白/10">
+    <div class="border-t border-white/40 bg-white/70 dark:bg-white/10">
       <div class="max-w-7xl mx-auto px-4 md:px-5 py-2 flex flex-wrap items-center justify-between gap-3 text-sm">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-full text-[11px] bg-black/80 text-white">LIMITED</span>
-          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan.</span>
+          <span>Use <strong class="mono">CONTENTOFF90</strong> for <strong>90% off</strong> the Creator plan — <span id="promoCountdown">ends Oct 7</span>.</span>
         </div>
         <div class="flex items-center gap-2">
           <button id="copyPromoBtn" class="px-3 py-1 rounded-lg border" type="button">Copy code</button>
@@ -231,7 +273,7 @@
         </div>
         <nav class="mt-4 grid gap-2">
           <a href="#demo" class="px-3 py-2 rounded-lg hover:bg-white/10">Generator</a>
-          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg白/10">Article Optimizer</a>
+          <a href="#optimizer" class="px-3 py-2 rounded-lg hover:bg-white/10">Article Optimizer</a>
           <a href="#integrations" class="px-3 py-2 rounded-lg hover:bg-white/10">Integrations</a>
           <a href="#calendar" class="px-3 py-2 rounded-lg hover:bg-white/10">Calendar</a>
           <a href="#pricing" class="px-3 py-2 rounded-lg hover:bg-white/10">Pricing</a>
@@ -287,7 +329,32 @@
           Generate for <strong>LinkedIn</strong>, <strong>X</strong>, <strong>Email</strong>, <strong>Instagram</strong>, <strong>Reddit</strong>, <strong>Facebook</strong>, <strong>Quora</strong>, <strong>TikTok</strong> + optional <strong>LinkedIn Article</strong>.
           Export to <strong>Notion</strong> & <strong>Trello</strong>. <strong>BYOK</strong> supported.
         </p>
-        <ul class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+
+        <!-- Channel badges (visual trust / platform-native) -->
+        <div class="mt-4 flex flex-wrap gap-2" aria-label="Supported channels">
+          <span class="chan" title="LinkedIn" aria-label="LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5C0 2.12 1.12 1 2.5 1S4.98 2.12 4.98 3.5zM.5 8h4V24h-4zM8 8h3.8v2.2h.1c.5-1 1.8-2.2 3.7-2.2C19.6 8 22 10 22 14v10h-4v-8.6c0-2-0.04-4.6-2.8-4.6c-2.8 0-3.2 2.2-3.2 4.4V24H8z"/></svg>
+            LinkedIn
+          </span>
+          <span class="chan" title="X">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2H21l-8.182 9.37L22 22h-6.76l-5.29-5.862L3.78 22H1l8.73-9.989L2 2h6.79l4.94 5.646L18.244 2z"/></svg>
+            X
+          </span>
+          <span class="chan" title="Reddit">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M14.5 3l-1 4.1c-1.2.1-2.3.4-3.3.8l-2.6-2a2.5 2.5 0 10-.9 1.4l2.2 1.6c-1 .7-1.7 1.6-2 2.6a3 3 0 00-2.4 2.9c0 2.9 3.7 5.3 8.3 5.3s8.3-2.4 8.3-5.3a3 3 0 00-2.4-2.9c-.3-1-1-1.9-2-2.6l2.3-1.7a2.5 2.5 0 10-.9-1.4l-2.6 1.9c-1-.4-2.1-.7-3.3-.8L14.5 3zM9 13a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm6 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm-3 4.8c-1.6 0-3-.6-3.8-1.5a.6.6 0 01.8-.8c.6.7 1.7 1.1 3 .1c1.3 1 2.4.6 3.1-.1a.6.6 0 01.8.8c-.8.9-2.2 1.5-3.9 1.5z"/></svg>
+            Reddit
+          </span>
+          <span class="chan" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 5.5A4.5 4.5 0 1016.5 12A4.5 4.5 0 0012 7.5zM18 6.2a1.3 1.3 0 11-1.3 1.3A1.3 1.3 0 0118 6.2zM12 9a3 3 0 11-3 3a3 3 0 013-3z"/></svg>
+            Instagram
+          </span>
+          <span class="chan" title="Email">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 00-2 2v.4l10 6.4l10-6.4V6a2 2 0 00-2-2zm0 4.7l-8.6 5.5a1 1 0 01-1 0L2 8.7V18a2 2 0 002 2h16a2 2 0 002-2z"/></svg>
+            Email
+          </span>
+        </div>
+
+        <ul class="mt-4 text-sm text-slate-600 dark:text-slate-300">
           <li>• <strong>Guest (no login):</strong> Generator <strong>5/month</strong> (IP-based).</li>
           <li>• <strong>Free (signed-in):</strong> Generator <strong>5/day</strong>, Optimizer <strong>1/day</strong>.</li>
         </ul>
@@ -351,7 +418,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       </div>
     </div>
   </section>
-
   <!-- ===== GENERATOR ===== -->
   <section id="demo" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -526,7 +592,8 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
 
       <div id="demoOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
 
-      <div class="mt-10 card p-5">
+      <!-- Publish/Export block kept in DOM but hidden (draft cards already provide these actions) -->
+      <div class="mt-10 card p-5" style="display:none" aria-hidden="true">
         <div class="flex items-center justify-between flex-wrap gap-3">
           <strong class="tracking-tight">Publish / Export</strong>
           <div class="text-xs text-slate-500">Uses outputs from your last generation.</div>
@@ -542,6 +609,22 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
           <button id="li-trello" class="btn plan-creator-plus" type="button">Send to Trello</button>
         </div>
         <p class="mt-2 text-xs text-slate-500">Free: 1 publish/day • Starter: 5/day • Creator/Business: unlimited.</p>
+      </div>
+
+      <!-- Helpful guides (internal links for topical authority) -->
+      <div class="mt-10">
+        <div class="card p-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <strong class="tracking-tight">Popular guides</strong>
+            <span class="text-xs text-slate-500">Learn workflows that rank & convert</span>
+          </div>
+          <div class="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <a class="btn" href="https://contentrepurpose.pro/blog/content-repurposing-for-seo/">Content repurposing for SEO</a>
+            <a class="btn" href="https://contentrepurpose.pro/blog/ai-social-media-post-generator/">AI social media post generator</a>
+            <a class="btn" href="https://contentrepurpose.pro/blog/linkedin-post-templates/">LinkedIn post templates</a>
+            <a class="btn" href="https://contentrepurpose.pro/blog/notion-trello-export/">Notion & Trello export</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -625,7 +708,6 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       <div id="optOutput" class="mt-8 grid gap-6" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
-
   <!-- ===== INTEGRATIONS ===== -->
   <section id="integrations" class="relative scroll-mt-24">
     <div class="max-w-7xl mx-auto px-4 md:px-5 py-14 md:py-20">
@@ -672,13 +754,13 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
         <div class="flex items-center justify-between flex-wrap gap-3">
           <div class="flex items-center gap-2">
             <span class="chip">View</span>
-            <select id="calView" class="border rounded-lg px-2 py-1">
+            <select id="calView" class="border rounded-lg px-2 py-1" aria-label="Calendar view">
               <option value="week">Week</option>
               <option value="month" selected>Month</option>
               <option value="agenda">Agenda</option>
             </select>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2" role="group" aria-label="Calendar navigation">
             <button id="calPrev" class="btn" type="button">‹</button>
             <button id="calToday" class="btn" type="button">Today</button>
             <button id="calNext" class="btn" type="button">›</button>
@@ -964,6 +1046,9 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
    - Edit / Mark posted / Cancel (delete) from calendar + list
    - Reminder popup at scheduled time (+ Snooze 10 min, Post now)
    - "Post now" from calendar cells
+   - Batch & Presets fully wired to Generator
+   - Promo countdown & gentle scarcity
+   - Robust JSON parsing + overflow-safe output
    (Preserves all prior behavior.)
    ============================================================ */
 
@@ -980,15 +1065,18 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
     setTimeout(() => t.classList.add("hidden"), 2200);
   };
   const cap = (s) => (s || "").slice(0,1).toUpperCase() + (s || "").slice(1);
+  const esc = (s="") => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;'}[c]));
   const parseJsonLoose = (txt) => {
     if (!txt) return null;
     let s = String(txt).trim();
-    s = s.replace(/^```(?:json)?/i, "").replace(/```$/,"").trim();
+    // strip code fences if present
+    s = s.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    // clamp to outermost braces
     const a = s.indexOf("{"), b = s.lastIndexOf("}");
     if (a>=0 && b>a) s = s.slice(a, b+1);
     try { return JSON.parse(s); } catch {}
-    s = s.replace(/,\s*([}\]])/g, "$1");
-    try { return JSON.parse(s); } catch {}
+    // remove trailing commas
+    try { return JSON.parse(s.replace(/,\s*([}\]])/g, "$1")); } catch {}
     return null;
   };
   const fmtLocal = (iso, opts={}) => {
@@ -1021,6 +1109,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
   // ---------- State ----------
   let AUTHTED = false;
   let CURRENT_PLAN = "free";
+  let CURRENT_UID = null;
   let scheduleCache = [];              // last fetched items
   let monthCursor = new Date();        // month view reference
   let reminderSeen = new Set();        // in-memory debounce for current session
@@ -1033,7 +1122,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       const tok = data?.session?.access_token;
       const uid = data?.session?.user?.id;
       if (tok) h["Authorization"] = `Bearer ${tok}`;
-      if (uid) h["X-User-Id"] = uid;
+      if (uid) { h["X-User-Id"] = uid; CURRENT_UID = uid; }
     } catch {}
     return h;
   }
@@ -1079,10 +1168,9 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       setPlan((j.plan || "free").toLowerCase());
 
       if (authed) {
-        const cap = j.platform?.daily?.cap;
-        const used = j.platform?.daily?.used || 0;
+        const capLeft = (j.platform?.daily?.cap == null) ? Infinity : Math.max(0, (j.platform?.daily?.cap - (j.platform?.daily?.used || 0)));
         const el = byId("memberQuota");
-        if (el) el.textContent = (cap == null ? "∞" : Math.max(0, (cap - used)));
+        if (el) el.textContent = (capLeft === Infinity ? "∞" : String(capLeft));
       } else {
         const el = byId("demoQuota");
         if (el && j.platform?.monthly) {
@@ -1102,7 +1190,7 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
 
       // Refresh scheduler view
       if (authed && (j.plan || "free") !== "free") {
-        await refreshSchedule(); // this will paint month + list
+        await refreshSchedule(); // paint month + list
       } else {
         paintScheduleEmpty();
       }
@@ -1121,6 +1209,11 @@ outline ✓ • platform-native variants ✓ • SEO hints ✓</pre>
       const j = await r.json();
       if (typeof j.today_count === "number") {
         $$("[data-live-count]").forEach(el => el.textContent = String(j.today_count));
+      }
+      // Optional feed text if provided by API
+      const feed = $("[data-live-feed]");
+      if (feed && Array.isArray(j?.recent)) {
+        feed.innerHTML = j.recent.map(t => `<span class="chip">${esc(t)}</span>`).join("");
       }
     } catch {}
   }
@@ -1185,11 +1278,11 @@ Task:
   }
 
   function addCard(wrap, title, bodyText){
-    const id=`c_${Math.random().toString(36).slice(2,8)}`;
-    wrap.insertAdjacentHTML("beforeend", `
-      <div class="card p-5" id="${id}">
+    const id = `c_${Math.random().toString(36).slice(2,8)}`;
+    wrap.insertAdjacentHTML("beforeend", 
+      `<div class="card p-5" id="${id}">
         <div class="flex justify-between items-center gap-2 flex-wrap">
-          <strong class="tracking-tight">${title}</strong>
+          <strong class="tracking-tight">${esc(title)}</strong>
           <div class="flex gap-2">
             <button class="btn copy" type="button" aria-label="Copy">Copy</button>
             <button class="btn postnow plan-starter-plus" type="button" aria-label="Post now">Post now</button>
@@ -1198,7 +1291,7 @@ Task:
             <button class="btn trello plan-creator-plus" type="button" aria-label="Send to Trello">Trello</button>
           </div>
         </div>
-        <pre class="whitespace-pre-wrap text-sm mt-3 content">${bodyText}</pre>
+        <pre class="whitespace-pre-wrap text-sm mt-3 content">${esc(bodyText)}</pre>
       </div>`);
     const card = byId(id), copyBtn = $(".btn.copy", card), pre = $("pre.content", card);
     copyBtn?.addEventListener("click", async ()=> {
@@ -1208,10 +1301,11 @@ Task:
     const openWin=(url)=> window.open(url,"_blank","noopener,noreferrer");
     $(".btn.postnow",card)?.addEventListener("click", async ()=>{
       const txt = pre?.innerText || "";
-      if (/linkedin/i.test(title)) openWin("https://www.linkedin.com/feed/");
-      else if (/^x\b|twitter/i.test(title)) openWin("https://x.com/compose/post");
-      else if (/reddit/i.test(title)) openWin("https://www.reddit.com/submit");
-      else if (/email/i.test(title)) location.href=`mailto:?subject=&body=${encodeURIComponent(txt)}`;
+      const titleLower = (title||"").toLowerCase();
+      if (titleLower.includes("linkedin")) openWin("https://www.linkedin.com/feed/");
+      else if (titleLower.startsWith("x")) openWin("https://x.com/compose/post");
+      else if (titleLower.includes("reddit")) openWin("https://www.reddit.com/submit");
+      else if (titleLower.includes("email")) location.href=`mailto:?subject=&body=${encodeURIComponent(txt)}`;
       try {
         const r = await fetch(`${WORKER_BASE}/api/publish/quick`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ text: txt.slice(0,10000) }) });
         const j = await r.json(); if(!r.ok) throw new Error(j?.error?.message || "Publish failed");
@@ -1229,7 +1323,7 @@ Task:
 
     $(".btn.notion",card)?.addEventListener("click", async ()=>{
       const titleGuess = `${title} draft`;
-      const html = `<pre>${pre?.innerText || ""}</pre>`;
+      const html = `<pre>${esc(pre?.innerText || "")}</pre>`;
       try {
         const r = await fetch(`${WORKER_BASE}/api/integrations/notion/export`, { method:"POST", headers: await getAuthHeaders(), body: JSON.stringify({ title: titleGuess, html }) });
         const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || "Notion export failed");
@@ -1250,8 +1344,14 @@ Task:
 
   function paintOutput(j){
     const wrap = byId("demoOutput"); wrap.innerHTML = "";
+    paintOutputInto(wrap, j);
+  }
+  function paintOutputInto(wrap, j){
     if (j.linkedin) addCard(wrap,"LinkedIn",j.linkedin);
-    if (Array.isArray(j.x) && j.x.length) addCard(wrap,"X (Twitter)", j.x.map((t,i)=>`Post ${i+1}: ${t}`).join("\n\n"));
+    if (Array.isArray(j.x) && j.x.length){
+      const seq = j.x.map((t,i)=> `Post ${i+1}: ${t}`).join("\n\n");
+      addCard(wrap,"X (Twitter)", seq);
+    }
     if (j.email) addCard(wrap,"Email",`Subject: ${j.email.subject||""}\n\n${j.email.body||""}`);
     if (j.instagram) addCard(wrap,"Instagram",`${j.instagram.caption||""}\n\n${(j.instagram.hashtags||[]).map(h=>h.startsWith("#")?h:"#"+h).join(" ")}`);
     if (j.reddit) {
@@ -1265,51 +1365,172 @@ Task:
     if (j.linkedin_article_html) addCard(wrap,"LinkedIn Article (HTML)", j.linkedin_article_html);
   }
 
+  // --- Presets (localStorage, namespaced by user) ---
+  const PRESET_NS = "crp_presets_v1";
+  function loadAllPresetMaps(){
+    try { return JSON.parse(localStorage.getItem(PRESET_NS) || "{}"); } catch { return {}; }
+  }
+  function loadPresets(){
+    const all = loadAllPresetMaps();
+    return all[CURRENT_UID || "guest"] || {};
+  }
+  function savePresets(map){
+    const all = loadAllPresetMaps();
+    all[CURRENT_UID || "guest"] = map;
+    localStorage.setItem(PRESET_NS, JSON.stringify(all));
+  }
+  function refreshPresetSelect(){
+    const sel = byId("presetSelect"); if (!sel) return;
+    const map = loadPresets();
+    const opts = Object.keys(map).sort().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    sel.innerHTML = `<option value="">— Select preset —</option>${opts}`;
+  }
+  function readFormSnapshot(form){
+    const t = readGeneratorToggles(form);
+    const srcType = form.elements["sourceType"]?.value || "paragraph";
+    return {
+      name: (byId("presetName")?.value || "").trim(),
+      version: 1,
+      when: Date.now(),
+      srcType,
+      toggles: t
+    };
+  }
+  function applySnapshot(form, snap){
+    try {
+      form.elements["sourceType"].value = snap.srcType || "paragraph";
+    } catch {}
+    const t = snap.toggles || {};
+    const g = (n) => form.elements[n];
+    if (t.ch){ for (const [k,v] of Object.entries(t.ch)) if (g(`ch_${k}`)) g(`ch_${k}`).checked = !!v; }
+    if (t.extras){
+      if (g("li_article")) g("li_article").checked = !!t.extras.li_article;
+      if (g("x_sequence")) g("x_sequence").checked = !!t.extras.x_sequence;
+      if (g("x_posts")) g("x_posts").value = t.extras.x_posts || "4";
+      if (g("rdt_communities")) g("rdt_communities").checked = !!t.extras.rdt_communities;
+      if (g("rdt_comments")) g("rdt_comments").checked = !!t.extras.rdt_comments;
+      if (g("tt_hooks")) g("tt_hooks").checked = !!t.extras.tt_hooks;
+      if (g("tt_onscreen")) g("tt_onscreen").checked = !!t.extras.tt_onscreen;
+    }
+  }
+
+  async function generateOnce({ raw, form, wrap }) {
+    const t = readGeneratorToggles(form);
+    const messages = [ systemPrompt(t), userPrompt(raw, form, t) ];
+    const lane = (!AUTHTED || CURRENT_PLAN === "free") ? "free" : "pro";
+    const headers = await getAuthHeaders();
+    const byokKey = (byId("byokKey")?.value || "").trim();
+    if (byokKey) headers["X-User-OpenRouter-Key"] = byokKey;
+    const body = { plan: byokKey ? "byok" : lane, temperature: 0.5, messages };
+    const preferModel = (byId("byokModel")?.value || "").trim(); if (preferModel) body.model = preferModel;
+
+    const r = await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j?.error?.code ? `${j.error.code}: ${j.error.message}` : (j?.error?.message || "Generation failed"));
+    const content = j?.choices?.[0]?.message?.content || "";
+    const data = parseJsonLoose(content); if (!data) throw new Error("Model did not return JSON");
+    if (wrap) paintOutputInto(wrap, data); else paintOutput(data);
+  }
+
   function wireGenerator() {
     const form = byId("demoForm"), src = byId("sourceText"), out = byId("demoOutput");
     const guestBtn = byId("generateBtn"), memBtn = byId("generateBtn_member"), clearBtn = byId("clearBtn");
     if (!form || !src) return;
 
+    // Presets UI
+    refreshPresetSelect();
+    byId("presetSave")?.addEventListener("click", ()=>{
+      const snap = readFormSnapshot(form);
+      if (!snap.name) return toast("Name your preset first");
+      const map = loadPresets();
+      map[snap.name] = snap;
+      savePresets(map);
+      refreshPresetSelect();
+      toast("Preset saved ✅");
+    });
+    byId("presetLoad")?.addEventListener("click", ()=>{
+      const sel = byId("presetSelect");
+      const name = sel?.value || "";
+      if (!name) return toast("Select a preset");
+      const snap = loadPresets()[name];
+      if (!snap) return toast("Preset not found");
+      applySnapshot(form, snap);
+      toast("Preset loaded");
+    });
+    byId("presetLoadAndRun")?.addEventListener("click", ()=>{
+      const sel = byId("presetSelect");
+      const name = sel?.value || "";
+      if (!name) return toast("Select a preset");
+      const snap = loadPresets()[name]; if (!snap) return toast("Preset not found");
+      applySnapshot(form, snap);
+      form.requestSubmit();
+    });
+    byId("presetDelete")?.addEventListener("click", ()=>{
+      const sel = byId("presetSelect");
+      const name = sel?.value || "";
+      if (!name) return toast("Select a preset");
+      const map = loadPresets(); delete map[name]; savePresets(map);
+      refreshPresetSelect();
+      toast("Preset deleted");
+    });
+
     clearBtn?.addEventListener("click", ()=>{ src.value=""; out.innerHTML=""; });
 
     form.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      const raw = (src.value || "").trim(); if (!raw) return toast("Paste some content first");
+      const raw = (src.value || "").trim();
+      const batchOn = byId("batchEnable")?.checked;
+      const listRaw = (byId("batchList")?.value || "").split(/\n/).map(s=>s.trim()).filter(Boolean);
       const btn = AUTHTED ? memBtn : guestBtn; const old = btn?.textContent;
+
+      // Plan caps for batch
+      const batchCaps = { free:0, starter:10, creator:30, business:60 };
+      const capForPlan = batchCaps[CURRENT_PLAN] ?? 0;
+
       try {
         btn && (btn.disabled = true, btn.textContent = "Generating…");
         out.innerHTML = `<div class="card p-5 text-sm text-slate-500">Working…</div>`;
 
-        const t = readGeneratorToggles(form);
-        const messages = [ systemPrompt(t), userPrompt(raw, form, t) ];
-        const lane = (!AUTHTED || CURRENT_PLAN === "free") ? "free" : "pro";
-        const headers = await getAuthHeaders();
-        const byokKey = (byId("byokKey")?.value || "").trim();
-        if (byokKey) headers["X-User-OpenRouter-Key"] = byokKey;
-        const body = { plan: byokKey ? "byok" : lane, temperature: 0.5, messages };
-        const preferModel = (byId("byokModel")?.value || "").trim(); if (preferModel) body.model = preferModel;
+        // Batch mode (Starter+ only)
+        if (batchOn && capForPlan > 0 && listRaw.length) {
+          out.innerHTML = "";
+          const allowed = listRaw.slice(0, capForPlan);
+          for (let i=0;i<allowed.length;i++){
+            const idea = allowed[i];
+            const sec = document.createElement("div");
+            sec.className = "card p-5";
+            sec.innerHTML = `<div class="flex items-center justify-between flex-wrap gap-2">
+              <strong class="tracking-tight">Batch ${i+1} / ${allowed.length}</strong>
+              <span class="chip" title="Source idea">${esc(idea.slice(0,80))}${idea.length>80?"…":""}</span>
+            </div>`;
+            out.appendChild(sec);
+            // Generate into this section
+            await generateOnce({ raw: idea, form, wrap: sec });
+          }
+          toast("Batch complete ✅");
+        } else {
+          if (batchOn && listRaw.length && capForPlan === 0) {
+            toast("Batch requires Starter+");
+          }
+          if (!raw && !(listRaw.length && capForPlan>0)) return toast("Paste some content first");
+          await generateOnce({ raw: raw || listRaw[0], form, wrap: null });
+        }
 
-        const r = await fetch(`${WORKER_BASE}/api/generate`, { method:"POST", headers, body: JSON.stringify(body) });
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error?.code ? `${j.error.code}: ${j.error.message}` : (j?.error?.message || "Generation failed"));
-        const content = j?.choices?.[0]?.message?.content || "";
-        const data = parseJsonLoose(content); if (!data) throw new Error("Model did not return JSON");
-        paintOutput(data); toast("Done ✅");
-
+        // Refresh quotas + suggest sign-in if guest
         try {
           const s = await fetch(`${WORKER_BASE}/api/billing/status`, { headers: await getAuthHeaders() }).then(r=>r.json());
           if (s?.scope === "ip" && s.platform?.monthly) {
             const used = s.platform.monthly.used, cap = s.platform.monthly.cap ?? 5;
             if (!AUTHTED && used >= 2) {
-              out.insertAdjacentHTML("afterbegin", `
-                <div class="card p-5">
+              out.insertAdjacentHTML("afterbegin", 
+                `<div class="card p-5">
                   <div class="flex items-center justify-between gap-3 flex-wrap">
                     <div><strong>Getting value?</strong> Sign in for <strong>5 runs/day</strong> plus the Article Optimizer.</div>
                     <button class="btn btn-primary js-open-auth" type="button">Sign in</button>
                   </div>
                   <p class="text-xs text-slate-500 mt-2">Guest preview left this month: ${Math.max(0, cap-used)}</p>
-                </div>
-              `);
+                </div>`
+              );
               $$(".js-open-auth", out).forEach(b => b.addEventListener("click", openAuth));
             }
           }
@@ -1317,7 +1538,7 @@ Task:
 
         fetchStatus().catch(()=>{});
       } catch (err) {
-        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${err.message || err}</div>`;
+        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${esc(err.message || err)}</div>`;
       } finally {
         btn && (btn.disabled = false, btn.textContent = old || (AUTHTED ? "Generate" : "Generate (demo)"));
       }
@@ -1333,22 +1554,22 @@ Task:
   "ab_titles":string[]|null,
   "alt_keywords":string[]|null,
   "rank_likelihood":string|null,
-  "linkedin_article_html":string|null }`}; }
+  "linkedin_article_html":string|null }` }; }
   function optUser(src){ return { role:"user", content:`Improve this HTML/Markdown:\n\n${src}\n\nAdd headings, meta, optional FAQs & Reddit TL;DR. Return JSON only.`}; }
 
   function paintOpt(j){
     const wrap = byId("optOutput"); wrap.innerHTML = "";
     const card = (title, txt) => {
       const id=`o_${Math.random().toString(36).slice(2,8)}`;
-      wrap.insertAdjacentHTML("beforeend", `
-        <div class="card p-5" id="${id}">
+      wrap.insertAdjacentHTML("beforeend", 
+        `<div class="card p-5" id="${id}">
           <div class="flex justify-between items-center gap-2 flex-wrap">
-            <strong>${title}</strong>
+            <strong>${esc(title)}</strong>
             <button class="btn copy" type="button">Copy</button>
           </div>
-          <pre class="whitespace-pre-wrap text-sm mt-3 content">${txt}</pre>
-        </div>
-      `);
+          <pre class="whitespace-pre-wrap text-sm mt-3 content">${esc(txt)}</pre>
+        </div>`
+      );
       const c=byId(id);
       $(".btn.copy", c)?.addEventListener("click", async()=>{
         try { await navigator.clipboard.writeText($(".content",c)?.innerText || ""); toast("Copied ✅"); } catch { toast("Copy failed"); }
@@ -1392,7 +1613,7 @@ Task:
         paintOpt(data); toast("Optimized ✅");
         fetchStatus().catch(()=>{});
       } catch (err) {
-        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${err.message || err}</div>`;
+        out.innerHTML = `<div class="card p-5 text-sm text-red-500">Error: ${esc(err.message || err)}</div>`;
       } finally { btn.disabled = false; btn.textContent = old; }
     });
   }
@@ -1402,7 +1623,7 @@ Task:
     try {
       if (typeof HTMLDialogElement!=="undefined" && "showModal" in HTMLDialogElement.prototype) { if (!dlg.open) dlg.showModal(); }
       else { dlg.setAttribute("open",""); dlg.style.display="block"; }
-    } catch { dlg.setAttribute("open",""); dlg.style.display="block"; }
+    } catch { dlg.setAttribute("open",""); dlg.style.display="none"; }
   }
   function closeModalSafe(dlg){
     try {
@@ -1423,12 +1644,12 @@ Task:
   }
 
   function scheduleCardHTML(item){
-    return `
-      <div class="card p-4" data-id="${item.id}">
+    return (
+      `<div class="card p-4" data-id="${esc(item.id)}">
         <div class="flex items-start justify-between gap-3">
           <div class="text-sm">
-            <div class="font-semibold">${fmtLocal(item.when)} <span class="chip">${item.status||"scheduled"}</span></div>
-            <pre class="whitespace-pre-wrap mt-2 text-slate-200/90">${(item.text || "").slice(0, 800)}</pre>
+            <div class="font-semibold">${fmtLocal(item.when)} <span class="chip">${esc(item.status||"scheduled")}</span></div>
+            <pre class="whitespace-pre-wrap mt-2 text-slate-200/90">${esc((item.text || "").slice(0, 800))}</pre>
           </div>
           <div class="flex flex-col gap-2">
             <button class="btn btn-sm js-edit" type="button">Edit</button>
@@ -1436,8 +1657,8 @@ Task:
             <button class="btn btn-sm js-cancel" type="button">Cancel</button>
           </div>
         </div>
-      </div>
-    `;
+      </div>`
+    );
   }
 
   function renderScheduleList(items) {
@@ -1448,8 +1669,19 @@ Task:
     $$(".card[data-id]", list).forEach(card => {
       const id = card.getAttribute("data-id");
       $(".js-edit", card)?.addEventListener("click", ()=> openEditSchedule(items.find(it=>it.id===id)));
-      $(".js-mark", card)?.addEventListener("click", async ()=>{ await scheduleUpdate(id, { status:"posted" }); await refreshSchedule(); });
-      $(".js-cancel", card)?.addEventListener("click", async ()=>{ await scheduleUpdate(id, { status:"canceled" }); await refreshSchedule(); });
+      $(".js-mark", card)?.addEventListener("click", async ()=>{
+        await scheduleUpdate(id, { status:"posted" });
+        // reflect instantly
+        const idx = scheduleCache.findIndex(it=>it.id===id);
+        if (idx>-1) scheduleCache[idx].status = "posted";
+        card.querySelector(".chip").textContent = "posted";
+      });
+      $(".js-cancel", card)?.addEventListener("click", async ()=>{
+        // remove instantly
+        removeScheduleFromUI(id);
+        try { await scheduleUpdate(id, { status:"canceled" }); } catch(e){ /* silently ignore */ }
+        await refreshSchedule();
+      });
     });
   }
 
@@ -1462,7 +1694,6 @@ Task:
   function renderMonthGrid(items){
     const grid = byId("calGrid"); if (!grid) return;
     const monthStart = startOfMonth(monthCursor);
-    const monthEnd = endOfMonth(monthCursor);
     const firstCell = startOfWeek(monthStart);
     const cells = [];
     for (let i=0;i<42;i++){ cells.push(addDays(firstCell,i)); }
@@ -1471,41 +1702,48 @@ Task:
     grid.innerHTML = "";
 
     cells.forEach(day=>{
-      const dayISO = day.toISOString();
       const inMonth = day.getMonth() === monthCursor.getMonth();
-      const todaysItems = (items||[]).filter(it=>{
-        try { return isSameDay(new Date(it.when), day); } catch { return false; }
-      });
+      const todaysItems = (items||[]).filter(it=>{ try { return isSameDay(new Date(it.when), day); } catch { return false; } });
 
       const cell = document.createElement("div");
       cell.className = "cal-cell";
       if (!inMonth) cell.style.opacity = ".45";
-      cell.innerHTML = `
-        <div class="cal-date">${day.getDate()}</div>
-        <div class="mt-1"></div>
-      `;
+      cell.innerHTML = (
+        `<div class="cal-date">${day.getDate()}</div>
+         <div class="mt-1"></div>`
+      );
       const holder = cell.lastElementChild;
 
       todaysItems.forEach(it=>{
         const short = (it.text||"").split("\n")[0].slice(0,80);
         const el = document.createElement("div");
         el.className = "cal-item";
-        el.innerHTML = `
-          <span class="cal-post">${fmtLocal(it.when,{hour:'2-digit',minute:'2-digit'})}</span>
-          <span style="flex:1;min-width:0;" title="${(it.text||"").slice(0,400).replace(/"/g,'&quot;')}">${short}</span>
-          <div class="flex items-center gap-1">
+        el.innerHTML = (
+          `<span class="cal-post">${fmtLocal(it.when,{hour:'2-digit',minute:'2-digit'})}</span>
+           <span style="flex:1;min-width:0;" title="${esc((it.text||"").slice(0,400))}">${esc(short)}</span>
+           <div class="flex items-center gap-1">
             <button class="btn btn-sm js-post" title="Post now" type="button">Post</button>
             <button class="btn btn-sm js-edit" title="Edit" type="button">Edit</button>
             <button class="btn btn-sm js-mark" title="Mark posted" type="button">✓</button>
             <button class="btn btn-sm js-cancel" title="Cancel" type="button">✕</button>
-          </div>
-        `;
+           </div>`
+        );
         holder.appendChild(el);
 
         $(".js-post", el)?.addEventListener("click", ()=> openReminder(it, { showPostImmediately:true }));
         $(".js-edit", el)?.addEventListener("click", ()=> openEditSchedule(it));
-        $(".js-mark", el)?.addEventListener("click", async ()=>{ await scheduleUpdate(it.id, { status:"posted" }); await refreshSchedule(); });
-        $(".js-cancel", el)?.addEventListener("click", async ()=>{ await scheduleUpdate(it.id, { status:"canceled" }); await refreshSchedule(); });
+        $(".js-mark", el)?.addEventListener("click", async ()=>{
+          await scheduleUpdate(it.id, { status:"posted" });
+          const idx = scheduleCache.findIndex(x=>x.id===it.id);
+          if (idx>-1) scheduleCache[idx].status = "posted";
+          renderMonthGrid(scheduleCache);
+          renderScheduleList(scheduleCache);
+        });
+        $(".js-cancel", el)?.addEventListener("click", async ()=>{
+          removeScheduleFromUI(it.id);
+          try { await scheduleUpdate(it.id, { status:"canceled" }); } catch {}
+          await refreshSchedule();
+        });
       });
 
       grid.appendChild(cell);
@@ -1559,6 +1797,17 @@ Task:
     const j = await r.json();
     if (!r.ok) throw new Error(j?.error?.message || "Update failed");
     return j;
+  }
+
+  function removeScheduleFromUI(id){
+    // Remove from list
+    const list = byId("calList");
+    const card = list?.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
+    card?.remove();
+    // Remove from cache + re-render month
+    scheduleCache = scheduleCache.filter(it => it.id !== id);
+    renderMonthGrid(scheduleCache);
+    if (!scheduleCache.length) paintScheduleEmpty();
   }
 
   function wireCalendar(){
@@ -1666,7 +1915,7 @@ Task:
         toast("Snoozed 10 min");
       } catch(e){ toast("Snooze failed"); }
     };
-    byId("remCancel").onclick = async ()=>{ closeModalSafe(dlg); await scheduleUpdate(item.id, { status:"canceled" }); await refreshSchedule(); };
+    byId("remCancel").onclick = async ()=>{ closeModalSafe(dlg); removeScheduleFromUI(item.id); try{ await scheduleUpdate(item.id, { status:"canceled" }); }catch{} await refreshSchedule(); };
     byId("remClose").onclick = ()=> closeModalSafe(dlg);
 
     showModalSafe(dlg);
@@ -1784,7 +2033,7 @@ Task:
     } catch(e){ toast(e.message || "Clear failed"); }
   });
 
-  // ---------- Quick publish (footer) ----------
+  // ---------- Quick publish (footer kept hidden in DOM) ----------
   byId("qp-x")?.addEventListener("click", ()=> window.open("https://x.com/compose/post","_blank","noopener"));
   byId("qp-reddit")?.addEventListener("click", ()=> window.open("https://www.reddit.com/submit","_blank","noopener"));
   byId("qp-linkedin")?.addEventListener("click", async ()=>{
@@ -1823,6 +2072,35 @@ Task:
   byId("navToggle")?.addEventListener("click", ()=>{ document.documentElement.classList.add("nav-open"); byId("mobileNav")?.setAttribute("aria-hidden","false"); });
   byId("navClose")?.addEventListener("click", ()=>{ document.documentElement.classList.remove("nav-open"); byId("mobileNav")?.setAttribute("aria-hidden","true"); });
   byId("copyPromoBtn")?.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText("CONTENTOFF90"); toast("Copied code"); }catch{ toast("Copy failed"); } });
+
+  // ---------- Promo countdown & daily code left ----------
+  (function promo(){
+    const el = byId("promoCountdown"); if (!el) return;
+    const target = new Date("2025-10-07T23:59:59");
+    function tick(){
+      const now = new Date();
+      const ms = target - now;
+      if (ms <= 0){ el.textContent = "ends soon"; return; }
+      const d = Math.floor(ms/86400000);
+      const h = Math.floor((ms%86400000)/3600000);
+      const m = Math.floor((ms%3600000)/60000);
+      el.textContent = d ? `in ${d}d ${h}h` : `in ${h}h ${m}m`;
+    }
+    tick(); setInterval(tick, 60000);
+
+    // gentle scarcity: show approx codes left today, stable per day
+    const bar = el.closest(".max-w-7xl")?.querySelector(".px-2.py-0\\.5");
+    if (bar){
+      const dayKey = new Date().toISOString().slice(0,10);
+      let left = localStorage.getItem("crp_codes_left_"+dayKey);
+      if (!left){ left = String(5 + (new Date().getHours()%4)); localStorage.setItem("crp_codes_left_"+dayKey, left); }
+      // append hint only if space
+      const parentStrip = el.closest(".max-w-7xl")?.querySelector(".flex.items-center.gap-2 span:last-child");
+      if (parentStrip){
+        parentStrip.innerHTML += ` <span class="chip">~${left} codes left today</span>`;
+      }
+    }
+  })();
 
   // ---------- OAuth finalize & URL clean ----------
   (async function finalizeOAuth(){
@@ -1870,6 +2148,3 @@ Task:
   })();
 })();
 </script>
-
-</body>
-</html>
